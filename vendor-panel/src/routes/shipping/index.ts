@@ -1,0 +1,1 @@
+export { Shipping as Component } from "./shipping"
