@@ -45,7 +45,12 @@ export const DftGenerateModal = ({ open, onClose, onSuccess }: DftGenerateModalP
   const loadSellers = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/admin/sellers')
+      const response = await fetch('/admin/sellers?fields=id,name,handle,dft_bank_name,dft_swift_code,dft_beneficiary_name,dft_account_number,dft_bank_code,dft_beneficiary_code')
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch sellers: ${response.status}`)
+      }
+      
       const data = await response.json()
       
       const sellersWithDftInfo = (data.sellers || []).map((seller: any) => ({
@@ -58,10 +63,11 @@ export const DftGenerateModal = ({ open, onClose, onSuccess }: DftGenerateModalP
         )
       }))
       
+      console.log('Loaded sellers with DFT info:', sellersWithDftInfo)
       setSellers(sellersWithDftInfo)
     } catch (error) {
       console.error('Error loading sellers:', error)
-      toast.error('Failed to load sellers')
+      toast.error('Failed to load sellers. Please check console for details.')
     } finally {
       setIsLoading(false)
     }
@@ -137,9 +143,9 @@ export const DftGenerateModal = ({ open, onClose, onSuccess }: DftGenerateModalP
     <FocusModal open={open} onOpenChange={onClose}>
       <FocusModal.Content>
         <FocusModal.Header>
-          <h2 className="text-lg font-semibold">Generate DFT File</h2>
+          <h2 className="text-lg font-semibold">Generate Daily DFT File</h2>
           <p className="text-ui-fg-subtle text-sm">
-            Select vendors and configure settings for DFT file generation
+            Generate today's DFT file for vendor payouts. Only vendors with available balances and complete bank information will be included.
           </p>
         </FocusModal.Header>
 
@@ -210,7 +216,10 @@ export const DftGenerateModal = ({ open, onClose, onSuccess }: DftGenerateModalP
                           <div className="flex-1">
                             <p className="font-medium">{seller.name}</p>
                             <p className="text-xs text-ui-fg-subtle">
-                              {seller.dft_bank_name} • {seller.dft_account_number}
+                              {seller.dft_bank_name || 'No bank'} • {seller.dft_account_number || 'No account'}
+                            </p>
+                            <p className="text-xs text-ui-fg-subtle">
+                              SWIFT: {seller.dft_swift_code || 'None'} • {seller.dft_beneficiary_name || 'No beneficiary'}
                             </p>
                           </div>
                           <StatusBadge color="green">Ready</StatusBadge>
@@ -227,17 +236,25 @@ export const DftGenerateModal = ({ open, onClose, onSuccess }: DftGenerateModalP
                       Vendors Missing DFT Information ({invalidSellers.length})
                     </h4>
                     <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3 bg-ui-bg-subtle">
-                      {invalidSellers.map((seller) => (
-                        <div key={seller.id} className="flex items-center justify-between p-2">
-                          <div>
-                            <p className="font-medium text-ui-fg-muted">{seller.name}</p>
-                            <p className="text-xs text-ui-fg-subtle">
-                              Missing bank information required for DFT
-                            </p>
+                      {invalidSellers.map((seller) => {
+                        const missingFields = []
+                        if (!seller.dft_bank_name) missingFields.push('Bank Name')
+                        if (!seller.dft_swift_code) missingFields.push('SWIFT Code')
+                        if (!seller.dft_beneficiary_name) missingFields.push('Beneficiary Name')
+                        if (!seller.dft_account_number) missingFields.push('Account Number')
+                        
+                        return (
+                          <div key={seller.id} className="flex items-center justify-between p-2">
+                            <div>
+                              <p className="font-medium text-ui-fg-muted">{seller.name}</p>
+                              <p className="text-xs text-ui-fg-subtle">
+                                Missing: {missingFields.join(', ')}
+                              </p>
+                            </div>
+                            <StatusBadge color="orange">Incomplete</StatusBadge>
                           </div>
-                          <StatusBadge color="orange">Incomplete</StatusBadge>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                     <p className="text-xs text-ui-fg-subtle mt-2">
                       These vendors need to complete their bank information in their store settings before they can be included in DFT files.

@@ -1,33 +1,26 @@
 import { Carousel } from "@/components/cells"
 import { CategoryCard } from "@/components/organisms"
+import { primeCategories, categoryThemes } from "@/data/categories"
 
-export const categories: { id: number; name: string; handle: string }[] = [
-  {
-    id: 1,
-    name: "Sneakers",
-    handle: "sneakers",
-  },
-  {
-    id: 2,
-    name: "Sandals",
-    handle: "sandals",
-  },
-  {
-    id: 3,
-    name: "Boots",
-    handle: "boots",
-  },
-  {
-    id: 4,
-    name: "Sport",
-    handle: "sport",
-  },
-  {
-    id: 5,
-    name: "Accessories",
-    handle: "accessories",
-  },
-]
+export const categories: { 
+  id: number; 
+  name: string; 
+  handle: string;
+  theme: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    icon: string;
+    bgClass: string;
+    textClass: string;
+    description: string;
+  };
+}[] = Object.entries(primeCategories).map(([handle, name], index) => ({
+  id: index + 1,
+  name,
+  handle,
+  theme: categoryThemes[handle as keyof typeof categoryThemes],
+}))
 
 export const HomeCategories = async ({ heading }: { heading: string }) => {
   return (

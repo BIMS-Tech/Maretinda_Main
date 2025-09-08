@@ -52,9 +52,36 @@ export async function GET(
   res: MedusaResponse
 ): Promise<void> {
   // For now, return mock data until DFT module is registered
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
   const mockData = {
-    dft_generations: [],
-    count: 0,
+    dft_generations: [
+      {
+        id: "dft_gen_" + today.getTime(),
+        batch_id: "DFT_" + today.toISOString().slice(0, 10).replace(/-/g, ''),
+        status: "generated",
+        generation_date: today.toISOString(),
+        total_amount: 285750.00,
+        transaction_count: 42,
+        currency: "PHP",
+        file_name: `DFT_${today.toISOString().slice(0, 10).replace(/-/g, '')}_MARETINDA.txt`,
+        generated_by: "admin"
+      },
+      {
+        id: "dft_gen_" + yesterday.getTime(),
+        batch_id: "DFT_" + yesterday.toISOString().slice(0, 10).replace(/-/g, ''),
+        status: "processed",
+        generation_date: yesterday.toISOString(),
+        total_amount: 192450.00,
+        transaction_count: 28,
+        currency: "PHP",
+        file_name: `DFT_${yesterday.toISOString().slice(0, 10).replace(/-/g, '')}_MARETINDA.txt`,
+        generated_by: "admin"
+      }
+    ],
+    count: 2,
     offset: 0,
     limit: 20
   }

@@ -91,17 +91,21 @@ export const DftGenerationList = () => {
       <Container className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-semibold">DFT Generations</h2>
+            <h2 className="text-lg font-semibold">Daily DFT Generation History</h2>
             <p className="text-ui-fg-subtle text-sm">
-              Manage and download DFT files for vendor payouts
+              Generate daily DFT files for vendor payouts and view processing history
             </p>
           </div>
-          <Button 
-            variant="primary" 
-            onClick={() => setShowGenerateModal(true)}
-          >
-            Generate DFT File
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="primary" 
+              onClick={() => setShowGenerateModal(true)}
+              className="flex items-center gap-2"
+            >
+              <span>📄</span>
+              Generate Today's DFT
+            </Button>
+          </div>
         </div>
 
         {generations.length === 0 ? (

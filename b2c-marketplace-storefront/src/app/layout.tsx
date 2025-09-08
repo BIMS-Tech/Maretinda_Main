@@ -13,15 +13,15 @@ export const metadata: Metadata = {
   title: {
     template: `%s | ${
       process.env.NEXT_PUBLIC_SITE_NAME ||
-      "Mercur B2C Demo - Marketplace Storefront"
+      "Maretinda - Your Complete Marketplace"
     }`,
     default:
       process.env.NEXT_PUBLIC_SITE_NAME ||
-      "Mercur B2C Demo - Marketplace Storefront",
+      "Maretinda - Your Complete Marketplace",
   },
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-    "Mercur B2C Demo - Marketplace Storefront",
+    "Maretinda - From fresh groceries to latest fashion, discover everything you need from trusted local vendors",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
   ),

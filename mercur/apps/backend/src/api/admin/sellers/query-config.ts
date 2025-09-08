@@ -6,7 +6,23 @@ export const adminSellerFields = [
   'name',
   'handle',
   'description',
-  'photo'
+  'photo',
+  'email',
+  'phone',
+  'address_line',
+  'city',
+  'state',
+  'postal_code',
+  'country_code',
+  // DFT fields
+  'dft_bank_name',
+  'dft_bank_code',
+  'dft_swift_code',
+  'dft_bank_address',
+  'dft_beneficiary_name',
+  'dft_beneficiary_code',
+  'dft_beneficiary_address',
+  'dft_account_number'
 ]
 
 export const adminSellerQueryConfig = {
