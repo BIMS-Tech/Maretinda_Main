@@ -1,0 +1,41 @@
+# .gcloudignore - Optimized for GitHub-based Cloud Build
+# When building from GitHub, we only need to exclude build artifacts and local files
+
+.git/
+.gitignore
+
+# Local environment files
+.env
+.env.*
+!.env.template
+
+# Build artifacts and caches
+.turbo/
+.cache/
+.tmp/
+*.log
+
+# Test files
+coverage/
+.nyc_output/
+**/__tests__/
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local development
+uploads/
+
+# We INCLUDE everything else since Cloud Build will clone from GitHub
+# The node_modules and packages are needed for the build
