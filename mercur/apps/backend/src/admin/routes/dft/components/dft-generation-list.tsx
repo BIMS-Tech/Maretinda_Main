@@ -27,11 +27,17 @@ export const DftGenerationList = () => {
     try {
       setIsLoading(true)
       const response = await fetch('/admin/dft')
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch DFT generations: ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('Loaded DFT generations:', data)
       setGenerations(data.dft_generations || [])
     } catch (error) {
       console.error('Error loading DFT generations:', error)
-      toast.error('Failed to load DFT generations')
+      toast.error('Failed to load DFT generations. Please check console for details.')
     } finally {
       setIsLoading(false)
     }
@@ -149,7 +155,7 @@ export const DftGenerationList = () => {
                   </Table.Cell>
                   <Table.Cell>{generation.transaction_count}</Table.Cell>
                   <Table.Cell>
-                    {generation.currency} {generation.total_amount.toFixed(2)}
+                    {generation.currency} {Number(generation.total_amount || 0).toFixed(2)}
                   </Table.Cell>
                   <Table.Cell>
                     <div className="flex gap-2">

@@ -48,6 +48,29 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       
       console.log(`[Admin GiyaPay Download] ✅ Sending DFT report: ${filename}`)
       return res.send(dftContent)
+    } else if (format === 'tama') {
+      // Generate TAMA report
+      const { fundingAccount } = req.query
+      const tamaContent = await giyaPayService.generateTAMAReport({
+        take: parseInt(take as string) || 1000,
+        skip: parseInt(skip as string) || 0,
+        dateFrom: dateFrom as string,
+        dateTo: dateTo as string,
+        fundingAccount: fundingAccount as string,
+        order: { createdAt: 'DESC' }
+      })
+      
+      const date = new Date().toISOString().slice(2, 10).replace(/-/g, '') // YYMMDD format
+      const filename = `TAMA - ${date}.txt`
+      
+      res.set({
+        'Content-Type': 'text/plain',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-cache'
+      })
+      
+      console.log(`[Admin GiyaPay Download] ✅ Sending TAMA report: ${filename}`)
+      return res.send(tamaContent)
     } else {
       // Generate JSON report (default)
       const transactions = await giyaPayService.getTransactionsForAPI({
@@ -80,6 +103,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   return GET(req, res) // Support both GET and POST
 }
+
+
+
+
+
 
 
 

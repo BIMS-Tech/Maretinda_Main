@@ -12,7 +12,7 @@ export const POST = async (
 ) => {
   try {
     const providerId = req.params.provider
-    const webhookData = req.body
+    const webhookData = req.body as any
 
     console.log(`Webhook received from provider: ${providerId}`, webhookData)
 

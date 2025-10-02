@@ -4,12 +4,21 @@ import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Pencil } from "@medusajs/icons"
 
 export const DftBankSection = ({ seller }: { seller: StoreVendor }) => {
-  // Check if DFT information is complete
+  // Check if DFT information is complete - these are the minimum required fields
   const isDftComplete = seller.dft_bank_name && 
-                       seller.dft_bank_code && 
                        seller.dft_swift_code && 
                        seller.dft_account_number &&
                        seller.dft_beneficiary_name
+  
+  // Show which fields are missing for debugging
+  console.log('DFT Status Check:', {
+    seller: seller.name,
+    dft_bank_name: !!seller.dft_bank_name,
+    dft_swift_code: !!seller.dft_swift_code,
+    dft_account_number: !!seller.dft_account_number,
+    dft_beneficiary_name: !!seller.dft_beneficiary_name,
+    isDftComplete
+  })
 
   return (
     <Container className="divide-y p-0">

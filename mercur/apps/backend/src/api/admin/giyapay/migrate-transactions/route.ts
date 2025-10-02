@@ -22,7 +22,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     try {
       pgConnection = req.scope.resolve("__pg_connection__") || 
                      req.scope.resolve("pgConnection") ||
-                     req.scope.container.__pg_connection__
+                     (req.scope as any).container?.__pg_connection__
       console.log('[Admin GiyaPay Migration] ✅ Database connection found')
     } catch (connectionError) {
       console.log('[Admin GiyaPay Migration] ❌ Database connection failed:', connectionError.message)
@@ -74,6 +74,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     })
   }
 }
+
+
+
+
 
 
 

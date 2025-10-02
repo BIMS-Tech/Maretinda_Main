@@ -204,11 +204,16 @@ export const generateDftFileStep = createStep(
       const transactions = input.sellers.map(seller => {
         // Find corresponding payout for seller
         const payout = input.payouts.find(p => p.seller_id === seller.id)
-        const amount = payout?.amount || 50000 // Default demo amount
+        
+        if (!payout) {
+          throw new Error(`No payout found for seller ${seller.name} (${seller.id})`)
+        }
+        
+        const amount = payout.amount
         
         return {
           seller_id: seller.id,
-          payout_id: payout?.id || `demo_payout_${seller.id}`,
+          payout_id: payout.id,
           amount: amount,
           currency: "PHP",
           source_account: input.source_account,

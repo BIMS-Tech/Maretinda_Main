@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import GiyaPayService from "../../../../services/giyapay";
-import { GiyaPayConfig } from "../../../../models/giyapay-config";
-import { GiyaPayTransaction } from "../../../../models/giyapay-transaction";
+import GiyaPayConfig from "../../../../models/giyapay-config";
+import GiyaPayTransaction from "../../../../models/giyapay-transaction";
 
 export async function GET(
   req: MedusaRequest,
@@ -10,8 +10,8 @@ export async function GET(
   try {
     // Test our service without authentication
     const giyaPay = new GiyaPayService({
-      giyapayConfigRepository: req.scope.resolve("manager").getRepository("GiyaPayConfig"),
-      giyapayTransactionRepository: req.scope.resolve("manager").getRepository("GiyaPayTransaction")
+      giyapayConfigRepository: (req.scope.resolve("manager") as any).getRepository("GiyaPayConfig"),
+      giyapayTransactionRepository: (req.scope.resolve("manager") as any).getRepository("GiyaPayTransaction")
     });
     
     // Try to get configuration from database

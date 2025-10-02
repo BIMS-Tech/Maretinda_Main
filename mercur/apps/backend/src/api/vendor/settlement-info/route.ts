@@ -12,7 +12,7 @@ export const GET = async (
       return res.status(401).json({ error: "Unauthorized" })
     }
 
-    const seller = user.seller
+    const seller = (user as any).seller
     if (!seller) {
       return res.status(404).json({ error: "Seller not found" })
     }

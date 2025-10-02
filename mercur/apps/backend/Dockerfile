@@ -42,15 +42,21 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 medusa
 RUN adduser --system --uid 1001 medusa
 
-# Ensure the medusa user owns the backend folder
-RUN mkdir -p /app/apps/backend/static
-RUN chown -R medusa:medusa /app/apps/backend
+# Create necessary directories and set permissions
+RUN mkdir -p /app/apps/backend/static /app/apps/backend/uploads
+RUN chown -R medusa:medusa /app
 
 USER medusa
 COPY --from=installer /app .
 
 WORKDIR /app/apps/backend
 
-RUN yarn db:migrate
+# Expose port
+EXPOSE 9000
 
-CMD ["yarn", "start"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:9000/health || exit 1
+
+# Run migrations and start the server
+CMD ["sh", "-c", "yarn db:migrate && yarn start"]

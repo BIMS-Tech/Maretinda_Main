@@ -2,6 +2,8 @@
  * Enhanced shipping interfaces for vendor-specific credential management
  */
 
+import { UnifiedQuotationRequest, UnifiedQuotationResponse } from './shipping-provider.interface'
+
 export interface VendorShippingCredentials {
   vendorId: string
   providerId: string
@@ -74,6 +76,9 @@ export interface VendorShippingQuotationResponse extends UnifiedQuotationRespons
 
 // Re-export base interfaces
 export * from './shipping-provider.interface'
+
+
+
 
 
 

@@ -1055,6 +1055,171 @@ class GiyaPayService extends MedusaService({}) {
       ]
     }
   }
+
+  /**
+   * Generate TAMA format for Metrobank settlements
+   */
+  async generateTAMAReport(options: { 
+    take?: number; 
+    skip?: number; 
+    order?: { createdAt?: 'ASC' | 'DESC' }; 
+    dateFrom?: string;
+    dateTo?: string;
+    fundingAccount?: string;
+  } = {}): Promise<string> {
+    try {
+      let pgConnection
+      try {
+        pgConnection = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+        console.log('[GiyaPayService] ✅ TAMA: Standard container resolve succeeded')
+      } catch (containerError) {
+        console.log('[GiyaPayService] TAMA: Standard container failed, trying direct access...')
+        if (this.container.__pg_connection__) {
+          pgConnection = this.container.__pg_connection__
+          console.log('[GiyaPayService] ✅ TAMA: Direct __pg_connection__ found')
+        } else {
+          console.log('[GiyaPayService] ❌ TAMA: No pgConnection found')
+          throw new Error('Database connection not available')
+        }
+      }
+
+      // Build filters for Metrobank transactions only
+      let whereClause = `WHERE gt.status = 'SUCCESS' 
+                         AND s.dft_bank_name ILIKE '%metrobank%' 
+                         AND s.dft_account_number IS NOT NULL 
+                         AND s.dft_beneficiary_name IS NOT NULL`
+      const queryParams: any[] = []
+      
+      if (options.dateFrom) {
+        whereClause += ' AND gt.created_at >= ?'
+        queryParams.push(options.dateFrom)
+      }
+      
+      if (options.dateTo) {
+        whereClause += ' AND gt.created_at <= ?'
+        queryParams.push(options.dateTo)
+      }
+      
+      // Build order clause
+      const orderClause = options.order?.createdAt === 'ASC' ? 'ORDER BY gt.created_at ASC' : 'ORDER BY gt.created_at DESC'
+      
+      // Build limit clause
+      let limitClause = ''
+      if (options.take) {
+        limitClause = `LIMIT ${options.take}`
+        if (options.skip) {
+          limitClause += ` OFFSET ${options.skip}`
+        }
+      }
+
+      const query = `
+        SELECT 
+          gt.id,
+          gt.reference_number,
+          gt.vendor_id,
+          gt.vendor_name,
+          gt.amount,
+          gt.created_at,
+          gt.description,
+          s.dft_beneficiary_name,
+          s.dft_account_number,
+          s.dft_bank_name
+        FROM giyapay_transactions gt
+        LEFT JOIN seller s ON s.id = gt.vendor_id
+        ${whereClause}
+        ${orderClause}
+        ${limitClause}
+      `
+
+      console.log('[GiyaPayService] TAMA Query:', query)
+      console.log('[GiyaPayService] TAMA Params:', queryParams)
+
+      const result = await pgConnection.raw(query, queryParams)
+      const transactions = result.rows || result || []
+
+      console.log(`[GiyaPayService] TAMA: Found ${transactions.length} Metrobank transactions`)
+
+      if (transactions.length === 0) {
+        console.log('[GiyaPayService] ⚠️ No Metrobank transactions found for TAMA report')
+        return ''
+      }
+
+      const tamaLines: string[] = []
+      const fundingAccount = options.fundingAccount || "2467246570570" // Default BIMS account
+      const transactionDate = new Date()
+
+      // Helper functions for TAMA formatting
+      const formatDate = (date: Date): string => {
+        const month = (date.getMonth() + 1).toString().padStart(2, '0')
+        const day = date.getDate().toString().padStart(2, '0')
+        const year = date.getFullYear()
+        return `${month}/${day}/${year}`
+      }
+
+      const formatTime = (date: Date): string => {
+        let hours = date.getHours()
+        const minutes = date.getMinutes().toString().padStart(2, '0')
+        const ampm = hours >= 12 ? 'PM' : 'AM'
+        hours = hours % 12
+        hours = hours ? hours : 12 // 0 should be 12
+        return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
+      }
+
+      const formatAmount = (amount: number): string => {
+        // Convert to centavos and format with decimal point
+        const centavos = Math.round(amount * 100)
+        const formatted = centavos.toString()
+        if (formatted.length <= 2) {
+          return `0.${formatted.padStart(2, '0')}`
+        }
+        return `${formatted.slice(0, -2)}.${formatted.slice(-2)}`
+      }
+
+      // Generate header record (H)
+      const formattedDate = formatDate(transactionDate)
+      const formattedTime = formatTime(transactionDate)
+      tamaLines.push(`H|${fundingAccount}|${formattedDate}|${formattedTime}`)
+
+      // Generate detail records (D) for each transaction
+      for (const transaction of transactions) {
+        const amount = parseFloat(transaction.amount)
+        const formattedAmount = formatAmount(amount)
+        
+        // Parse beneficiary name (assume format: "LAST NAME, FIRST NAME" or "FIRST NAME LAST NAME")
+        let lastName = ''
+        let firstName = ''
+        
+        if (transaction.dft_beneficiary_name) {
+          const nameParts = transaction.dft_beneficiary_name.trim().split(/[,\s]+/)
+          if (nameParts.length >= 2) {
+            if (transaction.dft_beneficiary_name.includes(',')) {
+              // Format: "LAST, FIRST MIDDLE"
+              lastName = nameParts[0].trim()
+              firstName = nameParts.slice(1).join(' ').trim()
+            } else {
+              // Format: "FIRST MIDDLE LAST" - assume last word is last name
+              lastName = nameParts[nameParts.length - 1]
+              firstName = nameParts.slice(0, -1).join(' ')
+            }
+          } else {
+            // Single name - use as first name
+            firstName = transaction.dft_beneficiary_name.trim()
+          }
+        }
+
+        // TAMA format: D||Reference Number|Last Name|First Name||Destination Account|Amount|Remarks
+        const detailRecord = `D||${transaction.reference_number}|${lastName}|${firstName}||${transaction.dft_account_number}|${formattedAmount}|${transaction.description || 'MARETINDA SETTLEMENT'}`
+        tamaLines.push(detailRecord)
+      }
+
+      console.log(`[GiyaPayService] ✅ TAMA report generated successfully (${tamaLines.length} lines)`)
+      return tamaLines.join('\n')
+      
+    } catch (error) {
+      console.error('[GiyaPayService] ❌ TAMA report generation failed:', error)
+      throw new Error(`TAMA report generation failed: ${error.message}`)
+    }
+  }
 }
 
 export default GiyaPayService

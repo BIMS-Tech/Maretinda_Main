@@ -299,18 +299,23 @@ export class VendorShippingService {
       priority: 1,
       configuration: credentials.credentials,
       supportedMarkets: ['PH'],
-      supportedServiceTypes: ['standard'],
-      capabilities: {
-        sameDay: true,
-        express: true,
-        international: false,
-        realTimeTracking: true,
-        proofOfDelivery: true,
-        multipleDestinations: true
-      }
+      supportedServiceTypes: ['standard']
     })
 
-    return await provider.getQuotation(request)
+    // Transform VendorShippingQuotationRequest to UnifiedQuotationRequest
+    const unifiedRequest = {
+      origin: request.origin,
+      destinations: request.destinations,
+      shipment: request.shipment,
+      serviceType: request.serviceType,
+      specialRequests: request.specialRequests,
+      scheduledPickup: request.scheduledPickup,
+      metadata: request.metadata,
+      market: request.market,
+      language: request.language
+    }
+    
+    return await provider.getQuotation(unifiedRequest)
   }
 
   private async getQuotationWithMarketplaceCredentials(

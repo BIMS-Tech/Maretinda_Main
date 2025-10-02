@@ -5,7 +5,7 @@ export const POST = async (
   req: MedusaRequest,
   res: MedusaResponse
 ) => {
-  const webhookData = req.body
+  const webhookData = req.body as any
 
   console.log('Lalamove webhook received:', webhookData)
 

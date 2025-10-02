@@ -62,10 +62,10 @@ export const POST = async (
     const shippingService = new MultiVendorShippingService(req.scope)
     const configManager = ShippingConfigManager.getInstance()
 
-    const providerConfig = req.validatedBody
+    const providerConfig = req.validatedBody as any
 
     // Validate configuration
-    const validation = configManager.validateConfiguration(providerConfig)
+    const validation = configManager.validateConfiguration(providerConfig as any)
     if (!validation.valid) {
       return res.status(400).json({
         message: 'Invalid provider configuration',
@@ -74,7 +74,7 @@ export const POST = async (
     }
 
     // Configure the provider
-    await shippingService.configureProvider(providerConfig)
+    await shippingService.configureProvider(providerConfig as any)
 
     return res.status(201).json({
       message: 'Provider configured successfully',

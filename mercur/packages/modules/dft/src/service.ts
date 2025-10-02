@@ -32,7 +32,7 @@ class DftModuleService extends MedusaService({
     data: CreateDftConfigurationDTO,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.createDftConfigurations(data, sharedContext)
+    return await this.create(data, sharedContext)
   }
 
   @InjectTransactionManager()
@@ -41,7 +41,7 @@ class DftModuleService extends MedusaService({
     data: UpdateDftConfigurationDTO,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.updateDftConfigurations(id, data, sharedContext)
+    return await this.update(id, data, sharedContext)
   }
 
   @InjectTransactionManager()
@@ -49,7 +49,7 @@ class DftModuleService extends MedusaService({
     seller_id: string,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    const configurations = await this.listDftConfigurations(
+    const configurations = await this.list(
       { seller_id },
       {},
       sharedContext
@@ -63,7 +63,7 @@ class DftModuleService extends MedusaService({
     verified_by: string,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.updateDftConfigurations(
+    return await this.update(
       id,
       {
         is_verified: true,
@@ -85,7 +85,7 @@ class DftModuleService extends MedusaService({
       generation_date: new Date(),
       status: DftStatus.PENDING
     }
-    return await this.createDftGenerations(generationData, sharedContext)
+    return await this.create(generationData, sharedContext)
   }
 
   @InjectTransactionManager()
@@ -94,7 +94,7 @@ class DftModuleService extends MedusaService({
     data: UpdateDftGenerationDTO,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.updateDftGenerations(id, data, sharedContext)
+    return await this.update(id, data, sharedContext)
   }
 
   @InjectTransactionManager()
@@ -102,7 +102,7 @@ class DftModuleService extends MedusaService({
     id: string,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.updateDftGenerations(
+    return await this.update(
       id,
       {
         status: DftStatus.DOWNLOADED,
@@ -122,7 +122,7 @@ class DftModuleService extends MedusaService({
       ...data,
       status: DftTransactionStatus.PENDING
     }
-    return await this.createDftTransactions(transactionData, sharedContext)
+    return await this.create(transactionData, sharedContext)
   }
 
   @InjectTransactionManager()
@@ -130,7 +130,7 @@ class DftModuleService extends MedusaService({
     dft_generation_id: string,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.listDftTransactions(
+    return await this.list(
       { dft_generation_id },
       { order: { line_number: "ASC" } },
       sharedContext
@@ -144,7 +144,7 @@ class DftModuleService extends MedusaService({
     error_message?: string,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.updateDftTransactions(
+    return await this.update(
       id,
       { status, error_message },
       sharedContext

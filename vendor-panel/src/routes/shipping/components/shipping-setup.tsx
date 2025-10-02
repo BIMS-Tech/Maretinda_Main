@@ -17,6 +17,13 @@ interface ShippingProvider {
   isVendorConfigurable: boolean
   requiresCredentials: boolean
   setupInstructions: string[]
+  credentialLinks?: {
+    signupUrl: string
+    dashboardUrl: string
+    apiDocsUrl: string
+    supportUrl: string
+  }
+  helpNotes?: string[]
 }
 
 interface VendorShippingSetup {
@@ -37,17 +44,47 @@ const mockSetupData: VendorShippingSetup = {
       capabilities: ["Real-time tracking", "Proof of delivery", "Multiple destinations"],
       markets: ["HK", "SG", "MY", "TH", "PH", "VN"],
       configTemplate: {
-        apiKey: { type: 'string', required: true, description: 'Lalamove API key' },
-        apiSecret: { type: 'string', required: true, description: 'Lalamove API secret' },
-        market: { type: 'string', required: true, description: 'Market code (e.g., MY, SG)' }
+        apiKey: { 
+          type: 'string', 
+          required: true, 
+          description: 'Lalamove API key',
+          helpText: 'Found in Developer Settings > API Keys section',
+          credentialPath: 'Developer Settings → API Keys → Create New API Key'
+        },
+        apiSecret: { 
+          type: 'string', 
+          required: true, 
+          description: 'Lalamove API secret',
+          helpText: 'Generated when you create a new API key',
+          credentialPath: 'Developer Settings → API Keys → Copy Secret (shown once)'
+        },
+        market: { 
+          type: 'string', 
+          required: true, 
+          description: 'Market code (e.g., MY, SG)',
+          helpText: 'Your primary operating market from account settings',
+          example: 'PH, MY, SG, TH'
+        }
       },
       isVendorConfigurable: true,
       requiresCredentials: true,
       setupInstructions: [
-        "Sign up for a Lalamove Partner account",
-        "Complete business verification",
-        "Get API credentials from Partner Portal",
-        "Choose your operating market"
+        "Sign up for a Lalamove Partner account at partner.lalamove.com",
+        "Complete business verification (takes 1-3 business days)",
+        "Access Developer Settings in your partner dashboard",
+        "Generate API credentials and copy both API key and secret"
+      ],
+      credentialLinks: {
+        signupUrl: "https://partner.lalamove.com/register",
+        dashboardUrl: "https://partner.lalamove.com/dashboard",
+        apiDocsUrl: "https://developers.lalamove.com/docs",
+        supportUrl: "https://partner.lalamove.com/support"
+      },
+      helpNotes: [
+        "💡 API credentials are only shown once - save them securely",
+        "📍 Make sure your business address matches your selected market",
+        "⏱️ Business verification typically takes 1-3 business days",
+        "💰 Check rate cards for your market before integration"
       ]
     },
     {
@@ -58,17 +95,47 @@ const mockSetupData: VendorShippingSetup = {
       capabilities: ["Real-time tracking", "Proof of delivery", "Cash on delivery", "Insurance"],
       markets: ["MY", "SG", "TH", "VN", "PH", "ID", "KH"],
       configTemplate: {
-        apiKey: { type: 'string', required: true, description: 'J&T Express API key' },
-        customerCode: { type: 'string', required: true, description: 'Customer code' },
-        region: { type: 'string', required: true, description: 'Operating region' }
+        apiKey: { 
+          type: 'string', 
+          required: true, 
+          description: 'J&T Express API key',
+          helpText: 'Available in Merchant Portal under API Management',
+          credentialPath: 'Merchant Portal → Settings → API Management → Generate API Key'
+        },
+        customerCode: { 
+          type: 'string', 
+          required: true, 
+          description: 'Customer code',
+          helpText: 'Your unique merchant ID provided during onboarding',
+          credentialPath: 'Merchant Portal → Account Info → Customer Code'
+        },
+        region: { 
+          type: 'string', 
+          required: true, 
+          description: 'Operating region',
+          helpText: 'Your primary service region',
+          example: 'PH, MY, SG, TH, VN, ID'
+        }
       },
       isVendorConfigurable: true,
       requiresCredentials: true,
       setupInstructions: [
-        "Register as J&T Express merchant",
-        "Complete business verification",
-        "Obtain API key and customer code",
-        "Set up collection points"
+        "Register as J&T Express merchant at merchant.jtexpress.com",
+        "Submit required business documents for verification",
+        "Wait for account approval (2-5 business days)",
+        "Access API Management section to generate credentials"
+      ],
+      credentialLinks: {
+        signupUrl: "https://merchant.jtexpress.com/register",
+        dashboardUrl: "https://merchant.jtexpress.com/dashboard",
+        apiDocsUrl: "https://api.jtexpress.com/docs",
+        supportUrl: "https://merchant.jtexpress.com/support"
+      },
+      helpNotes: [
+        "📋 Have your business registration documents ready",
+        "🏪 Physical pickup location address is required",
+        "💳 Credit application may be needed for COD services",
+        "📞 Contact local J&T sales team for better rates"
       ]
     },
     {
@@ -79,18 +146,54 @@ const mockSetupData: VendorShippingSetup = {
       capabilities: ["Real-time tracking", "Proof of delivery", "Same-day delivery", "Next-day delivery"],
       markets: ["MY", "SG", "TH", "VN", "PH", "ID"],
       configTemplate: {
-        apiKey: { type: 'string', required: true, description: 'Ninja Van API key' },
-        clientId: { type: 'string', required: true, description: 'Client ID' },
-        clientSecret: { type: 'string', required: true, description: 'Client secret' },
-        region: { type: 'string', required: true, description: 'Operating region' }
+        apiKey: { 
+          type: 'string', 
+          required: true, 
+          description: 'Ninja Van API key',
+          helpText: 'Found in Shipper Portal under Developer Settings',
+          credentialPath: 'Shipper Portal → Settings → Developer → API Keys'
+        },
+        clientId: { 
+          type: 'string', 
+          required: true, 
+          description: 'Client ID',
+          helpText: 'Your application client identifier',
+          credentialPath: 'Shipper Portal → Settings → Developer → Client Credentials'
+        },
+        clientSecret: { 
+          type: 'string', 
+          required: true, 
+          description: 'Client secret',
+          helpText: 'Secret key for authentication (keep confidential)',
+          credentialPath: 'Shipper Portal → Settings → Developer → Client Secret'
+        },
+        region: { 
+          type: 'string', 
+          required: true, 
+          description: 'Operating region',
+          helpText: 'Your primary service market',
+          example: 'PH, MY, SG, TH, VN, ID'
+        }
       },
       isVendorConfigurable: true,
       requiresCredentials: true,
       setupInstructions: [
-        "Sign up as Ninja Van merchant",
-        "Complete merchant onboarding",
-        "Get API credentials from dashboard",
-        "Set up pickup locations"
+        "Register at shipper.ninjavan.co and complete onboarding",
+        "Upload business documents and wait for verification",
+        "Set up pickup locations and contact information",
+        "Access Developer Settings to generate API credentials"
+      ],
+      credentialLinks: {
+        signupUrl: "https://shipper.ninjavan.co/register",
+        dashboardUrl: "https://shipper.ninjavan.co/dashboard",
+        apiDocsUrl: "https://api-docs.ninjavan.co",
+        supportUrl: "https://support.ninjavan.co"
+      },
+      helpNotes: [
+        "🆔 Business registration number is mandatory",
+        "📦 Set up default packaging preferences",
+        "💰 Volume discounts available for high-volume shippers",
+        "🚚 Multiple pickup locations can be configured"
       ]
     }
   ],
@@ -165,6 +268,32 @@ export const ShippingSetup = () => {
           <Text className="text-ui-fg-subtle mt-1">
             Configure your own shipping provider accounts for better rates and control
           </Text>
+        </div>
+      </div>
+
+      {/* Getting Started Guide */}
+      <div className="border-t border-ui-border-base p-6 bg-ui-bg-subtle">
+        <div className="mb-4">
+          <Text className="font-medium text-ui-fg-base mb-2">🚀 Getting Started with Shipping Integration</Text>
+          <Text className="text-sm text-ui-fg-muted mb-4">
+            Each shipping provider requires you to create an account and obtain API credentials. 
+            We've provided direct links and step-by-step guidance to make this process as smooth as possible.
+          </Text>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="p-3 bg-white rounded border">
+            <Text className="font-medium text-blue-600 mb-1">1. Choose Provider</Text>
+            <Text className="text-ui-fg-subtle">Select a shipping provider that operates in your market and meets your needs.</Text>
+          </div>
+          <div className="p-3 bg-white rounded border">
+            <Text className="font-medium text-blue-600 mb-1">2. Get Credentials</Text>
+            <Text className="text-ui-fg-subtle">Use our direct links to sign up and obtain your API keys from the provider's dashboard.</Text>
+          </div>
+          <div className="p-3 bg-white rounded border">
+            <Text className="font-medium text-blue-600 mb-1">3. Configure & Test</Text>
+            <Text className="text-ui-fg-subtle">Enter your credentials, test the connection, and start using competitive shipping rates.</Text>
+          </div>
         </div>
       </div>
 
@@ -291,6 +420,19 @@ export const ShippingSetup = () => {
                       </>
                     )}
                   </Button>
+                  
+                  {/* Quick link to provider signup */}
+                  {status.status === 'not_configured' && provider.credentialLinks && (
+                    <a
+                      href={provider.credentialLinks.signupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded border border-blue-200 flex items-center gap-1"
+                      title={`Sign up for ${provider.name}`}
+                    >
+                      🔗
+                    </a>
+                  )}
                 </div>
               </div>
             )
@@ -381,17 +523,76 @@ const ProviderConfigModal = ({
         </div>
 
         <div className="p-6">
+          {/* Quick Links Section */}
+          {provider.credentialLinks && (
+            <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+              <Text className="font-medium text-blue-900 mb-3">🔗 Quick Access Links</Text>
+              <div className="grid grid-cols-2 gap-2">
+                <a 
+                  href={provider.credentialLinks.signupUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded text-sm text-blue-700 hover:bg-blue-100 border border-blue-300"
+                >
+                  📝 Sign Up Portal
+                </a>
+                <a 
+                  href={provider.credentialLinks.dashboardUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded text-sm text-blue-700 hover:bg-blue-100 border border-blue-300"
+                >
+                  📊 Dashboard
+                </a>
+                <a 
+                  href={provider.credentialLinks.apiDocsUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded text-sm text-blue-700 hover:bg-blue-100 border border-blue-300"
+                >
+                  📚 API Documentation
+                </a>
+                <a 
+                  href={provider.credentialLinks.supportUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 p-2 rounded text-sm text-blue-700 hover:bg-blue-100 border border-blue-300"
+                >
+                  🆘 Get Support
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Setup Instructions */}
           <div className="mb-6 p-4 rounded-lg bg-ui-bg-subtle">
-            <Text className="font-medium mb-2">Setup Instructions:</Text>
-            <ol className="space-y-1">
+            <Text className="font-medium mb-3">📋 Setup Instructions</Text>
+            <ol className="space-y-2">
               {provider.setupInstructions.map((instruction, index) => (
-                <li key={index} className="text-sm text-ui-fg-muted">
-                  {index + 1}. {instruction}
+                <li key={index} className="text-sm text-ui-fg-muted flex items-start gap-2">
+                  <span className="bg-ui-bg-base text-ui-fg-base rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                    {index + 1}
+                  </span>
+                  <span>{instruction}</span>
                 </li>
               ))}
             </ol>
           </div>
+
+          {/* Help Notes */}
+          {provider.helpNotes && provider.helpNotes.length > 0 && (
+            <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+              <Text className="font-medium text-green-900 mb-3">💡 Helpful Tips</Text>
+              <div className="space-y-2">
+                {provider.helpNotes.map((note, index) => (
+                  <div key={index} className="text-sm text-green-800 flex items-start gap-2">
+                    <span className="flex-shrink-0 mt-0.5">•</span>
+                    <span>{note}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Configuration Form */}
           <Form {...form}>
@@ -403,10 +604,29 @@ const ProviderConfigModal = ({
                   control={form.control}
                   render={({ field }) => (
                     <Form.Item>
-                      <Form.Label>
+                      <Form.Label className="flex items-center gap-2">
                         {config.description}
                         {config.required && <span className="text-red-500 ml-1">*</span>}
                       </Form.Label>
+                      
+                      {/* Where to find this credential */}
+                      {config.credentialPath && (
+                        <div className="mb-2 p-2 rounded bg-yellow-50 border border-yellow-200">
+                          <Text className="text-xs text-yellow-800">
+                            📍 <strong>Find this at:</strong> {config.credentialPath}
+                          </Text>
+                        </div>
+                      )}
+                      
+                      {/* Help text */}
+                      {config.helpText && (
+                        <div className="mb-2">
+                          <Text className="text-xs text-ui-fg-subtle">
+                            💡 {config.helpText}
+                          </Text>
+                        </div>
+                      )}
+                      
                       <Form.Control>
                         <div className="relative">
                           <Input

@@ -5,11 +5,23 @@ export const vendorSellerFields = [
   'handle',
   'description',
   'photo',
+  'email',
+  'phone',
   'address_line',
   'city',
+  'state',
   'postal_code',
   'country_code',
-  'tax_id'
+  'tax_id',
+  // DFT fields for bank information
+  'dft_bank_name',
+  'dft_bank_code',
+  'dft_swift_code',
+  'dft_bank_address',
+  'dft_beneficiary_name',
+  'dft_beneficiary_code',
+  'dft_beneficiary_address',
+  'dft_account_number'
 ]
 
 export const vendorSellerQueryConfig = {

@@ -50,7 +50,7 @@ export const PayoutsList = () => {
         <div>
           <Heading>Payout History</Heading>
           <Text className="text-ui-fg-subtle" size="small">
-            View your automated daily payouts processed by the admin
+            Automated payouts via DFT • T+1 settlement • {payouts.length} total payouts
           </Text>
         </div>
         <div className="flex items-center gap-x-2">
@@ -60,8 +60,47 @@ export const PayoutsList = () => {
             onClick={() => navigate("/payouts/account")}
           >
             <PencilSquare />
-            Payout Account
+            Bank Setup
           </Button>
+        </div>
+      </div>
+
+      {/* Payout Summary */}
+      <div className="px-6 py-4 bg-ui-bg-subtle">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex flex-col gap-1">
+            <Text size="small" className="text-ui-fg-subtle">Total Paid Out</Text>
+            <Text size="large" weight="plus" className="text-green-600">
+              ₱{payouts
+                .filter(p => p.status === 'completed' || p.status === 'paid')
+                .reduce((sum, p) => sum + (p.amount / 100), 0)
+                .toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+            </Text>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Text size="small" className="text-ui-fg-subtle">Processing</Text>
+            <Text size="large" weight="plus" className="text-blue-600">
+              ₱{payouts
+                .filter(p => p.status === 'processing')
+                .reduce((sum, p) => sum + (p.amount / 100), 0)
+                .toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+            </Text>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Text size="small" className="text-ui-fg-subtle">Total Orders</Text>
+            <Text size="large" weight="plus">
+              {payouts.reduce((sum, p) => sum + (p.metadata?.order_count || 0), 0)}
+            </Text>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Text size="small" className="text-ui-fg-subtle">Account Status</Text>
+            <div className="flex items-center gap-2">
+              <StatusBadge color={getAccountStatusColor(payout_account?.status || 'inactive')}>
+                {payout_account?.status === 'active' ? 'Ready' : 
+                 payout_account?.status === 'pending' ? 'Pending' : 'Setup Required'}
+              </StatusBadge>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -147,9 +186,9 @@ export const PayoutsList = () => {
           <Table>
             <Table.Header>
               <Table.Row>
-                <Table.HeaderCell>ID</Table.HeaderCell>
+                <Table.HeaderCell>Reference</Table.HeaderCell>
                 <Table.HeaderCell>Amount</Table.HeaderCell>
-                <Table.HeaderCell>Currency</Table.HeaderCell>
+                <Table.HeaderCell>Details</Table.HeaderCell>
                 <Table.HeaderCell>Status</Table.HeaderCell>
                 <Table.HeaderCell>Date</Table.HeaderCell>
               </Table.Row>
@@ -158,25 +197,69 @@ export const PayoutsList = () => {
               {payouts.map((payout: any) => (
                 <Table.Row key={payout.id}>
                   <Table.Cell>
-                    <span className="font-mono text-xs">{payout.id?.slice(-8)}</span>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-xs font-medium">
+                        {payout.metadata?.reference || payout.id?.slice(-8)}
+                      </span>
+                      <span className="text-xs text-ui-fg-subtle">
+                        {payout.metadata?.processing_type === 'automated_weekly' ? 'Weekly Batch' : 
+                         payout.metadata?.processing_type === 'automated_daily' ? 'Daily Batch' : 
+                         'Manual'}
+                      </span>
+                    </div>
                   </Table.Cell>
                   <Table.Cell>
-                    <span className="font-medium">
-                      ₱{(payout.amount / 100).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">
+                        ₱{(payout.amount / 100).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                      </span>
+                      <Badge size="2xsmall" className="w-fit">{payout.currency?.toUpperCase()}</Badge>
+                    </div>
                   </Table.Cell>
                   <Table.Cell>
-                    <Badge size="2xsmall">{payout.currency?.toUpperCase()}</Badge>
+                    <div className="flex flex-col gap-1 text-xs">
+                      {payout.metadata?.order_count > 0 && (
+                        <span className="text-ui-fg-subtle">
+                          {payout.metadata.order_count} order{payout.metadata.order_count !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {payout.metadata?.gross_amount && (
+                        <span className="text-ui-fg-subtle">
+                          Gross: ₱{(payout.metadata.gross_amount / 100).toFixed(2)}
+                        </span>
+                      )}
+                      {payout.metadata?.platform_fee && (
+                        <span className="text-ui-fg-subtle">
+                          Fee: ₱{(payout.metadata.platform_fee / 100).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
                   </Table.Cell>
                   <Table.Cell>
                     <StatusBadge color={getPayoutStatusColor(payout.status)}>
-                      {payout.status}
+                      {payout.status === 'completed' ? 'Paid' : 
+                       payout.status === 'processing' ? 'Processing' : 
+                       payout.status}
                     </StatusBadge>
                   </Table.Cell>
                   <Table.Cell>
-                    <span className="text-ui-fg-subtle">
-                      {new Date(payout.created_at).toLocaleDateString('en-PH')}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-ui-fg-subtle text-sm">
+                        {new Date(payout.created_at).toLocaleDateString('en-PH', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </span>
+                      {payout.metadata?.week_start && (
+                        <span className="text-xs text-ui-fg-muted">
+                          Week of {new Date(payout.metadata.week_start).toLocaleDateString('en-PH', {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      )}
+                    </div>
                   </Table.Cell>
                 </Table.Row>
               ))}

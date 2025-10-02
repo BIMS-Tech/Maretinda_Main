@@ -96,11 +96,11 @@ export const PayoutAccount = () => {
 
   const isPending = isUpdatingMe || isCreatingAccount
 
-  // Check if DFT information is complete
+  // Check if DFT information is complete - only check required fields
   const hasDftInfo = seller?.dft_bank_name && 
-                    seller?.dft_bank_code && 
                     seller?.dft_swift_code && 
-                    seller?.dft_account_number
+                    seller?.dft_account_number &&
+                    seller?.dft_beneficiary_name
 
   // Debug current seller DFT status
   console.log("🔍 Current seller DFT info:", {

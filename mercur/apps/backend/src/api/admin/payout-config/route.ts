@@ -59,6 +59,7 @@ export const PUT = async (
   res: MedusaResponse
 ) => {
   try {
+    const body = req.body as any
     const {
       subscription_fee_monthly,
       subscription_fee_per_transaction,
@@ -70,7 +71,7 @@ export const PUT = async (
       auto_settlement,
       subscription_billing_day,
       grace_period_days
-    } = req.body
+    } = body
 
     // Validate input
     if (subscription_fee_monthly !== undefined && subscription_fee_monthly < 0) {

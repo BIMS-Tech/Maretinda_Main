@@ -15,15 +15,15 @@ export async function GET(
     
     // Get vendor ID from authenticated user - try multiple possible sources
     const vendorId = req.auth_context?.actor_id || 
-                     req.user?.id || 
-                     req.auth_user?.member_id || 
-                     req.auth_user?.id ||
-                     req.user?.member_id
+                     (req.user as any)?.id ||
+                     (req as any).auth_user?.member_id ||
+                     (req as any).auth_user?.id ||
+                     (req.user as any)?.member_id
     
     console.log('[Vendor GiyaPay Transactions] Auth debug:', {
       auth_context: req.auth_context,
       user: req.user,
-      auth_user: req.auth_user,
+      auth_user: (req as any).auth_user,
       extractedVendorId: vendorId
     })
     

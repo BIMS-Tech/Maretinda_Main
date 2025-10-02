@@ -5,7 +5,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     console.log('[Vendor GiyaPay Download] Starting report generation')
     
     // Get vendor ID from authenticated user
-    const vendor = req.scope.resolve("auth_user") || req.auth_user
+    const vendor = req.scope.resolve("auth_user") || (req as any).auth_user
     const vendorId = vendor?.member_id || vendor?.id
     
     if (!vendorId) {
@@ -93,6 +93,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   return GET(req, res) // Support both GET and POST
 }
+
+
+
+
 
 
 

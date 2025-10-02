@@ -460,6 +460,38 @@ export function MultiVendorShippingDashboard() {
         </div>
       </div>
 
+      {/* Quick Help Section for New Users */}
+      {(!ordersData?.orders || ordersData.orders.length === 0) && activeTab === 'orders' && (
+        <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200">
+          <div className="flex items-start gap-3">
+            <div className="p-2 bg-blue-100 rounded">
+              <TruckFast className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <Text className="font-medium text-blue-900 mb-2">🚀 Setup Your Shipping Providers</Text>
+              <Text className="text-sm text-blue-800 mb-3">
+                Connect your shipping provider accounts (Lalamove, J&T Express, Ninja Van) to get the best rates and delivery options.
+                We'll guide you through the credential setup process.
+              </Text>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setActiveTab('providers')}
+                  className="bg-white border-blue-200 text-blue-700 hover:bg-blue-50"
+                >
+                  <CogSixTooth className="w-4 h-4 mr-1" />
+                  Configure Providers
+                </Button>
+                <Text className="text-xs text-blue-600 self-center">
+                  Direct links to provider dashboards included
+                </Text>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <Tabs.List>
           <Tabs.Trigger value="orders">

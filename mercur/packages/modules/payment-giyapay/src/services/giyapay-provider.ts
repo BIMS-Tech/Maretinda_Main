@@ -301,7 +301,7 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       const data = input.data as any
       
       // Extract vendor information from context or payment data
-      const context = input.context || {}
+      const context = input.context as any || {}
       const vendorId = context.vendor_id || data?.vendor_id || (data?.order_id && data?.order_id.split('_')[1]) || null
       const vendorName = context.vendor_name || data?.vendor_name || undefined
       
