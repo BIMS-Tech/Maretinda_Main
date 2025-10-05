@@ -28,6 +28,7 @@
     "lint:fix": "eslint ./src --fix ",
     "generate:oas": "medusa-oas oas --type combined --paths ./src/api"
   },
+  "main": "src/index.js",
   "engines": {
     "node": "20"
   },
