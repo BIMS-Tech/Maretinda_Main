@@ -69,7 +69,7 @@ const ProductsListing = ({ locale }: { locale?: string }) => {
       countryCode: locale,
       queryParams: {
         fields:
-          "*variants.calculated_price,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id",
+          "*variants.calculated_price,+variants.inventory_quantity,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id",
       },
     }).then(({ response }) => {
       setProd(

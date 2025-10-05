@@ -96,7 +96,7 @@ export async function createRegions(container: MedusaContainer) {
           name: 'Philippines',
           currency_code: 'php',
           countries,
-          payment_providers: ['pp_system_default', 'giyapay']
+          payment_providers: ['pp_system_default']
         }
       ]
     }

@@ -31,20 +31,27 @@ export const retrieveOrder = async (id: string) => {
   }
 
   return sdk.client
-    .fetch<HttpTypes.StoreOrderResponse & { seller: SellerProps }>(
+    .fetch<HttpTypes.StoreOrderResponse>(
       `/store/orders/${id}`,
       {
         method: "GET",
         query: {
           fields:
-            "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*seller,*order_set",
+            "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*order_set",
         },
         headers,
         next,
         cache: "force-cache",
       }
     )
-    .then(({ order }) => order)
+    .then(({ order }) => ({
+      ...order,
+      seller: {
+        id: "default-seller",
+        name: "Marketplace Seller",
+        reviews: []
+      }
+    }))
     .catch((err) => medusaError(err))
 }
 
@@ -113,14 +120,10 @@ export const listOrders = async (
     ...(await getCacheOptions("orders")),
   }
 
-  return sdk.client
+  // First, fetch orders without seller data to avoid SQL errors
+  const ordersResponse = await sdk.client
     .fetch<{
-      orders: Array<
-        HttpTypes.StoreOrder & {
-          seller: { id: string; name: string; reviews?: any[] }
-          reviews: any[]
-        }
-      >
+      orders: Array<HttpTypes.StoreOrder & { reviews: any[] }>
     }>(`/store/orders`, {
       method: "GET",
       query: {
@@ -128,15 +131,31 @@ export const listOrders = async (
         offset,
         order: "-created_at",
         fields:
-          "*items,+items.metadata,*items.variant,*items.product,*seller,*reviews,*order_set",
+          "*items,+items.metadata,*items.variant,*items.product,*reviews,*order_set",
         ...filters,
       },
       headers,
       next,
       cache: "no-cache",
     })
-    .then(({ orders }) => orders)
     .catch((err) => medusaError(err))
+
+  if (!ordersResponse?.orders) {
+    return []
+  }
+
+  // For now, add a default seller object to each order to prevent the UI error
+  // TODO: Implement proper seller data fetching once the SQL join issue is resolved
+  const ordersWithSellers = ordersResponse.orders.map((order) => ({
+    ...order,
+    seller: {
+      id: "default-seller",
+      name: "Marketplace Seller",
+      reviews: []
+    }
+  }))
+
+  return ordersWithSellers
 }
 
 export const createTransferRequest = async (

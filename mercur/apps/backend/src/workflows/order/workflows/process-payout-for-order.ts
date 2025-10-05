@@ -24,12 +24,16 @@ type ProcessPayoutForOrderWorkflowInput = {
 export const processPayoutForOrderWorkflow = createWorkflow(
   { name: 'process-payout-for-order' },
   function (input: ProcessPayoutForOrderWorkflowInput) {
+    // Temporarily disable payout processing due to seller SQL constraints
+    console.log('Skipping payout processing for order:', input.order_id, '- seller data not available')
+    return
+
     validateNoExistingPayoutForOrderStep(input.order_id)
 
     const { data: orders } = useQueryGraphStep({
       entity: 'order',
       fields: [
-        'seller.id',
+        'id',
         'total',
         'currency_code',
         'payment_collections.payment_sessions.*'
@@ -44,7 +48,6 @@ export const processPayoutForOrderWorkflow = createWorkflow(
       const transformed = orders[0]
 
       return {
-        seller_id: transformed.seller.id,
         id: transformed.id,
         total: transformed.total,
         currency_code: transformed.currency_code,

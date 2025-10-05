@@ -14,7 +14,10 @@
   ],
   "scripts": {
     "build": "medusa build && ln -s .medusa/server/public/ public",
+    "postinstall": "medusa build",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:tax-codes": "medusa exec ./src/scripts/seedTaxCodes.ts",
+    "create:admin": "medusa exec ./src/scripts/create-admin.ts",
     "start": "medusa start --types=false",
     "dev": "medusa develop --types=false",
     "db:migrate": "medusa db:migrate",
@@ -25,6 +28,9 @@
     "lint": "eslint ./src ",
     "lint:fix": "eslint ./src --fix ",
     "generate:oas": "medusa-oas oas --type combined --paths ./src/api"
+  },
+  "engines": {
+    "node": "20"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.8.6",

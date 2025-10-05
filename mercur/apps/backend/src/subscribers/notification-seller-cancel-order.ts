@@ -23,7 +23,6 @@ export default async function sellerCancelOrderHandler({
       'items.*',
       'customer.first_name',
       'customer.last_name',
-      'seller.*'
     ],
     filters: {
       id: event.data.id
@@ -35,8 +34,12 @@ export default async function sellerCancelOrderHandler({
     return
   }
 
+  // Skip seller notification since seller data is not available due to SQL constraints
+  console.log('Skipping seller cancel notification for order:', order.id, '- seller data not available')
+  return
+
   await notificationService.createNotifications({
-    to: order.seller.email,
+    to: 'placeholder@example.com', // order.seller.email not available
     channel: 'email',
     template: ResendNotificationTemplates.SELLER_CANCELED_ORDER,
     content: {

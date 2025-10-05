@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       try {
         const authHeaders = await getAuthHeaders()
         const publishable = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY
-        const orderRes = await fetch(`${backendUrl}/store/orders/${payload.order_id}?fields=%2Aseller`, {
+        const orderRes = await fetch(`${backendUrl}/store/orders/${payload.order_id}`, {
           headers: { 'accept': 'application/json', ...(authHeaders || {}), ...(publishable ? { 'x-publishable-api-key': publishable } : {}) }, cache: 'no-store'
         })
         if (orderRes.ok) {

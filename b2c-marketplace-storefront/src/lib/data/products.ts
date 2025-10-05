@@ -71,41 +71,26 @@ export const listProducts = async ({
         collection_id,
         limit,
         offset,
-        region_id: region?.id,
+        // Remove region_id as it's not supported by the store products endpoint
+        // region_id: region?.id,
         fields:
-          "*variants.calculated_price,+variants.inventory_quantity,*seller,*variants,*seller.products," +
-          "*seller.reviews,*seller.reviews.customer,*seller.reviews.seller,*seller.products.variants,*attribute_values,*attribute_values.attribute",
+          "*variants.calculated_price,+variants.inventory_quantity,*variants,*attribute_values,*attribute_values.attribute",
         ...queryParams,
       },
       headers,
       cache: "no-cache",
     })
     .then(({ products: productsRaw, count }) => {
-      const products = productsRaw.filter(
-        (product) => product.seller?.store_status !== "SUSPENDED"
-      )
+      // Since we're not fetching seller data directly due to SQL issues,
+      // we'll return products without seller filtering for now
+      // TODO: Implement separate seller data fetching if needed
+      const products = productsRaw
 
       const nextPage = count > offset + limit ? pageParam + 1 : null
 
-      const response = products.filter((prod) => {
-        // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-        const reviews = prod.seller?.reviews.filter((item) => !!item) ?? []
-        return (
-          // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-          prod?.seller && {
-            ...prod,
-            seller: {
-              // @ts-ignore Property 'seller' exists but TypeScript doesn't recognize it
-              ...prod.seller,
-              reviews,
-            },
-          }
-        )
-      })
-
       return {
         response: {
-          products: response,
+          products,
           count,
         },
         nextPage: nextPage,

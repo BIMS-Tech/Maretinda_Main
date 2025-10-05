@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       try {
         // First try with the same fields format as the working calls
         cart = await sdk.store.cart.retrieve(finalCartId, {
-          fields: "*items,*region,*items.product,*items.variant,*items.variant.options,items.variant.options.option.title,*items.thumbnail,*items.metadata,+items.total,*promotions,+shipping_methods.name,*items.product.seller"
+          fields: "*items,*region,*items.product,*items.variant,*items.variant.options,items.variant.options.option.title,*items.thumbnail,*items.metadata,+items.total,*promotions,+shipping_methods.name"
         }, headers)
         // Check if cart data is wrapped in a 'cart' property
         const actualCart = cart?.cart || cart
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         
         try {
           cart = await sdk.store.cart.retrieve(currentCartId, {
-            fields: "*items,*region,*items.product,*items.variant,*items.variant.options,items.variant.options.option.title,*items.thumbnail,*items.metadata,+items.total,*promotions,+shipping_methods.name,*items.product.seller"
+            fields: "*items,*region,*items.product,*items.variant,*items.variant.options,items.variant.options.option.title,*items.thumbnail,*items.metadata,+items.total,*promotions,+shipping_methods.name"
           }, headers)
           workingCartId = currentCartId
           // Check if cart data is wrapped in a 'cart' property

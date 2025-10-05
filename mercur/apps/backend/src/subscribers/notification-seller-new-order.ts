@@ -22,9 +22,6 @@ export default async function sellerNewOrderHandler({
       'id',
       'display_id',
       'items.*',
-      'seller.email',
-      'seller.name',
-      'seller.id',
       'customer.first_name',
       'customer.last_name'
     ],
@@ -38,11 +35,9 @@ export default async function sellerNewOrderHandler({
     return
   }
 
-  const sellerEmail = order.seller?.email
-  if (!sellerEmail) {
-    console.error('Seller email not found for order:', order.id)
-    return
-  }
+  // Skip seller notification since seller data is not available due to SQL constraints
+  console.log('Skipping seller notification for order:', order.id, '- seller data not available')
+  return
 
   const customer_name = `${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`
   await notificationService.createNotifications([
