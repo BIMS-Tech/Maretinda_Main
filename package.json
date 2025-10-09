@@ -2,30 +2,12 @@
   "name": "maretinda-backend",
   "version": "1.0.0",
   "private": true,
-  "main": "mercur/apps/backend/src/index.js",
+  "workspaces": [
+    "mercur"
+  ],
   "scripts": {
-    "build": "echo 'Build step completed'",
-    "start": "cd mercur/apps/backend && node server.js",
+    "build": "cd mercur && yarn build",
+    "start": "cd mercur/apps/backend && yarn start",
     "dev": "cd mercur/apps/backend && yarn dev"
-  },
-  "dependencies": {
-    "@mercurjs/algolia": "file:./mercur/packages/algolia",
-    "@mercurjs/attribute": "file:./mercur/packages/attribute",
-    "@mercurjs/brand": "file:./mercur/packages/brand",
-    "@mercurjs/commission": "file:./mercur/packages/commission",
-    "@mercurjs/configuration": "file:./mercur/packages/configuration",
-    "@mercurjs/marketplace": "file:./mercur/packages/marketplace",
-    "@mercurjs/order-return-request": "file:./mercur/packages/order-return-request",
-    "@mercurjs/payment-stripe-connect": "file:./mercur/packages/payment-stripe-connect",
-    "@mercurjs/payout": "file:./mercur/packages/payout",
-    "@mercurjs/requests": "file:./mercur/packages/requests",
-    "@mercurjs/resend": "file:./mercur/packages/resend",
-    "@mercurjs/reviews": "file:./mercur/packages/reviews",
-    "@mercurjs/seller": "file:./mercur/packages/seller",
-    "@mercurjs/shipping": "file:./mercur/packages/shipping",
-    "@mercurjs/split-order-payment": "file:./mercur/packages/split-order-payment",
-    "@mercurjs/stripe-tax-provider": "file:./mercur/packages/stripe-tax-provider",
-    "@mercurjs/taxcode": "file:./mercur/packages/taxcode",
-    "@mercurjs/wishlist": "file:./mercur/packages/wishlist"
   }
 }

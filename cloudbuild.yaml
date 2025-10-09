@@ -1,61 +1,45 @@
-# Cloud Build configuration for GitHub-triggered deployments
-# This builds the Medusa backend directly from GitHub source
-
 steps:
-  # Build the backend Docker image from pre-built files
+  # Build the Docker image using the custom Dockerfile
   - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/maretinda-backend:$SHORT_SHA'
-      - '-t'
-      - 'gcr.io/$PROJECT_ID/maretinda-backend:latest'
-      - '-f'
-      - 'gcp-deployment/backend-prebuilt-local.Dockerfile'
-      - '.'
-    id: 'build-backend'
-    timeout: '1200s'
+    args: [
+      'build',
+      '-t', 'europe-west1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda_main/medusa-backend:$COMMIT_SHA',
+      '-f', 'mercur/Dockerfile',
+      '.'
+    ]
+    dir: '.'
 
-  # Push images to Container Registry
+  # Push the image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/maretinda-backend:$SHORT_SHA']
-    id: 'push-sha'
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/maretinda-backend:latest']
-    id: 'push-latest'
+    args: [
+      'push',
+      'europe-west1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda_main/medusa-backend:$COMMIT_SHA'
+    ]
 
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'maretinda-backend'
-      - '--image=gcr.io/$PROJECT_ID/maretinda-backend:$SHORT_SHA'
-      - '--region=$_REGION'
-      - '--platform=managed'
-      - '--allow-unauthenticated'
-      - '--memory=2Gi'
-      - '--cpu=2'
-      - '--max-instances=10'
-      - '--min-instances=0'
-      - '--port=9000'
-      - '--set-env-vars=NODE_ENV=production,ADMIN_CORS=*,STORE_CORS=*,VENDOR_CORS=*,AUTH_CORS=*'
-      - '--timeout=900'
-      - '--set-cloudsql-instances=$_CLOUDSQL_INSTANCE'
-      - '--set-secrets=DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest,COOKIE_SECRET=COOKIE_SECRET:latest,STRIPE_SECRET_API_KEY=STRIPE_SECRET_API_KEY:latest,STRIPE_CONNECTED_ACCOUNTS_WEBHOOK_SECRET=STRIPE_CONNECTED_ACCOUNTS_WEBHOOK_SECRET:latest,ALGOLIA_API_KEY=ALGOLIA_API_KEY:latest,ALGOLIA_APP_ID=ALGOLIA_APP_ID:latest,RESEND_API_KEY=RESEND_API_KEY:latest,RESEND_FROM_EMAIL=RESEND_FROM_EMAIL:latest'
-    id: 'deploy-cloud-run'
+    args: [
+      'run', 'deploy', 'maretinda-main-test-build01',
+      '--image', 'europe-west1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda_main/medusa-backend:$COMMIT_SHA',
+      '--region', 'europe-west1',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '8080',
+      '--memory', '2Gi',
+      '--cpu', '2',
+      '--timeout', '3600',
+      '--concurrency', '80',
+      '--max-instances', '10',
+      '--set-env-vars', 'NODE_ENV=production,PORT=8080'
+    ]
 
-# Substitution variables
-substitutions:
-  _REGION: 'europe-west1'
-  _CLOUDSQL_INSTANCE: 'maretinda-test:europe-west1:maretinda-test'
+images:
+  - 'europe-west1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda_main/medusa-backend:$COMMIT_SHA'
 
-# Build options
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_HIGHCPU_8'
+  diskSizeGb: 100
 
 timeout: '1800s'
-

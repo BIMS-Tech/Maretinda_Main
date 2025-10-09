@@ -66,9 +66,13 @@ scripts/local/
 
 # Include essential files for build
 !package.json
-!scripts/prebuild.js
-# Exclude mercur directory since we're using file: dependencies
-mercur/
+!mercur/package.json
+!mercur/yarn.lock
+!mercur/turbo.json
+!mercur/apps/backend/
+!mercur/packages/
+!mercur/.medusa/
+!mercur/Procfile
 # Exclude other project files that might confuse buildpack
 b2c-marketplace-storefront/
 vendor-panel/
