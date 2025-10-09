@@ -1,0 +1,16 @@
+{
+  "name": "maretinda-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "mercur"
+  ],
+  "scripts": {
+    "build": "cd mercur && yarn build",
+    "start": "cd mercur/apps/backend && yarn start",
+    "dev": "cd mercur/apps/backend && yarn dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}
