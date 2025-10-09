@@ -61,15 +61,6 @@ module.exports = defineConfig({
               apiKey: process.env.STRIPE_SECRET_API_KEY
             }
           },
-          {
-            resolve: '@mercurjs/payment-giyapay',
-            id: 'giyapay',
-            options: {
-              merchantId: process.env.GIYAPAY_MERCHANT_ID,
-              merchantSecret: process.env.GIYAPAY_MERCHANT_SECRET,
-              sandboxMode: process.env.GIYAPAY_SANDBOX_MODE === 'true'
-            }
-          }
         ]
       }
     },
