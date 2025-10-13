@@ -12,9 +12,19 @@
     "rules": {
       "a11y": "warn",
       "correctness": {
+        "noEmptyPattern": "warn",
+        "noNestedComponentDefinitions": "warn",
+        "useExhaustiveDependencies": "warn",
         "useUniqueElementIds": "warn"
       },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
+      },
       "suspicious": {
+        "noArrayIndexKey": "warn",
+        "noAssignInExpressions": "warn",
+        "noImplicitAnyLet": "warn",
+        "useIterableCallbackReturn": "warn",
         "noUnknownAtRules": {
           "level": "off"
         }
