@@ -1,16 +1,21 @@
-import { ProductCard } from "../ProductCard/ProductCard"
-import { HttpTypes } from "@medusajs/types"
+import type { HttpTypes } from '@medusajs/types';
+
+import { ProductCard } from '../ProductCard/ProductCard';
 
 export const ProductsList = ({
-  products,
+	products,
 }: {
-  products: HttpTypes.StoreProduct[]
+	products: HttpTypes.StoreProduct[];
 }) => {
-  return (
-    <>
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} api_product={product} />
-      ))}
-    </>
-  )
-}
+	return (
+		<>
+			{products.map((product) => (
+				<ProductCard
+					api_product={product}
+					key={product.id}
+					product={product}
+				/>
+			))}
+		</>
+	);
+};

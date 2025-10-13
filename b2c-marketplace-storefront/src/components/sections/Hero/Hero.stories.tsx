@@ -1,23 +1,24 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from '@storybook/react';
 
-import { Hero } from "./Hero"
+import { Hero } from './Hero';
 
 const meta: Meta<typeof Hero> = {
-  component: Hero,
-  decorators: (Story) => <Story />,
-}
+	component: Hero,
+	decorators: (Story) => <Story />,
+};
 
-export default meta
-type Story = StoryObj<typeof Hero>
+export default meta;
+type Story = StoryObj<typeof Hero>;
 
 export const FirstStory: Story = {
-  args: {
-    heading: "Snag your style in a flash",
-    paragraph: "Buy, sell, and discover pre-loved from the trendiest brands.",
-    image: "/images/hero/Image.jpg",
-    buttons: [
-      { label: "Buy now", path: "#" },
-      { label: "Sell now", path: "3" },
-    ],
-  },
-}
+	args: {
+		buttons: [
+			{ label: 'Buy now', path: '#' },
+			{ label: 'Sell now', path: '3' },
+		],
+		heading: 'Snag your style in a flash',
+		image: '/images/hero/Image.jpg',
+		paragraph:
+			'Buy, sell, and discover pre-loved from the trendiest brands.',
+	},
+};

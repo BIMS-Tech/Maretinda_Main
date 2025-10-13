@@ -1,72 +1,76 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/atoms"
-import { ChatBox } from "@/components/cells/ChatBox/ChatBox"
-import { Modal } from "@/components/molecules"
-import { useState } from "react"
-import { HttpTypes } from "@medusajs/types"
-import { SellerProps } from "@/types/seller"
-import { MessageIcon } from "@/icons"
+import type { HttpTypes } from '@medusajs/types';
+import { useState } from 'react';
 
-const TALKJS_APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID || ""
+import { Button } from '@/components/atoms';
+import { ChatBox } from '@/components/cells/ChatBox/ChatBox';
+import { Modal } from '@/components/molecules';
+import { MessageIcon } from '@/icons';
+import type { SellerProps } from '@/types/seller';
+
+const TALKJS_APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID || '';
 
 export const Chat = ({
-  user,
-  seller,
-  buttonClassNames,
-  icon,
-  product,
-  subject,
-  order_id,
+	user,
+	seller,
+	buttonClassNames,
+	icon,
+	product,
+	subject,
+	order_id,
 }: {
-  user: HttpTypes.StoreCustomer | null
-  seller: SellerProps
-  buttonClassNames?: string
-  icon?: boolean
-  product?: HttpTypes.StoreProduct
-  subject?: string
-  order_id?: string
+	user: HttpTypes.StoreCustomer | null;
+	seller: SellerProps;
+	buttonClassNames?: string;
+	icon?: boolean;
+	product?: HttpTypes.StoreProduct;
+	subject?: string;
+	order_id?: string;
 }) => {
-  const [modal, setModal] = useState(false)
+	const [modal, setModal] = useState(false);
 
-  if (!TALKJS_APP_ID) {
-    return null
-  }
+	if (!TALKJS_APP_ID) {
+		return null;
+	}
 
-  return (
-    <>
-      <Button
-        variant="tonal"
-        onClick={() => setModal(true)}
-        className={buttonClassNames}
-      >
-        {icon ? <MessageIcon size={20} /> : "Write to seller"}
-      </Button>
-      {modal && (
-        <Modal heading="Chat" onClose={() => setModal(false)}>
-          <div className="px-4">
-            <ChatBox
-              order_id={order_id}
-              product_id={product?.id}
-              subject={subject || product?.title || null}
-              currentUser={{
-                id: user?.id || "",
-                name: `${user?.first_name} ${user?.last_name}` || "",
-                email: user?.email || null,
-                photoUrl: "/talkjs-placeholder.jpg",
-                role: "customer",
-              }}
-              supportUser={{
-                id: seller?.id || "",
-                name: seller?.name || "",
-                email: seller?.email || null,
-                photoUrl: seller.photo || "/talkjs-placeholder.jpg",
-                role: "seller",
-              }}
-            />
-          </div>
-        </Modal>
-      )}
-    </>
-  )
-}
+	return (
+		<>
+			<Button
+				className={buttonClassNames}
+				onClick={() => setModal(true)}
+				variant="tonal"
+			>
+				{icon ? <MessageIcon size={20} /> : 'Write to seller'}
+			</Button>
+			{modal && (
+				<Modal heading="Chat" onClose={() => setModal(false)}>
+					<div className="px-4">
+						<ChatBox
+							currentUser={{
+								email: user?.email || null,
+								id: user?.id || '',
+								name:
+									`${user?.first_name} ${user?.last_name}` ||
+									'',
+								photoUrl: '/talkjs-placeholder.jpg',
+								role: 'customer',
+							}}
+							order_id={order_id}
+							product_id={product?.id}
+							subject={subject || product?.title || null}
+							supportUser={{
+								email: seller?.email || null,
+								id: seller?.id || '',
+								name: seller?.name || '',
+								photoUrl:
+									seller.photo || '/talkjs-placeholder.jpg',
+								role: 'seller',
+							}}
+						/>
+					</div>
+				</Modal>
+			)}
+		</>
+	);
+};

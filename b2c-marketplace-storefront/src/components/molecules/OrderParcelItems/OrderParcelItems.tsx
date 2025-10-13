@@ -1,21 +1,21 @@
-import { OrderProductListItem } from "@/components/cells"
+import { OrderProductListItem } from '@/components/cells';
 
 export const OrderParcelItems = ({
-  items,
-  currency_code,
+	items,
+	currency_code,
 }: {
-  items: any[]
-  currency_code: string
+	items: any[];
+	currency_code: string;
 }) => {
-  return (
-    <>
-      {items.map((item) => (
-        <OrderProductListItem
-          key={item.id + item.variant_id}
-          item={item}
-          currency_code={currency_code}
-        />
-      ))}
-    </>
-  )
-}
+	return (
+		<>
+			{items.map((item) => (
+				<OrderProductListItem
+					currency_code={currency_code}
+					item={item}
+					key={item.id + item.variant_id}
+				/>
+			))}
+		</>
+	);
+};

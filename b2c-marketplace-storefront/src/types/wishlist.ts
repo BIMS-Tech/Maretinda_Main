@@ -1,6 +1,6 @@
-import { HttpTypes } from "@medusajs/types"
+import type { HttpTypes } from '@medusajs/types';
 
 export type Wishlist = {
-  id: string
-  products: HttpTypes.StoreProduct[]
-}
+	id: string;
+	products: HttpTypes.StoreProduct[];
+};

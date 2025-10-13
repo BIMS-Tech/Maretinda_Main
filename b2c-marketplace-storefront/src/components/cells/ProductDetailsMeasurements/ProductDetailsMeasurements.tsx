@@ -1,25 +1,19 @@
 import {
-  ProductPageAccordion,
-  ProdutMeasurementRow,
+	ProductPageAccordion,
+	ProdutMeasurementRow,
 } from '@/components/molecules';
-import { SingleProductMeasurement } from '@/types/product';
+import type { SingleProductMeasurement } from '@/types/product';
 
 export const ProductDetailsMeasurements = ({
-  measurements,
+	measurements,
 }: {
-  measurements: SingleProductMeasurement[];
+	measurements: SingleProductMeasurement[];
 }) => {
-  return (
-    <ProductPageAccordion
-      heading='Measurements'
-      defaultOpen={false}
-    >
-      {measurements.map((item) => (
-        <ProdutMeasurementRow
-          key={item.label}
-          measurement={item}
-        />
-      ))}
-    </ProductPageAccordion>
-  );
+	return (
+		<ProductPageAccordion defaultOpen={false} heading="Measurements">
+			{measurements.map((item) => (
+				<ProdutMeasurementRow key={item.label} measurement={item} />
+			))}
+		</ProductPageAccordion>
+	);
 };

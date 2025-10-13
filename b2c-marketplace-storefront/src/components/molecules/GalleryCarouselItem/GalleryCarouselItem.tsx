@@ -1,18 +1,19 @@
-import { SingleProductImage } from "@/types/product"
-import Image from "next/image"
+import Image from 'next/image';
+
+import type { SingleProductImage } from '@/types/product';
 
 export const GalleryCarouselItem = ({
-  image,
+	image,
 }: {
-  image: SingleProductImage
+	image: SingleProductImage;
 }) => {
-  return (
-    <Image
-      key={image.id}
-      src={decodeURIComponent(image.url)}
-      alt={image.alt}
-      width={700}
-      height={700}
-    />
-  )
-}
+	return (
+		<Image
+			alt={image.alt}
+			height={700}
+			key={image.id}
+			src={decodeURIComponent(image.url)}
+			width={700}
+		/>
+	);
+};

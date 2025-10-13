@@ -1,42 +1,38 @@
 'use client';
 
-import {
-  Accordion,
-  FilterCheckboxOption,
-} from '@/components/molecules';
+import { Accordion, FilterCheckboxOption } from '@/components/molecules';
 import useFilters from '@/hooks/useFilters';
 
 const filters = [
-  { label: 'Sneakers', amount: 140 },
-  { label: 'Boots', amount: 100 },
-  { label: 'Flat Shoes', amount: 100 },
-  { label: 'High Heels', amount: 31 },
-  { label: 'Sandals', amount: 1 },
+	{ amount: 140, label: 'Sneakers' },
+	{ amount: 100, label: 'Boots' },
+	{ amount: 100, label: 'Flat Shoes' },
+	{ amount: 31, label: 'High Heels' },
+	{ amount: 1, label: 'Sandals' },
 ];
 
 export const ProductFilter = () => {
-  const { updateFilters, isFilterActive } =
-    useFilters('product');
+	const { updateFilters, isFilterActive } = useFilters('product');
 
-  const selectHandler = (option: string) => {
-    updateFilters(option);
-  };
+	const selectHandler = (option: string) => {
+		updateFilters(option);
+	};
 
-  return (
-    <Accordion heading='Product'>
-      <ul className='px-4'>
-        {filters.map(({ label, amount }) => (
-          <li key={label} className='mb-4'>
-            <FilterCheckboxOption
-              checked={isFilterActive(label)}
-              disabled={Boolean(!amount)}
-              onCheck={selectHandler}
-              label={label}
-              amount={amount}
-            />
-          </li>
-        ))}
-      </ul>
-    </Accordion>
-  );
+	return (
+		<Accordion heading="Product">
+			<ul className="px-4">
+				{filters.map(({ label, amount }) => (
+					<li className="mb-4" key={label}>
+						<FilterCheckboxOption
+							amount={amount}
+							checked={isFilterActive(label)}
+							disabled={Boolean(!amount)}
+							label={label}
+							onCheck={selectHandler}
+						/>
+					</li>
+				))}
+			</ul>
+		</Accordion>
+	);
 };
