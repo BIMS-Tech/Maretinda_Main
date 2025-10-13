@@ -1,0 +1,18 @@
+{
+  "Test React component": {
+    "scope": "typescriptreact",
+    "prefix": "trc",
+    "body": [
+      "import { render } from '@testing-library/react';",
+      "",
+      "import ${1:componentName} from './${1:componentName}';",
+      "",
+      "it('${2:should }', () => {",
+      "\tconst { queryByText } = render(<${1:componentName} />);",
+      "",
+      "\texpect($3).$4($5);",
+      "});"
+    ],
+    "description": "Template for testing a React component"
+  }
+}
