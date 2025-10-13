@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prepare": "husky",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "biome check",
+    "lint:errors": "biome check --diagnostic-level=error",
+    "lint:fix": "biome check --write",
+    "lint:ts": "tsc --noemit",
     "dependencies:check": "npm-check -i ~* --skip-unused",
     "dependencies:update": "npm-check -u"
   },
@@ -42,7 +46,10 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.6",
     "@chromatic-com/storybook": "^3.2.3",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
     "@eslint/eslintrc": "^3.3.1",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
@@ -58,6 +65,8 @@
     "eslint": "^9.37.0",
     "eslint-config-next": "^15.5.4",
     "eslint-plugin-storybook": "^0.11.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.4",
     "npm-check": "^6.0.1",
     "postcss": "^8.5.6",
     "storybook": "^8.4.7",
