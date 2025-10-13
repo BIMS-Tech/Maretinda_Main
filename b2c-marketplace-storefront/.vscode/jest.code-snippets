@@ -1,0 +1,18 @@
+{
+  "Test TypeScript module": {
+    "scope": "typescript",
+    "prefix": "ttsm",
+    "body": [
+      "import { expect, it } from '@jest/globals';",
+      "",
+      "import ${2:variableName} from './${1:filename}';",
+      "",
+      "it('should $3', () => {",
+      "\t$4",
+      "\t",
+      "\texpect($5).$6($7);",
+      "});"
+    ],
+    "description": "Template for plain TypeScript modules"
+  }
+}
