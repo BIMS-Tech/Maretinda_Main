@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "dependencies:check": "npm-check -i ~* --skip-unused",
+    "dependencies:update": "npm-check -u"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.1",
@@ -56,6 +58,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.1.4",
     "eslint-plugin-storybook": "^0.11.2",
+    "npm-check": "^6.0.1",
     "postcss": "^8",
     "storybook": "^8.4.7",
     "storybook-next-intl": "^1.2.4",
