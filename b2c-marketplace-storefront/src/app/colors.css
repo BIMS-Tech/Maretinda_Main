@@ -78,6 +78,37 @@
 	--blue-700: 12, 102, 204;
 	--blue-800: 0, 67, 143;
 	--blue-900: 0, 24, 51;
+
+	--brand-bg: #fdf2ff;
+
+	/* MARETINDA COLORS */
+
+	/* brand primary */
+	--brand-purple-25: 247, 245, 250; /* Very light tint (near white) */
+	--brand-purple-50: 235, 230, 240; /* Slightly darker tint */
+	--brand-purple-100: 216, 206, 226; /* Light tint */
+	--brand-purple-200: 178, 161, 198; /* Softer, lighter color */
+	--brand-purple-300: 130, 107, 163; /* Mid-light color */
+	--brand-purple-400:
+		84, 61, 114; /* True, balanced color (closest to base #432C63) */
+	--brand-purple-500: 67, 44, 99; /* Main brand color (#432C63) */
+	--brand-purple-600: 54, 35, 80; /* Deeper shade */
+	--brand-purple-700: 42, 27, 62; /* Darker shade */
+	--brand-purple-800: 29, 18, 43; /* Very dark shade (near black) */
+	--brand-purple-900: 55, 34, 72; /* Deepest, darkest shade (near black) */
+
+	/* Buttons actions */
+	--brand-cta-25: 255, 250, 237; /* Very light tint (near white) */
+	--brand-cta-50: 255, 245, 212; /* Slightly darker tint */
+	--brand-cta-100: 255, 234, 168; /* Light tint */
+	--brand-cta-200: 255, 218, 113; /* Softer, lighter color */
+	--brand-cta-300: 255, 204, 76; /* Mid-light color */
+	--brand-cta-400: 255, 197, 51; /* True, balanced brand color (#FFC533) */
+	--brand-cta-500: 242, 178, 48; /* Main brand color, slightly subdued */
+	--brand-cta-600: 204, 149, 41; /* Deeper shade */
+	--brand-cta-700: 165, 120, 33; /* Darker shade */
+	--brand-cta-800: 127, 92, 25; /* Very dark shade (near black) */
+	--brand-cta-900: 89, 65, 17; /* Deepest, darkest shade (near black) */
 }
 
 :root {
@@ -92,9 +123,9 @@
 	--bg-component-secondary-hover: var(--neutral-50);
 	--bg-component-secondary-pressed: var(--neutral-100);
 
-	--bg-action-primary: var(--brand-900);
-	--bg-action-primary-hover: var(--brand-800);
-	--bg-action-primary-pressed: var(--brand-700);
+	--bg-action-primary: var(--brand-cta-500);
+	--bg-action-primary-hover: var(--brand-cta-800);
+	--bg-action-primary-pressed: var(--brand-cta-700);
 	--bg-action-secondary: rgba(var(--neutral-1000), 0.05);
 	--bg-action-secondary-hover: rgba(var(--neutral-1000), 0.1);
 	--bg-action-secondary-pressed: rgba(var(--neutral-1000), 0.2);
@@ -132,7 +163,7 @@
 	--content-action-primary: var(--brand-900);
 	--content-action-primary-hover: var(--brand-800);
 	--content-action-primary-pressed: var(--brand-700);
-	--content-action-on-primary: var(--brand-25);
+	--content-action-on-primary: var(--brand-purple-900);
 	--content-action-on-secondary: var(--neutral-1000);
 	--content-action-on-tertiary: var(--neutral-0);
 
