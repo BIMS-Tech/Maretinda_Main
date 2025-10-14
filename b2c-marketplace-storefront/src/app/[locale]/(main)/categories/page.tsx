@@ -45,7 +45,7 @@ async function AllCategories({
 	);
 
 	return (
-		<main className="container">
+		<main className="container !max-w-7xl mx-auto">
 			<div className="hidden md:block mb-2">
 				<Breadcrumbs items={breadcrumbsItems} />
 			</div>

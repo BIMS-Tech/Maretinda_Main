@@ -27,7 +27,7 @@ export default async function ProductPage({
 	const { handle, locale } = await params;
 
 	return (
-		<main className="container">
+		<main className="container !max-w-7xl mx-auto">
 			<ProductDetailsPage handle={handle} locale={locale} />
 		</main>
 	);

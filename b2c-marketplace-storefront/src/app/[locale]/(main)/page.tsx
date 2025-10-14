@@ -41,7 +41,7 @@ export default async function Home({
 	const { locale } = await params;
 
 	return (
-		<main className="flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+		<main className="max-w-7xl w-full mx-auto flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
 			<Hero
 				buttons={[
 					{ label: 'Start Shopping', path: '/categories' },
@@ -197,8 +197,10 @@ export default async function Home({
 			{/* Featured Banner Section */}
 			<BannerSection />
 
+			<AlgoliaTrendingListings />
+
 			{/* Popular Brands */}
-			{/* <HomePopularBrandsSection />*/}
+			<HomePopularBrandsSection />
 
 			{/* Shop by Style */}
 			<ShopByStyleSection />
