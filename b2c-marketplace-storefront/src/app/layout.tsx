@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Funnel_Display } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
 
-const funnelDisplay = Funnel_Display({
+const funnelDisplay = Inter({
 	subsets: ['latin'],
 	variable: '--font-funnel-sans',
 	weight: ['300', '400', '500', '600'],
