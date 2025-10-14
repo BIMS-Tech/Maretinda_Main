@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/atoms';
-import { ArrowRightIcon } from '@/icons';
 
 export const SellNowButton = () => {
 	return (
@@ -12,12 +11,8 @@ export const SellNowButton = () => {
 					: 'https://vendor.mercurjs.com'
 			}
 		>
-			<Button className="group uppercase !font-bold pl-12 gap-1 flex items-center">
-				Sell now
-				<ArrowRightIcon
-					className="w-5 h-5 group-hover:opacity-100 opacity-0 transition-all duration-300"
-					color="white"
-				/>
+			<Button className="ml-1 min-w-[74px] group font-normal lg:!font-bold text-[10px] lg:text-base px-4 py:2 lg:!py-4 lg:px-6 flex items-center rounded-xs lg:rounded-sm">
+				Sell Now
 			</Button>
 		</Link>
 	);
