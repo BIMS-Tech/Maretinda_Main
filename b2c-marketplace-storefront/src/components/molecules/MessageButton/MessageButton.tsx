@@ -3,7 +3,7 @@
 import { useUnreads } from '@talkjs/react';
 
 import { Badge } from '@/components/atoms';
-import { MessageIcon } from '@/icons';
+import { MessageIcon2 } from '@/icons';
 
 import LocalizedClientLink from '../LocalizedLink/LocalizedLink';
 
@@ -12,7 +12,7 @@ export const MessageButton = () => {
 
 	return (
 		<LocalizedClientLink className="relative" href="/user/messages">
-			<MessageIcon size={20} />
+			<MessageIcon2 />
 			{Boolean(unreads?.length) && (
 				<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
 					{unreads?.length}

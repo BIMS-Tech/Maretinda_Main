@@ -8,7 +8,7 @@ import { Badge, Button } from '@/components/atoms';
 import { CartDropdownItem, Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { usePrevious } from '@/hooks/usePrevious';
-import { CartIcon } from '@/icons';
+import { CartIcon2 } from '@/icons';
 import { convertToLocale } from '@/lib/helpers/money';
 
 const getItemCount = (cart: HttpTypes.StoreCart | null) => {
@@ -53,19 +53,19 @@ export const CartDropdown = ({
 
 	return (
 		<div
-			className="relative"
+			className="relative h-8 lg:h-[56px] flex items-center"
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>
 			<LocalizedClientLink className="relative" href="/cart">
-				<CartIcon size={20} />
+				<CartIcon2 />
 				{Boolean(cartItemsCount) && (
 					<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
 						{cartItemsCount}
 					</Badge>
 				)}
 			</LocalizedClientLink>
-			<Dropdown show={open}>
+			<Dropdown className="top-[32px] lg:top-[54px]" show={open}>
 				<div className="lg:w-[460px] shadow-lg">
 					<h3 className="uppercase heading-md border-b p-4">
 						Shopping cart
