@@ -12,7 +12,7 @@ import {
 } from '@/components/atoms';
 import { Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { ProfileIcon } from '@/icons';
+import { ProfileIcon2 } from '@/icons';
 
 export const UserDropdown = ({
 	user,
@@ -25,27 +25,30 @@ export const UserDropdown = ({
 
 	return (
 		<div
-			className="relative"
+			className="relative h-8 lg:h-[56px] flex items-center"
 			onFocus={() => setOpen(true)}
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>
-			<LocalizedClientLink className="relative" href="/user">
-				<ProfileIcon size={20} />
+			<LocalizedClientLink href="/user">
+				<ProfileIcon2 size={25} />
 			</LocalizedClientLink>
-			<Dropdown show={open}>
+			<Dropdown className="top-[32px] lg:top-[54px]" show={open}>
 				{user ? (
-					<div className="p-1">
+					<div className="p-1 min-w-60 px-4 py-2">
 						<div className="lg:w-[200px]">
 							<h3 className="uppercase heading-xs border-b p-4">
 								Your account
 							</h3>
 						</div>
-						<NavigationItem href="/user/orders">
+						<NavigationItem
+							className="!font-semibold py-2 relative label-md capitalize"
+							href="/user/orders"
+						>
 							Orders
 						</NavigationItem>
 						<NavigationItem
-							className="relative"
+							className="!font-semibold py-2 relative label-md capitalize"
 							href="/user/messages"
 						>
 							Messages
@@ -55,30 +58,78 @@ export const UserDropdown = ({
 								</Badge>
 							)}
 						</NavigationItem>
-						<NavigationItem href="/user/returns">
+						<NavigationItem
+							className="!font-semibold py-2 label-md capitalize"
+							href="/user/returns"
+						>
 							Returns
 						</NavigationItem>
-						<NavigationItem href="/user/addresses">
+						<NavigationItem
+							className="!font-semibold py-2 label-md capitalize"
+							href="/user/addresses"
+						>
 							Addresses
 						</NavigationItem>
-						<NavigationItem href="/user/reviews">
+						<NavigationItem
+							className="!font-semibold py-2 label-md capitalize"
+							href="/user/reviews"
+						>
 							Reviews
 						</NavigationItem>
-						<NavigationItem href="/user/wishlist">
+						<NavigationItem
+							className="!font-semibold py-2 label-md capitalize"
+							href="/user/wishlist"
+						>
 							Wishlist
 						</NavigationItem>
 						<Divider />
-						<NavigationItem href="/user/settings">
+						<NavigationItem
+							className="!font-semibold py-2 label-md capitalize"
+							href="/user/settings"
+						>
 							Settings
 						</NavigationItem>
-						<LogoutButton />
+						<LogoutButton className="!font-semibold py-2 relative label-md capitalize" />
 					</div>
 				) : (
-					<div className="p-1">
-						<NavigationItem href="/user">Login</NavigationItem>
-						<NavigationItem href="/user/register">
-							Register
-						</NavigationItem>
+					<div className="p-1 min-w-60 px-4 py-7">
+						<div className="px-3">
+							<NavigationItem
+								className="bg-tertiary capitalize text-tertiary label-lg rounded-full justify-center"
+								href="/user"
+							>
+								Sign In
+							</NavigationItem>
+							<NavigationItem
+								className="justify-center capitalize label-lg"
+								href="/user/register"
+							>
+								Register
+							</NavigationItem>
+						</div>
+
+						<hr className="border-black/25 my-1" />
+
+						<div className="flex flex-col gap-2.5 pt-4">
+							<NavigationItem
+								className="py-0 justify-start label-md capitalize !font-semibold"
+								href="/help-center"
+							>
+								Help Center
+							</NavigationItem>
+							<NavigationItem
+								className="py-0 justify-start label-md capitalize !font-semibold"
+								href="/refund-policy"
+							>
+								Return & Refund Policy
+							</NavigationItem>
+							<NavigationItem
+								className="py-0 justify-start label-md capitalize !font-semibold"
+								href="/report"
+							>
+								Report
+							</NavigationItem>
+						</div>
 					</div>
 				)}
 			</Dropdown>
