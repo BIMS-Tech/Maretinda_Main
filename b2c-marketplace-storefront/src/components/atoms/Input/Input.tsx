@@ -1,26 +1,35 @@
 'use client';
 
-import { EyeMini, EyeSlashMini } from '@medusajs/icons';
-import { useEffect, useState } from 'react';
+import { ChevronDown, EyeMini, EyeSlashMini } from '@medusajs/icons';
+import { DropdownMenu, IconButton } from '@medusajs/ui';
+import React, { useEffect, useState } from 'react';
 
 import { CloseIcon } from '@/icons';
 import { cn } from '@/lib/utils';
 
+type Option = {
+	label: string;
+	value: string;
+};
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	label?: string;
 	icon?: React.ReactNode;
+	isDropdownCategory?: boolean;
 	clearable?: boolean;
 	error?: boolean;
 	changeValue?: (value: string) => void;
+	options?: Option[];
 }
 
 export function Input({
 	label,
 	icon,
+	isDropdownCategory,
 	clearable,
 	className,
 	error,
 	changeValue,
+	options,
 	...props
 }: InputProps) {
 	const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +37,7 @@ export function Input({
 	let paddingY = '';
 	if (icon) paddingY += 'pl-[46px] ';
 	if (clearable) paddingY += 'pr-[38px]';
+	if (isDropdownCategory) paddingY += 'pr-[155px]';
 
 	useEffect(() => {
 		if (props.type === 'password' && showPassword) {
@@ -47,10 +57,15 @@ export function Input({
 		if (changeValue) changeValue('');
 	};
 
+	const initialDefaultValue =
+		options && options.length > 0 ? options[0].value : '';
+	const [dropdownValue, setDropdownValue] =
+		React.useState(initialDefaultValue);
+
 	return (
-		<label className="label-md">
+		<label className="label-md w-full">
 			{label}
-			<div className="relative mt-2">
+			<div className={`relative ${!isDropdownCategory && 'mt-2'}`}>
 				{icon && (
 					<span className="absolute top-0 left-[16px] h-full flex items-center">
 						{icon}
@@ -86,6 +101,41 @@ export function Input({
 					>
 						{showPassword ? <EyeMini /> : <EyeSlashMini />}
 					</button>
+				)}
+				{isDropdownCategory && options && (
+					<div className="lg:min-w-[130px] h-[48px] absolute right-4 top-0 flex items-center justify-end">
+						<div className="flex flex-col items-center gap-y-2">
+							<DropdownMenu>
+								<DropdownMenu.Trigger asChild>
+									<div className="flex items-center text-md !font-medium text-[#999] gap-1.5">
+										{dropdownValue}
+										<IconButton size="small">
+											<ChevronDown />
+										</IconButton>
+									</div>
+								</DropdownMenu.Trigger>
+								<DropdownMenu.Content
+									align="end"
+									className="bg-white w-[175px] -mr-4 mt-2 z-50 py-3 px-0 shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)]"
+								>
+									<DropdownMenu.RadioGroup
+										onValueChange={setDropdownValue}
+										value={dropdownValue}
+									>
+										{options.map((option) => (
+											<DropdownMenu.RadioItem
+												className="search px-3.5 py-1.5 text-primary font-medium text-base data-[state=checked]:bg-[#EA71FF] rounded-none"
+												key={option.value}
+												value={option.value}
+											>
+												{option.label}
+											</DropdownMenu.RadioItem>
+										))}
+									</DropdownMenu.RadioGroup>
+								</DropdownMenu.Content>
+							</DropdownMenu>
+						</div>
+					</div>
 				)}
 			</div>
 		</label>
