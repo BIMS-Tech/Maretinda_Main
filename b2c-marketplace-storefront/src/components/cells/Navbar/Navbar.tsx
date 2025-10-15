@@ -8,12 +8,13 @@ export const Navbar = ({
 	categories: HttpTypes.StoreProductCategory[];
 }) => {
 	return (
-		<div className="flex border py-4 justify-between px-6">
-			<div className="hidden md:flex items-center">
+		<div className="relative flex flex-col md:border-b justify-between items-stretch lg:items-center px-6 gap-5">
+			<div className="flex lg:hidden items-center">
+				<NavbarSearch />
+			</div>
+			<div className="hidden md:flex justify-center items-center">
 				<CategoryNavbar categories={categories} />
 			</div>
-
-			<NavbarSearch />
 		</div>
 	);
 };

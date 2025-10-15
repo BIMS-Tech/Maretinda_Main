@@ -124,7 +124,7 @@
 	--bg-component-secondary-pressed: var(--neutral-100);
 
 	--bg-action-primary: var(--brand-cta-500);
-	--bg-action-primary-hover: var(--brand-cta-800);
+	--bg-action-primary-hover: var(--brand-cta-600);
 	--bg-action-primary-pressed: var(--brand-cta-700);
 	--bg-action-secondary: rgba(var(--neutral-1000), 0.05);
 	--bg-action-secondary-hover: rgba(var(--neutral-1000), 0.1);

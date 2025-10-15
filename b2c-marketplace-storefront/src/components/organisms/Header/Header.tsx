@@ -5,11 +5,12 @@ import { Badge } from '@/components/atoms';
 import { CartDropdown, MobileNavbar, Navbar } from '@/components/cells';
 import { SellNowButton } from '@/components/cells/SellNowButton/SellNowButton';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
-import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
+import { NavbarSearch } from '@/components/molecules';
+// import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
 import { PARENT_CATEGORIES } from '@/const';
-import { HeartIcon, MessageIcon } from '@/icons';
+import { WishlistIcon2 } from '@/icons';
 import { retrieveCart } from '@/lib/data/cart';
 import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -47,39 +48,41 @@ export const Header = async () => {
 
 	return (
 		<header>
-			<div className="flex py-2 lg:px-8 px-4">
-				<div className="flex items-center lg:w-1/3">
+			<div className="max-w-7xl w-full mx-auto flex items-center justify-between py-5 lg:pt-8 lg:pb-4 lg:px-8 px-4 gap-6">
+				<div className="flex items-center w-full min-w-[150px] sm:min-w-max lg:max-w-[200px]">
 					<MobileNavbar
 						childrenCategories={categories}
 						parentCategories={parentCategories}
 					/>
-					<div className="hidden lg:block">
-						<SellNowButton />
-					</div>
-				</div>
-				<div className="flex lg:justify-center lg:w-1/3 items-center pl-4 lg:pl-0">
+					{/* <div className="hidden lg:block">
+            <SellNowButton />
+          </div> */}
 					<LocalizedClientLink
 						className="text-2xl font-bold"
 						href="/"
 					>
 						<Image
 							alt="Logo"
-							height={40}
+							className="object-contain w-[125px] lg:w-[200px]"
+							height={35}
 							priority
-							src="/Logo.png"
-							width={126}
+							src="/Logo-maretinda.svg"
+							width={200}
 						/>
 					</LocalizedClientLink>
 				</div>
-				<div className="flex items-center justify-end gap-2 lg:gap-4 w-full lg:w-1/3 py-2">
-					{user && <MessageButton />}
+				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
+					<NavbarSearch />
+				</div>
+				<div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-6 sm:min-w-[230px]">
 					<UserDropdown user={user} />
+					<CartDropdown cart={cart} />
 					{user && (
 						<LocalizedClientLink
 							className="relative"
 							href="/user/wishlist"
 						>
-							<HeartIcon size={20} />
+							<WishlistIcon2 />
 							{Boolean(wishlistCount) && (
 								<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
 									{wishlistCount}
@@ -87,9 +90,9 @@ export const Header = async () => {
 							)}
 						</LocalizedClientLink>
 					)}
-
-					<CartDropdown cart={cart} />
-					<CountrySelector regions={regions} />
+					{user && <MessageButton />}
+					{/* <CountrySelector regions={regions} /> */}
+					<SellNowButton />
 				</div>
 			</div>
 			<Navbar categories={categories} />

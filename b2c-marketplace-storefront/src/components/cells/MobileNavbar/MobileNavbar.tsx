@@ -20,7 +20,7 @@ export const MobileNavbar = ({
 	};
 
 	return (
-		<div className="lg:hidden">
+		<div className="md:hidden">
 			<div onClick={() => setOpenMenu(true)}>
 				<HamburgerMenuIcon />
 			</div>
@@ -28,7 +28,7 @@ export const MobileNavbar = ({
 				<div className="fixed w-full h-full bg-primary p-2 top-0 left-0 z-20">
 					<div className="flex justify-end">
 						<div onClick={() => closeMenuHandler()}>
-							<CloseIcon size={20} />
+							<CloseIcon size={24} />
 						</div>
 					</div>
 					<div className="border mt-4 rounded-sm">
