@@ -3,8 +3,8 @@
 import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
 
+import { CategoryNavDropdown } from '@/components/cells/CategoryNavDropdown/CategoryNavDropdown';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { CollapseIcon } from '@/icons';
 import { cn } from '@/lib/utils';
 
 export const CategoryNavbar = ({
@@ -19,27 +19,21 @@ export const CategoryNavbar = ({
 	return (
 		<nav className="flex md:items-center flex-col md:flex-row">
 			<LocalizedClientLink
-				className={cn(
-					'label-md uppercase px-4 my-3 md:my-0 flex items-center justify-between',
-				)}
+				className={cn('category-navbar')}
 				href="/categories"
 				onClick={() => (onClose ? onClose(false) : null)}
 			>
 				All Products
 			</LocalizedClientLink>
 			{categories?.map(({ id, handle, name }) => (
-				<LocalizedClientLink
-					className={cn(
-						'label-md uppercase px-4 my-3 md:my-0 flex items-center justify-between',
-						handle === category && 'md:border-b md:border-primary',
-					)}
-					href={`/categories/${handle}`}
+				<CategoryNavDropdown
+					handle={handle}
+					handleCategory={handle === category}
+					id={id}
 					key={id}
+					name={name}
 					onClick={() => (onClose ? onClose(false) : null)}
-				>
-					{name}
-					<CollapseIcon className="-rotate-90 md:hidden" size={18} />
-				</LocalizedClientLink>
+				/>
 			))}
 		</nav>
 	);

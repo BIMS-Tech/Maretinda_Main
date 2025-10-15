@@ -59,7 +59,7 @@
 }
 
 .category-navbar {
-	@apply label-lg font-bold text-primary px-4 my-3 md:my-0 pb-4 pt-6 flex items-center justify-between md:border-b-[3px] md:border-tertiary;
+	@apply label-lg font-bold text-primary px-4 my-3 md:my-0 md:pb-4 md:pt-6 flex items-center justify-between md:border-b-[3px] md:border-tertiary;
 }
 
 /* Atoms components */
