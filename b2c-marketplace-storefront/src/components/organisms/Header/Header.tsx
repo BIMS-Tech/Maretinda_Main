@@ -18,6 +18,8 @@ import { listRegions } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import type { Wishlist } from '@/types/wishlist';
 
+import TopHeaderBanner from '../TopHeader/TopHeader';
+
 export const Header = async () => {
 	const cart = await retrieveCart().catch(() => null);
 	const user = await retrieveCustomer();
@@ -48,6 +50,7 @@ export const Header = async () => {
 
 	return (
 		<header>
+			<TopHeaderBanner />
 			<div className="max-w-7xl w-full mx-auto flex items-center justify-between py-5 lg:pt-8 lg:pb-4 lg:px-8 px-4 gap-6">
 				<div className="flex items-center w-full min-w-[150px] sm:min-w-max lg:max-w-[200px]">
 					<MobileNavbar
@@ -55,8 +58,8 @@ export const Header = async () => {
 						parentCategories={parentCategories}
 					/>
 					{/* <div className="hidden lg:block">
-            <SellNowButton />
-          </div> */}
+						<SellNowButton />
+					</div> */}
 					<LocalizedClientLink
 						className="text-2xl font-bold"
 						href="/"
