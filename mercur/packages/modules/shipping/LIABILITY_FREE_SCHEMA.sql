@@ -169,3 +169,5 @@ COMMENT ON VIEW vendor_shipping_facilitation_summary IS 'Summary of facilitation
 
 
 
+
+

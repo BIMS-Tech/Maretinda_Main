@@ -8,10 +8,8 @@ import {
 } from '@mercurjs/algolia'
 import { IndexType } from '@mercurjs/framework'
 
-import {
-  findAndTransformAlgoliaProducts,
-  findAndTransformAlgoliaReviews
-} from '../subscribers/utils'
+import { findAndTransformAlgoliaProducts } from '../lib/algolia/algolia-product'
+import { findAndTransformAlgoliaReviews } from '../lib/algolia/algolia-reviews'
 
 export default async function syncExistingProductsWithAlgolia({
   container
