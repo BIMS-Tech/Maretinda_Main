@@ -1,9 +1,17 @@
 const links = {
 	about: [
-		{ label: 'About us', path: '#' },
+		{ label: 'About', path: '#' },
+		{ label: 'Features', path: '#' },
 		{ label: 'Blog', path: '#' },
-		{ label: 'Privacy Policy', path: '#' },
 		{ label: 'Terms & Conditions', path: '#' },
+		{ label: 'Privacy Policy', path: '#' },
+	],
+	buyer: [
+		{ label: 'My Account', path: '#' },
+		{ label: 'Login / Register', path: '/user' },
+		{ label: 'Cart', path: '/cart' },
+		{ label: 'Wishlist', path: '#' },
+		{ label: 'Orders', path: '#' },
 	],
 	connect: [
 		{ label: 'Facebook', path: 'https://facebook.com' },
@@ -16,6 +24,12 @@ const links = {
 		{ label: 'Returns', path: '#' },
 		{ label: 'Delivery', path: '#' },
 		{ label: 'Payment', path: '#' },
+	],
+	seller: [
+		{ label: 'Become a seller', path: '#' },
+		{ label: 'Seller Dashboard', path: '/user' },
+		{ label: 'Seller Guide', path: '/cart' },
+		{ label: 'Help Center', path: '#' },
 	],
 };
 

@@ -51,7 +51,7 @@ export const Header = async () => {
 	return (
 		<header>
 			<TopHeaderBanner />
-			<div className="max-w-7xl w-full mx-auto flex items-center justify-between py-5 lg:pt-8 lg:pb-4 lg:px-8 px-4 gap-6">
+			<div className="max-w-7xl w-full mx-auto flex items-center justify-between py-5 lg:pt-8 lg:pb-4 px-4 gap-6">
 				<div className="flex items-center w-full min-w-[150px] sm:min-w-max lg:max-w-[200px]">
 					<MobileNavbar
 						childrenCategories={categories}

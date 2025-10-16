@@ -150,3 +150,7 @@ button:disabled svg path {
 .search[data-state="checked"] span {
 	@apply hidden;
 }
+
+.heading-footer {
+	@apply text-[20px] leading-[28px] font-medium tracking-normal;
+}
