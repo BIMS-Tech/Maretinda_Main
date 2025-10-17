@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 // export const lora = Lora({
 // 	display: 'swap',
@@ -14,7 +15,17 @@ export default {
 		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
 	],
 	darkMode: 'class',
-	plugins: [],
+	plugins: [plugin(({ addUtilities }) => {
+		addUtilities({
+			'.drag-none': {
+				'user-select': 'none',
+				'-webkit-user-drag':'none',
+				'-khtml-user-drag': 'none',
+				'-moz-user-drag': 'none',
+				'-o-user-drag': 'none',
+			}
+		})
+	})],
 	theme: {
 		extend: {
 			backgroundColor: {
@@ -32,6 +43,12 @@ export default {
 						hover: 'var(--bg-action-tertiary-hover)',
 						pressed: 'var(--bg-action-tertiary-pressed)',
 					},
+				},
+				brand: {
+					DEFAULT: 'var(--brand-bg)',
+					cta: {
+						400: 'rgba(var(--brand-cta-400))',
+					}
 				},
 				brandPurple: 'rgba(var(--bg-brand-purple))',
 				component: {
@@ -138,6 +155,11 @@ export default {
 						secondary: 'rgba(var(--content-warning-on-secondary))',
 					},
 				},
+				brand: {
+					purple: {
+						900: 'rgba(var(--brand-purple-900))'
+					}
+				}
 			},
 			fill: {
 				disabled: 'rgba(var(--content-disabled))',
