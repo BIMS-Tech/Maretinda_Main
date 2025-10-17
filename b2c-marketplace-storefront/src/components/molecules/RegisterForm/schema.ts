@@ -18,6 +18,9 @@ export const registerFormSchema = z.object({
 		.regex(/^\+?\d+$/, {
 			message: 'Mobile phone must contain digits only',
 		}),
+	terms: z.boolean().refine((value) => value, {
+		message: 'Please accept terms and conditions',
+	}),
 });
 
 export type RegisterFormData = z.infer<typeof registerFormSchema>;

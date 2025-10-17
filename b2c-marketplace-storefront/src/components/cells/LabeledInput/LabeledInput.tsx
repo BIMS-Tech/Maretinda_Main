@@ -1,24 +1,36 @@
-'use client';
+"use client"
 
-import type { FieldError } from 'react-hook-form';
+import type { FieldError } from "react-hook-form"
 
-import { Input } from '@/components/atoms';
-import { cn } from '@/lib/utils';
+import { Input } from "@/components/atoms"
+import { cn } from "@/lib/utils"
 
 type LabeledInputProps = {
-	label: string;
-	error?: FieldError;
-} & React.InputHTMLAttributes<HTMLInputElement>;
+  inputClassName?: string
+  important?: boolean
+  label: string
+  labelClassName?: string
+  error?: FieldError
+} & React.InputHTMLAttributes<HTMLInputElement>
 
 export const LabeledInput = ({
-	error,
-	label,
-	className,
-	...props
+  error,
+  className,
+  inputClassName,
+  important = false,
+  label,
+  labelClassName,
+  ...props
 }: LabeledInputProps) => (
-	<label className={cn('label-sm block', className)}>
-		<p className={cn(error && 'text-negative')}>{label}</p>
-		<Input className={cn(error && 'border-negative')} {...props} />
-		{error && <p className="label-sm text-negative">{error.message}</p>}
-	</label>
-);
+  <label className={cn("label-sm block", className)}>
+    <p className={cn(error && "text-negative", labelClassName)}>
+      {label}
+      {important && <span className="text-red-500/50">*</span>}
+    </p>
+    <Input
+      className={cn(error && "border-negative", inputClassName)}
+      {...props}
+    />
+    {error && <p className="label-sm text-negative">{error.message}</p>}
+  </label>
+)
