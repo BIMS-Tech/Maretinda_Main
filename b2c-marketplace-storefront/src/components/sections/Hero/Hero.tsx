@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
 
 import { ArrowRightIcon } from '@/icons';
+import { ChevronLeft, ChevronRight } from "@medusajs/icons";
+import { Lora } from "next/font/google";
+import Image from "next/image";
 
 type HeroProps = {
 	image?: string; // Make image optional since we're not using it
@@ -10,104 +13,123 @@ type HeroProps = {
 	buttons: { label: string; path: string }[];
 };
 
+const lora = Lora({
+	subsets: ["latin"],
+	weight: "700",
+});
+
 export const Hero = ({ heading, paragraph, buttons }: HeroProps) => {
 	return (
-		<section className="w-full container mt-5">
+		<section className="w-full container mt-5 max-w-[1242px] sm:h-[620px]">
 			{/* Beautiful Gradient Hero Banner */}
-			<div className="relative rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 overflow-hidden">
+			<div className="relative rounded-2xl bg-brand overflow-hidden">
+				{/* Background Images */}
+				<Image
+					src="/images/hero/black-friday-elements-assortment.png"
+					width={562}
+					height={316}
+					alt="Gifts"
+					className="hidden sm:block drag-none absolute top-[310px] left-[-68px]"
+				/>
+				<div className="hidden sm:block absolute top-[-61x] right-[91.87]">
+					<Image
+						src="/images/hero/shopping-bag.png"
+						width={209.71}
+						height={229.4}
+						alt="Shopping Bag"
+						className="w-[209.71] h-[229.4] drag-none -scale-y-100 rotate-[113.01deg]"
+					/>
+				</div>
+				{/* Stars */}
+				<Image
+					src="/images/hero/star.svg"
+					width={104}
+					height={107.83}
+					alt="Star"
+					className="hidden sm:block object-fill drag-none absolute top-[65px] left-[89px]"
+				/>
+				<Image
+					src="/images/hero/star.svg"
+					width={74}
+					height={90}
+					alt="Star"
+					className="hidden sm:block object-fill drag-none absolute top-[172.5px] right-[68px]"
+				/>
+				<Image
+					src="/images/hero/star.svg"
+					width={56}
+					height={58.06}
+					alt="Star"
+					className="hidden sm:block object-fill drag-none absolute top-[468px] right-[198px]"
+				/>
+
 				{/* Background Pattern */}
-				<div className="absolute inset-0 bg-black/10">
+				{/* <div className="absolute inset-0 bg-black/10">
 					<div
 						className="absolute inset-0"
 						style={{
 							backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
 						}}
 					/>
-				</div>
+				</div> */}
 
 				{/* Floating Elements */}
 				<div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
 				<div
 					className="absolute bottom-10 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"
-					style={{ animationDelay: '1s' }}
+					style={{ animationDelay: "1s" }}
 				/>
 				<div
 					className="absolute top-1/2 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse"
-					style={{ animationDelay: '2s' }}
+					style={{ animationDelay: "2s" }}
 				/>
 
 				{/* Content */}
-				<div className="relative px-8 py-16 lg:px-16 lg:py-24">
-					<div className="max-w-4xl mx-auto text-center text-white">
-						{/* Category Icons */}
-						<div className="flex justify-center gap-6 mb-8">
-							<div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-								<span className="text-2xl">🍎</span>
-							</div>
-							<div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-								<span className="text-2xl">🥘</span>
-							</div>
-							<div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-								<span className="text-2xl">💎</span>
-							</div>
-							<div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-								<span className="text-2xl">🛍️</span>
-							</div>
-							<div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-								<span className="text-2xl">👗</span>
-							</div>
-						</div>
-
+				<div className="relative px-8 pt-[53px] sm:pt-[173px] pb-[43px] sm:pb-[169.5px]">
+					<div className="max-w-4xl mx-auto text-center text-brand-purple-900">
 						{/* Main Content */}
-						<h1 className="font-bold mb-6 text-4xl lg:text-6xl leading-tight">
-							{heading}
+						<h1
+							className={`font-bold mb-[27px] sm:mb-8 text-[28px] sm:text-5xl leading-[100%] ${lora.className} max-w-[734px] mx-auto tracking-normal sm:h-[122px]`}
+						>
+							{heading.toLocaleUpperCase()}
 						</h1>
-						<p className="text-xl lg:text-2xl mb-12 text-white/90 max-w-3xl mx-auto leading-relaxed">
+						<p className="text-[10px] sm:text-base mb-[39px] sm:mb-[16.5px] mx-auto leading-relaxed h-[67px] max-w-[815px]">
 							{paragraph}
 						</p>
 
 						{/* Action Buttons */}
 						{buttons.length && (
-							<div className="flex flex-col sm:flex-row gap-4 justify-center">
+							<div className="flex flex-col sm:flex-row gap-[11px] sm:gap-6 justify-center items-center">
 								{buttons.map(({ label, path }, index) => (
 									<Link
-										className={`group inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
-											index === 0
-												? 'bg-white text-gray-900 hover:bg-gray-100 hover:scale-105 shadow-lg'
-												: 'bg-white/20 text-white border-2 border-white/30 hover:bg-white/30 hover:border-white/50 backdrop-blur-sm'
-										}`}
+										className={
+											"group inline-flex items-center justify-center sm:px-8 py-[15px] sm:py-[10px] rounded-[6px] transition-all duration-300 bg-brand-cta-400 text-gray-900 hover:scale-105 shadow-lg w-[220px] sm:w-auto h-[45px] sm:h-auto"
+										}
 										href={path}
 										key={uuidv4()}
 									>
-										<span className="mr-2">{label}</span>
-										<ArrowRightIcon
-											className="group-hover:translate-x-1 transition-transform"
-											color={
-												index === 0
-													? '#1f2937'
-													: '#ffffff'
-											}
-										/>
+										<span className="text-xs sm:text-[14px] font-medium leading-5">
+											{label}
+										</span>
 									</Link>
 								))}
 							</div>
 						)}
 					</div>
-				</div>
 
-				{/* Bottom Wave */}
-				<div className="absolute bottom-0 left-0 w-full overflow-hidden">
-					<svg
-						className="relative block w-full h-12"
-						preserveAspectRatio="none"
-						viewBox="0 0 1200 120"
-						xmlns="http://www.w3.org/2000/svg"
+					{/* Prev/Next Buttons */}
+					<button
+						type="button"
+						className="w-9 sm:w-[49px] h-9 sm:h-[47.28px] bg-white rounded-full absolute py-[10.84px] pl-[10.95px] pr-[15.82px] sm:px-[17px] sm:pt-[16.5px] sm:pb-[15.78px] bottom-[53px] sm:top-[291px] left-1 sm:left-[40px] shadow-[0px_4px_4px_0px_#00000040]"
 					>
-						<path
-							className="fill-current text-white opacity-20"
-							d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z"
-						></path>
-					</svg>
+						<ChevronLeft className="w-[8px] h-[14px] sm:w-[15px] sm:h-[15px]" />
+					</button>
+					<button
+						type="button"
+						className="w-9 sm:w-[49px] h-9 sm:h-[47.28px] bg-white rounded-full absolute py-[10.84px] pl-[10.95px] pr-[15.82px] sm:px-[17px] sm:pt-[16.5px] sm:pb-[15.78px] bottom-[53px] sm:top-[291px] right-2 sm:right-[51px] shadow-[0px_4px_4px_0px_#00000040]"
+					>
+						<ChevronRight className="w-[8px] h-[14px] sm:w-[15px] sm:h-[15px]" />
+					</button>
 				</div>
 			</div>
 		</section>
