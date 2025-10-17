@@ -58,8 +58,8 @@ export default async function Home({
 			/>
 
 			{/* Quick Category Access */}
-			<div className="px-4 lg:px-8 w-full">
-				<HomeCategories heading="EXPLORE ALL CATEGORIES" />
+			<div className="container w-full">
+				<HomeCategories heading="Categories" />
 			</div>
 
 			{/* Trending Products */}

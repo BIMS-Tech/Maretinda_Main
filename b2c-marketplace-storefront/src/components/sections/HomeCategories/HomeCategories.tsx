@@ -1,3 +1,4 @@
+import Heading from '@/components/atoms/Heading/Heading';
 import { Carousel } from '@/components/cells';
 import { CategoryCard } from '@/components/organisms';
 import { categoryThemes, primeCategories } from '@/data/categories';
@@ -25,8 +26,8 @@ export const categories: {
 export const HomeCategories = async ({ heading }: { heading: string }) => {
 	return (
 		<section className="bg-primary py-8 w-full">
-			<div className="mb-6">
-				<h2 className="heading-lg text-primary uppercase">{heading}</h2>
+			<div className="mb-10">
+				<Heading label="Categories" />
 			</div>
 			<Carousel
 				items={categories?.map((category) => (

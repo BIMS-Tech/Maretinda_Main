@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Lora } from 'next/font/google';
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
@@ -8,6 +8,12 @@ const funnelDisplay = Inter({
 	subsets: ['latin'],
 	variable: '--font-funnel-sans',
 	weight: ['300', '400', '500', '600'],
+});
+
+const lora = Lora({
+	subsets: ['latin'],
+	variable: '--font-lora',
+	weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +46,7 @@ export default async function RootLayout({
 	return (
 		<html className="" lang={locale}>
 			<body
-				className={`${funnelDisplay.className} antialiased bg-primary text-secondary relative`}
+				className={`${funnelDisplay.className} ${lora.variable} antialiased bg-primary text-secondary relative`}
 			>
 				{children}
 				<Toaster position="top-right" />

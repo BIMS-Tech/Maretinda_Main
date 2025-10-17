@@ -1,5 +1,12 @@
 import type { Config } from 'tailwindcss';
 
+// export const lora = Lora({
+// 	display: 'swap',
+// 	subsets: ['latin'],
+// 	variable: '--font-lora',
+// 	weight: ['400', '500', '600', '700'],
+// });
+
 export default {
 	content: [
 		'./src/pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -26,6 +33,7 @@ export default {
 						pressed: 'var(--bg-action-tertiary-pressed)',
 					},
 				},
+				brandPurple: 'rgba(var(--bg-brand-purple))',
 				component: {
 					DEFAULT: 'rgba(var(--bg-component-primary))',
 					hover: 'rgba(var(--bg-component-primary-hover))',
@@ -71,6 +79,7 @@ export default {
 			},
 			borderColor: {
 				action: 'rgba(var(--border-action))',
+				brandPurple: 'rgba(var(--bg-brand-purple))',
 				DEFAULT: 'rgba(var(--border-primary))',
 				disabled: 'rgba(var(--border-disabled))',
 				negative: {
@@ -134,6 +143,12 @@ export default {
 				disabled: 'rgba(var(--content-disabled))',
 				primary: 'rgba(var(--content-action-on-primary))',
 				secondary: 'rgba(var(--content-action-on-secondary))',
+			},
+			fontFamily: {
+				lora: [
+					'var(--font-lora)',
+					...require('tailwindcss/defaultTheme').fontFamily.serif,
+				],
 			},
 		},
 	},
