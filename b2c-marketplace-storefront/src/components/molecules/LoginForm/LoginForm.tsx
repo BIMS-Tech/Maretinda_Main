@@ -73,13 +73,13 @@ const Form = () => {
           <p className="mt-5 text-base font-normal">Enter your details below</p>
         </div>
         <form onSubmit={handleSubmit(submit)}>
-          <div className="flex flex-col w-full gap-4 max-w-full mx-auto px-2 space-y-4">
+          <div className="flex flex-col w-full gap-1 md:gap-4 max-w-full mx-auto px-1 md:px-2 space-y-4">
             <LabeledInput
               error={errors.email as FieldError}
               important
               inputClassName="border border-black bg-white"
               label="E-mail"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               {...register("email")}
             />
             <LabeledInput
@@ -87,7 +87,7 @@ const Form = () => {
               important
               inputClassName="border border-black bg-white"
               label="Password"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               type="password"
               {...register("password")}
             />
@@ -96,13 +96,13 @@ const Form = () => {
                 checked={watch("remember")}
                 className="mb-4 rounded-none"
                 label="Remember me"
-                labelClassName="items-start text-base font-medium text-black/69"
+                labelClassName="items-start text-sm md:text-base font-medium text-black/69"
                 {...register("remember")}
               />
 
               <div>
                 <Link
-                  className="text-right text-base text-black/69 font-medium underline"
+                  className="text-right text-sm md:text-base text-black/69 font-medium underline"
                   href="/user/forgot-password"
                 >
                   Forgot Password?
@@ -112,7 +112,7 @@ const Form = () => {
 
             {error && <p className="label-md text-negative">{error}</p>}
             <Button
-              className="w-full h-16 flex justify-center mt-8 mb-8 py-4 px-2 bg-black hover:bg-black text-xl text-white"
+              className="w-full !h-12 md:!h-16 flex justify-center my-4 md:my-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-xl text-white"
               disabled={isSubmitting}
               loading={isSubmitting}
               variant="text"
@@ -132,33 +132,33 @@ const Form = () => {
               </div>
             </div>
 
-            <div className="flex flex-row gap-9">
+            <div className="flex flex-col md:flex-row gap-0 md:gap-9">
               <Button
-                className="w-full flex justify-center mt-8 py-4 px-2 hover:bg-white/0 border-black border text-lg font-normal text-black"
+                className="w-full flex items-center justify-center mt-0 md:mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
                 disabled={isSubmitting}
                 loading={isSubmitting}
                 variant="text"
               >
                 <span>
-                  <GoogleIcon className="mr-2" />
+                  <GoogleIcon className="sm:mr-0.5 mr-2" />
                 </span>
                 Sign up with Google
               </Button>
 
               <Button
-                className="w-full flex justify-center mt-8 py-4 px-2 hover:bg-white/0 border-black border text-lg font-normal text-black"
+                className="w-full flex items-center justify-center mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
                 disabled={isSubmitting}
                 loading={isSubmitting}
                 variant="text"
               >
                 <span>
-                  <FacebookColorIcon className="mr-2" />
+                  <FacebookColorIcon className="sm:mr-0.5 mr-2" />
                 </span>
                 Sign up with Facebook
               </Button>
             </div>
 
-            <div className="mt-8 text-center">
+            <div className="mt-4 md:mt-8 text-center text-base md:text-lg font-thin md:font-normal">
               Don&apos;t have an account yet?{" "}
               <Link className="underline" href="/user/register">
                 Sign up

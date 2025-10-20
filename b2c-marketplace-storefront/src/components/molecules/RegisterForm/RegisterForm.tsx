@@ -78,14 +78,14 @@ const Form = () => {
           <p className="mt-5 text-base font-normal">Enter your details below</p>
         </div>
         <form onSubmit={handleSubmit(submit)}>
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <div className="flex flex-col md:flex-row mx-auto gap-4 mb-4">
             <LabeledInput
               className="md:w-1/2"
               error={errors.firstName as FieldError}
               important
               inputClassName="border border-black bg-white"
               label="First Name"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               {...register("firstName")}
             />
             <LabeledInput
@@ -94,7 +94,7 @@ const Form = () => {
               important
               inputClassName="border border-black bg-white"
               label="Last Name"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               {...register("lastName")}
             />
           </div>
@@ -105,7 +105,7 @@ const Form = () => {
               important
               inputClassName="border border-black bg-white"
               label="Ph Number"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               {...register("phone")}
             />
             <LabeledInput
@@ -114,7 +114,7 @@ const Form = () => {
               important
               inputClassName="border border-black bg-white"
               label="Email"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               {...register("email")}
             />
           </div>
@@ -125,7 +125,7 @@ const Form = () => {
               important
               inputClassName="border border-black bg-white"
               label="Password"
-              labelClassName="text-black/50 font-normal text-base"
+              labelClassName="text-black/50 font-normal text-sm md:text-base"
               type="password"
               {...register("password")}
             />
@@ -139,20 +139,21 @@ const Form = () => {
               checked={watch("terms")}
               className="mb-4 rounded-none"
               label="Agree to the Terms & Conditions and Privacy Policy"
-              labelClassName="items-start text-base font-medium text-black/69"
+              labelClassName="items-start text-sm md:text-base font-medium text-black/69"
               {...register("terms")}
             />
           </div>
           {error && <p className="label-md text-negative">{error}</p>}
           <Button
-            className="w-full h-16 flex justify-center mt-8 py-4 px-2 bg-black hover:bg-black text-xl text-white"
+            className="w-full !h-12 md:!h-16 flex justify-center mt-4 md:mt-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-lg text-white"
             disabled={isSubmitting}
             loading={isSubmitting}
             variant="text"
           >
             Create an Account
           </Button>
-          <div className="flex items-center mt-8 mb-4">
+
+          <div className="flex items-center my-4 md:mt-8">
             <div className="flex-grow">
               <Divider className="border-black/37 border-t-2" />
             </div>
@@ -164,9 +165,9 @@ const Form = () => {
             </div>
           </div>
 
-          <div className="flex flex-row gap-9">
+          <div className="flex flex-col md:flex-row gap-0 md:gap-9">
             <Button
-              className="w-full flex justify-center mt-8 py-4 px-2 hover:bg-white/0 border-black border text-lg font-normal text-black"
+              className="w-full flex items-center justify-center mt-0 md:mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
               disabled={isSubmitting}
               loading={isSubmitting}
               variant="text"
@@ -178,7 +179,7 @@ const Form = () => {
             </Button>
 
             <Button
-              className="w-full flex justify-center mt-8 py-4 px-2 hover:bg-white/0 border-black border text-lg font-normal text-black"
+              className="w-full flex items-center justify-center mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
               disabled={isSubmitting}
               loading={isSubmitting}
               variant="text"
@@ -190,7 +191,7 @@ const Form = () => {
             </Button>
           </div>
 
-          <div className="mt-8 text-center">
+          <div className="mt-4 md:mt-8 text-center text-base md:text-lg font-thin md:font-normal">
             Already have an account?{" "}
             <Link className="underline" href="/user">
               Log in
