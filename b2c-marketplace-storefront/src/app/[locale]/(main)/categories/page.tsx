@@ -59,7 +59,7 @@ async function AllCategories({
 			</div>
 
 			{/* Main Categories Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
 				{categories.map((category) => (
 					<CategoryCard category={category} key={category.id} />
 				))}

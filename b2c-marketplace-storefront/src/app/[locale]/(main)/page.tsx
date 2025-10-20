@@ -44,22 +44,22 @@ export default async function Home({
 		<main className="max-w-7xl w-full mx-auto flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
 			<Hero
 				buttons={[
-					{ label: 'Start Shopping', path: '/categories' },
+					{ label: "Start Shopping", path: "/categories" },
 					{
-						label: 'Become a Seller',
+						label: "Become a Seller",
 						path:
-							process.env.NEXT_PUBLIC_ALGOLIA_ID === 'UO3C5Y8NHX'
-								? 'https://vendor-sandbox.vercel.app/'
-								: 'https://vendor.mercurjs.com',
+							process.env.NEXT_PUBLIC_ALGOLIA_ID === "UO3C5Y8NHX"
+								? "https://vendor-sandbox.vercel.app/"
+								: "https://vendor.mercurjs.com",
 					},
 				]}
-				heading="Welcome to Maretinda"
-				paragraph="From fresh groceries to the latest fashion - discover everything you need from trusted local vendors across the Philippines."
+				heading="Find clothes that matches your style"
+				paragraph="Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."
 			/>
 
 			{/* Quick Category Access */}
-			<div className="px-4 lg:px-8 w-full">
-				<HomeCategories heading="EXPLORE ALL CATEGORIES" />
+			<div className="container w-full">
+				<HomeCategories heading="Categories" />
 			</div>
 
 			{/* Trending Products */}

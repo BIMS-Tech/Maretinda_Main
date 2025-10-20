@@ -115,6 +115,7 @@
 	--bg-primary: var(--neutral-0);
 	--bg-secondary: var(--neutral-25);
 	--bg-tertiary: var(--neutral-1000);
+	--bg-brand-purple: var(--brand-purple-900);
 
 	--bg-component-primary: var(--neutral-0);
 	--bg-component-primary-hover: var(--neutral-25);

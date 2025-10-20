@@ -1,4 +1,12 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
+
+// export const lora = Lora({
+// 	display: 'swap',
+// 	subsets: ['latin'],
+// 	variable: '--font-lora',
+// 	weight: ['400', '500', '600', '700'],
+// });
 
 export default {
 	content: [
@@ -7,7 +15,17 @@ export default {
 		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
 	],
 	darkMode: 'class',
-	plugins: [],
+	plugins: [plugin(({ addUtilities }) => {
+		addUtilities({
+			'.drag-none': {
+				'user-select': 'none',
+				'-webkit-user-drag':'none',
+				'-khtml-user-drag': 'none',
+				'-moz-user-drag': 'none',
+				'-o-user-drag': 'none',
+			}
+		})
+	})],
 	theme: {
 		extend: {
 			backgroundColor: {
@@ -26,6 +44,13 @@ export default {
 						pressed: 'var(--bg-action-tertiary-pressed)',
 					},
 				},
+				brand: {
+					DEFAULT: 'var(--brand-bg)',
+					cta: {
+						400: 'rgba(var(--brand-cta-400))',
+					}
+				},
+				brandPurple: 'rgba(var(--bg-brand-purple))',
 				component: {
 					DEFAULT: 'rgba(var(--bg-component-primary))',
 					hover: 'rgba(var(--bg-component-primary-hover))',
@@ -71,6 +96,7 @@ export default {
 			},
 			borderColor: {
 				action: 'rgba(var(--border-action))',
+				brandPurple: 'rgba(var(--bg-brand-purple))',
 				DEFAULT: 'rgba(var(--border-primary))',
 				disabled: 'rgba(var(--border-disabled))',
 				negative: {
@@ -129,11 +155,22 @@ export default {
 						secondary: 'rgba(var(--content-warning-on-secondary))',
 					},
 				},
+				brand: {
+					purple: {
+						900: 'rgba(var(--brand-purple-900))'
+					}
+				}
 			},
 			fill: {
 				disabled: 'rgba(var(--content-disabled))',
 				primary: 'rgba(var(--content-action-on-primary))',
 				secondary: 'rgba(var(--content-action-on-secondary))',
+			},
+			fontFamily: {
+				lora: [
+					'var(--font-lora)',
+					...require('tailwindcss/defaultTheme').fontFamily.serif,
+				],
 			},
 		},
 	},

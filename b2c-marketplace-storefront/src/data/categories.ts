@@ -5,6 +5,7 @@ export const primeCategories = {
 	food: 'Food Items',
 	groceries: 'Groceries',
 	shopping: 'Shopping',
+	technology: 'Technology',
 };
 
 // Sub-categories for each main category
@@ -52,6 +53,15 @@ export const categoryStructure = {
 		'sports-outdoors': 'Sports & Outdoors',
 		'toys-games': 'Toys & Games',
 	},
+	technology: {
+		automotive: 'Automotive',
+		'books-media': 'Books & Media',
+		electronics: 'Electronics & Gadgets',
+		'home-garden': 'Home & Garden',
+		'office-supplies': 'Office Supplies',
+		'sports-outdoors': 'Sports & Outdoors',
+		'toys-games': 'Toys & Games',
+	},
 };
 
 // Legacy categories for backward compatibility
@@ -78,7 +88,7 @@ export const categoryThemes = {
 	},
 	fashion: {
 		accent: '#666666',
-		bgClass: 'bg-gray-50',
+		bgClass: 'bg-red-50',
 		description: 'Latest fashion trends and styles',
 		icon: '👗',
 		primary: '#000000',
@@ -87,7 +97,7 @@ export const categoryThemes = {
 	},
 	food: {
 		accent: '#FFEB3B',
-		bgClass: 'bg-orange-50',
+		bgClass: 'bg-blue-50',
 		description: 'Delicious meals and local delicacies',
 		icon: '🥘',
 		primary: '#FF9800',
@@ -105,10 +115,19 @@ export const categoryThemes = {
 	},
 	shopping: {
 		accent: '#00BCD4',
-		bgClass: 'bg-blue-50',
+		bgClass: 'bg-yellow-500',
 		description: 'Everything you need in one place',
 		icon: '🛍️',
 		primary: '#2196F3',
+		secondary: '#03A9F4',
+		textClass: 'text-blue-800',
+	},
+	technology: {
+		accent: '#00BCD4',
+		bgClass: 'bg-pink-50',
+		description: 'Everything you need in one place',
+		icon: '🛍️',
+		primary: '#F506A4',
 		secondary: '#03A9F4',
 		textClass: 'text-blue-800',
 	},
