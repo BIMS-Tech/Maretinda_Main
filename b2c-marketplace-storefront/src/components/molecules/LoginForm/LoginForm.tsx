@@ -103,7 +103,7 @@ const Form = () => {
               <div>
                 <Link
                   className="text-right text-sm md:text-base text-black/69 font-medium underline"
-                  href="/user/forgot-password"
+                  href="/forgot-password"
                 >
                   Forgot Password?
                 </Link>
