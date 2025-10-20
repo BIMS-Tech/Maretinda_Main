@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ArrowRightIcon } from '@/icons';
 import { ChevronLeft, ChevronRight } from "@medusajs/icons";
-import { Lora } from "next/font/google";
 import Image from "next/image";
 
 type HeroProps = {
@@ -12,11 +11,6 @@ type HeroProps = {
 	paragraph: string;
 	buttons: { label: string; path: string }[];
 };
-
-const lora = Lora({
-	subsets: ["latin"],
-	weight: "700",
-});
 
 export const Hero = ({ heading, paragraph, buttons }: HeroProps) => {
 	return (
@@ -89,7 +83,7 @@ export const Hero = ({ heading, paragraph, buttons }: HeroProps) => {
 					<div className="max-w-4xl mx-auto text-center text-brand-purple-900">
 						{/* Main Content */}
 						<h1
-							className={`font-bold mb-[27px] sm:mb-8 text-[28px] sm:text-5xl leading-[100%] ${lora.className} max-w-[734px] mx-auto tracking-normal sm:h-[122px]`}
+							className={`font-bold mb-[27px] sm:mb-8 text-[28px] sm:text-5xl leading-[100%] font-lora max-w-[734px] mx-auto tracking-normal sm:h-[122px]`}
 						>
 							{heading.toLocaleUpperCase()}
 						</h1>
