@@ -1,9 +1,9 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Container } from "@medusajs/ui"
+import { Container, toast } from "@medusajs/ui"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   type FieldError,
   type FieldValues,
@@ -14,6 +14,7 @@ import {
 
 import { Button, Checkbox, Divider } from "@/components/atoms"
 import { LabeledInput } from "@/components/cells"
+import { validatePassword } from "@/components/cells/PasswordValidator/PasswordValidator"
 import { FacebookColorIcon, GoogleIcon } from "@/icons"
 import { signup } from "@/lib/data/customer"
 
@@ -47,7 +48,7 @@ const Form = () => {
     symbolOrDigit: false,
     upper: false,
   })
-  const [error, setError] = useState()
+
   const {
     handleSubmit,
     register,
@@ -63,10 +64,32 @@ const Form = () => {
     formData.append("last_name", data.lastName)
     formData.append("phone", data.phone)
 
-    const res = passwordError.isValid && (await signup(formData))
+    if (passwordError.isValid) {
+      toast.error(errors.password?.message as string)
+      return
+    }
 
-    if (res && !res?.id) setError(res)
+    const res = await signup(formData)
+
+    if (typeof res === "string" && res.includes("Error")) {
+      toast.error(res)
+      return
+    }
   }
+
+  useEffect(() => {
+    const password = watch("password")
+
+    const validation = validatePassword(password)
+
+    setPasswordError({
+      "8chars": validation.errors.tooShort,
+      isValid: validation.isValid,
+      lower: validation.errors.noLower,
+      symbolOrDigit: validation.errors.noDigitOrSymbol,
+      upper: validation.errors.noUpper,
+    })
+  }, [watch])
 
   return (
     <main className="container">
@@ -77,7 +100,7 @@ const Form = () => {
           </h1>
           <p className="mt-5 text-base font-normal">Enter your details below</p>
         </div>
-        <form onSubmit={handleSubmit(submit)}>
+        <form noValidate onSubmit={handleSubmit(submit)}>
           <div className="flex flex-col md:flex-row mx-auto gap-4 mb-4">
             <LabeledInput
               className="md:w-1/2"
@@ -101,7 +124,7 @@ const Form = () => {
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <LabeledInput
               className="md:w-1/2"
-              error={errors.email as FieldError}
+              error={errors.phone as FieldError}
               important
               inputClassName="border border-black bg-white"
               label="Ph Number"
@@ -110,7 +133,7 @@ const Form = () => {
             />
             <LabeledInput
               className="md:w-1/2"
-              error={errors.phone as FieldError}
+              error={errors.email as FieldError}
               important
               inputClassName="border border-black bg-white"
               label="Email"
@@ -143,11 +166,16 @@ const Form = () => {
               {...register("terms")}
             />
           </div>
-          {error && <p className="label-md text-negative">{error}</p>}
+          {errors && (
+            <p className="label-md text-negative">
+              {errors.terms?.message as string}
+            </p>
+          )}
           <Button
             className="w-full !h-12 md:!h-16 flex justify-center mt-4 md:mt-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-lg text-white"
             disabled={isSubmitting}
             loading={isSubmitting}
+            type="submit"
             variant="text"
           >
             Create an Account
