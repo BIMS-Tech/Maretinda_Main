@@ -15,17 +15,19 @@ export default {
 		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
 	],
 	darkMode: 'class',
-	plugins: [plugin(({ addUtilities }) => {
-		addUtilities({
-			'.drag-none': {
-				'user-select': 'none',
-				'-webkit-user-drag':'none',
-				'-khtml-user-drag': 'none',
-				'-moz-user-drag': 'none',
-				'-o-user-drag': 'none',
-			}
-		})
-	})],
+	plugins: [
+		plugin(({ addUtilities }) => {
+			addUtilities({
+				'.drag-none': {
+					'-khtml-user-drag': 'none',
+					'-moz-user-drag': 'none',
+					'-o-user-drag': 'none',
+					'-webkit-user-drag': 'none',
+					'user-select': 'none',
+				},
+			});
+		}),
+	],
 	theme: {
 		extend: {
 			backgroundColor: {
@@ -45,10 +47,10 @@ export default {
 					},
 				},
 				brand: {
-					DEFAULT: 'var(--brand-bg)',
 					cta: {
 						400: 'rgba(var(--brand-cta-400))',
-					}
+					},
+					DEFAULT: 'var(--brand-bg)',
 				},
 				brandPurple: 'rgba(var(--bg-brand-purple))',
 				component: {
@@ -130,6 +132,11 @@ export default {
 					},
 					pressed: 'rgba(var(--content-action-primary-pressed))',
 				},
+				brand: {
+					purple: {
+						900: 'rgba(var(--brand-purple-900))',
+					},
+				},
 				disabled: 'rgba(var(--content-disabled))',
 				negative: {
 					DEFAULT: 'rgba(var(--content-negative-primary))',
@@ -155,11 +162,6 @@ export default {
 						secondary: 'rgba(var(--content-warning-on-secondary))',
 					},
 				},
-				brand: {
-					purple: {
-						900: 'rgba(var(--brand-purple-900))'
-					}
-				}
 			},
 			fill: {
 				disabled: 'rgba(var(--content-disabled))',

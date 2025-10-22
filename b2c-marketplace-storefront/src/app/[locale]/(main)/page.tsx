@@ -10,6 +10,7 @@ import {
 	HomeProductSection,
 	ShopByStyleSection,
 } from '@/components/sections';
+import SpecialOffer from '@/components/sections/SpecialOffer/SpecialOffer';
 
 export const metadata: Metadata = {
 	description:
@@ -44,13 +45,13 @@ export default async function Home({
 		<main className="max-w-7xl w-full mx-auto flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
 			<Hero
 				buttons={[
-					{ label: "Start Shopping", path: "/categories" },
+					{ label: 'Start Shopping', path: '/categories' },
 					{
-						label: "Become a Seller",
+						label: 'Become a Seller',
 						path:
-							process.env.NEXT_PUBLIC_ALGOLIA_ID === "UO3C5Y8NHX"
-								? "https://vendor-sandbox.vercel.app/"
-								: "https://vendor.mercurjs.com",
+							process.env.NEXT_PUBLIC_ALGOLIA_ID === 'UO3C5Y8NHX'
+								? 'https://vendor-sandbox.vercel.app/'
+								: 'https://vendor.mercurjs.com',
 					},
 				]}
 				heading="Find clothes that matches your style"
@@ -61,6 +62,7 @@ export default async function Home({
 			<div className="container w-full">
 				<HomeCategories heading="Categories" />
 			</div>
+			<SpecialOffer />
 
 			{/* Trending Products */}
 			<div className="px-4 lg:px-8 w-full">
