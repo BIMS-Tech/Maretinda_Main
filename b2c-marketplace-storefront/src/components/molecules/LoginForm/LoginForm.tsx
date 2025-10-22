@@ -160,7 +160,7 @@ const Form = () => {
 
             <div className="mt-4 md:mt-8 text-center text-base md:text-lg font-thin md:font-normal">
               Don&apos;t have an account yet?{" "}
-              <Link className="underline" href="/user/register">
+              <Link className="underline" href="/register">
                 Sign up
               </Link>
             </div>
