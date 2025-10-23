@@ -221,7 +221,7 @@ const Form = () => {
 
           <div className="mt-4 md:mt-8 text-center text-base md:text-lg font-thin md:font-normal">
             Already have an account?{" "}
-            <Link className="underline" href="/user">
+            <Link className="underline" href="/login">
               Log in
             </Link>
           </div>
