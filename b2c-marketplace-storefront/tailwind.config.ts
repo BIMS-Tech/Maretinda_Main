@@ -136,6 +136,7 @@ export default {
 					purple: {
 						900: 'rgba(var(--brand-purple-900))',
 					},
+					text: 'var(--brand-text)',
 				},
 				disabled: 'rgba(var(--content-disabled))',
 				negative: {
