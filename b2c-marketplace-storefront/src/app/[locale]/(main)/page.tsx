@@ -9,6 +9,7 @@ import {
 	HomePopularBrandsSection,
 	HomeProductSection,
 	ShopByStyleSection,
+	SpecialOffer,
 } from '@/components/sections';
 import SpecialOffer from '@/components/sections/SpecialOffer/SpecialOffer';
 
@@ -62,7 +63,11 @@ export default async function Home({
 			<div className="container w-full">
 				<HomeCategories heading="Categories" />
 			</div>
-			<SpecialOffer />
+
+			{/* Special Offer Section */}
+			<div className="container w-full">
+				<SpecialOffer />
+			</div>
 
 			{/* Trending Products */}
 			<div className="px-4 lg:px-8 w-full">

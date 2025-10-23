@@ -12,22 +12,12 @@ import { AlgoliaProductsListing } from './ProductListing/AlgoliaProductsListing'
 import { ProductListing } from './ProductListing/ProductListing';
 import { SellerPageHeader } from './SellerPageHeader/SellerPageHeader';
 import { ShopByStyleSection } from './ShopByStyle/ShopByStyleSection';
+import SpecialOffer from './SpecialOffer/SpecialOffer';
 import { WishlistPage } from './WishlistPage/WishlistPage';
 
 export {
-	Hero,
-	HomeProductSection,
-	HomePopularBrandsSection,
-	HomeCategories,
-	BannerSection,
-	ShopByStyleSection,
-	BlogSection,
-	ProductListing,
-	SellerPageHeader,
-	Cart,
-	WishlistPage,
-	ProductDetailsPage,
 	AlgoliaProductsListing,
-	AlgoliaTrendingListings,
-	OrdersPagination,
+	AlgoliaTrendingListings, BannerSection, BlogSection, Cart, Hero, HomeCategories, HomePopularBrandsSection, HomeProductSection, OrdersPagination, ProductDetailsPage, ProductListing,
+	SellerPageHeader, ShopByStyleSection, SpecialOffer, WishlistPage
 };
+
