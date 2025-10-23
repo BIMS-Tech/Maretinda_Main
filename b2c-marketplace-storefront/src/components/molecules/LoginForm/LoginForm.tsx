@@ -1,10 +1,9 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Container, Divider } from "@medusajs/ui"
+import { Container, Divider, toast } from "@medusajs/ui"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
 import {
   type FieldError,
   type FieldValues,
@@ -38,7 +37,6 @@ export const LoginForm = () => {
 }
 
 const Form = () => {
-  const [error, setError] = useState("")
   const {
     handleSubmit,
     register,
@@ -54,13 +52,12 @@ const Form = () => {
     formData.append("password", data.password)
 
     const res = await login(formData)
+
     if (res) {
-      setError(res)
+      toast.error(res)
       return
     }
-    setError("")
 
-    // Redirect to returnTo URL if provided, otherwise go to user page
     const returnTo = searchParams.get("returnTo")
     router.push(returnTo || "/user")
   }
@@ -109,8 +106,6 @@ const Form = () => {
                 </Link>
               </div>
             </div>
-
-            {error && <p className="label-md text-negative">{error}</p>}
             <Button
               className="w-full !h-12 md:!h-16 flex justify-center my-4 md:my-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-xl text-white"
               disabled={isSubmitting}

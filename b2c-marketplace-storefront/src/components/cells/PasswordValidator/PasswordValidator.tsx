@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card } from '@/components/atoms';
 import { cn } from '@/lib/utils';
 
-function validatePassword(password: string) {
+export function validatePassword(password: string) {
 	const errors = {
 		noDigitOrSymbol: !/[0-9!@#$%^&*(),.?":{}|<>_\-+=[\]\\/~`]/.test(
 			password,
