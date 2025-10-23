@@ -150,7 +150,10 @@ export async function GET(
           // As a last resort, check if we can resolve the seller information to get more context
           try {
             const sellerModule = container.resolve("sellerModuleService")
-            const seller = await sellerModule.retrieveSeller(vendorId)
+            // Specify fields explicitly to avoid SQL bugs with member relationships
+            const seller = await sellerModule.retrieveSeller(vendorId, {
+              select: ['id', 'name', 'handle']
+            })
             console.log('[Vendor GiyaPay Transactions] Seller info:', { id: seller?.id, name: seller?.name })
             
             // For now, return empty to maintain security, but log the issue

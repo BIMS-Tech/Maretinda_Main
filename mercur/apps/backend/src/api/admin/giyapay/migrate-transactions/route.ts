@@ -12,8 +12,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     } catch (serviceError) {
       console.log('[Admin GiyaPay Migration] Service not in scope, registering on-demand...')
       const GiyaPayService = require("../../../../services/giyapay").default
-      req.scope.register("giyaPayService", new GiyaPayService(req.scope))
-      giyaPayService = req.scope.resolve("giyaPayService")
+      // Create service instance directly
+      giyaPayService = new GiyaPayService(req.scope)
       console.log('[Admin GiyaPay Migration] ✅ Service registered and resolved on-demand')
     }
     

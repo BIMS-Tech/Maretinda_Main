@@ -652,9 +652,9 @@ const ProviderConfigModal = ({
                       </Form.Control>
                       <Form.ErrorMessage />
                       {config.example && (
-                        <Form.Description>
+                        <Form.Hint>
                           Example: {config.example}
-                        </Form.Description>
+                        </Form.Hint>
                       )}
                     </Form.Item>
                   )}

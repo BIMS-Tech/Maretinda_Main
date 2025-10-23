@@ -1,5 +1,6 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { asClass } from 'awilix'
 import TamaFileGeneratorService from '../../../../../services/tama-file-generator'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -81,8 +82,11 @@ export async function GET(
     try {
       tamaService = req.scope.resolve("tamaFileGeneratorService")
     } catch (serviceError) {
-      console.log('[Admin TAMA Download] Service not in scope, registering on-demand...')
-      req.scope.register("tamaFileGeneratorService", new TamaFileGeneratorService(req.scope))
+      console.log('[Admin TAMA Download] Service not in scope, registering with Awilix...')
+      // Register service properly with Awilix for DI and decorators to work
+      req.scope.register({
+        tamaFileGeneratorService: asClass(TamaFileGeneratorService).singleton()
+      })
       tamaService = req.scope.resolve("tamaFileGeneratorService")
     }
     
