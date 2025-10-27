@@ -1,9 +1,10 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Container, Divider, toast } from "@medusajs/ui"
+import { Alert, Container, Divider } from "@medusajs/ui"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
 import {
   type FieldError,
   type FieldValues,
@@ -45,6 +46,8 @@ const Form = () => {
   } = useFormContext()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [resError, setResError] = useState<string | null>("")
+  const [isResError, setIsResError] = useState(false)
 
   const submit = async (data: FieldValues) => {
     const formData = new FormData()
@@ -53,8 +56,9 @@ const Form = () => {
 
     const res = await login(formData)
 
-    if (res) {
-      toast.error(res)
+    if (typeof res === "string" && res.includes("Error")) {
+      setResError(res)
+      setIsResError(true)
       return
     }
 
@@ -106,6 +110,18 @@ const Form = () => {
                 </Link>
               </div>
             </div>
+            {isResError && (
+              <Alert
+                className="flex items-center justify-between w-full"
+                dismissible={true}
+                onClick={() => {
+                  setIsResError(false)
+                }}
+                variant="error"
+              >
+                {resError}
+              </Alert>
+            )}
             <Button
               className="w-full !h-12 md:!h-16 flex justify-center my-4 md:my-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-xl text-white"
               disabled={isSubmitting}
