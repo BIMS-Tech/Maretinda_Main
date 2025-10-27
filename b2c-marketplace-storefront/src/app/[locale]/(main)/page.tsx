@@ -11,7 +11,6 @@ import {
 	ShopByStyleSection,
 	SpecialOffer,
 } from '@/components/sections';
-import SpecialOffer from '@/components/sections/SpecialOffer/SpecialOffer';
 
 export const metadata: Metadata = {
 	description:
@@ -68,6 +67,9 @@ export default async function Home({
 			<div className="container w-full">
 				<SpecialOffer />
 			</div>
+
+			{/* Blog Section */}
+			<BlogSection />
 
 			{/* Trending Products */}
 			<div className="px-4 lg:px-8 w-full">
@@ -211,9 +213,6 @@ export default async function Home({
 
 			{/* Shop by Style */}
 			<ShopByStyleSection />
-
-			{/* Blog Section */}
-			<BlogSection />
 		</main>
 	);
 }
