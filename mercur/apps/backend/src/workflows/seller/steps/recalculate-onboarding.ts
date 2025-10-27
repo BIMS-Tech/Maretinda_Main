@@ -15,14 +15,21 @@ export const recalculateOnboardingStep = createStep(
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
     /* Store information */
-    const {
-      data: [store]
-    } = await query.graph({
-      entity: 'seller',
-      fields: ['*'],
-      filters: {
-        id: seller_id
-      }
+    // Fetch seller directly from service instead of query.graph to avoid SQL bug
+    const sellerService = container.resolve<SellerModuleService>(SELLER_MODULE)
+    const store = await sellerService.retrieveSeller(seller_id, {
+      select: [
+        'id',
+        'name',
+        'handle',
+        'description',
+        'photo',
+        'address_line',
+        'city',
+        'postal_code',
+        'country_code',
+        'tax_id'
+      ]
     })
 
     const { success: store_information } = z
@@ -88,7 +95,7 @@ export const recalculateOnboardingStep = createStep(
       locations_shipping
     }
 
-    const sellerService = container.resolve<SellerModuleService>(SELLER_MODULE)
+    // sellerService already resolved above
     const updatedOnboarding = onboarding
       ? await sellerService.updateSellerOnboardings({
           ...toUpdate,

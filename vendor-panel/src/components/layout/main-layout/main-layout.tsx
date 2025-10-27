@@ -185,11 +185,6 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       to: "/shipping",
     },
     {
-      icon: <CurrencyDollar />,
-      label: "Payouts",
-      to: "/payouts",
-    },
-    {
       icon: <Star />,
       label: "Reviews",
       to: "/reviews",

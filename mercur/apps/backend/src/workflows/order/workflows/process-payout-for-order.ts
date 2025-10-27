@@ -24,8 +24,8 @@ type ProcessPayoutForOrderWorkflowInput = {
 export const processPayoutForOrderWorkflow = createWorkflow(
   { name: 'process-payout-for-order' },
   function (input: ProcessPayoutForOrderWorkflowInput) {
-    // Temporarily disable payout processing due to seller SQL constraints
-    console.log('Skipping payout processing for order:', input.order_id, '- seller data not available')
+    // Payout processing is currently disabled - enable when seller payout accounts are configured
+    // Uncomment the code below to enable automatic payout processing
     return
 
     validateNoExistingPayoutForOrderStep(input.order_id)

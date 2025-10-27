@@ -23,8 +23,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     } catch (serviceError) {
       console.log('[Admin GiyaPay Download] Service not in scope, registering on-demand...')
       const GiyaPayService = require("../../../../services/giyapay").default
-      req.scope.register("giyaPayService", new GiyaPayService(req.scope))
-      giyaPayService = req.scope.resolve("giyaPayService")
+      // Create service instance directly
+      giyaPayService = new GiyaPayService(req.scope)
       console.log('[Admin GiyaPay Download] ✅ Service registered and resolved on-demand')
     }
     
