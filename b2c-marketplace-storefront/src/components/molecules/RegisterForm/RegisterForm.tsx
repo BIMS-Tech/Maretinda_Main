@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Container, toast } from "@medusajs/ui"
+import { Alert, Container, toast } from "@medusajs/ui"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import {
@@ -48,6 +48,8 @@ const Form = () => {
     symbolOrDigit: false,
     upper: false,
   })
+  const [resError, setResError] = useState<string>("")
+  const [isResError, setIsResError] = useState(false)
 
   const {
     handleSubmit,
@@ -72,7 +74,8 @@ const Form = () => {
     const res = await signup(formData)
 
     if (typeof res === "string" && res.includes("Error")) {
-      toast.error(res)
+      setResError(res)
+      setIsResError(true)
       return
     }
   }
@@ -170,6 +173,16 @@ const Form = () => {
             <p className="label-md text-negative">
               {errors.terms?.message as string}
             </p>
+          )}
+          {isResError && (
+            <Alert
+              // className="flex items-center justify-between w-full text-red-400"
+              dismissible={true}
+              onClick={() => setIsResError(false)}
+              variant="error"
+            >
+              {resError}
+            </Alert>
           )}
           <Button
             className="w-full !h-12 md:!h-16 flex justify-center mt-4 md:mt-8 py-3 px-1 md:py-4 md:px-2 bg-black hover:bg-black text-base md:text-lg text-white"
