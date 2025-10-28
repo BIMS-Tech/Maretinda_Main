@@ -4,6 +4,7 @@ import {
 	AlgoliaTrendingListings,
 	BannerSection,
 	BlogSection,
+	FeaturedProductsSection,
 	Hero,
 	HomeCategories,
 	HomePopularBrandsSection,
@@ -11,7 +12,6 @@ import {
 	ShopByStyleSection,
 	SpecialOffer,
 } from '@/components/sections';
-import SpecialOffer from '@/components/sections/SpecialOffer/SpecialOffer';
 
 export const metadata: Metadata = {
 	description:
@@ -62,6 +62,11 @@ export default async function Home({
 			{/* Quick Category Access */}
 			<div className="container w-full">
 				<HomeCategories heading="Categories" />
+			</div>
+
+			{/* Featured Products Section */}
+			<div className="container w-full">
+				<FeaturedProductsSection />
 			</div>
 
 			{/* Special Offer Section */}

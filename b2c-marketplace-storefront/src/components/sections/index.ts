@@ -2,6 +2,7 @@ import { OrdersPagination } from '../organisms/OrdersPagination/OrdersPagination
 import { BannerSection } from './BannerSection/BannerSection';
 import { BlogSection } from './BlogSection/BlogSection';
 import { Cart } from './Cart/Cart';
+import FeaturedProductsSection from './FeaturedProductsSection/FeaturedProductsSection';
 import { Hero } from './Hero/Hero';
 import { HomeCategories } from './HomeCategories/HomeCategories';
 import { HomePopularBrandsSection } from './HomePopularBrandsSection/HomePopularBrandsSection';
@@ -17,7 +18,20 @@ import { WishlistPage } from './WishlistPage/WishlistPage';
 
 export {
 	AlgoliaProductsListing,
-	AlgoliaTrendingListings, BannerSection, BlogSection, Cart, Hero, HomeCategories, HomePopularBrandsSection, HomeProductSection, OrdersPagination, ProductDetailsPage, ProductListing,
-	SellerPageHeader, ShopByStyleSection, SpecialOffer, WishlistPage
+	AlgoliaTrendingListings,
+	BannerSection,
+	BlogSection,
+	Cart,
+	FeaturedProductsSection,
+	Hero,
+	HomeCategories,
+	HomePopularBrandsSection,
+	HomeProductSection,
+	OrdersPagination,
+	ProductDetailsPage,
+	ProductListing,
+	SellerPageHeader,
+	ShopByStyleSection,
+	SpecialOffer,
+	WishlistPage,
 };
-
