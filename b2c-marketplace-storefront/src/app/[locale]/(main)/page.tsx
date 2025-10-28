@@ -74,6 +74,9 @@ export default async function Home({
 				<SpecialOffer />
 			</div>
 
+			{/* Blog Section */}
+			<BlogSection />
+
 			{/* Trending Products */}
 			<div className="px-4 lg:px-8 w-full">
 				<HomeProductSection
@@ -216,9 +219,6 @@ export default async function Home({
 
 			{/* Shop by Style */}
 			<ShopByStyleSection />
-
-			{/* Blog Section */}
-			<BlogSection />
 		</main>
 	);
 }

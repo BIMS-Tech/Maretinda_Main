@@ -1,9 +1,12 @@
+import Heading from '@/components/atoms/Heading/Heading';
 import { BlogCard } from '@/components/organisms';
 import type { BlogPost } from '@/types/blog';
 
 export const blogPosts: BlogPost[] = [
 	{
+		author: 'Dela Cruz',
 		category: 'ACCESSORIES',
+		date: '2 months ago',
 		excerpt:
 			"Discover this season's most sophisticated accessories that blend timeless elegance with modern design.",
 		href: '#',
@@ -12,7 +15,9 @@ export const blogPosts: BlogPost[] = [
 		title: "Summer's Most Elegant Accessories",
 	},
 	{
+		author: 'Dela Cruz',
 		category: 'STYLE GUIDE',
+		date: '3 days ago',
 		excerpt:
 			'From bold colors to nostalgic silhouettes, explore the must-have looks defining this season’s fashion narrative.',
 		href: '#',
@@ -21,7 +26,9 @@ export const blogPosts: BlogPost[] = [
 		title: 'The Season’s Hottest Trends',
 	},
 	{
+		author: 'Dela Cruz',
 		category: 'TRENDS',
+		date: '1 week ago',
 		excerpt:
 			'Explore the latest minimalist outerwear pieces that combine functionality with clean aesthetics.',
 		href: '#',
@@ -33,13 +40,13 @@ export const blogPosts: BlogPost[] = [
 
 export function BlogSection() {
 	return (
-		<section className="bg-tertiary container">
-			<div className="flex items-center justify-between mb-12">
-				<h2 className="heading-lg text-tertiary">STAY UP TO DATE</h2>
+		<section className="container">
+			<div className="mb-10">
+				<Heading label="Feature Posts" seeAllText="See All Posts" />
 			</div>
-			<div className="grid grid-cols-1 lg:grid-cols-3">
-				{blogPosts.map((post, index) => (
-					<BlogCard index={index} key={post.id} post={post} />
+			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+				{blogPosts.map((post) => (
+					<BlogCard key={post.id} post={post} />
 				))}
 			</div>
 		</section>
