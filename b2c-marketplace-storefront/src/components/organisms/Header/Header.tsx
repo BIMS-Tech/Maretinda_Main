@@ -77,7 +77,7 @@ export const Header = async () => {
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
 					<NavbarSearch />
 				</div>
-				<div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-6 sm:min-w-[230px]">
+				<div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-6 sm:min-w-[230px] w-[-webkit-fill-available] sm:w-auto">
 					<UserDropdown user={user} />
 					<CartDropdown cart={cart} />
 					{user && (
@@ -85,7 +85,7 @@ export const Header = async () => {
 							className="relative"
 							href="/user/wishlist"
 						>
-							<WishlistIcon2 />
+							<WishlistIcon2 size={20} />
 							{Boolean(wishlistCount) && (
 								<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
 									{wishlistCount}

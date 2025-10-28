@@ -12,7 +12,7 @@ export const MessageButton = () => {
 
 	return (
 		<LocalizedClientLink className="relative" href="/user/messages">
-			<MessageIcon2 />
+			<MessageIcon2 size={20} />
 			{Boolean(unreads?.length) && (
 				<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
 					{unreads?.length}
