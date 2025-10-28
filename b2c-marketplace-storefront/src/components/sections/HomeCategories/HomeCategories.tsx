@@ -25,7 +25,7 @@ export const categories: {
 
 export const HomeCategories = async ({ heading }: { heading: string }) => {
 	return (
-		<section className="bg-primary py-8 w-full">
+		<section className="bg-primary w-full">
 			<div className="mb-10">
 				<Heading label="Categories" />
 			</div>

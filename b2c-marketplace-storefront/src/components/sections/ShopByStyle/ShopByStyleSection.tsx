@@ -1,67 +1,66 @@
-import Image from 'next/image';
+import clsx from 'clsx';
 
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { ArrowRightIcon } from '@/icons';
+import Heading from '@/components/atoms/Heading/Heading';
 import type { Style } from '@/types/styles';
-import Heading from "@/components/atoms/Heading/Heading";
-import { ShopByStyleContainer } from "./ShopByStyleContainer";
-import clsx from "clsx";
+
+import { ShopByStyleContainer } from './ShopByStyleContainer';
 
 export const styles: Style[] = [
 	{
-		href: "/collections/gym",
-		name: "GYM",
-		description: "Black and White version of the PS5 coming out on sale.",
-		imageUrl: "/images/shop-by-styles/gym.png",
+		description: 'Black and White version of the PS5 coming out on sale.',
+		href: '/collections/gym',
+		imageUrl: '/images/shop-by-styles/gym.png',
+		name: 'GYM',
 	},
 	{
-		href: "/collections/party",
-		name: "PARTY",
-		description: "tandard dummy text ever since the 1500s, when an unkn",
-		imageUrl: "/images/shop-by-styles/party.jpg",
+		description: 'tandard dummy text ever since the 1500s, when an unkn',
+		href: '/collections/party',
+		imageUrl: '/images/shop-by-styles/party.jpg',
+		name: 'PARTY',
 	},
 	{
-		href: "/collections/casual",
-		name: "CASUAL",
-		description: "Amazon wireless speakers",
-		imageUrl: "/images/shop-by-styles/casual.png",
+		description: 'Amazon wireless speakers',
+		href: '/collections/casual',
+		imageUrl: '/images/shop-by-styles/casual.png',
+		name: 'CASUAL',
 	},
 	{
-		href: "/collections/formal",
-		name: "FORMAL",
-		description: "GUCCI INTENSE OUD EDP",
-		imageUrl: "/images/shop-by-styles/formal.png",
+		description: 'GUCCI INTENSE OUD EDP',
+		href: '/collections/formal',
+		imageUrl: '/images/shop-by-styles/formal.png',
+		name: 'FORMAL',
 	},
 ];
 
 export function ShopByStyleSection() {
 	return (
 		<section className="bg-primary container">
-			<div className="mb-12">
+			<div className="mb-10">
 				<Heading label="Shop By Style" />
 			</div>
 			<div
 				className={clsx([
-					"flex flex-col gap-[26px] lg:gap-0 lg:grid",
-					"grid-cols-[minmax(0,_580px)_minmax(290px,_1fr)_minmax(280px,_296px)]",
-					"grid-rows-[329px_316px]",
+					'flex flex-col gap-[26px] lg:gap-0 lg:grid',
+					'grid-cols-[minmax(0,_580px)_minmax(290px,_1fr)_minmax(280px,_296px)]',
+					'grid-rows-[329px_316px]',
 				])}
 			>
 				{styles.map((style, index) => (
 					<ShopByStyleContainer
-						key={style.name}
 						className={clsx([
-							index === 0 && "hidden lg:block lg:mt-[2px] row-span-2",
-							index === 1 && "lg:ml-[23px] col-span-2",
-							index === 2 && "lg:ml-[23px] lg:mr-[19px] lg:mt-8",
-							index === 3 && "hidden lg:block lg:mt-8",
+							index === 0 &&
+								'hidden lg:block lg:mt-[2px] row-span-2',
+							index === 1 && 'lg:ml-[23px] col-span-2',
+							index === 2 && 'lg:ml-[23px] lg:mr-[19px] lg:mt-8',
+							index === 3 && 'hidden lg:block lg:mt-8',
 						])}
-						name={style.name}
-						secondary={index >= 2}
 						description={style.description}
 						href={style.href}
-						index={index}
 						imageUrl={style.imageUrl}
+						index={index}
+						key={style.name}
+						name={style.name}
+						secondary={index >= 2}
 					/>
 				))}
 			</div>

@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 
 import {
-	AlgoliaTrendingListings,
-	BannerSection,
+	// AlgoliaTrendingListings,
+	// BannerSection,
 	BlogSection,
 	FeaturedProductsSection,
 	Hero,
 	HomeCategories,
-	HomePopularBrandsSection,
-	HomeProductSection,
+	// HomePopularBrandsSection,
+	// HomeProductSection,
 	ShopByStyleSection,
 	SpecialOffer,
 } from '@/components/sections';
@@ -43,7 +43,7 @@ export default async function Home({
 	const { locale } = await params;
 
 	return (
-		<main className="max-w-7xl w-full mx-auto flex flex-col gap-8 row-start-2 items-center sm:items-start text-primary">
+		<main className="max-w-7xl w-full mx-auto flex flex-col row-start-2 items-center sm:items-start text-primary">
 			<Hero
 				buttons={[
 					{ label: 'Start Shopping', path: '/categories' },
@@ -60,7 +60,7 @@ export default async function Home({
 			/>
 
 			{/* Quick Category Access */}
-			<div className="container w-full">
+			<div className="container w-full mb-5">
 				<HomeCategories heading="Categories" />
 			</div>
 
@@ -74,20 +74,25 @@ export default async function Home({
 				<SpecialOffer />
 			</div>
 
+			{/* Shop by Style */}
+			<ShopByStyleSection />
+
 			{/* Blog Section */}
-			<BlogSection />
+			<div className="mb-10">
+				<BlogSection />
+			</div>
 
 			{/* Trending Products */}
-			<div className="px-4 lg:px-8 w-full">
+			{/* <div className="px-4 lg:px-8 w-full">
 				<HomeProductSection
 					heading="Trending Now"
 					home
 					locale={locale}
 				/>
-			</div>
+			</div> */}
 
 			{/* Category-Specific Sections */}
-			<div className="px-4 lg:px-8 w-full">
+			{/* <div className="px-4 lg:px-8 w-full">
 				<section className="py-8">
 					<h2 className="heading-lg text-primary uppercase mb-8">
 						Fresh Groceries
@@ -207,18 +212,15 @@ export default async function Home({
 						</div>
 					</div>
 				</section>
-			</div>
+			</div> */}
 
 			{/* Featured Banner Section */}
-			<BannerSection />
+			{/* <BannerSection /> */}
 
-			<AlgoliaTrendingListings />
+			{/* <AlgoliaTrendingListings /> */}
 
 			{/* Popular Brands */}
-			<HomePopularBrandsSection />
-
-			{/* Shop by Style */}
-			<ShopByStyleSection />
+			{/* <HomePopularBrandsSection /> */}
 		</main>
 	);
 }
