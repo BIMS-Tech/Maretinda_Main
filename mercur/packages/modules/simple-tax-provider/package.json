@@ -1,0 +1,20 @@
+{
+  "name": "@mercurjs/simple-tax-provider",
+  "version": "1.0.0",
+  "description": "Simple tax provider for Medusa without external dependencies",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@medusajs/framework": "2.8.6",
+    "@medusajs/utils": "2.8.6"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
+
+
+

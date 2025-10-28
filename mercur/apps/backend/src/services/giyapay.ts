@@ -387,10 +387,16 @@ class GiyaPayService extends MedusaService({}) {
       // Get config from database
       const result = await pgConnection.raw('SELECT * FROM giyapay_config ORDER BY created_at DESC LIMIT 1')
       
+      console.log('[GiyaPayService] Query result:', {
+        hasResult: !!result,
+        hasRows: !!(result && result.rows),
+        rowCount: result?.rows?.length || 0,
+        firstRow: result?.rows?.[0] || null
+      })
+      
       if (result && result.rows && result.rows.length > 0) {
         const config = result.rows[0]
-        console.log('[GiyaPayService] Using database config')
-        return {
+        const returnConfig = {
           id: config.id,
           merchantId: config.merchant_id,
           merchantSecret: config.merchant_secret,
@@ -399,7 +405,15 @@ class GiyaPayService extends MedusaService({}) {
           createdAt: config.created_at,
           updatedAt: config.updated_at,
         }
+        console.log('[GiyaPayService] ✅ Returning database config:', {
+          merchantId: returnConfig.merchantId,
+          sandboxMode: returnConfig.sandboxMode,
+          isEnabled: returnConfig.isEnabled
+        })
+        return returnConfig
       }
+      
+      console.log('[GiyaPayService] ❌ No rows found in giyapay_config table')
       
       // Fall back to environment variables
       const envConfig = {

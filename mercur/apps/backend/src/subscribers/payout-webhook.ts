@@ -1,50 +1,22 @@
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
+// DISABLED: Payout module removed (Stripe dependency removed)
+// This subscriber has been disabled because the payout module is no longer in use
+// If you need payout functionality in the future, you'll need to implement a 
+// non-Stripe alternative
 
-import {
-  PayoutWebhookActionPayload,
-  PayoutWebhookEvents
-} from '@mercurjs/framework'
-import { PAYOUT_MODULE } from '@mercurjs/payout'
-import { PayoutModuleService } from '@mercurjs/payout'
+/*
+Original payout webhook handler disabled - Stripe dependency removed
+This file needs to be reimplemented if payout functionality is required
+without Stripe integration.
+*/
 
-import { processPayoutWebhookActionWorkflow } from '../workflows/payout/workflows'
-
-type SerializedBuffer = {
-  data: ArrayBuffer
-  type: 'Buffer'
+// Export empty to prevent import errors
+export default async function payoutWebhookHandler() {
+  // Disabled - no operation
 }
 
-export default async function payoutWebhookHandler({
-  event,
-  container
-}: SubscriberArgs<PayoutWebhookActionPayload>) {
-  const payoutService: PayoutModuleService = container.resolve(PAYOUT_MODULE)
-
-  const input = event.data
-
-  if ((input.rawData as unknown as SerializedBuffer)?.type === 'Buffer') {
-    input.rawData = Buffer.from(
-      (input.rawData as unknown as SerializedBuffer).data
-    )
-  }
-
-  const actionAndData = await payoutService.getWebhookActionAndData(input)
-
-  if (!actionAndData) {
-    return
-  }
-
-  await processPayoutWebhookActionWorkflow(container).run({
-    input: {
-      action: actionAndData.action,
-      data: actionAndData.data
-    }
-  })
-}
-
-export const config: SubscriberConfig = {
-  event: PayoutWebhookEvents.ACCOUNT_WEBHOOK_RECEIVED,
+export const config = {
+  event: 'disabled',
   context: {
-    subscriberId: 'payout-account-webhook-handler'
+    subscriberId: 'payout-webhook-handler-disabled'
   }
 }

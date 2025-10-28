@@ -105,6 +105,13 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       
       const dbConfig = await giyaPayService.getConfigForAPI()
       
+      console.log('[GiyaPay Provider] 🔍 Got dbConfig from service:', {
+        hasConfig: !!dbConfig,
+        merchantId: dbConfig?.merchantId || 'NONE',
+        isEnabled: dbConfig?.isEnabled || false,
+        fullConfig: dbConfig
+      })
+      
       if (dbConfig && dbConfig.isEnabled) {
         console.log('[GiyaPay Provider] ✅ Using DATABASE config:', {
           merchantId: dbConfig.merchantId,
@@ -119,7 +126,14 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
           isEnabled: dbConfig.isEnabled,
         }
       }
+      
+      console.log('[GiyaPay Provider] ❌ Config check failed:', {
+        hasConfig: !!dbConfig,
+        isEnabled: dbConfig?.isEnabled,
+        reason: !dbConfig ? 'No config returned' : !dbConfig.isEnabled ? 'Config disabled' : 'Unknown'
+      })
     } catch (error) {
+      console.log('[GiyaPay Provider] ❌ Exception caught:', error.message)
       console.log('[GiyaPay Provider] Database config not available, falling back to environment variables')
     }
     
@@ -127,8 +141,8 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
     const envConfig = {
       merchantId: process.env.GIYAPAY_MERCHANT_ID || "merchant1234",
       merchantSecret: process.env.GIYAPAY_MERCHANT_SECRET || "098f6bcd4621d373cade4e832627b4f6",
-      sandboxMode: process.env.GIYAPAY_SANDBOX_MODE === "true" || true,
-      isEnabled: !!(process.env.GIYAPAY_MERCHANT_ID && process.env.GIYAPAY_MERCHANT_SECRET) || true,
+      sandboxMode: process.env.GIYAPAY_SANDBOX_MODE === "true",
+      isEnabled: !!(process.env.GIYAPAY_MERCHANT_ID && process.env.GIYAPAY_MERCHANT_SECRET),
     }
     
     console.log('[GiyaPay Provider] ⚠️ Using ENVIRONMENT config (fallback):', {

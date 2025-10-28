@@ -1,25 +1,13 @@
+// DISABLED: Payout module removed (Stripe dependency removed)
 import { StepResponse, createStep } from '@medusajs/framework/workflows-sdk'
-
-import { CreatePayoutAccountDTO } from '@mercurjs/framework'
-import { PAYOUT_MODULE } from '@mercurjs/payout'
-import { PayoutModuleService } from '@mercurjs/payout'
 
 export const createPayoutAccountStep = createStep(
   'create-payout-account',
-  async (input: CreatePayoutAccountDTO, { container }) => {
-    const service = container.resolve<PayoutModuleService>(PAYOUT_MODULE)
-
-    const payoutAccount = await service.createPayoutAccount(input)
-
-    return new StepResponse(payoutAccount, payoutAccount.id)
+  async (_input: any, _context) => {
+    // Disabled - payout functionality removed
+    return new StepResponse({ id: 'disabled' }, 'disabled')
   },
-  async (id: string, { container }) => {
-    if (!id) {
-      return
-    }
-
-    const service = container.resolve<PayoutModuleService>(PAYOUT_MODULE)
-
-    await service.deletePayoutAccounts(id)
+  async (_id: string, _context) => {
+    // Disabled - no cleanup needed
   }
 )

@@ -5,7 +5,8 @@ import { StepResponse, createStep } from '@medusajs/framework/workflows-sdk'
 
 import { SELLER_MODULE, SellerModuleService } from '@mercurjs/seller'
 
-import sellerPayoutAccount from '../../../links/seller-payout-account'
+// DISABLED: Payout module removed (Stripe dependency removed)
+// import sellerPayoutAccount from '../../../links/seller-payout-account'
 import sellerProduct from '../../../links/seller-product'
 import sellerStockLocation from '../../../links/seller-stock-location'
 
@@ -65,16 +66,9 @@ export const recalculateOnboardingStep = createStep(
     })
     const locations_shipping = !!sellerLocations.length
 
-    /* Stripe connection */
-    const {
-      data: [sellerPayoutAccountRelations]
-    } = await query.graph({
-      entity: sellerPayoutAccount.entryPoint,
-      fields: ['id'],
-      filters: { seller_id }
-    })
-
-    const stripe_connection = !!sellerPayoutAccountRelations
+    /* Stripe connection - DISABLED (Stripe removed) */
+    // Stripe connection is no longer checked since payout module is removed
+    const stripe_connection = false // Always false since Stripe is removed
 
     /* Update onboarding */
     const {

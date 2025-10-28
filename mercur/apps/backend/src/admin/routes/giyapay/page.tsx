@@ -148,6 +148,19 @@ const GiyaPayConfigPage = () => {
               </Text>
             </div>
 
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="isEnabled"
+                checked={isEnabled}
+                onCheckedChange={setIsEnabled}
+                disabled={!isEditing}
+              />
+              <Label htmlFor="isEnabled">Enable GiyaPay</Label>
+              <Text className="text-ui-fg-subtle" size="small">
+                {isEnabled ? "GiyaPay is enabled and will be available at checkout" : "GiyaPay is disabled and will not be available"}
+              </Text>
+            </div>
+
             {isEditing && (
               <div className="flex space-x-2">
                 <Button

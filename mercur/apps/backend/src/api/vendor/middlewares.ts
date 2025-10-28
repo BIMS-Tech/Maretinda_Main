@@ -19,8 +19,9 @@ import { vendorMeMiddlewares } from './me/middlewares'
 import { vendorMembersMiddlewares } from './members/middlewares'
 import { vendorNotificationMiddlewares } from './notifications/middlewares'
 import { vendorOrderMiddlewares } from './orders/middlewares'
-import { vendorPayoutAccountMiddlewares } from './payout-account/middlewares'
-import { vendorPayoutMiddlewares } from './payouts/middlewares'
+// DISABLED: Payout removed (Stripe dependency removed)
+// import { vendorPayoutAccountMiddlewares } from './payout-account/middlewares'
+// import { vendorPayoutMiddlewares } from './payouts/middlewares'
 import { vendorPriceListsMiddlewares } from './price-lists/middlewares'
 import { vendorProductCategoriesMiddlewares } from './product-categories/middlewares'
 import { vendorProductCollectionsMiddlewares } from './product-collections/middlewares'
@@ -93,9 +94,10 @@ export const vendorMiddlewares: MiddlewareRoute[] = [
   ...vendorFulfillmentSetsMiddlewares,
   ...vendorStockLocationsMiddlewares,
   ...vendorShippingOptionsMiddlewares,
-  ...vendorPayoutAccountMiddlewares,
+  // DISABLED: Payout middlewares removed (Stripe dependency removed)
+  // ...vendorPayoutAccountMiddlewares,
   ...vendorInventoryItemsMiddlewares,
-  ...vendorPayoutMiddlewares,
+  // ...vendorPayoutMiddlewares,
   ...vendorOrderMiddlewares,
   ...vendorReturnRequestsMiddlewares,
   ...vendorInventoryItemsMiddlewares,
