@@ -24,7 +24,7 @@ export default async function passwordResetHandler({
     channel: 'email',
     template: ResendNotificationTemplates.FORGOT_PASSWORD,
     content: {
-      subject: 'Mercur - Reset password request'
+      subject: 'Maretinda - Reset password request'
     },
     data: {
       data: {

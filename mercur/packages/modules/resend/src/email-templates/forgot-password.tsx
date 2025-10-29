@@ -17,19 +17,19 @@ export const ForgotPasswordEmailTemplate: React.FC<Readonly<EmailTemplateProps>>
     }}>
       <h1>Have you forgotten your password?</h1>
       <p>
-        We have received a request to reset the password for your Mercur account. Please click the button below to set a
+        We have received a request to reset the password for your Maretinda account. Please click the button below to set a
         new password. Please note, the link is valid for the next 24 hours only.
       </p>
       <div>
         <a href={`${data.url}`}>
-          <button>Reset Password</button>
+          <button type="button">Reset Password</button>
         </a>
       </div>
       <p>If you did not request this change, please ignore this email.</p>
       <div style={{ marginTop: 32 }}>
         <div>Best regards,</div>
-        <div style={{ fontWeight: 600 }}>The Mercur Team</div>
-        <div style={{ color: '#888', marginTop: 4 }}>mercurjs.com</div>
+        <div style={{ fontWeight: 600 }}>The Maretinda Team</div>
+        <div style={{ color: '#888', marginTop: 4 }}>bims.tech</div>
       </div>
     </div>
   )
