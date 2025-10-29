@@ -63,6 +63,7 @@
     "awilix": "^8.0.1",
     "pg": "^8.13.0",
     "resend": "^4.1.2",
+    "stripe": "^17.4.0",
     "talkjs": "^0.38.0"
   },
   "devDependencies": {
