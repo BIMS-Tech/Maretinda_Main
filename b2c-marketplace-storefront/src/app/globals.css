@@ -191,7 +191,7 @@ button:disabled svg path {
 }
 
 .product-details-tab button[aria-selected="true"] {
-	@apply text-black border-b-[3px] border-b-black;
+	@apply text-black border-0 shadow-none border-b-[3px] border-b-black;
 }
 
 .slider-products .arrow-button.arrow-right {
