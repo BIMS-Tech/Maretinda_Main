@@ -13,6 +13,7 @@ export default {
 		'./src/pages/**/*.{js,ts,jsx,tsx,mdx}',
 		'./src/components/**/*.{js,ts,jsx,tsx,mdx}',
 		'./src/app/**/*.{js,ts,jsx,tsx,mdx}',
+		'./node_modules/@medusajs/ui/dist/**/*.{js,jsx,ts,tsx}',
 	],
 	darkMode: 'class',
 	plugins: [
@@ -28,6 +29,7 @@ export default {
 			});
 		}),
 	],
+	presets: [require('@medusajs/ui-preset')],
 	theme: {
 		extend: {
 			backgroundColor: {
