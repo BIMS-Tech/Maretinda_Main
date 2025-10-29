@@ -20,11 +20,14 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 				{items.map(({ path, label }, index) => {
 					const isActive = pathname === path;
 					return (
-						<li className="inline-flex items-center" key={path}>
+						<li
+							className="inline-flex items-center group"
+							key={path}
+						>
 							{index > 0 && <ForwardIcon size={16} />}
 							<LocalizedClientLink
 								className={cn(
-									'inline-flex items-center label-md text-primary',
+									'inline-flex items-center label-md text-primary group-last:!font-bold',
 									index > 0 && 'ml-2',
 									isActive && 'text-secondary',
 								)}
