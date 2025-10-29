@@ -104,7 +104,7 @@ button:disabled svg path {
 }
 
 .chip-wrapper {
-	@apply bg-component inline-flex items-center px-3 py-1 rounded-sm label-sm border hover:bg-component-hover relative;
+	@apply bg-[#f2f2f2] inline-flex items-center px-3 py-1 rounded-[50px] label-md !font-medium border hover:bg-component-hover relative;
 }
 .chip-wrapper svg path {
 	@apply fill-secondary;
@@ -133,10 +133,13 @@ button:disabled svg path {
 	scrollbar-width: none;
 }
 .product-details {
-	@apply text-md;
+	@apply text-base;
 }
 .product-details ul {
-	@apply list-disc text-md pl-5;
+	@apply list-disc text-base pl-5;
+}
+.product-details ul li {
+	@apply py-1.5;
 }
 .embla__container {
 	touch-action: pan-y pinch-zoom;
@@ -169,4 +172,44 @@ button:disabled svg path {
 
 .arrow-button {
 	@apply flex items-center justify-center z-20 w-9 sm:w-12 h-9 sm:h-12 p-2 bg-white rounded-full absolute -translate-y-1/2  top-1/2 shadow-[0px_4px_4px_0px_#00000040];
+}
+
+.chip-color svg path {
+	@apply fill-none;
+}
+
+.accordion-multiple div {
+	@apply last:border-t-0 last:rounded-t-none first:rounded-b-none;
+}
+
+.product-details-tab div[role="tablist"] {
+	@apply border-b-[1px] border-black/20;
+}
+
+.product-details-tab button {
+	@apply border-0 border-b-[3px] rounded-none text-black/60 text-[13px] px-1 sm:text-base pb-5 sm:px-5 -mb-[2px];
+}
+
+.product-details-tab button[aria-selected="true"] {
+	@apply text-black border-b-[3px] border-b-black;
+}
+
+.slider-products .arrow-button.arrow-right {
+	@apply right-1 sm:-right-4;
+}
+
+.slider-products .arrow-button.arrow-left {
+	@apply left-1 sm:-left-4;
+}
+
+.slider-products .slick-slide > div {
+	@apply px-2.5;
+}
+
+.slider-products .slick-list {
+	@apply -mx-2.5;
+}
+
+.slider-products .slick-track .slick-slide {
+	@apply min-h-[400px] w-[295px];
 }
