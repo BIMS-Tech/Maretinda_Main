@@ -1,17 +1,15 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { Badge } from '@medusajs/ui';
 import clsx from 'clsx';
 import type { BaseHit, Hit } from 'instantsearch.js';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/atoms';
+import { Avatar, Button, StarRating } from '@/components/atoms';
+import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { listProducts } from '@/lib/data/products';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
-
-import { SkeletonProductCard } from './SkeletonProductCard';
 
 export const ProductCard = ({
 	product,
@@ -29,57 +27,97 @@ export const ProductCard = ({
 	});
 
 	return (
-		<div
-			className={clsx(
-				'relative group border rounded-sm flex flex-col justify-between p-1 w-full lg:w-[calc(25%-1rem)] min-w-[250px]',
-			)}
-		>
-			<div className="relative w-full h-full bg-primary aspect-square">
-				<LocalizedClientLink href={`/products/${product.handle}`}>
-					<div className="overflow-hidden rounded-sm w-full h-full flex justify-center align-center ">
-						{product.thumbnail ? (
-							<Image
-								alt={product.title}
-								className="object-cover aspect-square w-full object-center h-full lg:group-hover:-mt-14 transition-all duration-300 rounded-xs"
-								height={360}
-								priority
-								src={decodeURIComponent(product.thumbnail)}
-								width={360}
+		<div className="pb-5">
+			<div
+				className={clsx(
+					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] min-w-[250px] min-h-[400px] overflow-hidden',
+				)}
+			>
+				<div className=" w-full bg-primary">
+					<LocalizedClientLink href={`/products/${product.handle}`}>
+						<div className="relative overflow-hidden w-full h-full flex justify-center align-center max-h-[220px]">
+							{product.thumbnail ? (
+								<Image
+									alt={product.title}
+									className="object-cover w-full object-center h-full transition-all duration-300"
+									height={220}
+									priority
+									src={decodeURIComponent(product.thumbnail)}
+									width={295}
+								/>
+							) : (
+								<Image
+									alt="Product placeholder"
+									height={220}
+									src="/images/placeholder.svg"
+									width={295}
+								/>
+							)}
+							<Badge
+								className="absolute top-3.5 left-3.5 z-10 bg-brand-purple-900 text-white text-[11px] border-0 px-1.5 py-1"
+								size="2xsmall"
+							>
+								-40%
+							</Badge>
+							<div className="absolute top-0 right-0 z-10 group-hover:block hidden">
+								{/* Add to Wishlist */}
+								<WishlistButton
+									className="border-0"
+									// user={user}
+									productId={product.id}
+									user={null}
+									wishlist={[]}
+								/>
+							</div>
+						</div>
+					</LocalizedClientLink>
+				</div>
+				<LocalizedClientLink
+					className="relative flex flex-1"
+					href={`/products/${product.handle}`}
+				>
+					<div className="flex flex-col justify-between p-3.5 w-full">
+						<div>
+							<h3 className="heading-sm truncate">
+								{product.title}
+							</h3>
+							<div className="flex items-center gap-2 mt-2">
+								<p className="font-medium text-red-500">
+									{cheapestPrice?.calculated_price}
+								</p>
+								{cheapestPrice?.calculated_price !==
+									cheapestPrice?.original_price && (
+									<p className="text-md !font-medium text-gray-500 line-through">
+										{cheapestPrice?.original_price}
+									</p>
+								)}
+							</div>
+							<div className="flex items-center gap-2 mt-2">
+								<StarRating rate={4} starSize={16} />
+								<span className="text-md text-black/60 !font-medium">
+									(88)
+								</span>
+							</div>
+						</div>
+
+						<div className="flex items-center gap-2.5 mt-6">
+							<Avatar
+								className="rounded-full h-10 w-10"
+								initials="M"
+								size="large"
+								src={
+									// item.order.seller.photo ||
+									'/talkjs-placeholder.jpg'
+								}
 							/>
-						) : (
-							<Image
-								alt="Product placeholder"
-								height={100}
-								src="/images/placeholder.svg"
-								width={100}
-							/>
-						)}
+							<p className="label-lg text-black">ZARA</p>
+						</div>
 					</div>
-				</LocalizedClientLink>
-				<LocalizedClientLink href={`/products/${product.handle}`}>
-					<Button className="absolute rounded-sm bg-action text-action-on-primary h-auto lg:h-[48px] lg:group-hover:block hidden w-full uppercase bottom-1 z-10">
-						See More
+					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-3.5 z-10">
+						Add to Cart
 					</Button>
 				</LocalizedClientLink>
 			</div>
-			<LocalizedClientLink href={`/products/${product.handle}`}>
-				<div className="flex justify-between p-4">
-					<div className="w-full">
-						<h3 className="heading-sm truncate">{product.title}</h3>
-						<div className="flex items-center gap-2 mt-2">
-							<p className="font-medium">
-								{cheapestPrice?.calculated_price}
-							</p>
-							{cheapestPrice?.calculated_price !==
-								cheapestPrice?.original_price && (
-								<p className="text-sm text-gray-500 line-through">
-									{cheapestPrice?.original_price}
-								</p>
-							)}
-						</div>
-					</div>
-				</div>
-			</LocalizedClientLink>
 		</div>
 	);
 };

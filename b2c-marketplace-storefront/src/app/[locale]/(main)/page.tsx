@@ -7,10 +7,9 @@ import {
 	FeaturedProductsSection,
 	Hero,
 	HomeCategories,
-	// HomePopularBrandsSection,
-	// HomeProductSection,
 	ShopByStyleSection,
 	SpecialOffer,
+	TrendingProducts,
 } from '@/components/sections';
 
 export const metadata: Metadata = {
@@ -59,6 +58,16 @@ export default async function Home({
 				paragraph="Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."
 			/>
 
+			{/* Trending Products */}
+			<div className="container w-full">
+				{/* <HomeProductSection
+					heading="Trending Products"
+					home
+					locale={locale}
+				/> */}
+				<TrendingProducts locale={locale} />
+			</div>
+
 			{/* Quick Category Access */}
 			<div className="container w-full mb-5">
 				<HomeCategories heading="Categories" />
@@ -81,15 +90,6 @@ export default async function Home({
 			<div className="mb-10">
 				<BlogSection />
 			</div>
-
-			{/* Trending Products */}
-			{/* <div className="px-4 lg:px-8 w-full">
-				<HomeProductSection
-					heading="Trending Now"
-					home
-					locale={locale}
-				/>
-			</div> */}
 
 			{/* Category-Specific Sections */}
 			{/* <div className="px-4 lg:px-8 w-full">

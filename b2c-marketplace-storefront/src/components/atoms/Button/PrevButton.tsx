@@ -4,7 +4,7 @@ import type { CustomArrowProps } from 'react-slick';
 const PrevButton = ({ onClick }: CustomArrowProps) => {
 	return (
 		<button
-			className="arrow-button left-1 sm:left-8"
+			className="arrow-button arrow-left left-1 sm:left-8"
 			onClick={onClick}
 			type="button"
 		>

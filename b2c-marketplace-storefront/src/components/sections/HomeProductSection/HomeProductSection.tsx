@@ -1,3 +1,4 @@
+import Heading from '@/components/atoms/Heading/Heading';
 import { HomeProductsCarousel } from '@/components/organisms';
 import { AlgoliaProductsCarousel } from '@/components/organisms/HomeProductsCarousel/AlgoliaProductsCarousel';
 import { getRegion } from '@/lib/data/regions';
@@ -23,9 +24,9 @@ export const HomeProductSection = async ({
 
 	return (
 		<section className="py-8 w-full">
-			<h2 className="mb-6 heading-lg font-bold tracking-tight uppercase">
-				{heading}
-			</h2>
+			<div className="mb-10">
+				<Heading label={heading} />
+			</div>
 			{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
 				<HomeProductsCarousel
 					home={home}
