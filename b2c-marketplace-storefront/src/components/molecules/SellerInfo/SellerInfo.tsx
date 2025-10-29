@@ -25,26 +25,32 @@ export const SellerInfo = ({
 			: 0;
 
 	return (
-		<div className="flex gap-4 w-full">
-			<div className="relative h-12 w-12 overflow-hidden rounded-sm">
-				<SellerAvatar alt={name} photo={photo} size={56} />
+		<div className="flex items-center gap-3 w-full">
+			<div className="relative h-8 w-8 overflow-hidden rounded-full">
+				<SellerAvatar alt={name} photo={photo} size={32} />
 			</div>
-			<div className="w-[90%]">
-				<h3 className="heading-sm text-primary">{name}</h3>
-				<div className="flex items-center gap-2 border-b pb-4">
-					<StarRating rate={rating || 0} starSize={16} />
-					<span className="text-md text-secondary">
-						{reviewCount} reviews
-					</span>
-				</div>
-				<div className="mt-4">
-					{!header &&
-						reviews
-							?.filter((rev) => rev !== null)
-							.slice(-3)
-							.map((review) => (
-								<SellerReview key={review.id} review={review} />
-							))}
+			<div className="w-[90%] flex items-center justify-between">
+				<h3 className="text-md !font-medium text-[#181818]">{name}</h3>
+				<div>
+					<div className="flex items-center gap-2">
+						<StarRating rate={rating || 0} starSize={20} />
+						<span className="text-md text-black/60 !font-medium">
+							<span className="text-black">4.5/</span>5 (
+							{reviewCount} reviews)
+						</span>
+					</div>
+					<div className="">
+						{!header &&
+							reviews
+								?.filter((rev) => rev !== null)
+								.slice(-3)
+								.map((review) => (
+									<SellerReview
+										key={review.id}
+										review={review}
+									/>
+								))}
+					</div>
 				</div>
 			</div>
 		</div>

@@ -2,11 +2,13 @@ import type { HttpTypes } from '@medusajs/types';
 
 import {
 	ProductAdditionalAttributes,
-	ProductDetailsFooter,
+	// ProductDetailsFooter,
 	ProductDetailsHeader,
 	ProductDetailsSeller,
-	ProductDetailsShipping,
-	ProductPageDetails,
+	// ProductDetailsShipping,
+	ProductFreeDeliveryDetails,
+	// ProductPageDetails,
+	ProductReturnDeliveryDetails,
 } from '@/components/cells';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -46,16 +48,23 @@ export const ProductDetails = async ({
 				user={user}
 				wishlist={wishlist}
 			/>
-			<ProductPageDetails details={product?.description || ''} />
+			<ProductDetailsSeller seller={product?.seller} />
+
+			<div className="accordion-multiple mt-5">
+				<ProductFreeDeliveryDetails />
+				<ProductReturnDeliveryDetails />
+			</div>
+
+			{/* <ProductPageDetails details={product?.description || ''} /> */}
 			<ProductAdditionalAttributes
 				attributes={product?.attribute_values || []}
 			/>
-			<ProductDetailsShipping />
-			<ProductDetailsSeller seller={product?.seller} />
-			<ProductDetailsFooter
+			{/* <ProductDetailsShipping /> */}
+
+			{/* <ProductDetailsFooter
 				posted={product?.created_at}
 				tags={product?.tags || []}
-			/>
+			/> */}
 		</div>
 	);
 };

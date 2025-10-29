@@ -4,8 +4,9 @@ import type { HttpTypes } from '@medusajs/types';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { Button } from '@/components/atoms';
+import { Button, StarRating, Tag } from '@/components/atoms';
 import { ErrorMessage, ProductVariants } from '@/components/molecules';
+import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
 import { Chat } from '@/components/organisms/Chat/Chat';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart } from '@/lib/data/cart';
@@ -110,25 +111,75 @@ export const ProductDetailsHeader = ({
 		: false;
 
 	return (
-		<div className="border rounded-sm p-5">
+		<div className="">
 			<div className="flex justify-between">
 				<div>
 					<h2 className="label-md text-secondary">
 						{/* {product?.brand || "No brand"} */}
 					</h2>
-					<h1 className="heading-lg text-primary">{product.title}</h1>
+					<h1 className="heading-lg text-primary font-lora !font-bold">
+						{product.title}
+					</h1>
+					<div className="flex items-center gap-2 my-2">
+						<StarRating rate={4} starSize={16} />
+						<span className="text-md text-black/60 !font-medium">
+							<span className="text-black">4.5/</span>5
+						</span>
+					</div>
 					<div className="mt-2 flex gap-2 items-center">
-						<span className="heading-md text-primary">
+						<span className="heading-md text-primary !font-bold">
 							{variantPrice?.calculated_price}
 						</span>
-						{variantPrice?.calculated_price_number !==
+						{/* REMOVE THE "!"" IN INTERGRATION */}
+						{!variantPrice?.calculated_price_number !==
 							variantPrice?.original_price_number && (
-							<span className="label-md text-secondary line-through">
+							<span className="heading-md line-through text-black/30 !font-bold">
 								{variantPrice?.original_price}
 							</span>
 						)}
+						<div className="flex items-center justify-center gap-3 ml-6">
+							<Tag value="-40%" />
+							<div className="h-3.5 w-[1px] bg-black" />
+							<span className="text-[#00FF66] text-base">
+								In Stock
+							</span>
+						</div>
 					</div>
+					<div
+						className="text-base text-black/60 mt-4"
+						dangerouslySetInnerHTML={{
+							__html: product.description || '',
+						}}
+					/>
 				</div>
+			</div>
+
+			<div className="h-[1px] my-5 w-full bg-black/10" />
+
+			{/* Product Variants */}
+			<ProductVariants
+				product={product}
+				selectedVariant={selectedVariant}
+			/>
+
+			<div className="flex items-center justify-between gap-4 mb-5">
+				<UpdateCartItemButton
+					isProductPage
+					lineItemId={product.id}
+					quantity={1} //Change this to actual value
+				/>
+				{/* Add to Cart */}
+				<Button
+					className="w-full uppercase py-3 flex justify-center !font-normal !text-black"
+					disabled={isAdding || !variantStock || !variantHasPrice}
+					loading={isAdding}
+					onClick={handleAddToCart}
+					size="large"
+				>
+					{variantStock && variantHasPrice
+						? 'ADD TO CART'
+						: 'OUT OF STOCK'}
+				</Button>
 				<div>
 					{/* Add to Wishlist */}
 					<WishlistButton
@@ -138,23 +189,7 @@ export const ProductDetailsHeader = ({
 					/>
 				</div>
 			</div>
-			{/* Product Variants */}
-			<ProductVariants
-				product={product}
-				selectedVariant={selectedVariant}
-			/>
-			{/* Add to Cart */}
-			<Button
-				className="w-full uppercase mb-4 py-3 flex justify-center"
-				disabled={isAdding || !variantStock || !variantHasPrice}
-				loading={isAdding}
-				onClick={handleAddToCart}
-				size="large"
-			>
-				{variantStock && variantHasPrice
-					? 'ADD TO CART'
-					: 'OUT OF STOCK'}
-			</Button>
+
 			{error && (
 				<ErrorMessage data-testid="add-to-cart-error" error={error} />
 			)}

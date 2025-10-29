@@ -1,5 +1,9 @@
 import NotFound from '@/app/not-found';
-import { ProductDetails, ProductGallery } from '@/components/organisms';
+import {
+	ProductDetails,
+	ProductGallery,
+	ProductTabs,
+} from '@/components/organisms';
 import { listProducts } from '@/lib/data/products';
 
 import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
@@ -24,17 +28,18 @@ export const ProductDetailsPage = async ({
 
 	return (
 		<>
-			<div className="flex flex-col md:flex-row lg:gap-12">
-				<div className="md:w-1/2 md:px-2">
+			<div className="flex flex-col md:flex-row gap-5 lg:gap-14">
+				<div className="md:w-1/2 ">
 					<ProductGallery images={prod?.images || []} />
 				</div>
-				<div className="md:w-1/2 md:px-2">
+				<div className="md:w-1/2 ">
 					<ProductDetails locale={locale} product={prod} />
 				</div>
 			</div>
-			<div className="my-8">
+			<ProductTabs product={prod} />
+			<div className="my-8 mt-16">
 				<HomeProductSection
-					heading="More from this seller"
+					heading="People Also Buy"
 					locale={locale}
 					products={prod.seller?.products}
 					seller_handle={prod.seller?.handle}

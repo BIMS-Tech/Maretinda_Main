@@ -17,6 +17,10 @@ import { AlgoliaProductSidebar } from './ProductSidebar/AlgoliaProductSidebar';
 import { ProductSidebar } from './ProductSidebar/ProductSidebar';
 import { ProductsList } from './ProductsList/ProductsList';
 import { ProductsPagination } from './ProductsPagination/ProductsPagination';
+import ProductTabDetails from './ProductTabContent/ProductTabDetails';
+import ProductTabRating from './ProductTabContent/ProductTabRating';
+import ProductTabShipping from './ProductTabContent/ProductTabShipping';
+import { ProductTabs } from './ProductTabs/ProductTabs';
 import { ReviewsToWrite } from './Reviews/ReviewsToWrite';
 import { ReviewsWritten } from './Reviews/ReviewsWritten';
 import { SellerFooter } from './SellerFooter/SellerFooter';
@@ -25,29 +29,31 @@ import { SellerTabs } from './SellerTabs/SellerTabs';
 import { WishlistTabs } from './WishlistTabs/WishlistTabs';
 
 export {
-	ProductCard,
-	BrandCard,
-	CategoryCard,
+	Addresses,
+	AlgoliaProductSidebar,
 	BlogCard,
-	ProductListingHeader,
-	ProductsList,
-	ProductsPagination,
-	ProductSidebar,
-	ProductListingActiveFilters,
-	Header,
+	BrandCard,
+	CartItems,
+	CartSummary,
+	CategoryCard,
 	Footer,
 	GalleryCarousel,
-	SellerHeading,
-	SellerFooter,
-	SellerTabs,
-	CartSummary,
-	CartItems,
-	WishlistTabs,
+	Header,
 	HomeProductsCarousel,
-	ProductGallery,
+	ProductCard,
 	ProductDetails,
-	AlgoliaProductSidebar,
-	Addresses,
-	ReviewsToWrite,
+	ProductGallery,
+	ProductListingActiveFilters,
+	ProductListingHeader,
+	ProductSidebar,
+	ProductsList,
+	ProductsPagination,
+	ProductTabDetails, ProductTabRating,
+	ProductTabs, ProductTabShipping, ReviewsToWrite,
 	ReviewsWritten,
+	SellerFooter,
+	SellerHeading,
+	SellerTabs,
+	WishlistTabs
 };
+

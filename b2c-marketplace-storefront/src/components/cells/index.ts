@@ -25,43 +25,45 @@ import { ProductDetailsSeller } from './ProductDetailsSeller/ProductDetailsSelle
 import { ProductDetailsSellerReviews } from './ProductDetailsSellerReviews/ProductDetailsSellerReviews';
 import { ProductDetailsShipping } from './ProductDetailsShipping/ProductDetailsShipping';
 import { ProductFilter } from './ProductFilter/ProductFilter';
+import { ProductFreeDeliveryDetails } from './ProductFreeDeliveryDetails/ProductFreeDeliveryDetails';
 import { ProductPageDetails } from './ProductPageDetails/ProductPageDetails';
+import { ProductReturnDeliveryDetails } from './ProductReturnDeliveryDetails/ProductReturnDeliveryDetails';
 import { SellerRatingFilter } from './SellerRatingFilter/SellerRatingFilter';
 import { SellerReviewTab } from './SellerReviewTab/SellerReviewTab';
 import { SizeFilter } from './SizeFilter/SizeFilter';
 import { WishlistItem } from './WishlistItem/WishlistItem';
 
 export {
-	Navbar,
-	Carousel,
-	Pagination,
-	ProductFilter,
-	BrandFilter,
-	PriceFilter,
-	SizeFilter,
-	ConditionFilter,
-	ColorFilter,
-	SellerRatingFilter,
 	ActiveFilterElement,
-	MobileNavbar,
-	ProductDetailsHeader,
-	ProductPageDetails,
-	ProductDetailsMeasurements,
-	ProductDetailsShipping,
-	ProductDetailsSeller,
-	ProductDetailsSellerReviews,
-	ProductDetailsFooter,
-	ProductCarousel,
-	SellerReviewTab,
-	CartItemsHeader,
-	CartItemsFooter,
-	CartItemsProducts,
-	HeadingCategories,
+	BrandFilter,
+	Carousel,
 	CartDropdown,
+	CartItemsFooter,
+	CartItemsHeader,
+	CartItemsProducts,
+	ColorFilter,
+	ConditionFilter,
+	HeadingCategories,
 	LabeledInput,
+	MobileNavbar,
+	Navbar,
 	OrderAddresses,
 	OrderProductListItem,
 	OrderTimeline,
-	WishlistItem,
+	Pagination,
+	PriceFilter,
 	ProductAdditionalAttributes,
+	ProductCarousel,
+	ProductDetailsFooter,
+	ProductDetailsHeader,
+	ProductDetailsMeasurements,
+	ProductDetailsSeller,
+	ProductDetailsSellerReviews,
+	ProductDetailsShipping,
+	ProductFilter,
+	ProductFreeDeliveryDetails, ProductPageDetails, ProductReturnDeliveryDetails, SellerRatingFilter,
+	SellerReviewTab,
+	SizeFilter,
+	WishlistItem
 };
+

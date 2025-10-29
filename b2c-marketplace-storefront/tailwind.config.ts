@@ -135,6 +135,7 @@ export default {
 					pressed: 'rgba(var(--content-action-primary-pressed))',
 				},
 				brand: {
+					cta: 'rgba(var(--brand-cta-400))',
 					purple: {
 						900: 'rgba(var(--brand-purple-900))',
 					},

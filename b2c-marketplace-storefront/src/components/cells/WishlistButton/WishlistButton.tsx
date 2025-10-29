@@ -6,16 +6,19 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/atoms';
 import { HeartFilledIcon, HeartIcon } from '@/icons';
 import { addWishlistItem, removeWishlistItem } from '@/lib/data/wishlist';
+import { cn } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
 export const WishlistButton = ({
 	productId,
 	wishlist,
 	user,
+	className,
 }: {
 	productId: string;
 	wishlist?: Wishlist[];
 	user?: HttpTypes.StoreCustomer | null;
+	className?: string;
 }) => {
 	const [isWishlistAdding, setIsWishlistAdding] = useState(false);
 	const [isWishlisted, setIsWishlisted] = useState(
@@ -28,9 +31,10 @@ export const WishlistButton = ({
 		);
 	}, [wishlist, productId]);
 
-	if (!user) {
-		return null;
-	}
+	//  COMMENTED OUT FOR DESIGN PURPOSES
+	// if (!user) {
+	// 	return null;
+	// }
 
 	const handleAddToWishlist = async () => {
 		try {
@@ -60,9 +64,12 @@ export const WishlistButton = ({
 			setIsWishlistAdding(false);
 		}
 	};
+	const baseClasses =
+		'w-[46px] h-[46px] p-0 flex items-center justify-center border border-black !bg-transparent';
+
 	return (
 		<Button
-			className="w-10 h-10 p-0 flex items-center justify-center"
+			className={cn(baseClasses, className)}
 			disabled={isWishlistAdding}
 			loading={isWishlistAdding}
 			onClick={

@@ -14,6 +14,7 @@ import { ProductListing } from './ProductListing/ProductListing';
 import { SellerPageHeader } from './SellerPageHeader/SellerPageHeader';
 import { ShopByStyleSection } from './ShopByStyle/ShopByStyleSection';
 import SpecialOffer from './SpecialOffer/SpecialOffer';
+import { TrendingProducts } from './TrendingProducts/TrendingProducts';
 import { WishlistPage } from './WishlistPage/WishlistPage';
 
 export {
@@ -32,6 +33,6 @@ export {
 	ProductListing,
 	SellerPageHeader,
 	ShopByStyleSection,
-	SpecialOffer,
-	WishlistPage,
+	SpecialOffer, TrendingProducts, WishlistPage
 };
+

@@ -2403,3 +2403,119 @@ export function GoogplePayIcon({ width = 48, height = 32 }: IconProps) {
 		</svg>
 	);
 }
+
+export function DeliveryIcon({
+	color = '#000000',
+	size = 40,
+	className = '',
+}: IconProps) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			height={size}
+			viewBox="0 0 40 40"
+			width={size}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<title>Delivery Icon</title>
+			<g clipPath="url(#clip0_757_4386)">
+				<path
+					d="M11.6666 31.6667C13.5076 31.6667 15 30.1743 15 28.3333C15 26.4924 13.5076 25 11.6666 25C9.8257 25 8.33331 26.4924 8.33331 28.3333C8.33331 30.1743 9.8257 31.6667 11.6666 31.6667Z"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M28.3333 31.6667C30.1743 31.6667 31.6667 30.1743 31.6667 28.3333C31.6667 26.4924 30.1743 25 28.3333 25C26.4924 25 25 26.4924 25 28.3333C25 30.1743 26.4924 31.6667 28.3333 31.6667Z"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M8.33331 28.3335H6.99998C5.89541 28.3335 4.99998 27.4381 4.99998 26.3335V21.6668M3.33331 8.3335H19.6666C20.7712 8.3335 21.6666 9.22893 21.6666 10.3335V28.3335M15 28.3335H25M31.6667 28.3335H33C34.1046 28.3335 35 27.4381 35 26.3335V18.3335M35 18.3335H21.6666M35 18.3335L30.5826 10.9712C30.2211 10.3688 29.5701 10.0002 28.8676 10.0002H21.6666"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M8 28H6.66667C5.5621 28 4.66667 27.1046 4.66667 26V21.3333M3 8H19.3333C20.4379 8 21.3333 8.89543 21.3333 10V28M15 28H24.6667M32 28H32.6667C33.7712 28 34.6667 27.1046 34.6667 26V18M34.6667 18H21.3333M34.6667 18L30.2493 10.6377C29.8878 10.0353 29.2368 9.66667 28.5343 9.66667H21.3333"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M5 11.8181H11.6667"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M1.81818 15.4546H8.48484"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M5 19.0908H11.6667"
+					stroke={color}
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+			</g>
+			<defs>
+				<clipPath id="clip0_757_4386">
+					<rect fill="white" height="40" width="40" />
+				</clipPath>
+			</defs>
+		</svg>
+	);
+}
+
+export function ReturnIcon2({
+	color = '#000000',
+	size = 40,
+	className = '',
+}: IconProps) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			height={size}
+			viewBox="0 0 40 40"
+			width={size}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<title>ReturnIcon Icon</title>
+			<g clipPath="url(#clip0_757_4390)">
+				<path
+					d="M33.3334 18.3334C32.9258 15.4004 31.5651 12.6828 29.4611 10.5992C27.357 8.51563 24.6263 7.18161 21.6895 6.80267C18.7527 6.42372 15.7727 7.02088 13.2087 8.50216C10.6447 9.98343 8.63877 12.2666 7.50002 15.0001M6.66669 8.33341V15.0001H13.3334"
+					stroke="black"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+				<path
+					d="M6.66669 21.6667C7.07429 24.5997 8.43491 27.3173 10.539 29.4009C12.643 31.4845 15.3738 32.8186 18.3106 33.1975C21.2474 33.5764 24.2273 32.9793 26.7914 31.498C29.3554 30.0167 31.3613 27.7335 32.5 25.0001M33.3334 31.6667V25.0001H26.6667"
+					stroke="black"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					strokeWidth="2"
+				/>
+			</g>
+			<defs>
+				{/** biome-ignore lint/correctness/useUniqueElementIds: no need*/}
+				<clipPath id="clip0_757_4390">
+					<rect fill="white" height="40" width="40" />
+				</clipPath>
+			</defs>
+		</svg>
+	);
+}

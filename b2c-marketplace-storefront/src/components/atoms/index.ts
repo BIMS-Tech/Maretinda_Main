@@ -16,26 +16,17 @@ import { NavigationItem } from './NavigationItem/NavigationItem';
 import { PaginationButton } from './PaginationButton/PaginationButton';
 import { StarRating } from './StarRating/StarRating';
 import { TabsTrigger } from './TabsTrigger/TabsTrigger';
+import { Tag } from './Tag/Tag';
 import { Textarea } from './Textarea/Textarea';
 
 export {
-	Button,
-	IconButton,
 	Avatar,
 	Badge,
-	Breadcrumbs,
-	Checkbox,
+	Breadcrumbs, Button, Card, Checkbox,
 	Chip,
-	Divider,
-	Indicator,
-	Input,
-	Textarea,
-	PaginationButton,
-	Card,
-	StarRating,
-	InteractiveStarRating,
-	Label,
-	TabsTrigger,
-	NavigationItem,
-	LogoutButton,
+	Divider, IconButton, Indicator,
+	Input, InteractiveStarRating,
+	Label, LogoutButton, NavigationItem, PaginationButton, StarRating, TabsTrigger,
+	Tag, Textarea
 };
+

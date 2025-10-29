@@ -1,3 +1,5 @@
+import { LuCheck } from 'react-icons/lu';
+
 import { cn } from '@/lib/utils';
 
 interface ChipProps {
@@ -23,7 +25,11 @@ export function Chip({
 	const disabledClasses = disabled
 		? 'bg-component border-disabled/50 hover:bg-component cursor-not-allowed text-disabled'
 		: 'cursor-pointer';
-	const colorClasses = color ? 'w-[40px] h-[40px] border' : '';
+	const colorClasses = color
+		? 'w-[40px] h-[40px] border !rounded-full'
+		: '!px-5';
+	const selectedOtherVariantClasses =
+		selected && !color ? '!bg-brandPurple text-white' : 'text-black';
 
 	return (
 		<div
@@ -33,6 +39,7 @@ export function Chip({
 				selectedClasses,
 				hoverClasses,
 				disabledClasses,
+				selectedOtherVariantClasses,
 				className,
 			)}
 			data-disabled={disabled}
@@ -41,15 +48,19 @@ export function Chip({
 			tabIndex={disabled ? -1 : 0}
 		>
 			{color ? (
-				<span
+				<div
 					className={cn(
-						'w-[32px] h-[32px] bg-action absolute top-[3px] left-[3px] rounded-xs',
+						'chip-color w-[34px] h-[34px] bg-action absolute top-[2px] left-[2px] rounded-full flex items-center justify-center',
 						disabled && 'bg-disabled',
 					)}
 					style={{
 						backgroundColor: (value || '').toString(),
 					}}
-				/>
+				>
+					{selected && (
+						<LuCheck className="text-white bg-none" size={16} />
+					)}
+				</div>
 			) : (
 				value
 			)}

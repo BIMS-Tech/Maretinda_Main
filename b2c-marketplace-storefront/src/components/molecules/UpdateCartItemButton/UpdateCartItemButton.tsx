@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LuMinus, LuPlus } from 'react-icons/lu';
 
 import { Button } from '@/components/atoms';
 import { updateLineItem } from '@/lib/data/cart';
@@ -8,9 +9,11 @@ import { updateLineItem } from '@/lib/data/cart';
 export const UpdateCartItemButton = ({
 	quantity,
 	lineItemId,
+	isProductPage = false,
 }: {
 	quantity: number;
 	lineItemId: string;
+	isProductPage?: boolean;
 }) => {
 	const [isChanging, setIsChanging] = useState(false);
 
@@ -26,10 +29,13 @@ export const UpdateCartItemButton = ({
 			setIsChanging(false);
 		});
 	};
+	const isProduct = isProductPage && '!bg-transparent px-0';
 	return (
-		<div className="flex items-center gap-4 mt-2">
+		<div
+			className={`flex items-center gap-4 mt-2 ${isProductPage && 'border border-black rounded-sm h-[46px] !mt-0 px-3'}`}
+		>
 			<Button
-				className="w-8 h-8 flex items-center justify-center"
+				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
 				disabled={quantity === 1}
 				onClick={() =>
 					!isChanging &&
@@ -37,18 +43,18 @@ export const UpdateCartItemButton = ({
 				}
 				variant="tonal"
 			>
-				-
+				<LuMinus className="text-black" size={16} />
 			</Button>
 			<span className="text-primary font-medium">{quantity}</span>
 			<Button
-				className="w-8 h-8 flex items-center justify-center"
+				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
 				onClick={() =>
 					!isChanging &&
 					handleChange({ lineId: lineItemId, quantity: quantity + 1 })
 				}
 				variant="tonal"
 			>
-				+
+				<LuPlus className="text-black" size={16} />
 			</Button>
 		</div>
 	);

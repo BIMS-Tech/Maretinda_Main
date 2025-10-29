@@ -1,7 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { BaseHit, type Hit } from 'instantsearch.js';
+import type { Hit } from 'instantsearch.js';
 
 import { Chip } from '@/components/atoms';
 import useUpdateSearchParams from '@/hooks/useUpdateSearchParams';
@@ -21,14 +21,14 @@ export const ProductVariants = ({
 	};
 
 	return (
-		<div className="my-4 space-y-2">
+		<div className="">
 			{(product.options || []).map(
 				({ id, title, values }: HttpTypes.StoreProductOption) => (
 					<div key={id}>
-						<span className="label-md text-secondary">
+						<span className="label-md !font-medium text-black/60">
 							{title}:{' '}
 						</span>
-						<span className="label-md text-primary">
+						<span className="label-md !font-medium text-primary">
 							{selectedVariant[title.toLowerCase()]}
 						</span>
 						<div className="flex gap-2 mt-2">
@@ -58,6 +58,7 @@ export const ProductVariants = ({
 								),
 							)}
 						</div>
+						<div className="h-[1px] my-5 w-full bg-black/10" />
 					</div>
 				),
 			)}

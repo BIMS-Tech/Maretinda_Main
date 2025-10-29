@@ -15,6 +15,7 @@ import { ParcelAccordion } from './ParcelAccordion/ParcelAccordion';
 import { PrimeCategoryNavbar } from './PrimeCategoryNavbar/PrimeCategoryNavbar';
 import { ProductCarouselIndicator } from './ProductCarouselIndicator/ProductCarouselIndicator';
 import { ProductPageAccordion } from './ProductPageAccordion/ProductPageAccordion';
+import { ProductPageAccordionMultiple } from './ProductPageAccordion/ProductPageAccordionMultiple';
 import { ProductPostedDate } from './ProductPostedDate/ProductPostedDate';
 import { ProductReportButton } from './ProductReportButton/ProductReportButton';
 import { ProductTags } from './ProductTags/ProductTags';
@@ -35,39 +36,8 @@ import { TabsList } from './TabsList/TabsList';
 import { UserNavigation } from './UserNavigation/UserNavigation';
 
 export {
-	PrimeCategoryNavbar,
-	CategoryNavbar,
-	SelectField,
-	Accordion,
-	FilterCheckboxOption,
-	NavbarSearch,
-	GalleryCarouselItem,
-	ProductPageAccordion,
-	SellerReview,
-	ProductTags,
-	ProdutMeasurementRow,
-	ProductCarouselIndicator,
-	Modal,
-	ReportListingForm,
-	SellerInfo,
-	TabsList,
-	TabsContent,
-	SellerScore,
-	SellerReviewList,
-	ReportSellerForm,
-	ProductPostedDate,
-	ProductReportButton,
-	ProductVariants,
-	HeaderCategoryNavbar,
-	DeleteCartItemButton,
-	Dropdown,
-	CartDropdownItem,
-	LoginForm,
-	RegisterForm,
-	UserNavigation,
-	ParcelAccordion,
-	AddressForm,
-	ReviewForm,
-	ProfileDetails,
-	ErrorMessage,
+	Accordion, AddressForm, CartDropdownItem, CategoryNavbar, DeleteCartItemButton,
+	Dropdown, ErrorMessage, FilterCheckboxOption, GalleryCarouselItem, HeaderCategoryNavbar, LoginForm, Modal, NavbarSearch, ParcelAccordion, PrimeCategoryNavbar, ProductCarouselIndicator, ProductPageAccordion, ProductPageAccordionMultiple, ProductPostedDate,
+	ProductReportButton, ProductTags, ProductVariants, ProdutMeasurementRow, ProfileDetails, RegisterForm, ReportListingForm, ReportSellerForm, ReviewForm, SelectField, SellerInfo, SellerReview, SellerReviewList, SellerScore, TabsContent, TabsList, UserNavigation
 };
+

@@ -12,6 +12,7 @@ export const SellerAvatar = ({
 	return photo ? (
 		<Image
 			alt={alt}
+			className="rounded-full"
 			height={size}
 			src={decodeURIComponent(photo)}
 			style={{ height: size, width: size }}
@@ -20,7 +21,7 @@ export const SellerAvatar = ({
 	) : (
 		<Image
 			alt={alt}
-			className="opacity-30 w-8 h-8"
+			className="opacity-30 w-8 h-8 rounded-full"
 			height={32}
 			src="/images/placeholder.svg"
 			width={32}

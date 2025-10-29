@@ -18,8 +18,8 @@ export const StarRating = ({
 					i < Math.floor(rate)
 						? disabled
 							? tailwindConfig.theme.extend.colors.disabled
-							: tailwindConfig.theme.extend.colors.primary
-						: tailwindConfig.theme.extend.colors.action.on.primary;
+							: tailwindConfig.theme.extend.colors.brand.cta
+						: tailwindConfig.theme.extend.colors.action.on.tertiary;
 				return <StarIcon color={starColor} key={i} size={starSize} />;
 			})}
 		</div>
