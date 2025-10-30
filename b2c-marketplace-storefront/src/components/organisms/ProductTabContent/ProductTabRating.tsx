@@ -5,7 +5,7 @@ import { SellerReview } from '@/components/molecules/SellerReview/SellerReview';
 import type {
 	AdditionalAttributeProps,
 	SingleProductReview,
-} from '@/types/product'; // <-- Ensure SingleProductReview is here
+} from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 
 const ProductTabRating = ({
@@ -31,7 +31,6 @@ const ProductTabRating = ({
 			id: 'rev_A1B2C3D4E5',
 			image: 'https://images.example.com/reviews/product-review-1.jpg',
 			rating: 5.0,
-			// 👇 CORRECTED SELLER OBJECT 👇
 			seller: {
 				created_at: '2024-01-01T00:00:00.000Z',
 				description: 'Your favorite online store for fast shipping.',
@@ -55,7 +54,6 @@ const ProductTabRating = ({
 			id: 'rev_F6G7H8I9J0',
 			image: 'https://images.example.com/reviews/product-review-2.jpg',
 			rating: 3.5,
-			// 👇 CORRECTED SELLER OBJECT 👇
 			seller: {
 				created_at: '2024-01-01T00:00:00.000Z',
 				description: 'Your favorite online store for fast shipping.',
