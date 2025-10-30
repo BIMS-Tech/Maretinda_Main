@@ -18,6 +18,7 @@ import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
 import { getFacedFilters } from '@/lib/helpers/get-faced-filters';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import type { Wishlist } from '@/types/wishlist';
 
 export const AlgoliaProductsListing = ({
 	category_id,
@@ -25,12 +26,16 @@ export const AlgoliaProductsListing = ({
 	seller_handle,
 	locale = process.env.NEXT_PUBLIC_DEFAULT_REGION,
 	currency_code,
+	user = null,
+	wishlist = [],
 }: {
 	category_id?: string;
 	collection_id?: string;
 	locale?: string;
 	seller_handle?: string;
 	currency_code?: string;
+	user?: HttpTypes.StoreCustomer | null;
+	wishlist?: Wishlist[] | [];
 }) => {
 	const searchParamas = useSearchParams();
 
@@ -54,14 +59,24 @@ export const AlgoliaProductsListing = ({
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>
 			<Configure filters={filters} query={query} />
-			<ProductsListing locale={locale} />
+			<ProductsListing locale={locale} user={user} wishlist={wishlist} />
 		</InstantSearchNext>
 	);
 };
 
-const ProductsListing = ({ locale }: { locale?: string }) => {
+const ProductsListing = ({
+	locale,
+	user,
+	wishlist,
+}: {
+	locale?: string;
+	user: HttpTypes.StoreCustomer | null;
+	wishlist: Wishlist[] | [];
+}) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
 	const { items, results } = useHits();
+
+	const [pageLimit, setPageLimit] = useState(PRODUCT_LIMIT);
 
 	const searchParamas = useSearchParams();
 
@@ -86,19 +101,23 @@ const ProductsListing = ({ locale }: { locale?: string }) => {
 	if (!results?.processingTimeMS) return <ProductListingSkeleton />;
 
 	const page: number = +(searchParamas.get('page') || 1);
-	const products = items
-		.filter((pr) => prod?.some((p: any) => p.id === pr.objectID))
-		.slice((page - 1) * PRODUCT_LIMIT, page * PRODUCT_LIMIT);
+	const filteredProducts = items.filter((pr) =>
+		prod?.some((p: any) => p.id === pr.objectID),
+	);
+	const products = filteredProducts.slice(
+		(page - 1) * pageLimit,
+		page * pageLimit,
+	);
 
-	const count = products?.length || 0;
-	const pages = Math.ceil(count / PRODUCT_LIMIT) || 1;
+	const count = prod?.length || 0;
+	// const pages = Math.ceil(count / pageLimit) || 1;
 
 	return (
 		<>
 			<div className="flex justify-between w-full items-center">
 				<div className="my-4 label-md">{`${count} listings`}</div>
 			</div>
-			<div className="hidden md:block">
+			<div className="hidden md:block w-[280px]">
 				<ProductListingActiveFilters />
 			</div>
 			<div className="md:flex gap-4">
@@ -118,7 +137,7 @@ const ProductsListing = ({ locale }: { locale?: string }) => {
 						</div>
 					) : (
 						<div className="w-full">
-							<ul className="flex flex-wrap gap-4">
+							<ul className={'flex flex-wrap gap-4'}>
 								{products.map(
 									(hit) =>
 										prod?.find(
@@ -130,16 +149,26 @@ const ProductsListing = ({ locale }: { locale?: string }) => {
 														p.id === hit.objectID,
 												)}
 												key={hit.objectID}
+												locale={locale ?? 'ph'}
 												product={hit}
+												user={user}
+												wishlist={wishlist}
 											/>
 										),
 								)}
 							</ul>
 						</div>
 					)}
+					{pageLimit < filteredProducts.length && (
+						<ProductsPagination
+							isInfinite
+							pageLimit={pageLimit}
+							// pages={pages}
+							setPageLimit={setPageLimit}
+						/>
+					)}
 				</div>
 			</div>
-			<ProductsPagination pages={pages} />
 		</>
 	);
 };

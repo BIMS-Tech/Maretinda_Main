@@ -10,13 +10,20 @@ import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import type { Wishlist } from '@/types/wishlist';
 
 export const ProductCard = ({
 	product,
 	api_product,
+	locale,
+	user,
+	wishlist,
 }: {
 	product: Hit<HttpTypes.StoreProduct> | Partial<Hit<BaseHit>>;
 	api_product?: HttpTypes.StoreProduct | null;
+	locale: string;
+	user: HttpTypes.StoreCustomer | null;
+	wishlist: Wishlist[];
 }) => {
 	if (!api_product) {
 		return null;
@@ -30,12 +37,14 @@ export const ProductCard = ({
 		<div className="pb-5">
 			<div
 				className={clsx(
-					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] min-w-[250px] min-h-[400px] overflow-hidden',
+					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[285px] min-w-[250px] min-h-[400px] overflow-hidden',
 				)}
 			>
 				<div className=" w-full bg-primary">
-					<LocalizedClientLink href={`/products/${product.handle}`}>
-						<div className="relative overflow-hidden w-full h-full flex justify-center align-center max-h-[220px]">
+					<div className="relative overflow-hidden w-full h-full flex justify-center align-center max-h-[220px]">
+						<LocalizedClientLink
+							href={`/products/${product.handle}`}
+						>
 							{product.thumbnail ? (
 								<Image
 									alt={product.title}
@@ -53,30 +62,32 @@ export const ProductCard = ({
 									width={295}
 								/>
 							)}
-							<Badge
-								className="absolute top-3.5 left-3.5 z-10 bg-brand-purple-900 text-white text-[11px] border-0 px-1.5 py-1"
-								size="2xsmall"
-							>
-								-40%
-							</Badge>
-							<div className="absolute top-0 right-0 z-10 group-hover:block hidden">
-								{/* Add to Wishlist */}
-								<WishlistButton
-									className="border-0"
-									// user={user}
-									productId={product.id}
-									user={null}
-									wishlist={[]}
-								/>
-							</div>
+							{cheapestPrice?.calculated_price !==
+								cheapestPrice?.original_price && (
+								<Badge
+									className="absolute top-3.5 left-3.5 z-10 bg-brand-purple-900 text-white text-[11px] border-0 px-1.5 py-1"
+									size="2xsmall"
+								>
+									{`-${40}%`}
+								</Badge>
+							)}
+						</LocalizedClientLink>
+						<div className="absolute top-0 right-0 z-10 group-hover:block hidden">
+							{/* Add to Wishlist */}
+							<WishlistButton
+								className="border-0"
+								productId={product.id}
+								user={user}
+								wishlist={wishlist}
+							/>
 						</div>
-					</LocalizedClientLink>
+					</div>
 				</div>
-				<LocalizedClientLink
-					className="relative flex flex-1"
-					href={`/products/${product.handle}`}
-				>
-					<div className="flex flex-col justify-between p-3.5 w-full">
+				<div className="relative flex flex-1">
+					<LocalizedClientLink
+						className="flex flex-col justify-between p-3.5 w-full"
+						href={`/products/${product.handle}`}
+					>
 						<div>
 							<h3 className="heading-sm truncate">
 								{product.title}
@@ -112,11 +123,11 @@ export const ProductCard = ({
 							/>
 							<p className="label-lg text-black">ZARA</p>
 						</div>
-					</div>
+					</LocalizedClientLink>
 					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-3.5 z-10">
 						Add to Cart
 					</Button>
-				</LocalizedClientLink>
+				</div>
 			</div>
 		</div>
 	);
