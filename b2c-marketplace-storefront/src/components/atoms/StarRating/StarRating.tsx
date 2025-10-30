@@ -13,7 +13,7 @@ export const StarRating = ({
 }) => {
 	return (
 		<div className="flex">
-			{[...Array(5)].map((_, i) => {
+			{[...Array(Math.floor(rate))].map((_, i) => {
 				const starColor =
 					i < Math.floor(rate)
 						? disabled
