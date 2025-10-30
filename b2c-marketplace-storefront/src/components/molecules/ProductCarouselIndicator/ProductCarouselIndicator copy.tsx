@@ -47,8 +47,8 @@ export const ProductCarouselIndicator = ({
 	}, [parentEmbla, onSelect]);
 
 	return (
-		<div className="embla__dots w-full -mt-1 lg:mt-6">
-			<div className="lg:hidden h-0.5">
+		<div className="embla__dots absolute lg:top-3 bottom-3 lg:bottom-auto left-3 w-[calc(100%-24px)] h-[2px]">
+			<div className="lg:hidden">
 				<Indicator
 					maxStep={slides?.length || 0}
 					size="large"
@@ -56,32 +56,31 @@ export const ProductCarouselIndicator = ({
 				/>
 			</div>
 
-			<div className="embla relative ">
+			<div className="embla relative outline outline-red-500">
 				<div
-					className="embla__viewport overflow-hidden rounded-lg"
-					// ref={emblaRef}
+					className="embla__viewport overflow-hidden rounded-xs"
+					ref={emblaRef}
 				>
-					<div className="embla__container grid grid-cols-3 gap-6">
+					<div className="embla__container h-[350px] lg:h-[680px] flex lg:block">
 						{(slides || []).map((slide, index) => (
-							<button
-								className="bg-[#F0EEED] rounded-lg cursor-pointer w-full max-w-[182px] h-auto bg-primary hidden lg:block"
+							<div
+								className="mb-3 rounded-sm cursor-pointer w-16 h-16 bg-primary hidden lg:block"
 								key={slide.id}
 								onClick={() => changeSlideHandler(index)}
-								type="button"
 							>
 								<Image
 									alt="Product carousel Indicator"
 									className={cn(
-										'rounded-sm border-2 transition-color duration-300 hidden lg:block w-full max-w-[182px] h-auto object-cover',
+										'rounded-sm border-2 transition-color duration-300 hidden lg:block w-16 h-16 object-cover',
 										selectedIndex === index
 											? 'border-primary'
 											: 'border-tertiary',
 									)}
-									height={182}
+									height={64}
 									src={decodeURIComponent(slide.url)}
-									width={182}
+									width={64}
 								/>
-							</button>
+							</div>
 						))}
 					</div>
 				</div>

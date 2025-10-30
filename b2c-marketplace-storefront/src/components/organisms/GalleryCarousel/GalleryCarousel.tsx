@@ -8,7 +8,7 @@ export const GalleryCarousel = ({
 	images: HttpTypes.StoreProduct['images'];
 }) => {
 	return (
-		<div className="border w-full p-1 rounded-sm">
+		<div className="w-full rounded-sm">
 			<ProductCarousel slides={images} />
 		</div>
 	);

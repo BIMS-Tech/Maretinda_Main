@@ -26,18 +26,18 @@ export const ProductCarousel = ({
 	return (
 		<div className="embla relative">
 			<div
-				className="embla__viewport overflow-hidden rounded-lg"
+				className="embla__viewport overflow-hidden rounded-xs"
 				ref={emblaRef}
 			>
-				<div className="h-[350px] lg:h-fit max-h-[560px] flex lg:block">
+				<div className="h-[350px] lg:h-fit max-h-[698px] flex lg:block">
 					{(slides || []).map((slide) => (
 						<div
-							className="bg-[#F0EEED] embla__slide min-w-0 h-[350px] lg:h-[560px]"
+							className="embla__slide min-w-0 h-[350px] lg:h-fit"
 							key={slide.id}
 						>
 							<Image
 								alt="Product image"
-								className="max-h-[560px] w-full h-full aspect-auto object-cover object-center"
+								className="max-h-[700px] w-full h-auto aspect-square object-cover object-center object-center"
 								height={560}
 								quality={100}
 								src={decodeURIComponent(slide.url)}
@@ -46,10 +46,13 @@ export const ProductCarousel = ({
 						</div>
 					))}
 				</div>
+				{slides?.length ? (
+					<ProductCarouselIndicator
+						embla={emblaApi}
+						slides={slides}
+					/>
+				) : null}
 			</div>
-			{slides?.length ? (
-				<ProductCarouselIndicator embla={emblaApi} slides={slides} />
-			) : null}
 		</div>
 	);
 };

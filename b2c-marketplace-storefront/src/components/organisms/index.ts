@@ -6,6 +6,7 @@ import { CartSummary } from './CartSummary/CartSummary';
 import { CategoryCard } from './CategoryCard/CategoryCard';
 import { Footer } from './Footer/Footer';
 import { GalleryCarousel } from './GalleryCarousel/GalleryCarousel';
+import { GalleryCarouselNew } from './GalleryCarousel/GalleryCarouselNew';
 import { Header } from './Header/Header';
 import { HomeProductsCarousel } from './HomeProductsCarousel/HomeProductsCarousel';
 import { ProductCard } from './ProductCard/ProductCard';
@@ -37,19 +38,20 @@ export {
 	CartSummary,
 	CategoryCard,
 	Footer,
-	GalleryCarousel,
-	Header,
+	GalleryCarousel, GalleryCarouselNew, Header,
 	HomeProductsCarousel,
 	ProductCard,
 	ProductDetails,
-	ProductGallery,
-	ProductListingActiveFilters,
+	ProductGallery, ProductListingActiveFilters,
 	ProductListingHeader,
 	ProductSidebar,
 	ProductsList,
 	ProductsPagination,
-	ProductTabDetails, ProductTabRating,
-	ProductTabs, ProductTabShipping, ReviewsToWrite,
+	ProductTabDetails,
+	ProductTabRating,
+	ProductTabs,
+	ProductTabShipping,
+	ReviewsToWrite,
 	ReviewsWritten,
 	SellerFooter,
 	SellerHeading,

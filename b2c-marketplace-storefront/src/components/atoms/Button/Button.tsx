@@ -17,7 +17,7 @@ export function Button({
 	...props
 }: ButtonProps) {
 	const baseClasses =
-		'text-md button-text rounded-sm disabled:bg-disabled disabled:text-disabled dark:bg-action-tertiary dark:hover:bg-action-tertiary-hover dark:active:bg-action-tertiary-pressed dark:disabled:bg-disabled';
+		'text-md button-text rounded-sm disabled:bg-disabled disabled:text-disabled disabled:border-black/10 disabled:border dark:bg-action-tertiary dark:hover:bg-action-tertiary-hover dark:active:bg-action-tertiary-pressed dark:disabled:bg-disabled';
 
 	const variantClasses = {
 		destructive: `text-negative-on-primary bg-negative hover:bg-negative-hover active:bg-negative-pressed ${
