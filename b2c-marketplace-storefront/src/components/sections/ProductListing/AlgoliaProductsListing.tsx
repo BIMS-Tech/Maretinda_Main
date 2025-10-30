@@ -121,7 +121,7 @@ const ProductsListing = ({
 				<ProductListingActiveFilters />
 			</div>
 			<div className="md:flex gap-4">
-				<div>
+				<div className="max-w-[280px]">
 					<AlgoliaProductSidebar />
 				</div>
 				<div className="w-full">
@@ -137,7 +137,7 @@ const ProductsListing = ({
 						</div>
 					) : (
 						<div className="w-full">
-							<ul className={'flex flex-wrap gap-4'}>
+							<ul className={'flex flex-wrap gap-2'}>
 								{products.map(
 									(hit) =>
 										prod?.find(
