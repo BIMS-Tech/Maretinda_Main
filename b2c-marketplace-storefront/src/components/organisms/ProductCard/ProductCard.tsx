@@ -11,6 +11,8 @@ import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 
+import ProductImageCarousel from './ProductImageCarousel';
+
 export const ProductCard = ({
 	product,
 	api_product,
@@ -26,17 +28,47 @@ export const ProductCard = ({
 		product: api_product! as HttpTypes.StoreProduct,
 	});
 
+	const productImages = [
+		{
+			id: 1,
+			imageUrl: '/images/categories/sneakers.png',
+			name: 'Minimalist Smartwatch',
+		},
+		{
+			id: 2,
+			imageUrl: '/images/categories/accessories.png',
+			name: 'Acoustic Noise-Cancelling Headphones',
+		},
+		{
+			id: 3,
+			imageUrl: '/images/categories/boots.png',
+			name: 'Vintage Leather Camera Bag',
+		},
+		{
+			id: 4,
+			imageUrl: '/images/categories/sandals.png',
+			name: 'Ergonomic Mechanical Keyboard',
+		},
+		{
+			id: 5,
+			imageUrl: '/images/categories/sport.png',
+			name: 'Hand-Poured Scented Candle',
+		},
+	];
+
 	return (
-		<div className="pb-5">
+		<div className="py-5 px-2">
 			<div
 				className={clsx(
-					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] min-w-[250px] min-h-[400px] overflow-hidden',
+					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] lg:max-w-[295px] min-w-[250px] min-h-[400px] overflow-hidden',
 				)}
 			>
 				<div className=" w-full bg-primary">
 					<LocalizedClientLink href={`/products/${product.handle}`}>
 						<div className="relative overflow-hidden w-full h-full flex justify-center align-center max-h-[220px]">
-							{product.thumbnail ? (
+							{productImages.length > 1 ? (
+								<ProductImageCarousel slides={productImages} />
+							) : product.thumbnail ? (
 								<Image
 									alt={product.title}
 									className="object-cover w-full object-center h-full transition-all duration-300"

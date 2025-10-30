@@ -16,20 +16,8 @@ export const TrendingProductsCarousel = ({
 }: {
 	finalProducts: Product[];
 }) => {
-	// const settings = {
-	// 	autoplay: true,
-	// 	dots: false,
-	// 	infinite: true,
-	// 	nextArrow: <NextButton />,
-	// 	pauseOnHover: true,
-	// 	prevArrow: <PrevButton />,
-	// 	slidesToScroll: 1,
-	// 	slidesToShow: 4,
-	// 	speed: 500,
-	// };
-
 	const settings = {
-		autoplay: true,
+		autoplay: false,
 		centerPadding: '0px',
 		dots: false,
 		infinite: true,
@@ -74,7 +62,7 @@ export const TrendingProductsCarousel = ({
 	};
 
 	return (
-		<div className="slider-products w-full max-w-full mx-auto">
+		<div className="slider-products w-full max-w-full mx-auto -mt-5">
 			<Slider {...settings}>
 				{finalProducts.map((product) => (
 					<ProductCard

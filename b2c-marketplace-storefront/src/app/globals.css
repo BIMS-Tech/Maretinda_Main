@@ -202,14 +202,30 @@ button:disabled svg path {
 	@apply left-1 sm:-left-4;
 }
 
-.slider-products .slick-slide > div {
+/* .slider-products .slick-slide > div {
 	@apply px-2.5;
 }
 
 .slider-products .slick-list {
 	@apply -mx-2.5;
-}
+} */
 
 .slider-products .slick-track .slick-slide {
 	@apply min-h-[400px] w-[295px];
+}
+
+.slider-product-images .slick-slider {
+	@apply h-[220px];
+}
+
+.slider-product-images .arrow-button {
+	@apply bg-transparent shadow-none opacity-0 group-hover:opacity-100;
+}
+
+.slider-product-images .arrow-button.arrow-left {
+	@apply left-0;
+}
+
+.slider-product-images .arrow-button.arrow-right {
+	@apply right-0;
 }

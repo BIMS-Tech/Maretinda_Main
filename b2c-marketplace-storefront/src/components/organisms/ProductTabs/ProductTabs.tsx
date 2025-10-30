@@ -43,7 +43,10 @@ export const ProductTabs = ({
 						<ProductTabDetails product={product} />
 					</Tabs.Content>
 					<Tabs.Content value="rating">
-						<ProductTabRating product={product} />
+						<ProductTabRating
+							product={product}
+							seller={product?.seller}
+						/>
 					</Tabs.Content>
 					<Tabs.Content value="shipping">
 						<ProductTabShipping product={product} />

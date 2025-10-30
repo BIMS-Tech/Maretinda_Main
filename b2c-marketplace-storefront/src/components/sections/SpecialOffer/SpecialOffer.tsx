@@ -7,7 +7,7 @@ const demoSlides: CarouselSlide[] = [
 		ctaText: 'Shop Now',
 		id: 'slide-1',
 		// imageUrl: 'https://dummyimage.com/1200x400/000/fff',
-		imageUrl: '/images/banner-section/Image.jpg',
+		imageUrl: '/images/banner-section/special-offer.png',
 		title: 'Up to 10% off',
 		voucherText: 'Voucher',
 	},
