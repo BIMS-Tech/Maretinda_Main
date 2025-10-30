@@ -12,7 +12,7 @@ import PrevButton from '@/components/atoms/Button/PrevButton';
 
 export type CarouselSlide = {
 	id: number;
-	imageUrl: string;
+	url: string;
 	name: string;
 };
 
@@ -42,7 +42,7 @@ const ProductImageCarousel: React.FC<CarouselProps> = ({ slides }) => {
 						className="w-full h-full max-h-[220px] object-contain object-center"
 						height={220}
 						key={slide.id}
-						src={slide.imageUrl}
+						src={slide.url}
 						width={295}
 					/>
 				))}

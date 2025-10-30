@@ -10,7 +10,10 @@ import {
 	categoryThemes,
 	primeCategories,
 } from '@/data/categories';
+import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
+import { getUserWishlists } from '@/lib/data/wishlist';
+import type { Wishlist } from '@/types/wishlist';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
@@ -21,6 +24,19 @@ async function AllCategories({
 	params: Promise<{ locale: string }>;
 }) {
 	const { locale } = await params;
+	const user = await retrieveCustomer();
+
+	let wishlist: Wishlist[] = [];
+	if (user) {
+		try {
+			const response = await getUserWishlists();
+			wishlist = response.wishlists;
+		} catch (error) {
+			console.warn('Failed to fetch wishlist:', error);
+			// Continue without wishlist data instead of crashing
+			wishlist = [];
+		}
+	}
 
 	const breadcrumbsItems = [
 		{
@@ -140,6 +156,8 @@ async function AllCategories({
 						<AlgoliaProductsListing
 							currency_code={currency_code}
 							locale={locale}
+							user={user}
+							wishlist={wishlist}
 						/>
 					)}
 				</Suspense>

@@ -1,5 +1,3 @@
-'use client';
-
 import type { HttpTypes } from '@medusajs/types';
 import { Badge } from '@medusajs/ui';
 import clsx from 'clsx';
@@ -10,20 +8,23 @@ import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
 import ProductImageCarousel from './ProductImageCarousel';
 
+interface StoreProduct extends HttpTypes.StoreProduct {
+	seller?: SellerProps;
+}
+
 export const ProductCard = ({
 	product,
 	api_product,
-	locale,
 	user,
 	wishlist,
 }: {
 	product: Hit<HttpTypes.StoreProduct> | Partial<Hit<BaseHit>>;
-	api_product?: HttpTypes.StoreProduct | null;
-	locale: string;
+	api_product?: StoreProduct | null;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[];
 }) => {
@@ -31,37 +32,32 @@ export const ProductCard = ({
 		return null;
 	}
 
+	const { name, photo } = api_product?.seller as SellerProps;
+
 	const { cheapestPrice } = getProductPrice({
-		product: api_product! as HttpTypes.StoreProduct,
+		// biome-ignore lint/style/noNonNullAssertion: api_product will always be available
+		product: api_product! as StoreProduct,
 	});
 
-	const productImages = [
-		{
-			id: 1,
-			imageUrl: '/images/categories/sneakers.png',
-			name: 'Minimalist Smartwatch',
-		},
-		{
-			id: 2,
-			imageUrl: '/images/categories/accessories.png',
-			name: 'Acoustic Noise-Cancelling Headphones',
-		},
-		{
-			id: 3,
-			imageUrl: '/images/categories/boots.png',
-			name: 'Vintage Leather Camera Bag',
-		},
-		{
-			id: 4,
-			imageUrl: '/images/categories/sandals.png',
-			name: 'Ergonomic Mechanical Keyboard',
-		},
-		{
-			id: 5,
-			imageUrl: '/images/categories/sport.png',
-			name: 'Hand-Poured Scented Candle',
-		},
-	];
+	const isDiscounted =
+		cheapestPrice?.calculated_price !== cheapestPrice?.original_price;
+	let discountedPrice: number = 0;
+	if (isDiscounted) {
+		const original_price = Number.parseInt(
+			cheapestPrice?.original_price as string,
+			10,
+		);
+		const calculated_price = Number.parseInt(
+			cheapestPrice?.calculated_price as string,
+			10,
+		);
+		discountedPrice =
+			((original_price - calculated_price) / original_price) * 100;
+	}
+
+	const imageGallery = product.images.map(
+		(image: { id: string; name: string; url: string }) => image,
+	);
 
 	return (
 		<div className="py-5 px-2">
@@ -73,8 +69,8 @@ export const ProductCard = ({
 				<div className="relative w-full bg-primary">
 					<LocalizedClientLink href={`/products/${product.handle}`}>
 						<div className="relative overflow-hidden w-full h-full flex justify-center align-center max-h-[220px]">
-							{productImages.length > 1 ? (
-								<ProductImageCarousel slides={productImages} />
+							{imageGallery.length > 1 ? (
+								<ProductImageCarousel slides={imageGallery} />
 							) : product.thumbnail ? (
 								<Image
 									alt={product.title}
@@ -100,7 +96,7 @@ export const ProductCard = ({
 							className="absolute top-3.5 left-3.5 z-10 bg-brand-purple-900 text-white text-[11px] border-0 px-1.5 py-1"
 							size="2xsmall"
 						>
-							{`-${40}%`}
+							{`-${discountedPrice}%`}
 						</Badge>
 					)}
 					<div className="absolute top-0 right-0 z-10 group-hover:block hidden">
@@ -146,12 +142,9 @@ export const ProductCard = ({
 								className="rounded-full h-10 w-10"
 								initials="M"
 								size="large"
-								src={
-									// item.order.seller.photo ||
-									'/talkjs-placeholder.jpg'
-								}
+								src={photo || '/talkjs-placeholder.jpg'}
 							/>
-							<p className="label-lg text-black">ZARA</p>
+							<p className="label-lg text-black">{name}</p>
 						</div>
 					</LocalizedClientLink>
 					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-3.5 z-10">
