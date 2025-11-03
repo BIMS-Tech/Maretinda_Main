@@ -18,14 +18,9 @@ export default async function SellerReviewsPage({
 	const tab = 'reviews';
 
 	return (
-		<main className="container">
+		<main className="container !max-w-7xl mx-auto">
 			<SellerPageHeader header seller={seller} user={user} />
-			<SellerTabs
-				locale={locale}
-				seller_handle={seller.handle}
-				seller_id={seller.id}
-				tab={tab}
-			/>
+			<SellerTabs locale={locale} seller={seller} tab={tab} />
 		</main>
 	);
 }
