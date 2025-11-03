@@ -28,7 +28,7 @@ const ProductTabRating = ({ seller }: { seller: SellerProps }) => {
 					{reviews.length > 0 ? (
 						reviews
 							?.filter((rev) => rev !== null)
-							.slice(-3)
+							.slice(-5)
 							.map((review) => (
 								<SellerReview key={review.id} review={review} />
 							))
