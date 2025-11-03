@@ -1,13 +1,11 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import type { AdditionalAttributeProps } from '@/types/product';
-import type { SellerProps } from '@/types/seller';
 
 const ProductTabShipping = ({
 	product,
 }: {
 	product: HttpTypes.StoreProduct & {
-		seller?: SellerProps;
 		attribute_values?: AdditionalAttributeProps[];
 	};
 }) => {
@@ -27,18 +25,11 @@ const ProductTabShipping = ({
 				<div className="product-details">
 					<ul>
 						<li>
-							Free standard shipping on all orders within the
-							continental U.S. Expedited shipping options are
-							available at an additional cost. Orders typically
-							ship within 3-5 business days.
+							Estimated Shipping Dimensions: {product.length}L x{' '}
+							{product.width}W x {product.height}H
 						</li>
-						<li>
-							We offer a 30-day return policy. If you are not
-							completely satisfied with your purchase, you can
-							return the chair for a full refund or exchange,
-							provided it is in its original condition and
-							packaging.
-						</li>
+						<li>Estimated Ship Weight: {product.weight}lbs</li>
+						<li>Shipping Origin: {product.origin_country}</li>
 					</ul>
 				</div>
 			</div>
@@ -50,18 +41,10 @@ const ProductTabShipping = ({
 				<div className="product-details">
 					<ul>
 						<li>
-							Free standard shipping on all orders within the
-							continental U.S. Expedited shipping options are
-							available at an additional cost. Orders typically
-							ship within 3-5 business days.
+							Estimated Shipping Dimensions: {product.length}L x{' '}
+							{product.width}W x {product.height}H
 						</li>
-						<li>
-							We offer a 30-day return policy. If you are not
-							completely satisfied with your purchase, you can
-							return the chair for a full refund or exchange,
-							provided it is in its original condition and
-							packaging.
-						</li>
+						<li>Estimated Ship Weight: {product.weight}lbs</li>
 					</ul>
 				</div>
 			</div>

@@ -6,11 +6,11 @@ import { useState } from 'react';
 
 import { Button, StarRating, Tag } from '@/components/atoms';
 import { ErrorMessage, ProductVariants } from '@/components/molecules';
-import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
-import { Chat } from '@/components/organisms/Chat/Chat';
+import { UpdateItemQuantityButton } from '@/components/molecules/UpdateItemQuantityButton/UpdateItemQuantityButton';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart } from '@/lib/data/cart';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { cn } from '@/lib/utils';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -45,6 +45,7 @@ export const ProductDetailsHeader = ({
 }) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [quantity, setQuantity] = useState(1);
 	const { allSearchParams } = useGetAllSearchParams();
 	const router = useRouter();
 
@@ -91,7 +92,7 @@ export const ProductDetailsHeader = ({
 		try {
 			await addToCart({
 				countryCode: locale,
-				quantity: 1,
+				quantity: quantity,
 				variantId: variantId,
 			});
 		} catch (err) {
@@ -110,6 +111,17 @@ export const ProductDetailsHeader = ({
 		? true
 		: false;
 
+	const originalPrice = Number.parseInt(
+		variantPrice?.original_price as string,
+		10,
+	);
+	const calculatedPrice = Number.parseInt(
+		variantPrice?.calculated_price as string,
+		10,
+	);
+
+	const discount = ((originalPrice - calculatedPrice) / originalPrice) * 100;
+
 	return (
 		<div className="">
 			<div className="flex justify-between">
@@ -127,22 +139,37 @@ export const ProductDetailsHeader = ({
 						</span>
 					</div>
 					<div className="mt-2 flex gap-2 items-center">
-						<span className="heading-md text-primary !font-bold">
+						<span
+							className={cn(
+								'heading-md text-primary !font-bold',
+								variantStock < 1 && 'line-through',
+							)}
+						>
 							{variantPrice?.calculated_price}
 						</span>
-						{/* REMOVE THE "!"" IN INTERGRATION */}
-						{!variantPrice?.calculated_price_number !==
+						{variantPrice?.calculated_price_number !==
 							variantPrice?.original_price_number && (
 							<span className="heading-md line-through text-black/30 !font-bold">
 								{variantPrice?.original_price}
 							</span>
 						)}
-						<div className="flex items-center justify-center gap-3 ml-6">
-							<Tag value="-40%" />
+						<div
+							className={cn(
+								'flex items-center justify-center gap-3 ml-2',
+								discount > 0 && 'ml-6',
+							)}
+						>
+							{discount > 0 && <Tag value={discount} />}
 							<div className="h-3.5 w-[1px] bg-black" />
-							<span className="text-[#00FF66] text-base">
-								In Stock
-							</span>
+							{variantStock > 0 ? (
+								<span className="text-[#00FF66] text-base">
+									In Stock
+								</span>
+							) : (
+								<span className="text-red-400 text-base">
+									Out of Stock
+								</span>
+							)}
 						</div>
 					</div>
 					<div
@@ -163,10 +190,10 @@ export const ProductDetailsHeader = ({
 			/>
 
 			<div className="flex items-center justify-between gap-4 mb-5">
-				<UpdateCartItemButton
+				<UpdateItemQuantityButton
 					isProductPage
-					lineItemId={product.id}
-					quantity={1} //Change this to actual value
+					quantity={quantity}
+					setQuantity={setQuantity}
 				/>
 				{/* Add to Cart */}
 				<Button
@@ -192,16 +219,6 @@ export const ProductDetailsHeader = ({
 
 			{error && (
 				<ErrorMessage data-testid="add-to-cart-error" error={error} />
-			)}
-			{/* Seller message */}
-
-			{user && product.seller && (
-				<Chat
-					buttonClassNames="w-full uppercase"
-					product={product}
-					seller={product.seller}
-					user={user}
-				/>
 			)}
 		</div>
 	);

@@ -35,7 +35,7 @@ export const SellerInfo = ({
 					<div className="flex items-center gap-2">
 						<StarRating rate={rating || 0} starSize={20} />
 						<span className="text-md text-black/60 !font-medium">
-							<span className="text-black">4.5/</span>5 (
+							<span className="text-black">{rating}/</span>5 (
 							{reviewCount} reviews)
 						</span>
 					</div>

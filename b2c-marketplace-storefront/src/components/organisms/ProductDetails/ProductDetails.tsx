@@ -19,12 +19,13 @@ import type { Wishlist } from '@/types/wishlist';
 export const ProductDetails = async ({
 	product,
 	locale,
+	seller,
 }: {
 	product: HttpTypes.StoreProduct & {
-		seller?: SellerProps;
 		attribute_values?: AdditionalAttributeProps[];
 	};
 	locale: string;
+	seller: SellerProps;
 }) => {
 	const user = await retrieveCustomer();
 
@@ -48,7 +49,7 @@ export const ProductDetails = async ({
 				user={user}
 				wishlist={wishlist}
 			/>
-			<ProductDetailsSeller seller={product?.seller} />
+			<ProductDetailsSeller seller={seller} />
 
 			<div className="accordion-multiple mt-5">
 				<ProductFreeDeliveryDetails />
