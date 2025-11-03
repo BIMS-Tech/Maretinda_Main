@@ -1,26 +1,19 @@
 'use client';
 
+import { MagnifyingGlass, Minus } from '@medusajs/icons';
 import { useSearchParams } from 'next/navigation';
-import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useRefinementList } from 'react-instantsearch';
 
 import { Button, Chip, Input, StarRating } from '@/components/atoms';
 import { Accordion, FilterCheckboxOption, Modal } from '@/components/molecules';
+import { ColorCheckboxOption } from '@/components/molecules/ColorCheckboxOption/ColorCheckboxOption';
 import useFilters from '@/hooks/useFilters';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import useUpdateSearchParams from '@/hooks/useUpdateSearchParams';
 import { cn } from '@/lib/utils';
 
 import { ProductListingActiveFilters } from '../ProductListingActiveFilters/ProductListingActiveFilters';
-
-const filters = [
-	{ amount: 40, label: '5' },
-	{ amount: 78, label: '4' },
-	{ amount: 0, label: '3' },
-	{ amount: 0, label: '2' },
-	{ amount: 0, label: '1' },
-];
 
 export const AlgoliaProductSidebar = () => {
 	const [isMobile, setIsMobile] = useState(false);
@@ -48,11 +41,20 @@ export const AlgoliaProductSidebar = () => {
 				<Modal heading="Filters" onClose={() => setIsOpen(false)}>
 					<div className="px-4">
 						<ProductListingActiveFilters />
+						<StoreFilter
+							defaultOpen={Boolean(allSearchParams.store)}
+						/>
+						<BrandFilter
+							defaultOpen={Boolean(allSearchParams.brand)}
+						/>
 						<PriceFilter
 							defaultOpen={Boolean(
 								allSearchParams.min_price ||
 									allSearchParams.max_price,
 							)}
+						/>
+						<ConditionFilter
+							defaultOpen={Boolean(allSearchParams.condition)}
 						/>
 						<SizeFilter
 							defaultOpen={Boolean(allSearchParams.size)}
@@ -60,23 +62,55 @@ export const AlgoliaProductSidebar = () => {
 						<ColorFilter
 							defaultOpen={Boolean(allSearchParams.color)}
 						/>
-						<ConditionFilter
-							defaultOpen={Boolean(allSearchParams.condition)}
-						/>
+						{/* <RatingFilter defaultOpen={Boolean(allSearchParams.rating)} /> */}
 					</div>
 				</Modal>
 			)}
 		</>
 	) : (
-		<div>
+		<div className="flex flex-col gap-12">
+			<StoreFilter />
+			<BrandFilter />
 			<PriceFilter />
+			<ConditionFilter />
 			<SizeFilter />
 			<ColorFilter />
-			<ConditionFilter />
 			{/* <RatingFilter /> */}
 		</div>
 	);
 };
+
+function BrandFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
+	const { items } = useRefinementList({
+		attribute: 'brand.name',
+		limit: 100,
+		operator: 'or',
+	});
+
+	const { updateFilters, isFilterActive } = useFilters('brand');
+
+	const selectHandler = (option: string) => {
+		updateFilters(option);
+	};
+
+	return (
+		<Accordion defaultOpen={defaultOpen} filter heading="Brand">
+			<Input icon={<MagnifyingGlass />} placeholder="Search" />
+			<ul className="mt-8">
+				{items.map(({ label, count }) => (
+					<li className="mb-3" key={label}>
+						<FilterCheckboxOption
+							checked={isFilterActive(label)}
+							disabled={Boolean(!count)}
+							label={label}
+							onCheck={selectHandler}
+						/>
+					</li>
+				))}
+			</ul>
+		</Accordion>
+	);
+}
 
 function ConditionFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 	const { items } = useRefinementList({
@@ -90,10 +124,10 @@ function ConditionFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 		updateFilters(option);
 	};
 	return (
-		<Accordion defaultOpen={defaultOpen} heading="Condition">
-			<ul className="px-4">
+		<Accordion defaultOpen={defaultOpen} filter heading="Condition">
+			<ul>
 				{items.map(({ label, count }) => (
-					<li className="mb-4" key={label}>
+					<li className="mb-3" key={label}>
 						<FilterCheckboxOption
 							checked={isFilterActive(label)}
 							disabled={Boolean(!count)}
@@ -120,26 +154,20 @@ function ColorFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 	const selectHandler = (option: string) => {
 		updateFilters(option);
 	};
+
 	return (
-		<Accordion defaultOpen={defaultOpen} heading="Color">
-			<ul className="px-4">
+		<Accordion defaultOpen={defaultOpen} filter heading="Color">
+			<ul className="px-4 flex gap-6 flex-wrap">
 				{items.map(({ label, count }) => (
 					<li
-						className="mb-4 flex items-center justify-between"
+						className="flex items-center justify-between"
 						key={label}
 					>
-						<FilterCheckboxOption
-							checked={isFilterActive(label)}
+						<ColorCheckboxOption
+							checked={isFilterActive(label.toLowerCase())}
+							color={label.toLowerCase()}
 							disabled={Boolean(!count)}
-							label={label}
 							onCheck={selectHandler}
-						/>
-						<div
-							className={cn(
-								'w-5 h-5 border border-primary rounded-xs',
-								Boolean(!label) && 'opacity-30',
-							)}
-							style={{ backgroundColor: label.toLowerCase() }}
 						/>
 					</li>
 				))}
@@ -160,13 +188,18 @@ function SizeFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 		updateFilters(size);
 	};
 
+	items.sort(
+		({ label: labelA }, { label: labelB }) =>
+			Number(labelA) - Number(labelB),
+	);
+
 	return (
-		<Accordion defaultOpen={defaultOpen} heading="Size">
-			<ul className="grid grid-cols-4 mt-2 gap-2">
+		<Accordion defaultOpen={defaultOpen} filter heading="Size">
+			<ul className="flex gap-[11px] flex-wrap">
 				{items.map(({ label }) => (
-					<li className="mb-4" key={label}>
+					<li key={label}>
 						<Chip
-							className="w-full !justify-center !py-2 !font-normal"
+							className="!py-[10px] !px-5 !font-medium !rounded-[6px] border-none"
 							onSelect={() => selectSizeHandler(label)}
 							selected={isFilterActive(label)}
 							value={label}
@@ -184,6 +217,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 
 	const updateSearchParams = useUpdateSearchParams();
 	const searchParams = useSearchParams();
+	const { isFilterActive } = useFilters('max_price');
 
 	useEffect(() => {
 		setMin(searchParams.get('min_price') || '');
@@ -198,83 +232,125 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 		}
 	};
 
-	const updateMinPriceHandler = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		updateSearchParams('min_price', min);
+	const updatePriceHandler = () => {
+		updateSearchParams(['min_price', 'max_price'], [min, max]);
 	};
 
-	const updateMaxPriceHandler = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-		updateSearchParams('max_price', max);
+	const maxPriceList = [100, 1000, 5000];
+
+	const selectMaxPriceHandler = (option: string) => {
+		if (isFilterActive(option)) {
+			updateSearchParams('max_price', null);
+		} else {
+			updateSearchParams('max_price', option);
+		}
 	};
+
 	return (
-		<Accordion defaultOpen={defaultOpen} heading="Price">
-			<div className="flex gap-2 mb-4">
-				<form method="POST" onSubmit={updateMinPriceHandler}>
+		<Accordion defaultOpen={defaultOpen} filter heading="Price">
+			<div className="mb-4">
+				<ul>
+					{maxPriceList.map((maxPrice) => (
+						<li className="mb-3" key={maxPrice}>
+							<FilterCheckboxOption
+								checked={isFilterActive(maxPrice.toString())}
+								label={`0 - $ ${maxPrice.toLocaleString()}.00`}
+								onCheck={selectMaxPriceHandler}
+								value={maxPrice.toString()}
+							/>
+						</li>
+					))}
+				</ul>
+				<div className="mt-6 flex items-stretch">
 					<Input
-						onBlur={(e) => {
-							setTimeout(() => {
-								updateMinPriceHandler(
-									e as unknown as React.FormEvent<HTMLFormElement>,
-								);
-							}, 500);
-						}}
+						className="bg-white text-black py-[9px] text-center max-w-[76px]"
 						onChange={(e) =>
 							priceChangeHandler('min', e.target.value)
 						}
 						placeholder="Min"
 						value={min}
 					/>
-					<input className="hidden" type="submit" />
-				</form>
-				<form method="POST" onSubmit={updateMaxPriceHandler}>
+					<div className="flex items-center">
+						<Minus className="mx-[6px]" height={15} width={15} />
+					</div>
 					<Input
-						onBlur={(e) => {
-							setTimeout(() => {
-								updateMaxPriceHandler(
-									e as unknown as React.FormEvent<HTMLFormElement>,
-								);
-							}, 500);
-						}}
+						className="bg-white text-black py-[9px] text-center max-w-[72px]"
 						onChange={(e) =>
 							priceChangeHandler('max', e.target.value)
 						}
 						placeholder="Max"
 						value={max}
 					/>
-					<input className="hidden" type="submit" />
-				</form>
+					<Button
+						className="ml-[13px] mt-2 mr-2 text-white !bg-[rgba(var(--brand-purple-500))] font-medium"
+						onClick={() => {
+							updatePriceHandler();
+						}}
+						type="button"
+					>
+						Apply
+					</Button>
+				</div>
 			</div>
 		</Accordion>
 	);
 }
 
-function RatingFilter() {
-	const { updateFilters, isFilterActive } = useFilters('rating');
+function StoreFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
+	const { items } = useRefinementList({
+		attribute: 'seller.handle',
+		limit: 100,
+		operator: 'or',
+	});
+	const { updateFilters, isFilterActive } = useFilters('store');
 
 	const selectHandler = (option: string) => {
 		updateFilters(option);
 	};
 
 	return (
-		<Accordion heading="Rating">
-			<ul className="px-4">
-				{filters.map(({ label }) => (
-					<li
-						className={cn(
-							'mb-4 flex items-center gap-2 cursor-pointer',
-						)}
-						key={label}
-						onClick={() => selectHandler(label)}
-					>
+		<Accordion defaultOpen={defaultOpen} filter heading="Store">
+			<Input icon={<MagnifyingGlass />} placeholder="Search" />
+			<ul className="mt-8">
+				{items.map(({ label, count }) => (
+					<li className="mb-3" key={label}>
 						<FilterCheckboxOption
 							checked={isFilterActive(label)}
+							disabled={Boolean(!count)}
 							label={label}
+							onCheck={selectHandler}
 						/>
-						<StarRating rate={+label} />
 					</li>
 				))}
 			</ul>
 		</Accordion>
 	);
 }
+
+// function RatingFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
+// 	const { updateFilters, isFilterActive } = useFilters("rating");
+
+// 	const selectHandler = (option: string) => {
+// 		updateFilters(option);
+// 	};
+
+// 	return (
+// 		<Accordion heading="Rating" defaultOpen={defaultOpen} filter>
+// 			<ul className="px-4">
+// 				{filters.map(({ label }) => (
+// 					<li
+// 						className={cn("mb-4 flex items-center gap-2 cursor-pointer")}
+// 						key={label}
+// 						onClick={() => selectHandler(label)}
+// 					>
+// 						<FilterCheckboxOption
+// 							checked={isFilterActive(label)}
+// 							label={label}
+// 						/>
+// 						<StarRating rate={+label} />
+// 					</li>
+// 				))}
+// 			</ul>
+// 		</Accordion>
+// 	);
+// }

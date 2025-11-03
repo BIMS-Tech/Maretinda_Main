@@ -1,0 +1,22 @@
+.checkBox {
+    @apply border-none rounded-[3px] w-[14px] h-[14px];
+}
+
+.checkBoxUnchecked {
+    composes: checkBox;
+    @apply bg-[var(--brand-text)];
+    box-shadow: 0px 0px 0px 1px #00000014, 0px 1px 2px 0px #0000001F;
+}
+
+.checkBoxChecked {
+    composes: checkBox;
+    box-shadow: 0px 0px 0px 1px #2563EB, 0px 1px 2px 0px #1E3A8A80;
+}
+
+.checkIcon {
+    @apply w-[15px] h-[15px]
+}
+
+.checkIcon path {
+    @apply !fill-white w-[20px] h-[20px]
+}

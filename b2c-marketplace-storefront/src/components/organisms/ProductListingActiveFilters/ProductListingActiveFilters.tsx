@@ -1,6 +1,7 @@
 'use client';
 
 import { ActiveFilterElement } from '@/components/cells';
+import useFilters from "@/hooks/useFilters";
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 
 export const ProductListingActiveFilters = () => {
@@ -12,9 +13,20 @@ export const ProductListingActiveFilters = () => {
 			element[0] !== 'sold' &&
 			element[0] !== 'products[page]',
 	);
+	const { clearAllFilters } = useFilters(filters[0]?.[0] || "");
 
 	return (
-		<div className="gap-4 overflow-x-scroll no-scrollbar flex">
+		<div className="mb-12 mr-[27px]">
+			<div className="flex justify-between mb-6">
+				<div className="label-xl text-black !leading-[21px]">Refine by</div>
+				<button
+					type="button"
+					className="text-base text-black underline leading-none"
+					onClick={clearAllFilters}
+				>
+					Clear All
+				</button>
+			</div>
 			{filters.map((filter) => (
 				<ActiveFilterElement filter={filter} key={filter[0]} />
 			))}

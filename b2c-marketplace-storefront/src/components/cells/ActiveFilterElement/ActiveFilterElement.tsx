@@ -16,35 +16,49 @@ const filtersLabels = {
 	size: 'Size',
 };
 
-export const ActiveFilterElement = ({ filter }: { filter: string[] }) => {
+const Element = ({
+	element,
+	filter,
+}: {
+	element: string;
+	filter: string[];
+}) => {
 	const { updateFilters } = useFilters(filter[0]);
-
-	const activeFilters = filter[1].split(',');
 
 	const removeFilterHandler = (filter: string) => {
 		updateFilters(filter);
 	};
 
 	return (
-		<div className="flex gap-2 items-center mb-4">
-			<span className="label-md hidden md:inline-block">
-				{filtersLabels[filter[0] as keyof typeof filtersLabels]}:
-			</span>
+		<span className="flex items-center cursor-default whitespace-nowrap text-white">
+			<div className="border-r-[1px] border-[#e4e4e7] px-2 py-1">
+				<span className="capitalize">{filter[0].replace("_", " ")}:</span>{" "}
+				{element}
+			</div>
+			<button
+				className="cursor-pointer px-2 py-1"
+				type="button"
+				onClick={() => removeFilterHandler(element)}
+			>
+				<CloseIcon pathClassName="!fill-white" size={15} />
+			</button>
+		</span>
+	);
+};
+
+export const ActiveFilterElement = ({ filter }: { filter: string[] }) => {
+	const activeFilters = filter[1].split(",");
+
+	return (
+		<div className="flex flex-wrap gap-[23px] items-center mb-4">
 			{activeFilters.map((element) => {
-				const Element = () => {
-					return (
-						<span className="flex gap-2 items-center cursor-default whitespace-nowrap">
-							{element}{' '}
-							<span onClick={() => removeFilterHandler(element)}>
-								<CloseIcon
-									className="cursor-pointer"
-									size={16}
-								/>
-							</span>
-						</span>
-					);
-				};
-				return <Chip key={element} value={<Element />} />;
+				return (
+					<Chip
+						className="!bg-[rgba(var(--brand-purple-500))] !py-0 !px-0 !rounded-[6px] border-[#e4e4e7] border-[1px]"
+						key={element}
+						value={<Element element={element} filter={filter} />}
+					/>
+				);
 			})}
 		</div>
 	);

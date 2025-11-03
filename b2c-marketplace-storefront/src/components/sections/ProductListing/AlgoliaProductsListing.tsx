@@ -1,11 +1,15 @@
 'use client';
 
+import { Funnel } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { BsGrid3X2Gap } from 'react-icons/bs';
+import { TiThListOutline } from 'react-icons/ti';
 import { Configure, useHits } from 'react-instantsearch';
 import { InstantSearchNext } from 'react-instantsearch-nextjs';
 
+import { SelectField } from '@/components/molecules';
 import {
 	AlgoliaProductSidebar,
 	ProductCard,
@@ -74,6 +78,7 @@ const ProductsListing = ({
 	wishlist: Wishlist[] | [];
 }) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
+	const [selectedSort, setSelectedSort] = useState('Default');
 	const { items, results } = useHits();
 
 	const [pageLimit, setPageLimit] = useState(PRODUCT_LIMIT);
@@ -96,7 +101,7 @@ const ProductsListing = ({
 				}),
 			);
 		});
-	}, []);
+	}, [locale]);
 
 	if (!results?.processingTimeMS) return <ProductListingSkeleton />;
 
@@ -112,16 +117,44 @@ const ProductsListing = ({
 	const count = prod?.length || 0;
 	// const pages = Math.ceil(count / pageLimit) || 1;
 
+	const sortByDropdownOptions = [
+		{ label: 'Default', value: 'Default' },
+		{ label: 'Popularity', value: 'Popularity' },
+		{ label: 'Average rating', value: 'Average rating' },
+		{ label: 'Price: low to high', value: 'Price: low to high' },
+		{ label: 'Price: high to low', value: 'Price: high to low' },
+	];
+
 	return (
 		<>
-			<div className="flex justify-between w-full items-center">
-				<div className="my-4 label-md">{`${count} listings`}</div>
+			<div className="text-[#999] font-medium text-[20px] flex justify-between w-full border-b-[1px] border-[#00000021] mb-12">
+				<div className="flex gap-[7px] items-center pb-[18px] ">
+					<Funnel height={18} width={18} /> Filter
+				</div>
+				<div>{`${count} results`}</div>
+				<div className="flex items-center pb-[18px] ">
+					<span className="text-nowrap">Sort by: </span>
+					<SelectField
+						className="ml-1 text-black bg-transparent border-none !font-medium !text-[20px] !p-0 !h-auto w-[180px]"
+						options={sortByDropdownOptions}
+					/>
+				</div>
+				<div className="h-full flex">
+					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
+						<BsGrid3X2Gap size={27} />
+					</div>
+
+					<div className="w-[45px] pb-[18px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
+						<TiThListOutline size={24} />
+					</div>
+				</div>
 			</div>
-			<div className="hidden md:block w-[280px]">
-				<ProductListingActiveFilters />
-			</div>
+
 			<div className="md:flex gap-4">
-				<div className="max-w-[280px]">
+				<div className="w-[280px] shrink-0">
+					<div className="hidden md:block">
+						<ProductListingActiveFilters />
+					</div>
 					<AlgoliaProductSidebar />
 				</div>
 				<div className="w-full">
