@@ -1,35 +1,31 @@
 'use client';
 
-import { format } from 'date-fns';
 import { useState } from 'react';
 
-import { Button, Divider } from '@/components/atoms';
+import { Button } from '@/components/atoms';
 import { Modal, ReportSellerForm } from '@/components/molecules';
-import { DoneIcon } from '@/icons';
-import { SingleProductSeller } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 
 export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
 	const [openModal, setOpenModal] = useState(false);
 	return (
-		<div className="flex justify-between items-center flex-col lg:flex-row">
-			<div className="flex gap-2 lg:gap-4 items-center label-sm lg:label-md text-secondary mb-4 lg:mb-0 justify-between w-full lg:justify-start lg:w-auto">
-				{/* {seller.verified && (
+		<div className="flex justify-between items-start flex-col lg:flex-row">
+			{/* <div className="flex gap-2 lg:gap-4 items-center label-sm lg:label-md text-secondary mb-4 lg:mb-0 justify-between w-full lg:justify-start lg:w-auto">
+				{seller.verified && (
           <div className="flex items-center gap-2">
             <DoneIcon size={20} />
             Verified seller
           </div>
-        )} */}
+        )}
 				<Divider square />
 				<p>Joined {format(seller.created_at, 'yyyy-MM-dd')}</p>
-				{/* <Divider square /> */}
-				{/* <p>sold {seller.sold}</p> */}
-			</div>
+				<Divider square />
+				<p>sold {seller.sold}</p>
+			</div> */}
 			<Button
-				className="uppercase"
+				className="w-[133px] py-3 flex justify-center !font-normal !text-black"
 				onClick={() => setOpenModal(true)}
 				size="large"
-				variant="text"
 			>
 				Report
 			</Button>

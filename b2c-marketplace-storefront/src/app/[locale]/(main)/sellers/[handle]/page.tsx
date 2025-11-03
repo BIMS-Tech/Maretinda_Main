@@ -25,7 +25,7 @@ export default async function SellerPage({
 	}
 
 	return (
-		<main className="container">
+		<main className="container !max-w-7xl mx-auto">
 			<SellerPageHeader header seller={seller} user={user} />
 			<SellerTabs
 				currency_code={currency_code}

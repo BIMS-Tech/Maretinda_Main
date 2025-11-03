@@ -7,7 +7,7 @@ export const getSellerByHandle = async (handle: string) => {
 		.fetch<{ seller: SellerProps }>(`/store/seller/${handle}`, {
 			cache: 'force-cache',
 			query: {
-				fields: '+created_at,+rating,+email,*reviews,*reviews.customer,*reviews.seller',
+				fields: '+created_at,+rating,+email,*reviews,*reviews.customer,*reviews.seller,+description',
 			},
 		})
 		.then(({ seller }) => {

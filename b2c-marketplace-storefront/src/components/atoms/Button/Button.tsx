@@ -1,7 +1,8 @@
 import Spinner from '@/icons/spinner';
 import { cn } from '@/lib/utils';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+	extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: 'filled' | 'tonal' | 'text' | 'destructive';
 	size?: 'small' | 'large';
 	loading?: boolean;

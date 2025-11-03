@@ -4,6 +4,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { useState } from 'react';
 
 import { Button } from '@/components/atoms';
+import type { ButtonProps } from '@/components/atoms/Button/Button';
 import { ChatBox } from '@/components/cells/ChatBox/ChatBox';
 import { Modal } from '@/components/molecules';
 import { MessageIcon } from '@/icons';
@@ -19,6 +20,7 @@ export const Chat = ({
 	product,
 	subject,
 	order_id,
+	variant = 'tonal',
 }: {
 	user: HttpTypes.StoreCustomer | null;
 	seller: SellerProps;
@@ -27,6 +29,7 @@ export const Chat = ({
 	product?: HttpTypes.StoreProduct;
 	subject?: string;
 	order_id?: string;
+	variant?: ButtonProps['variant'];
 }) => {
 	const [modal, setModal] = useState(false);
 
@@ -39,7 +42,7 @@ export const Chat = ({
 			<Button
 				className={buttonClassNames}
 				onClick={() => setModal(true)}
-				variant="tonal"
+				variant={variant}
 			>
 				{icon ? <MessageIcon size={20} /> : 'Write to seller'}
 			</Button>
