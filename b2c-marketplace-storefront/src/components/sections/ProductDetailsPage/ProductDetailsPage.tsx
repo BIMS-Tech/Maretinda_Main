@@ -4,7 +4,6 @@ import {
 	ProductGallery,
 	ProductTabs,
 } from '@/components/organisms';
-import { getOrSetCart, retrieveCart } from '@/lib/data/cart';
 import { listProducts } from '@/lib/data/products';
 import { getSellerByHandle } from '@/lib/data/seller';
 import type { SellerProps } from '@/types/seller';
@@ -29,9 +28,6 @@ export const ProductDetailsPage = async ({
 	const seller = (await getSellerByHandle(
 		prod.seller?.handle as string,
 	)) as SellerProps;
-
-	const cartId = await retrieveCart();
-	if (!cartId) await getOrSetCart(locale);
 
 	if (!prod) return null;
 
