@@ -1,48 +1,33 @@
-import Image from 'next/image';
+import { Session } from '@talkjs/react';
 
-import { Button } from '@/components/atoms';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { CollapseIcon } from '@/icons';
+import { Footer, Header } from '@/components/organisms';
+import { retrieveCustomer } from '@/lib/data/customer';
 
 export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID;
+
+	const user = await retrieveCustomer();
+
+	if (!APP_ID || !user)
+		return (
+			<>
+				<Header />
+				{children}
+				<Footer />
+			</>
+		);
+
 	return (
 		<>
-			<header>
-				<div className="relative w-full py-2 lg:px-8 px-4">
-					<div className="absolute top-3">
-						<LocalizedClientLink href="/cart">
-							<Button
-								className="flex items-center gap-2"
-								variant="tonal"
-							>
-								<CollapseIcon className="rotate-90" />
-								<span className="hidden lg:block">
-									Back to cart
-								</span>
-							</Button>
-						</LocalizedClientLink>
-					</div>
-					<div className="flex items-center justify-center pl-4 lg:pl-0 w-full">
-						<LocalizedClientLink
-							className="text-2xl font-bold"
-							href="/"
-						>
-							<Image
-								alt="Logo"
-								height={40}
-								priority
-								src="/Logo.png"
-								width={126}
-							/>
-						</LocalizedClientLink>
-					</div>
-				</div>
-			</header>
-			{children}
+			<Session appId={APP_ID} userId={user.id}>
+				<Header />
+				{children}
+				<Footer />
+			</Session>
 		</>
 	);
 }

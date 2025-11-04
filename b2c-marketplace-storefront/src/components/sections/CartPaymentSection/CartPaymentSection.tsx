@@ -122,21 +122,28 @@ const CartPaymentSection = ({
 	}, [isOpen]);
 
 	return (
-		<div className="border p-4 rounded-sm bg-ui-bg-interactive">
-			<div className="flex flex-row items-center justify-between mb-6">
-				<Heading
-					className="flex flex-row text-3xl-regular gap-x-2 items-baseline items-center"
-					level="h2"
-				>
-					{!isOpen && paymentReady && <CheckCircleSolid />}
-					Payment
-				</Heading>
-				{!isOpen && (
-					<Text>
-						<Button onClick={handleEdit} variant="tonal">
-							Edit
-						</Button>
-					</Text>
+		<div>
+			{/* Header with Checkmark and Edit */}
+			<div className="flex items-center justify-between mb-6">
+				<div className="flex items-center gap-3">
+					{!isOpen && paymentReady && (
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
+							<CheckCircleSolid className="text-white" width={16} height={16} />
+						</div>
+					)}
+					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+						Payment
+					</h2>
+				</div>
+				{!isOpen && paymentReady && (
+					<button
+						type="button"
+						onClick={handleEdit}
+						className="text-sm underline"
+						style={{ color: '#2563eb' }}
+					>
+						Edit
+					</button>
 				)}
 			</div>
 			<div>
@@ -209,69 +216,31 @@ const CartPaymentSection = ({
 					/>
 
 					<Button
+						className="mt-4 rounded-md"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard)
 						}
 						loading={isLoading}
 						onClick={handleSubmit}
-						variant="tonal"
+						style={{ backgroundColor: '#facc15', color: '#000' }}
 					>
-						{!activeSession && isStripeFunc(selectedPaymentMethod)
-							? ' Enter card details'
-							: 'Continue to review'}
+						Continue to review
 					</Button>
 				</div>
 
 				<div className={isOpen ? 'hidden' : 'block'}>
-					{cart && paymentReady && activeSession ? (
-						<div className="flex items-start gap-x-1 w-full">
-							<div className="flex flex-col w-1/3">
-								<Text className="txt-medium-plus text-ui-fg-base mb-1">
-									Payment method
-								</Text>
-								<Text
-									className="txt-medium text-ui-fg-subtle"
-									data-testid="payment-method-summary"
-								>
-									{paymentInfoMap[activeSession?.provider_id]
-										?.title || activeSession?.provider_id}
-								</Text>
-							</div>
-							<div className="flex flex-col w-1/3">
-								<Text className="txt-medium-plus text-ui-fg-base mb-1">
-									Payment details
-								</Text>
-								<div
-									className="flex gap-2 txt-medium text-ui-fg-subtle items-center"
-									data-testid="payment-details-summary"
-								>
-									<Container className="flex items-center h-7 w-fit p-2 bg-ui-button-neutral-hover">
-										{paymentInfoMap[selectedPaymentMethod]
-											?.icon || <CreditCard />}
-									</Container>
-									<Text>
-										{isStripeFunc(selectedPaymentMethod) &&
-										cardBrand
-											? cardBrand
-											: 'Another step will appear'}
-									</Text>
-								</div>
-							</div>
-						</div>
-					) : paidByGiftcard ? (
-						<div className="flex flex-col w-1/3">
-							<Text className="txt-medium-plus text-ui-fg-base mb-1">
-								Payment method
-							</Text>
-							<Text
-								className="txt-medium text-ui-fg-subtle"
-								data-testid="payment-method-summary"
-							>
+					<div className="pb-4">
+						{cart && paymentReady && activeSession ? (
+							<p className="text-sm" style={{ color: '#6b7280' }}>
+								{paymentInfoMap[activeSession?.provider_id]?.title || activeSession?.provider_id}
+							</p>
+						) : paidByGiftcard ? (
+							<p className="text-sm" style={{ color: '#6b7280' }}>
 								Gift card
-							</Text>
-						</div>
-					) : null}
+							</p>
+						) : null}
+					</div>
 				</div>
 			</div>
 		</div>

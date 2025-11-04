@@ -30,6 +30,7 @@ export function Input({
   error,
   changeValue,
   options,
+  onChange,
   ...props
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false)
@@ -79,7 +80,14 @@ export function Input({
             paddingY,
             className
           )}
-          onChange={(e) => changeHandler(e.target.value)}
+          onChange={(e) => {
+            if (changeValue) {
+              changeHandler(e.target.value);
+            }
+            if (onChange) {
+              onChange(e);
+            }
+          }}
           value={props.value}
           {...props}
           type={inputType}

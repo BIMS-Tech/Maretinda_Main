@@ -49,36 +49,48 @@ export const CartAddressSection = ({
 	const [message, formAction] = useActionState(setAddresses, sameAsBilling);
 
 	useEffect(() => {
-		if (!isAddress) {
+		if (!isAddress && !isOpen) {
 			router.replace(pathname + '?step=address');
 		}
-	}, [isAddress]);
+	}, [isAddress, isOpen, pathname]);
 
 	const handleEdit = () => {
 		router.replace(pathname + '?step=address');
 	};
 
 	return (
-		<div className="border p-4 rounded-sm bg-ui-bg-interactive">
-			<div className="flex flex-row items-center justify-between mb-6">
-				<Heading
-					className="flex flex-row text-3xl-regular gap-x-2 items-baseline items-center"
-					level="h2"
-				>
-					{!isOpen && <CheckCircleSolid />} Shipping Address
-				</Heading>
-				{!isOpen && isAddress && (
-					<Text>
-						<Button onClick={handleEdit} variant="tonal">
-							Edit
-						</Button>
-					</Text>
+		<div>
+			{/* Header with Checkmark and Edit */}
+			<div className="flex items-center justify-between mb-6">
+				<div className="flex items-center gap-3">
+					{isAddress && !isOpen && (
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
+							<CheckCircleSolid className="text-white" width={16} height={16} />
+						</div>
+					)}
+					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+						Shipping Address
+					</h2>
+				</div>
+				{isAddress && !isOpen && (
+					<button
+						type="button"
+						onClick={handleEdit}
+						className="text-sm underline"
+						style={{ color: '#2563eb' }}
+					>
+						Edit
+					</button>
 				)}
 			</div>
+			
 			<form
 				action={async (data) => {
-					await formAction(data);
-					router.replace(`${pathname}?step=delivery`);
+					const result = await formAction(data);
+					if (result === 'success') {
+						router.replace(`${pathname}?step=delivery`);
+						router.refresh();
+					}
 				}}
 			>
 				{isOpen ? (
@@ -89,10 +101,26 @@ export const CartAddressSection = ({
 							customer={customer}
 							onChange={toggleSameAsBilling}
 						/>
+						
+						{/* Save Information Checkbox */}
+						<div className="mt-4 mb-6">
+							<label className="flex items-center gap-2 cursor-pointer">
+								<input
+									type="checkbox"
+									className="w-4 h-4 rounded border-gray-300"
+									defaultChecked
+								/>
+								<span className="text-sm" style={{ color: '#374151' }}>
+									Save this information for faster check-out next time
+								</span>
+							</label>
+						</div>
+
 						<Button
-							className="mt-6"
+							type="submit"
+							className="mt-2 rounded-md"
 							data-testid="submit-address-button"
-							variant="tonal"
+							style={{ backgroundColor: '#facc15', color: '#000' }}
 						>
 							Save
 						</Button>
@@ -102,60 +130,27 @@ export const CartAddressSection = ({
 						/>
 					</div>
 				) : (
-					<div>
-						<div className="text-small-regular">
-							{cart && cart.shipping_address ? (
-								<div className="flex items-start gap-x-8">
-									<div className="flex items-start gap-x-1 w-full">
-										<div>
-											<Text className="txt-medium-plus font-bold">
-												{
-													cart.shipping_address
-														.first_name
-												}{' '}
-												{
-													cart.shipping_address
-														.last_name
-												}
-											</Text>
-											<Text>
-												{
-													cart.shipping_address
-														.address_1
-												}{' '}
-												{
-													cart.shipping_address
-														.address_2
-												}
-												,{' '}
-												{
-													cart.shipping_address
-														.postal_code
-												}{' '}
-												{cart.shipping_address.city},{' '}
-												{cart.shipping_address.country_code?.toUpperCase()}
-											</Text>
-											<Text>
-												{cart.email},{' '}
-												{cart.shipping_address.phone}
-											</Text>
-										</div>
-									</div>
-								</div>
-							) : (
-								<div>
-									<Spinner />
-								</div>
-							)}
-						</div>
+					<div className="pb-4">
+						{cart && cart.shipping_address ? (
+							<div className="space-y-1">
+								<p className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+									{cart.shipping_address.first_name} {cart.shipping_address.last_name}
+								</p>
+								<p className="text-sm" style={{ color: '#6b7280' }}>
+									{cart.shipping_address.address_1}
+									{cart.shipping_address.address_2 && `, ${cart.shipping_address.address_2}`}
+									, {cart.shipping_address.postal_code} {cart.shipping_address.city}, {cart.shipping_address.country_code?.toUpperCase()}
+								</p>
+								<p className="text-sm" style={{ color: '#6b7280' }}>
+									{cart.email}, {cart.shipping_address.phone}
+								</p>
+							</div>
+						) : (
+							<div>
+								<Spinner />
+							</div>
+						)}
 					</div>
-				)}
-				{isAddress && !searchParams.get('step') && (
-					<LocalizedClientLink href="/checkout?step=delivery">
-						<Button className="mt-6" variant="tonal">
-							Continue to Delivery
-						</Button>
-					</LocalizedClientLink>
 				)}
 			</form>
 		</div>
