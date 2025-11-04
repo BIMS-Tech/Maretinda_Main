@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Lora } from 'next/font/google';
+import { Inter, Lora, Poppins } from "next/font/google";
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
@@ -14,6 +14,12 @@ const lora = Lora({
 	subsets: ['latin'],
 	variable: '--font-lora',
 	weight: ['400', '500', '600', '700'],
+});
+
+const poppins = Poppins({
+	subsets: ["latin"],
+	variable: "--font-poppins",
+	weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -46,7 +52,7 @@ export default async function RootLayout({
 	return (
 		<html className="" lang={locale}>
 			<body
-				className={`${funnelDisplay.className} ${lora.variable} antialiased bg-primary text-secondary relative`}
+				className={`${funnelDisplay.className} ${lora.variable} ${poppins.variable} antialiased bg-primary text-secondary relative`}
 			>
 				{children}
 				<Toaster position="top-right" />

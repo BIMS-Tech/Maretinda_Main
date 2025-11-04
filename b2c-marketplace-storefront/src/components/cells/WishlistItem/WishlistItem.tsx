@@ -6,8 +6,9 @@ import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { convertToLocale } from '@/lib/helpers/money';
 import type { Wishlist } from '@/types/wishlist';
+import { FaStar } from "react-icons/fa";
 
-import { WishlistButton } from '../WishlistButton/WishlistButton';
+import { DeleteWishlistButton } from "../WishlistButton/DeleteWishlistButton";
 
 export const WishlistItem = ({
 	product,
@@ -29,12 +30,12 @@ export const WishlistItem = ({
 	return (
 		<div
 			className={clsx(
-				'relative group border rounded-sm flex flex-col justify-between p-1 w-[250px] lg:w-[370px]',
+				"relative border rounded-sm flex flex-col justify-between p-[14px] w-[250px] lg:w-[370px]",
 			)}
 		>
 			<div className="relative w-full h-full bg-primary aspect-square">
-				<div className="absolute right-3 top-3 z-10 cursor-pointer">
-					<WishlistButton
+				<div className="absolute right-[14px] top-[14px] z-10 cursor-pointer">
+					<DeleteWishlistButton
 						productId={product.id}
 						user={user}
 						wishlist={wishlist}
@@ -45,7 +46,7 @@ export const WishlistItem = ({
 						{product.thumbnail ? (
 							<Image
 								alt={product.title}
-								className="object-cover aspect-square w-full object-center h-full lg:group-hover:-mt-14 transition-all duration-300 rounded-xs"
+								className="object-cover aspect-square w-full object-center h-full transition-all duration-300 rounded-xs"
 								height={360}
 								priority
 								src={decodeURIComponent(product.thumbnail)}
@@ -62,21 +63,37 @@ export const WishlistItem = ({
 						)}
 					</div>
 				</LocalizedClientLink>
-				<LocalizedClientLink href={`/products/${product.handle}`}>
-					<Button className="absolute rounded-sm bg-action text-action-on-primary h-auto lg:h-[48px] lg:group-hover:block hidden w-full uppercase bottom-1 z-10">
-						See More
-					</Button>
-				</LocalizedClientLink>
 			</div>
 			<LocalizedClientLink href={`/products/${product.handle}`}>
-				<div className="flex justify-between p-4">
-					<div className="w-full">
-						<h3 className="heading-sm truncate">{product.title}</h3>
-						<div className="flex items-center gap-2 mt-2">
-							{price}
+				<div className="flex flex-col gap-2 mt-4">
+					<h3 className="heading-sm truncate font-poppins text-black">
+						{product.title}
+					</h3>
+					<div className="flex items-center gap-3 font-poppins font-medium">
+						<span className="text-[##DB4444]">{price}</span>
+						{/* TODO: Implement old price */}
+						<span className="text-neutral-400 line-through">$160</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<div className="flex items-center">
+							<FaStar color="#FFAD33" />
+							<FaStar color="#FFAD33" />
+							<FaStar color="#FFAD33" />
+							<FaStar color="#FFAD33" />
+							<FaStar color="#FFAD33" />
 						</div>
+						<span className="font-poppins font-semibold">(63)</span>
+					</div>
+					<div className="text-[#065f46] font-medium text-[14px]">
+						Available in stock
 					</div>
 				</div>
+			</LocalizedClientLink>
+			<LocalizedClientLink href={`/products/${product.handle}`}>
+				{/* TODO: Implement add to cart */}
+				<Button className="rounded-sm bg-action text-action-on-primary h-auto lg:h-[48px] w-full bottom-1 z-10 mt-4">
+					Add to Cart
+				</Button>
 			</LocalizedClientLink>
 		</div>
 	);

@@ -1,4 +1,5 @@
 import type { HttpTypes } from '@medusajs/types';
+import { Container } from "@medusajs/ui";
 import { isEmpty } from 'lodash';
 import { redirect } from 'next/navigation';
 
@@ -35,31 +36,23 @@ export default async function Wishlist() {
 		<main className="container">
 			<div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-8">
 				<UserNavigation />
-				<div className="md:col-span-3 space-y-8">
+				<Container className="md:col-span-3 space-y-8 p-[38px] flex flex-col gap-12">
+					<h2 className="font-lora font-bold text-4xl">Wishlists</h2>
 					{isEmpty(wishlist?.[0]?.products) ? (
 						<div className="w-96 mx-auto flex flex-col items-center justify-center">
-							<h2 className="heading-lg text-primary uppercase mb-2">
-								Wishlist
-							</h2>
 							<p className="text-lg text-secondary mb-6">
 								Your wishlist is currently empty.
 							</p>
-							<LocalizedClientLink
-								className="w-full"
-								href="/categories"
-							>
+							<LocalizedClientLink className="w-full" href="/categories">
 								<Button className="w-full">Explore</Button>
 							</LocalizedClientLink>
 						</div>
 					) : (
 						<div className="flex flex-col gap-6">
-							<h2 className="heading-lg text-primary uppercase">
-								Wishlist
-							</h2>
-							<div className="flex justify-between items-center">
-								<p>{count} listings</p>
-							</div>
-							<div className="flex flex-wrap max-md:justify-center gap-4">
+							<p className="font-medium text-[#a0a0a0] text-sm">
+								{count} listings
+							</p>
+							<div className="flex flex-wrap max-md:justify-center gap-6">
 								{wishlist?.[0].products?.map((product) => (
 									<WishlistItem
 										key={product.id}
@@ -76,7 +69,7 @@ export default async function Wishlist() {
 							</div>
 						</div>
 					)}
-				</div>
+				</Container>
 			</div>
 		</main>
 	);
