@@ -32,8 +32,6 @@ export const ProductCard = ({
 		return null;
 	}
 
-	const { name, photo } = api_product?.seller as SellerProps;
-
 	const { cheapestPrice } = getProductPrice({
 		// biome-ignore lint/style/noNonNullAssertion: api_product will always be available
 		product: api_product! as StoreProduct,
@@ -142,9 +140,14 @@ export const ProductCard = ({
 								className="rounded-full h-10 w-10"
 								initials="M"
 								size="large"
-								src={photo || '/talkjs-placeholder.jpg'}
+								src={
+									api_product?.seller?.photo ||
+									'/talkjs-placeholder.jpg'
+								}
 							/>
-							<p className="label-lg text-black">{name}</p>
+							<p className="label-lg text-black">
+								{api_product?.seller?.name}
+							</p>
 						</div>
 					</LocalizedClientLink>
 					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-3.5 z-10">
