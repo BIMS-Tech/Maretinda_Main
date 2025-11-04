@@ -40,17 +40,15 @@ export const metadata: Metadata = {
 	},
 };
 
-export default async function RootLayout({
+export default function RootLayout({
 	children,
-	params,
 }: Readonly<{
 	children: React.ReactNode;
-	params: Promise<{ locale: string }>;
 }>) {
-	const { locale } = await params;
+	const defaultLocale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'en';
 
 	return (
-		<html className="" lang={locale}>
+		<html className="" lang={defaultLocale}>
 			<body
 				className={`${funnelDisplay.className} ${lora.variable} ${poppins.variable} antialiased bg-primary text-secondary relative`}
 			>
