@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import { Inter, Lora, Poppins } from "next/font/google";
 import './globals.css';
 
@@ -42,9 +43,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
 	children,
-}: Readonly<{
-	children: React.ReactNode;
-}>) {
+}: {
+	readonly children: ReactNode;
+}) {
 	const defaultLocale = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'en';
 
 	return (
