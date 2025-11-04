@@ -16,12 +16,14 @@ import {
 	ProductListingActiveFilters,
 	ProductsPagination,
 } from '@/components/organisms';
+import { ProductBigCard } from '@/components/organisms/ProductCard/ProductBigCard';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { PRODUCT_LIMIT } from '@/const';
+import { PRODUCT_LIMIT, PRODUCT_LIMIT_BIG_CARD } from '@/const';
 import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
 import { getFacedFilters } from '@/lib/helpers/get-faced-filters';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { cn } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
 export const AlgoliaProductsListing = ({
@@ -69,10 +71,14 @@ export const AlgoliaProductsListing = ({
 };
 
 const ProductsListing = ({
+	// TODO: remove this in favor of layout toggle in product listing
+	// once the layout toggle is implemented.
+	isBigCard = true,
 	locale,
 	user,
 	wishlist,
 }: {
+	isBigCard?: boolean;
 	locale?: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[] | [];
@@ -80,8 +86,9 @@ const ProductsListing = ({
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
 	const [selectedSort, setSelectedSort] = useState('Default');
 	const { items, results } = useHits();
+	const layoutLimit = isBigCard ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
 
-	const [pageLimit, setPageLimit] = useState(PRODUCT_LIMIT);
+	const [pageLimit, setPageLimit] = useState(layoutLimit);
 
 	const searchParamas = useSearchParams();
 
@@ -170,12 +177,30 @@ const ProductsListing = ({
 						</div>
 					) : (
 						<div className="w-full">
-							<ul className={'flex flex-wrap gap-2'}>
+							<ul
+								className={cn(
+									'flex flex-wrap gap-2',
+									isBigCard && 'flex-row',
+								)}
+							>
 								{products.map(
-									(hit) =>
+									(hit, index) =>
 										prod?.find(
 											(p: any) => p.id === hit.objectID,
-										) && (
+										) &&
+										(isBigCard ? (
+											<ProductBigCard
+												api_product={prod?.find(
+													(p: any) =>
+														p.id === hit.objectID,
+												)}
+												id={index}
+												key={hit.objectID}
+												product={hit}
+												user={user}
+												wishlist={wishlist}
+											/>
+										) : (
 											<ProductCard
 												api_product={prod?.find(
 													(p: any) =>
@@ -186,7 +211,7 @@ const ProductsListing = ({
 												user={user}
 												wishlist={wishlist}
 											/>
-										),
+										)),
 								)}
 							</ul>
 						</div>
@@ -194,6 +219,7 @@ const ProductsListing = ({
 					{pageLimit < filteredProducts.length && (
 						<ProductsPagination
 							isInfinite
+							offset={layoutLimit}
 							pageLimit={pageLimit}
 							// pages={pages}
 							setPageLimit={setPageLimit}
