@@ -13,11 +13,12 @@ import ProductTabShipping from '../ProductTabContent/ProductTabShipping';
 
 export const ProductTabs = ({
 	product,
+	seller,
 }: {
 	product: HttpTypes.StoreProduct & {
-		seller?: SellerProps;
 		attribute_values?: AdditionalAttributeProps[];
 	};
+	seller: SellerProps;
 }) => {
 	const [value, setValue] = useState('details');
 	return (
@@ -43,10 +44,7 @@ export const ProductTabs = ({
 						<ProductTabDetails product={product} />
 					</Tabs.Content>
 					<Tabs.Content value="rating">
-						<ProductTabRating
-							product={product}
-							seller={product?.seller}
-						/>
+						<ProductTabRating seller={seller} />
 					</Tabs.Content>
 					<Tabs.Content value="shipping">
 						<ProductTabShipping product={product} />

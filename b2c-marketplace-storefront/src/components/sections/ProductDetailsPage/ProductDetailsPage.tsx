@@ -4,7 +4,10 @@ import {
 	ProductGallery,
 	ProductTabs,
 } from '@/components/organisms';
+import { getOrSetCart, retrieveCart } from '@/lib/data/cart';
 import { listProducts } from '@/lib/data/products';
+import { getSellerByHandle } from '@/lib/data/seller';
+import type { SellerProps } from '@/types/seller';
 
 import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
 
@@ -17,12 +20,22 @@ export const ProductDetailsPage = async ({
 }) => {
 	const prod = await listProducts({
 		countryCode: locale,
-		queryParams: { handle },
+		queryParams: {
+			fields: '*variants.calculated_price,+variants.inventory_quantity,+seller.handle,+metadata',
+			handle,
+		},
 	}).then(({ response }) => response.products[0]);
+
+	const seller = (await getSellerByHandle(
+		prod.seller?.handle as string,
+	)) as SellerProps;
+
+	const cartId = await retrieveCart();
+	if (!cartId) await getOrSetCart(locale);
 
 	if (!prod) return null;
 
-	if (prod.seller?.store_status === 'SUSPENDED') {
+	if (seller.store_status === 'SUSPENDED') {
 		return NotFound();
 	}
 
@@ -33,10 +46,14 @@ export const ProductDetailsPage = async ({
 					<ProductGallery images={prod?.images || []} />
 				</div>
 				<div className="md:w-1/2 ">
-					<ProductDetails locale={locale} product={prod} />
+					<ProductDetails
+						locale={locale}
+						product={prod}
+						seller={seller}
+					/>
 				</div>
 			</div>
-			<ProductTabs product={prod} />
+			<ProductTabs product={prod} seller={seller} />
 			<div className="my-8 mt-16">
 				<HomeProductSection
 					heading="People Also Buy"
