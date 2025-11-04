@@ -89,7 +89,7 @@ const ProductsListing = ({
 		listProducts({
 			countryCode: locale,
 			queryParams: {
-				fields: '*variants.calculated_price,+variants.inventory_quantity,*seller.reviews,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id',
+				fields: '*variants.calculated_price,+variants.inventory_quantity,*seller.reviews,+seller.name,+seller.photo,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id',
 			},
 		}).then(({ response }) => {
 			setProd(
@@ -182,7 +182,6 @@ const ProductsListing = ({
 														p.id === hit.objectID,
 												)}
 												key={hit.objectID}
-												locale={locale ?? 'ph'}
 												product={hit}
 												user={user}
 												wishlist={wishlist}
