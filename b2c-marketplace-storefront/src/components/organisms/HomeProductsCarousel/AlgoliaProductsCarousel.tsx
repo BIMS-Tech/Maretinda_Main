@@ -9,6 +9,7 @@ import { Carousel } from '@/components/cells';
 import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import type { Wishlist } from '@/types/wishlist';
 
 import { ProductCard } from '../ProductCard/ProductCard';
 
@@ -16,10 +17,14 @@ export const AlgoliaProductsCarousel = ({
 	locale,
 	seller_handle,
 	currency_code,
+	user,
+	wishlist,
 }: {
 	locale: string;
 	seller_handle?: string;
 	currency_code: string;
+	user: HttpTypes.StoreCustomer | null;
+	wishlist: Wishlist[];
 }) => {
 	const filters = `${
 		seller_handle
@@ -30,12 +35,20 @@ export const AlgoliaProductsCarousel = ({
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>
 			<Configure filters={filters} hitsPerPage={4} />
-			<ProductsListing locale={locale} />
+			<ProductsListing locale={locale} user={user} wishlist={wishlist} />
 		</InstantSearchNext>
 	);
 };
 
-const ProductsListing = ({ locale }: { locale: string }) => {
+const ProductsListing = ({
+	locale,
+	user,
+	wishlist,
+}: {
+	locale: string;
+	user: HttpTypes.StoreCustomer | null;
+	wishlist: Wishlist[];
+}) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
 	const { items } = useHits();
 
@@ -84,6 +97,8 @@ const ProductsListing = ({ locale }: { locale: string }) => {
 									})}
 									key={hit.objectID}
 									product={hit}
+									user={user}
+									wishlist={wishlist}
 								/>
 							))}
 						/>
