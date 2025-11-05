@@ -42,9 +42,10 @@ export async function POST(request: NextRequest) {
 			console.log('[GiyaPay Complete] Auth headers imported');
 
 			const headers = await getAuthHeaders();
+			const hasAuth = 'authorization' in headers;
 			console.log(
 				'[GiyaPay Complete] Auth headers available:',
-				!!headers.authorization,
+				hasAuth,
 			);
 
 			// Get cart details to debug
@@ -86,14 +87,15 @@ export async function POST(request: NextRequest) {
 			} catch (cartError) {
 				console.log(
 					'[GiyaPay Complete] GiyaPay cart retrieval failed:',
-					cartError.message,
+					cartError instanceof Error ? cartError.message : String(cartError),
 				);
 				cart = null; // Ensure cart is null so we try the cookie cart
 			}
 
 			// If GiyaPay cart failed or has no items, try the cookie cart
+			const cartHasItems = cart && 'items' in cart && Array.isArray(cart.items) && cart.items.length > 0;
 			if (
-				(!cart || !cart.items || cart.items.length === 0) &&
+				(!cart || !cartHasItems) &&
 				currentCartId &&
 				currentCartId !== finalCartId
 			) {
@@ -135,13 +137,14 @@ export async function POST(request: NextRequest) {
 				} catch (cookieCartError) {
 					console.error(
 						'[GiyaPay Complete] Cookie cart also failed:',
-						cookieCartError.message,
+						cookieCartError instanceof Error ? cookieCartError.message : String(cookieCartError),
 					);
 				}
 			}
 
 			// If still no cart with items, try once more without fields to see what we get
-			if (!cart || !cart.items || cart.items.length === 0) {
+			const cartHasItemsAfterRetry = cart && 'items' in cart && Array.isArray(cart.items) && cart.items.length > 0;
+			if (!cart || !cartHasItemsAfterRetry) {
 				console.log(
 					'[GiyaPay Complete] Trying basic cart retrieval without fields...',
 				);
@@ -170,7 +173,7 @@ export async function POST(request: NextRequest) {
 				} catch (basicError) {
 					console.log(
 						'[GiyaPay Complete] Basic cart retrieval also failed:',
-						basicError.message,
+						basicError instanceof Error ? basicError.message : String(basicError),
 					);
 				}
 
@@ -181,7 +184,7 @@ export async function POST(request: NextRequest) {
 					cartExists: !!cart,
 					cookieCartId: currentCartId,
 					giyaPayCartId: finalCartId,
-					hasItems: cart?.items?.length || 0,
+					hasItems: (cart && 'items' in cart && Array.isArray(cart.items)) ? cart.items.length : 0,
 				});
 				return NextResponse.json(
 					{ error: 'Cart is empty or invalid' },
@@ -202,20 +205,26 @@ export async function POST(request: NextRequest) {
 					{},
 					headers,
 				);
+				// Handle different response types from cart.complete
+				const orderSet = 'order_set' in result && result.order_set && typeof result.order_set === 'object' ? result.order_set : null;
+				const orders = orderSet && typeof orderSet === 'object' && 'orders' in orderSet && orderSet.orders ? orderSet.orders : null;
+				const firstOrder = Array.isArray(orders) && orders.length > 0 ? orders[0] : null;
+				const orderId = firstOrder && typeof firstOrder === 'object' && 'id' in firstOrder ? firstOrder.id : null;
+
 				console.log('[GiyaPay Complete] Place order result:', {
-					orderCount: result?.order_set?.orders?.length || 0,
-					orderId: result?.order_set?.orders?.[0]?.id,
-					success: !!result?.order_set?.orders?.[0],
+					orderCount: Array.isArray(orders) ? orders.length : 0,
+					orderId,
+					success: !!firstOrder,
 				});
 
-				if (result?.order_set?.orders?.[0]?.id) {
+				if (orderId) {
 					// Clear cart cookie manually (since we're not using placeOrder)
 					const { removeCartId } = await import('@/lib/data/cookies');
 					await removeCartId();
 
 					return NextResponse.json({
 						message: 'Order placed successfully',
-						orderId: result.order_set.orders[0].id,
+						orderId,
 						success: true,
 					});
 				} else {
