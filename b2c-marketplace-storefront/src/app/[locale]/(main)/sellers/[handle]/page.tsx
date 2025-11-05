@@ -30,8 +30,7 @@ export default async function SellerPage({
 			<SellerTabs
 				currency_code={currency_code}
 				locale={locale}
-				seller_handle={seller.handle}
-				seller_id={seller.id}
+				seller={seller}
 				tab={tab}
 			/>
 		</main>
