@@ -25,14 +25,7 @@ type CountrySelectProps = {
 };
 
 const CountrySelect = ({ regions }: CountrySelectProps) => {
-	const [current, setCurrent] = useState<
-		| {
-				country: string | undefined;
-				region: string;
-				label: string | undefined;
-		  }
-		| undefined
-	>(undefined);
+	const [current, setCurrent] = useState<CountryOption | undefined>(undefined);
 
 	const { locale: countryCode } = useParams();
 	const currentPath = usePathname().split(`/${countryCode}`)[1];
@@ -40,18 +33,25 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 	const options = useMemo(() => {
 		return regions
 			?.flatMap((r) => {
-				return r.countries?.map((c) => ({
-					country: c.iso_2,
-					label: c.display_name,
-					region: r.id,
-				}));
+				return r.countries
+					?.map((c) => ({
+						country: c.iso_2,
+						label: c.display_name,
+						region: r.id,
+					}))
+					.filter((o): o is CountryOption => 
+						!!o.country && !!o.label && !!o.region
+					) ?? [];
 			})
-			.sort((a, b) => (a?.label ?? '').localeCompare(b?.label ?? ''));
+			.filter((o): o is CountryOption => 
+				!!o.country && !!o.label && !!o.region
+			)
+			.sort((a, b) => a.label.localeCompare(b.label));
 	}, [regions]);
 
 	useEffect(() => {
 		if (countryCode) {
-			const option = options?.find((o) => o?.country === countryCode);
+			const option = options.find((o) => o.country === countryCode);
 			setCurrent(option);
 		}
 	}, [options, countryCode]);
@@ -65,7 +65,7 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 			<Listbox
 				defaultValue={
 					countryCode
-						? options?.find((o) => o?.country === countryCode)
+						? options.find((o) => o.country === countryCode)
 						: undefined
 				}
 				onChange={handleChange}
@@ -76,14 +76,14 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 							<span className="txt-compact-small flex items-center gap-x-2">
 								{/* @ts-ignore */}
 								<ReactCountryFlag
-									countryCode={current.country ?? ''}
+									countryCode={current.country}
 									style={{
 										height: '16px',
 										width: '16px',
 									}}
 									svg
 								/>
-								{current.country?.toUpperCase()}
+								{current.country.toUpperCase()}
 							</span>
 						)}
 					</div>
@@ -96,7 +96,7 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 						leaveTo="opacity-0"
 					>
 						<ListboxOptions className="no-scrollbar absolute z-20 overflow-auto text-small-regular bg-white border rounded-lg border-top-0 max-h-60 focus:outline-none sm:text-sm">
-							{options?.map((o, index) => {
+							{options.map((o, index) => {
 								return (
 									<ListboxOption
 										className="cursor-default select-none relative w-20 hover:bg-gray-50 py-4 border-b"
@@ -106,14 +106,14 @@ const CountrySelect = ({ regions }: CountrySelectProps) => {
 										<span className="flex items-center gap-x-2 pl-4">
 											{/* @ts-ignore */}
 											<ReactCountryFlag
-												countryCode={o?.country ?? ''}
+												countryCode={o.country}
 												style={{
 													height: '16px',
 													width: '16px',
 												}}
 												svg
 											/>{' '}
-											{o?.country?.toUpperCase()}
+											{o.country.toUpperCase()}
 										</span>
 									</ListboxOption>
 								);
