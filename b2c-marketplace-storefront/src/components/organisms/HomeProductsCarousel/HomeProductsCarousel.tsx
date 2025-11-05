@@ -1,9 +1,12 @@
 import type { HttpTypes } from '@medusajs/types';
 
 import { Carousel } from '@/components/cells';
+import { retrieveCustomer } from '@/lib/data/customer';
 import { listProducts } from '@/lib/data/products';
+import { getUserWishlists } from '@/lib/data/wishlist';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import type { Product } from '@/types/product';
+import type { Wishlist } from '@/types/wishlist';
 
 import { ProductCard } from '../ProductCard/ProductCard';
 
@@ -25,6 +28,19 @@ export const HomeProductsCarousel = async ({
 			order: 'created_at',
 		},
 	});
+
+	const user = await retrieveCustomer();
+
+	let wishlist: Wishlist[] = [];
+	if (user) {
+		try {
+			const response = await getUserWishlists();
+			wishlist = response.wishlists;
+		} catch (error) {
+			console.warn('Failed to fetch wishlist:', error);
+			wishlist = [];
+		}
+	}
 
 	if (!products.length && !sellerProducts.length) return null;
 
@@ -52,6 +68,8 @@ export const HomeProductsCarousel = async ({
 							}
 							key={product.id}
 							product={product}
+							user={user}
+							wishlist={wishlist}
 						/>
 					),
 				)}
