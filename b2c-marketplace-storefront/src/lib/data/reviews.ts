@@ -8,6 +8,7 @@ import { getAuthHeaders } from './cookies';
 
 export type Review = {
 	id: string;
+	customer: HttpTypes.StoreCustomer;
 	seller: {
 		id: string;
 		name: string;
@@ -15,8 +16,10 @@ export type Review = {
 	};
 	reference: string;
 	customer_note: string;
+	seller_note: string;
 	rating: number;
 	updated_at: string;
+	created_at: string;
 };
 
 export type Order = HttpTypes.StoreOrder & {
@@ -32,7 +35,7 @@ const getReviews = async () => {
 	const reviews = await sdk.client.fetch('/store/reviews', {
 		headers,
 		method: 'GET',
-		query: { fields: '*seller,+customer.id,+order_id' },
+		query: { fields: '+seller,+seller.id,+customer.id,+order_id' },
 	});
 
 	return reviews as { reviews: Review[] };
@@ -62,4 +65,4 @@ const createReview = async (review: any) => {
 	return response.json();
 };
 
-export { getReviews, createReview };
+export { createReview, getReviews };
