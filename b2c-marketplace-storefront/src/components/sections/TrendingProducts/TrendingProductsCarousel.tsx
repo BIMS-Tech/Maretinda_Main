@@ -10,11 +10,16 @@ import NextButton from '@/components/atoms/Button/NextButton';
 import PrevButton from '@/components/atoms/Button/PrevButton';
 import { ProductCard } from '@/components/organisms';
 import type { Product } from '@/types/product';
+import type { Wishlist } from '@/types/wishlist';
 
 export const TrendingProductsCarousel = ({
 	finalProducts,
+	user,
+	wishlist,
 }: {
 	finalProducts: Product[];
+	user: HttpTypes.StoreCustomer | null;
+	wishlist: Wishlist[];
 }) => {
 	const settings = {
 		autoplay: false,
@@ -71,6 +76,8 @@ export const TrendingProductsCarousel = ({
 						}
 						key={product.id}
 						product={product}
+						user={user}
+						wishlist={wishlist}
 					/>
 				))}
 			</Slider>
