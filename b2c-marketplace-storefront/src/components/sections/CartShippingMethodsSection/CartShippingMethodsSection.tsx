@@ -399,7 +399,7 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 									<p key={method.id} className="text-sm" style={{ color: '#6b7280' }}>
 										Vendor {sellerName} Shipping {convertToLocale({
 											amount: method.amount!,
-											currency_code: cart?.currency_code,
+											currency_code: cart?.currency_code || 'USD',
 										})}
 									</p>
 								);
