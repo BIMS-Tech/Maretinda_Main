@@ -46,13 +46,21 @@ export const CartAddressSection = ({
 				: true,
 		);
 
-	const [message, formAction] = useActionState(setAddresses, sameAsBilling);
+	const [message, formAction] = useActionState(setAddresses, '');
 
 	useEffect(() => {
 		if (!isAddress && !isOpen) {
 			router.replace(pathname + '?step=address');
 		}
-	}, [isAddress, isOpen, pathname]);
+	}, [isAddress, isOpen, pathname, router]);
+
+	// Handle successful form submission
+	useEffect(() => {
+		if (message === 'success') {
+			router.replace(`${pathname}?step=delivery`);
+			router.refresh();
+		}
+	}, [message, pathname, router]);
 
 	const handleEdit = () => {
 		router.replace(pathname + '?step=address');
@@ -85,13 +93,7 @@ export const CartAddressSection = ({
 			</div>
 			
 			<form
-				action={async (data) => {
-					const result = await formAction(data);
-					if (result === 'success') {
-						router.replace(`${pathname}?step=delivery`);
-						router.refresh();
-					}
-				}}
+				action={formAction}
 			>
 				{isOpen ? (
 					<div className="pb-8">
