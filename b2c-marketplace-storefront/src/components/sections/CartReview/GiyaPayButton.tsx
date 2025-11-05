@@ -61,7 +61,8 @@ const GiyaPayButton = ({
 			form.method = 'POST';
 			// Use the API URL from backend configuration, but replace /api/payment with /checkout
 			const backendApiUrl =
-				paymentData.api_url || 'https://pay.giyapay.com/api/payment';
+				(typeof paymentData.api_url === 'string' ? paymentData.api_url : null) || 
+				'https://pay.giyapay.com/api/payment';
 			form.action = backendApiUrl.replace('/api/payment', '/checkout');
 
 			// Add all required fields as hidden inputs
