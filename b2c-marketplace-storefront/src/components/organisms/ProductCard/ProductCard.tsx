@@ -58,10 +58,10 @@ export const ProductCard = ({
 	);
 
 	return (
-		<div className="py-5 px-2">
+		<div className="py-5 px-2 sm:max-w-[315px] lg:max-w-[320px] lg:min-w-[303px] min-h-[400px] ">
 			<div
 				className={clsx(
-					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] lg:max-w-[295px] min-w-[250px] min-h-[400px] overflow-hidden',
+					' group bg-white hover:shadow-lg rounded-sm flex flex-col justify-start w-full overflow-hidden',
 				)}
 			>
 				<div className="relative w-full bg-primary">
