@@ -13,10 +13,14 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 	if (!cart) return null;
 
 	const paidByGiftcard =
-		cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
+		'gift_cards' in (cart || {}) && 
+		Array.isArray((cart as any)?.gift_cards) && 
+		(cart as any).gift_cards.length > 0 && 
+		cart?.total === 0;
 
 	const previousStepsCompleted =
 		cart.shipping_address &&
+		cart.shipping_methods &&
 		cart.shipping_methods.length > 0 &&
 		(cart.payment_collection || paidByGiftcard);
 
