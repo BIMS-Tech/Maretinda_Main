@@ -16,6 +16,7 @@ export const ProductsPaginationWrapper = ({
 	return (
 		<ProductsPagination
 			isInfinite={false}
+			offset={PRODUCT_LIMIT}
 			pages={pages}
 			pageLimit={pageLimit}
 			setPageLimit={setPageLimit}
