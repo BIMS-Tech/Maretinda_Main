@@ -394,13 +394,16 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							</p>
 							{cart.shipping_methods?.map((method) => {
 								// Get seller name from the shipping method
-								const sellerName = method.data?.seller_name || 'Local Clothing';
+								const sellerName: string = typeof method.data?.seller_name === 'string' 
+									? method.data.seller_name 
+									: 'Local Clothing';
+								const shippingCost: string = convertToLocale({
+									amount: method.amount!,
+									currency_code: cart?.currency_code || 'USD',
+								});
 								return (
 									<p key={method.id} className="text-sm" style={{ color: '#6b7280' }}>
-										Vendor {sellerName} Shipping {convertToLocale({
-											amount: method.amount!,
-											currency_code: cart?.currency_code || 'USD',
-										})}
+										Vendor {sellerName} Shipping {shippingCost}
 									</p>
 								);
 							})}
