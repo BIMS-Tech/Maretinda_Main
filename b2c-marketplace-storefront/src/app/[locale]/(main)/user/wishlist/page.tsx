@@ -39,7 +39,7 @@ export default async function Wishlist() {
 				<Container className="md:col-span-3 space-y-8 p-[38px] flex flex-col gap-12">
 					<h2 className="font-lora font-bold text-4xl">Wishlists</h2>
 					{isEmpty(wishlist?.[0]?.products) ? (
-						<div className="w-96 mx-auto flex flex-col items-center justify-center">
+						<div className="max-w-96 mx-auto flex flex-col items-center justify-center">
 							<p className="text-lg text-secondary mb-6">
 								Your wishlist is currently empty.
 							</p>
