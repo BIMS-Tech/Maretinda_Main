@@ -45,9 +45,30 @@ export const ProductBigCard = ({
 					'group bg-white shadow-lg rounded-sm flex flex-row gap-2 justify-start w-full max-w-[925px] min-w-[250px] min-h-[398px] max-h-[398] overflow-hidden p-[27px]',
 				)}
 			>
-				<div className="relative flex flex-col justify-center w-2/5 min-w-[344px] max-h-[344px] bg-primary">
+				<div className="relative flex flex-col justify-center w-2/5 min-w-[344px] max-h-[344px] bg-primary py-14 pr-14">
+					<div className="absolute top-14 left-0 flex flex-row w-full justify-between items-center h-11 gap-1 z-10 pr-14">
+						<div className="px-1.5 py-1">
+							{cheapestPrice?.calculated_price !==
+								cheapestPrice?.original_price && (
+								<Badge
+									className="bg-brand-purple-900 text-white text-[11px] border-0"
+									size="2xsmall"
+								>
+									{`-${40}%`}
+								</Badge>
+							)}
+						</div>
+						<div className="w-fit group-hover:block hidden">
+							<WishlistButton
+								className="border-0"
+								productId={product.id}
+								user={user}
+								wishlist={wishlist}
+							/>
+						</div>
+					</div>
 					<LocalizedClientLink href={`/products/${product.handle}`}>
-						<div className="relative overflow-hidden w-full flex justify-center align-center h-full max-h-[220px]">
+						<div className="overflow-hidden w-full flex flex-col justify-center align-center h-full max-h-[220px]">
 							{product.images.length > 1 ? (
 								<ProductImageCarousel slides={product.images} />
 							) : product.thumbnail ? (
@@ -69,23 +90,6 @@ export const ProductBigCard = ({
 							)}
 						</div>
 					</LocalizedClientLink>
-					{cheapestPrice?.calculated_price !==
-						cheapestPrice?.original_price && (
-						<Badge
-							className="absolute top-3.5 left-3.5 z-10 bg-brand-purple-900 text-white text-[11px] border-0 px-1.5 py-1"
-							size="2xsmall"
-						>
-							{`-${40}%`}
-						</Badge>
-					)}
-					<div className="absolute top-0 right-0 z-10 group-hover:block hidden">
-						<WishlistButton
-							className="border-0"
-							productId={product.id}
-							user={user}
-							wishlist={wishlist}
-						/>
-					</div>
 				</div>
 				<div className="w-3/5 min-w-[516px] flex flex-col max-h-[344px] justify-between">
 					<LocalizedClientLink
@@ -122,7 +126,7 @@ export const ProductBigCard = ({
 									dangerouslySetInnerHTML={{
 										__html:
 											truncate(product.description, {
-												length: 100,
+												length: 125,
 												omission: '...',
 												separator: ' ',
 											}) || '',
