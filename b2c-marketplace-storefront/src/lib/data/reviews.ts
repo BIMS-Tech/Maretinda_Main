@@ -35,7 +35,7 @@ const getReviews = async () => {
 	const reviews = await sdk.client.fetch('/store/reviews', {
 		headers,
 		method: 'GET',
-		query: { fields: '+seller,+seller.id,+customer.id,+order_id' },
+		query: { fields: '*seller,+seller.id,+customer.id,+order_id' },
 	});
 
 	return reviews as { reviews: Review[] };
