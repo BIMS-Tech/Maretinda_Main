@@ -3,10 +3,13 @@ import {
 	ProductListingHeader,
 	ProductSidebar,
 	ProductsList,
-	ProductsPagination,
 } from '@/components/organisms';
+import { ProductsPaginationWrapper } from '@/components/organisms/ProductsPagination/ProductsPaginationWrapper';
 import { PRODUCT_LIMIT } from '@/const';
+import { retrieveCustomer } from '@/lib/data/customer';
 import { listProductsWithSort } from '@/lib/data/products';
+import { getUserWishlists } from '@/lib/data/wishlist';
+import type { Wishlist } from '@/types/wishlist';
 
 export const ProductListing = async ({
 	category_id,
@@ -34,6 +37,19 @@ export const ProductListing = async ({
 
 	const { products } = await response;
 
+	const user = await retrieveCustomer();
+
+	let wishlist: Wishlist[] = [];
+	if (user) {
+		try {
+			const response = await getUserWishlists();
+			wishlist = response.wishlists;
+		} catch (error) {
+			console.warn('Failed to fetch wishlist:', error);
+			wishlist = [];
+		}
+	}
+
 	const count = products.length;
 
 	const pages = Math.ceil(count / PRODUCT_LIMIT) || 1;
@@ -48,9 +64,13 @@ export const ProductListing = async ({
 				{showSidebar && <ProductSidebar />}
 				<section className={showSidebar ? 'col-span-3' : 'col-span-4'}>
 					<div className="flex flex-wrap gap-4">
-						<ProductsList products={products} />
+						<ProductsList
+							products={products}
+							user={user}
+							wishlist={wishlist}
+						/>
 					</div>
-					<ProductsPagination pages={pages} />
+					<ProductsPaginationWrapper pages={pages} />
 				</section>
 			</div>
 		</div>
