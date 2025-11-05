@@ -71,10 +71,10 @@ export const listProducts = async ({
 			headers,
 			method: 'GET',
 			query: {
+				country_code: countryCode,
 				category_id,
 				collection_id,
-				// Remove region_id as it's not supported by the store products endpoint
-				// region_id: region?.id,
+				region_id: region?.id,
 				fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*attribute_values,*attribute_values.attribute',
 				limit,
 				offset,

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function CartPage({}) {
 	return (
-		<main className="container !max-w-7xl mx-auto grid grid-cols-12">
+		<main className="container !max-w-7xl mx-auto px-4 py-8">
 			<Suspense fallback={<>Loading...</>}>
 				<Cart />
 			</Suspense>

@@ -29,9 +29,11 @@ export async function generateMetadata({
 		const subCategories =
 			categoryStructure[category as keyof typeof categoryStructure];
 		const subcategoryName =
-			subCategories[subcategory as keyof typeof subCategories];
+			subCategories[subcategory as keyof typeof subCategories] as
+				| string
+				| undefined;
 
-		if (subcategoryName) {
+		if (subcategoryName && typeof subcategoryName === 'string') {
 			return {
 				description: `Shop ${subcategoryName.toLowerCase()} in our ${categoryName.toLowerCase()} section`,
 				title: `${subcategoryName} - ${categoryName} - Maretinda`,
@@ -64,9 +66,11 @@ async function SubCategory({
 		const subCategories =
 			categoryStructure[category as keyof typeof categoryStructure];
 		const subcategoryName =
-			subCategories[subcategory as keyof typeof subCategories];
+			subCategories[subcategory as keyof typeof subCategories] as
+				| string
+				| undefined;
 
-		if (!subcategoryName) {
+		if (!subcategoryName || typeof subcategoryName !== 'string') {
 			return notFound();
 		}
 

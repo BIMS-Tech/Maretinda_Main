@@ -51,22 +51,43 @@ async function CheckoutPageContent({}) {
 
 	return (
 		<PaymentWrapper cart={cart}>
-			<main className="container">
-				<div className="grid lg:grid-cols-11 gap-8">
-					<div className="flex flex-col gap-4 lg:col-span-6">
-						<CartAddressSection cart={cart} customer={customer} />
-						<CartShippingMethodsSection
-							availableShippingMethods={shippingMethods as any}
-							cart={cart}
-						/>
-						<CartPaymentSection
-							availablePaymentMethods={paymentMethods}
-							cart={cart}
-						/>
+			<main className="container !max-w-7xl mx-auto px-4 py-8">
+				{/* Checkout Title */}
+				<h1 className="text-3xl font-serif text-center mb-8" style={{ color: '#111827', fontWeight: 700 }}>
+					Checkout
+				</h1>
+
+				{/* Two Column Layout */}
+				<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+					{/* Left Column - Checkout Steps */}
+					<div className="lg:col-span-7 space-y-4">
+						{/* Shipping Address Section */}
+						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+							<CartAddressSection cart={cart} customer={customer} />
+						</div>
+
+						{/* Delivery Section */}
+						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+							<CartShippingMethodsSection
+								availableShippingMethods={shippingMethods as any}
+								cart={cart}
+							/>
+						</div>
+
+						{/* Payment Section */}
+						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+							<CartPaymentSection
+								availablePaymentMethods={paymentMethods}
+								cart={cart}
+							/>
+						</div>
 					</div>
 
+					{/* Right Column - Order Summary */}
 					<div className="lg:col-span-5">
-						<CartReview cart={cart} />
+						<div className="bg-white rounded-lg p-6 h-fit sticky top-4" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+							<CartReview cart={cart} />
+						</div>
 					</div>
 				</div>
 			</main>

@@ -1,29 +1,34 @@
 import type { HttpTypes } from '@medusajs/types';
 
-import {
-	CartItemsFooter,
-	CartItemsHeader,
-	CartItemsProducts,
-} from '@/components/cells';
+import { CartItemsProducts } from '@/components/cells';
 
 export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
-	if (!cart) return null;
+	if (!cart || !cart.items || cart.items.length === 0) {
+		return (
+			<div className="text-center py-12">
+				<p className="text-gray-500 text-lg">Your shopping cart is empty</p>
+			</div>
+		);
+	}
 
 	const groupedItems: any = groupItemsBySeller(cart);
 
-	return Object.keys(groupedItems).map((key) => (
-		<div className="mb-4" key={key}>
-			<CartItemsHeader seller={groupedItems[key]?.seller} />
-			<CartItemsProducts
-				currency_code={cart.currency_code}
-				products={groupedItems[key].items || []}
-			/>
-			<CartItemsFooter
-				currency_code={cart.currency_code}
-				price={cart.shipping_total}
-			/>
-		</div>
-	));
+	// Flatten all items for a unified table view
+	const allItems = Object.keys(groupedItems).flatMap((key) => {
+		const items = groupedItems[key].items || [];
+		const seller = groupedItems[key]?.seller;
+		return items.map((item: any) => ({
+			...item,
+			vendorName: seller?.name || 'Maretinda',
+		}));
+	});
+
+	return (
+		<CartItemsProducts
+			currency_code={cart.currency_code}
+			products={allItems}
+		/>
+	);
 };
 
 function groupItemsBySeller(cart: HttpTypes.StoreCart) {

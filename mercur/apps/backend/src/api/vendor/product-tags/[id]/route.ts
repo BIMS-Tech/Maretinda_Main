@@ -39,6 +39,13 @@ export const GET = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse
 ) => {
+  // Check if scope is available
+  if (!req.scope) {
+    return res.status(500).json({
+      message: 'Service container not available'
+    })
+  }
+
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
   const {

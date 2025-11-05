@@ -174,7 +174,7 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 		.map((item) => item.product?.seller?.name);
 
 	return (
-		<div className="border p-4 rounded-sm bg-ui-bg-interactive">
+		<div>
 			{/* {missingModal && (
         <Modal
           heading="Missing seller shipping option"
@@ -202,22 +202,27 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
           </div>
         </Modal>
       )} */}
-			<div className="flex flex-row items-center justify-between mb-6">
-				<Heading
-					className="flex flex-row text-3xl-regular gap-x-2 items-baseline items-center"
-					level="h2"
-				>
+			{/* Header with Checkmark and Edit */}
+			<div className="flex items-center justify-between mb-6">
+				<div className="flex items-center gap-3">
 					{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
-						<CheckCircleSolid />
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
+							<CheckCircleSolid className="text-white" width={16} height={16} />
+						</div>
 					)}
-					Delivery
-				</Heading>
-				{!isOpen && (
-					<Text>
-						<Button onClick={handleEdit} variant="tonal">
-							Edit
-						</Button>
-					</Text>
+					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+						Delivery
+					</h2>
+				</div>
+				{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
+					<button
+						type="button"
+						onClick={handleEdit}
+						className="text-sm underline"
+						style={{ color: '#2563eb' }}
+					>
+						Edit
+					</button>
 				)}
 			</div>
 			{isOpen ? (
@@ -370,41 +375,37 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							error={error}
 						/>
 						<Button
+							className="mt-4 rounded-md"
 							disabled={!cart.shipping_methods?.[0]}
 							loading={isLoadingPrices}
 							onClick={handleSubmit}
-							variant="tonal"
+							style={{ backgroundColor: '#facc15', color: '#000' }}
 						>
 							Continue to payment
 						</Button>
 					</div>
 				</>
 			) : (
-				<div>
-					<div className="text-small-regular">
-						{cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-							<div className="flex flex-col">
-								{cart.shipping_methods?.map((method) => (
-									<div
-										className="mb-4 border rounded-md p-4"
-										key={method.id}
-									>
-										<Text className="txt-medium-plus text-ui-fg-base mb-1">
-											Method
-										</Text>
-										<Text className="txt-medium text-ui-fg-subtle">
-											{method.name}{' '}
-											{convertToLocale({
-												amount: method.amount!,
-												currency_code:
-													cart?.currency_code,
-											})}
-										</Text>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
+				<div className="pb-4">
+					{cart && (cart.shipping_methods?.length ?? 0) > 0 && (
+						<div className="space-y-1">
+							<p className="text-sm font-medium mb-1" style={{ color: '#111827', fontWeight: 500 }}>
+								Method
+							</p>
+							{cart.shipping_methods?.map((method) => {
+								// Get seller name from the shipping method
+								const sellerName = method.data?.seller_name || 'Local Clothing';
+								return (
+									<p key={method.id} className="text-sm" style={{ color: '#6b7280' }}>
+										Vendor {sellerName} Shipping {convertToLocale({
+											amount: method.amount!,
+											currency_code: cart?.currency_code,
+										})}
+									</p>
+								);
+							})}
+						</div>
+					)}
 				</div>
 			)}
 		</div>

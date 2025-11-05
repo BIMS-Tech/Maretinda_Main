@@ -366,25 +366,30 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 			throw new Error('No existing cart found when setting addresses');
 		}
 
+		// Helper function to convert null/undefined to empty string
+		const getStringValue = (value: FormDataEntryValue | null): string => {
+			return value ? String(value) : '';
+		};
+
 		const data = {
-			email: formData.get('email'),
+			email: getStringValue(formData.get('email')),
 			shipping_address: {
-				address_1: formData.get('shipping_address.address_1'),
+				address_1: getStringValue(formData.get('shipping_address.address_1')),
 				address_2: '',
-				city: formData.get('shipping_address.city'),
-				company: formData.get('shipping_address.company'),
-				country_code: formData.get('shipping_address.country_code'),
-				first_name: formData.get('shipping_address.first_name'),
-				last_name: formData.get('shipping_address.last_name'),
-				phone: formData.get('shipping_address.phone'),
-				postal_code: formData.get('shipping_address.postal_code'),
-				province: formData.get('shipping_address.province'),
+				city: getStringValue(formData.get('shipping_address.city')),
+				company: getStringValue(formData.get('shipping_address.company')),
+				country_code: getStringValue(formData.get('shipping_address.country_code')),
+				first_name: getStringValue(formData.get('shipping_address.first_name')),
+				last_name: getStringValue(formData.get('shipping_address.last_name')),
+				phone: getStringValue(formData.get('shipping_address.phone')),
+				postal_code: getStringValue(formData.get('shipping_address.postal_code')),
+				province: getStringValue(formData.get('shipping_address.province')),
 			},
 		} as any;
 
 		// const sameAsBilling = formData.get("same_as_billing")
 		// if (sameAsBilling === "on") data.billing_address = data.shipping_address
-		data.billing_address = data.shipping_address;
+		data.billing_address = { ...data.shipping_address };
 
 		// if (sameAsBilling !== "on")
 		//   data.billing_address = {
@@ -402,6 +407,8 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
 		await updateCart(data);
 		await revalidatePath('/cart');
+		await revalidatePath('/checkout');
+		return 'success';
 	} catch (e: any) {
 		return e.message;
 	}

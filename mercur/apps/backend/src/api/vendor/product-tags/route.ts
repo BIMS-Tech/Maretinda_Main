@@ -1,8 +1,8 @@
 import {
   AuthenticatedMedusaRequest,
-  MedusaResponse,
-  refetchEntities
+  MedusaResponse
 } from '@medusajs/framework'
+import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
  * @oas [get] /vendor/product-tags
@@ -59,13 +59,21 @@ export const GET = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse
 ) => {
-  const { rows: product_tags, metadata } = await refetchEntities(
-    'product_tag',
-    req.filterableFields,
-    req.scope,
-    req.queryConfig.fields,
-    req.queryConfig.pagination
-  )
+  // Check if scope is available
+  if (!req.scope) {
+    return res.status(500).json({
+      message: 'Service container not available'
+    })
+  }
+
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+
+  const { data: product_tags, metadata } = await query.graph({
+    entity: 'product_tag',
+    fields: req.queryConfig.fields,
+    filters: req.filterableFields,
+    pagination: req.queryConfig.pagination
+  })
 
   res.json({
     product_tags,
