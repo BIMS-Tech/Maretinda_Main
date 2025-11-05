@@ -9,5 +9,5 @@ export const TabsContent = ({
 }) => {
 	if (activeTab !== value) return null;
 
-	return <div>{children}</div>;
+	return <>{children}</>;
 };

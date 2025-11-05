@@ -7,17 +7,17 @@ import { Pagination } from '@/components/cells';
 import { usePagination } from '@/hooks/usePagination';
 
 export const ProductsPagination = ({
-	isInfinite,
-	offset,
+	isInfinite = false,
+	offset = 0,
 	pages = 1,
-	pageLimit,
-	setPageLimit,
+	pageLimit = 0,
+	setPageLimit = () => null,
 }: {
-	isInfinite: boolean;
-	offset: number;
+	isInfinite?: boolean;
+	offset?: number;
 	pages?: number;
-	pageLimit: number;
-	setPageLimit: React.Dispatch<React.SetStateAction<number>>;
+	pageLimit?: number;
+	setPageLimit?: React.Dispatch<React.SetStateAction<number>>;
 }) => {
 	const { currentPage, setPage } = usePagination();
 
