@@ -4,8 +4,6 @@ import type { HttpTypes } from '@medusajs/types';
 import { useParams } from 'next/navigation';
 
 import { CategoryNavDropdown } from '@/components/cells/CategoryNavDropdown/CategoryNavDropdown';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { cn } from '@/lib/utils';
 
 export const CategoryNavbar = ({
 	categories,
@@ -18,14 +16,7 @@ export const CategoryNavbar = ({
 
 	return (
 		<nav className="flex md:items-center flex-col md:flex-row">
-			<LocalizedClientLink
-				className={cn('category-navbar')}
-				href="/categories"
-				onClick={() => (onClose ? onClose(false) : null)}
-			>
-				All Products
-			</LocalizedClientLink>
-			{categories?.map(({ id, handle, name }) => (
+			{categories?.map(({ category_children, id, handle, name }) => (
 				<CategoryNavDropdown
 					handle={handle}
 					handleCategory={handle === category}
@@ -33,6 +24,7 @@ export const CategoryNavbar = ({
 					key={id}
 					name={name}
 					onClick={() => (onClose ? onClose(false) : null)}
+					subcategories={category_children}
 				/>
 			))}
 		</nav>

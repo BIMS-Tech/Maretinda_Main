@@ -1,37 +1,40 @@
+import type { HttpTypes } from '@medusajs/types';
+
 import Heading from '@/components/atoms/Heading/Heading';
 import { Carousel } from '@/components/cells';
 import { CategoryCard } from '@/components/organisms';
-import { categoryThemes, primeCategories } from '@/data/categories';
-
-export const categories: {
-	id: number;
-	name: string;
-	handle: string;
-	theme: {
-		primary: string;
-		secondary: string;
-		accent: string;
-		icon: string;
-		bgClass: string;
-		textClass: string;
-		description: string;
-	};
-}[] = Object.entries(primeCategories).map(([handle, name], index) => ({
-	handle,
-	id: index + 1,
-	name,
-	theme: categoryThemes[handle as keyof typeof categoryThemes],
-}));
+import { categoryThemes } from '@/data/categories';
+import { listCategories } from '@/lib/data/categories';
 
 export const HomeCategories = async ({ heading }: { heading: string }) => {
+	const { categories } = (await listCategories()) as {
+		categories: HttpTypes.StoreProductCategory[];
+	};
+	let subCategories: HttpTypes.StoreProductCategory[] = [];
+
+	categories.forEach((category) => {
+		subCategories = [...subCategories, ...category.category_children];
+	});
+
 	return (
 		<section className="bg-primary w-full">
 			<div className="mb-10">
 				<Heading label="Categories" />
 			</div>
 			<Carousel
-				items={categories?.map((category) => (
-					<CategoryCard category={category} key={category.id} />
+				items={subCategories?.map((category, index) => (
+					<CategoryCard
+						category={{
+							description: category.description,
+							handle: category.handle,
+							id: index + 1,
+							name: category.name,
+							theme: categoryThemes[
+								category.handle as keyof typeof categoryThemes
+							],
+						}}
+						key={category.id}
+					/>
 				))}
 			/>
 		</section>

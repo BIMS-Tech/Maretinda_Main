@@ -10,6 +10,7 @@ export function CategoryCard({
 	category: {
 		id: number;
 		name: string;
+		description: string;
 		handle: string;
 		theme?: {
 			primary: string;
@@ -18,7 +19,6 @@ export function CategoryCard({
 			icon: string;
 			bgClass: string;
 			textClass: string;
-			description: string;
 		};
 	};
 }) {
