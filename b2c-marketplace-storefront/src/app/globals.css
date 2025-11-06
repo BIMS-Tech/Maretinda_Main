@@ -47,6 +47,9 @@
 .heading-xl {
 	@apply text-[40px] leading-[48px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
 }
+.heading-2xl {
+	@apply text-[40px] leading-[48px] font-medium tracking-normal max-md:text-[44px] max-md:leading-[52px];
+}
 
 .display-sm {
 	@apply text-[56px] leading-[64px] font-medium tracking-normal max-md:text-[32px] max-md:leading-[40px];
@@ -228,4 +231,8 @@ button:disabled svg path {
 
 .slider-product-images .arrow-button.arrow-right {
 	@apply right-0;
+}
+
+.user-content-wrapper {
+	@apply shadow border !border-black/15 rounded-sm p-5 lg:p-8;
 }
