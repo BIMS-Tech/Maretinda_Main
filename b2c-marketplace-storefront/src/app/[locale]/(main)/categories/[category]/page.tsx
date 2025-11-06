@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -45,10 +46,6 @@ async function Category({
 			path: '/',
 		},
 		{
-			label: 'Categories',
-			path: '/categories',
-		},
-		{
 			label: category.name,
 			path: `/categories/${category.handle}`,
 		},
@@ -60,26 +57,16 @@ async function Category({
 				<Breadcrumbs items={breadcrumbsItems} />
 			</div>
 
-			{/* Category Header */}
-			<div className={`p-8 rounded-xl mb-8 ${theme.bgClass}`}>
-				<div className="flex items-center">
-					<span className="text-6xl mr-6">{theme.icon}</span>
-					<div>
-						<h1
-							className={`heading-xl uppercase ${theme.textClass} mb-2`}
-						>
-							{category.name}
-						</h1>
-						<p className={`text-lg ${theme.textClass} opacity-80`}>
-							{category.description}
-						</p>
-					</div>
-				</div>
-			</div>
+			<Image
+				alt="A product"
+				className="w-full h-auto rounded-md"
+				height={2484}
+				src={`/images/categories/${category.handle}-banner.png`}
+				width={672}
+			/>
 
 			{/* Sub-categories Grid */}
-			<div className="mb-12">
-				<h2 className="heading-lg mb-6">Shop by Category</h2>
+			<div className="mt-4 mb-12">
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 					{category.category_children.map((subcategory) => (
 						<LocalizedClientLink
