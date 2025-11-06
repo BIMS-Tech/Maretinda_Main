@@ -11,6 +11,7 @@ import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
+import { sortCategories } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
@@ -116,8 +117,9 @@ async function AllCategories({
 								</div>
 							</div>
 							<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-								{category.category_children.map(
-									(subcategory) => (
+								{category.category_children
+									.sort(sortCategories)
+									.map((subcategory) => (
 										<LocalizedClientLink
 											className={`p-4 rounded-lg border transition-all hover:shadow-md hover:scale-105 ${theme.bgClass}`}
 											href={`/categories/${category.handle}/${subcategory.handle}`}
@@ -135,8 +137,7 @@ async function AllCategories({
 												{subcategory.name}
 											</h3>
 										</LocalizedClientLink>
-									),
-								)}
+									))}
 							</div>
 						</section>
 					);

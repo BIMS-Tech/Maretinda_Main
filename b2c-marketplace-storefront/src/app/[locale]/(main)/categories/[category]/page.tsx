@@ -10,6 +10,7 @@ import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
 import { getCategoryByHandle } from '@/lib/data/categories';
 import { generateCategoryMetadata } from '@/lib/helpers/seo';
+import { sortCategories } from '@/lib/utils';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
@@ -68,28 +69,30 @@ async function Category({
 			{/* Sub-categories Grid */}
 			<div className="mt-4 mb-12">
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-					{category.category_children.map((subcategory) => (
-						<LocalizedClientLink
-							className={`group p-6 rounded-lg border transition-all hover:shadow-lg hover:scale-105 ${theme.bgClass}`}
-							href={`/categories/${handle}/${subcategory.handle}`}
-							key={subcategory.handle}
-							style={{
-								backgroundColor: theme.primary + '08',
-								borderColor: theme.primary + '30',
-							}}
-						>
-							<h3
-								className={`font-medium text-lg ${theme.textClass} group-hover:underline`}
+					{category.category_children
+						.sort(sortCategories)
+						.map((subcategory) => (
+							<LocalizedClientLink
+								className={`group p-6 rounded-lg border transition-all hover:shadow-lg hover:scale-105 ${theme.bgClass}`}
+								href={`/categories/${handle}/${subcategory.handle}`}
+								key={subcategory.handle}
+								style={{
+									backgroundColor: theme.primary + '08',
+									borderColor: theme.primary + '30',
+								}}
 							>
-								{subcategory.name}
-							</h3>
-							<p
-								className={`text-sm ${theme.textClass} opacity-70 mt-2`}
-							>
-								Explore {subcategory.name.toLowerCase()}
-							</p>
-						</LocalizedClientLink>
-					))}
+								<h3
+									className={`font-medium text-lg ${theme.textClass} group-hover:underline`}
+								>
+									{subcategory.name}
+								</h3>
+								<p
+									className={`text-sm ${theme.textClass} opacity-70 mt-2`}
+								>
+									Explore {subcategory.name.toLowerCase()}
+								</p>
+							</LocalizedClientLink>
+						))}
 				</div>
 			</div>
 

@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CollapseIcon } from '@/icons';
-import { cn } from '@/lib/utils';
+import { cn, sortCategories } from '@/lib/utils';
 
 export const CategoryNavDropdown = ({
 	handleCategory,
@@ -46,16 +46,18 @@ export const CategoryNavDropdown = ({
 				<div className="hidden md:block absolute top-[144px] lg:top-[70px] left-0 bg-primary text-primary z-30 w-full min-h-60 border-b py-10 lg:py-8">
 					<div className="container !max-w-7xl mx-auto grid grid-cols-3 lg:grid-cols-5 justify-items-start lg:justify-items-center gap-6 gap-y-10 lg:gap-10">
 						<div className="flex flex-col gap-3" key={name}>
-							{subcategories?.map((subcategory) => (
-								<LocalizedClientLink
-									className="text-base lg:text-lg !font-normal hover:underline hover:underline-offset-[6px]"
-									href={`/categories/${handle}/${subcategory.handle}`}
-									key={subcategory.name}
-									onClick={onClick}
-								>
-									{subcategory.name}
-								</LocalizedClientLink>
-							))}
+							{subcategories
+								?.sort(sortCategories)
+								.map((subcategory) => (
+									<LocalizedClientLink
+										className="text-base lg:text-lg !font-normal hover:underline hover:underline-offset-[6px]"
+										href={`/categories/${handle}/${subcategory.handle}`}
+										key={subcategory.name}
+										onClick={onClick}
+									>
+										{subcategory.name}
+									</LocalizedClientLink>
+								))}
 						</div>
 					</div>
 				</div>
