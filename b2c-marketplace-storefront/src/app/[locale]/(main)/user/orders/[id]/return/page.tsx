@@ -17,12 +17,14 @@ export default async function ReturnOrderPage({
 	const returnMethods = await retriveReturnMethods(id);
 
 	return (
-		<main className="container">
-			<OrderReturnSection
-				order={order}
-				returnReasons={returnReasons}
-				shippingMethods={returnMethods as any}
-			/>
+		<main className="max-w-7xl w-full mx-auto">
+			<div className="container w-full">
+				<OrderReturnSection
+					order={order}
+					returnReasons={returnReasons}
+					shippingMethods={returnMethods as any}
+				/>
+			</div>
 		</main>
 	);
 }

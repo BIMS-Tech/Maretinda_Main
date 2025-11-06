@@ -1,12 +1,12 @@
 import type { HttpTypes } from '@medusajs/types';
-import { Container } from "@medusajs/ui";
+import { Container } from '@medusajs/ui';
 import { isEmpty } from 'lodash';
 import { redirect } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import { WishlistItem } from '@/components/cells';
-import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { Layout } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import type { Wishlist as WishlistType } from '@/types/wishlist';
@@ -33,44 +33,44 @@ export default async function Wishlist() {
 	}
 
 	return (
-		<main className="container">
-			<div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-8">
-				<UserNavigation />
-				<Container className="md:col-span-3 space-y-8 p-[38px] flex flex-col gap-12">
-					<h2 className="font-lora font-bold text-4xl">Wishlists</h2>
-					{isEmpty(wishlist?.[0]?.products) ? (
-						<div className="max-w-96 mx-auto flex flex-col items-center justify-center">
-							<p className="text-lg text-secondary mb-6">
-								Your wishlist is currently empty.
-							</p>
-							<LocalizedClientLink className="w-full" href="/categories">
-								<Button className="w-full">Explore</Button>
-							</LocalizedClientLink>
-						</div>
-					) : (
-						<div className="flex flex-col gap-6">
-							<p className="font-medium text-[#a0a0a0] text-sm">
-								{count} listings
-							</p>
-							<div className="flex flex-wrap max-md:justify-center gap-6">
-								{wishlist?.[0].products?.map((product) => (
-									<WishlistItem
-										key={product.id}
-										product={
-											product as HttpTypes.StoreProduct & {
-												calculated_amount: number;
-												currency_code: string;
-											}
+		<Layout>
+			<Container className="md:col-span-3 space-y-8 p-[38px] flex flex-col gap-12 user-content-wrapper">
+				<h2 className="font-lora font-bold text-4xl">Wishlists</h2>
+				{isEmpty(wishlist?.[0]?.products) ? (
+					<div className="max-w-96 mx-auto flex flex-col items-center justify-center">
+						<p className="text-lg text-secondary mb-6">
+							Your wishlist is currently empty.
+						</p>
+						<LocalizedClientLink
+							className="w-full"
+							href="/categories"
+						>
+							<Button className="w-full">Explore</Button>
+						</LocalizedClientLink>
+					</div>
+				) : (
+					<div className="flex flex-col gap-6">
+						<p className="font-medium text-[#a0a0a0] text-sm">
+							{count} listings
+						</p>
+						<div className="flex flex-wrap max-md:justify-center gap-6">
+							{wishlist?.[0].products?.map((product) => (
+								<WishlistItem
+									key={product.id}
+									product={
+										product as HttpTypes.StoreProduct & {
+											calculated_amount: number;
+											currency_code: string;
 										}
-										user={user}
-										wishlist={wishlist}
-									/>
-								))}
-							</div>
+									}
+									user={user}
+									wishlist={wishlist}
+								/>
+							))}
 						</div>
-					)}
-				</Container>
-			</div>
-		</main>
+					</div>
+				)}
+			</Container>
+		</Layout>
 	);
 }
