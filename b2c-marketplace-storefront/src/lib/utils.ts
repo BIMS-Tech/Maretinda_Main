@@ -10,13 +10,13 @@ export function sortCategories(
 	a: HttpTypes.StoreProductCategory,
 	b: HttpTypes.StoreProductCategory,
 ) {
-	if (!a) return -1;
-	if (!b) return 1;
+	if (!a?.rank) return -1;
+	if (!b?.rank) return 1;
 
-	if (a.name < b.name) {
+	if (a.rank < b.rank) {
 		return -1;
 	}
-	if (a.name > b.name) {
+	if (a.rank > b.rank) {
 		return 1;
 	}
 	return 0;
