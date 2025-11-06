@@ -12,6 +12,7 @@ export const SelectField = ({
 	selected,
 	selectOption,
 	placeholder = '',
+	full = false,
 }: {
 	options: {
 		value?: string;
@@ -22,6 +23,7 @@ export const SelectField = ({
 	className?: string;
 	selected?: string | number | readonly string[];
 	selectOption?: (value: string) => void;
+	full?: boolean;
 }) => {
 	const [selectedOption, setSelectedOption] = useState(
 		options.find(({ value }) => value === selected)?.label ||
@@ -47,7 +49,7 @@ export const SelectField = ({
 	};
 
 	return (
-		<div className="relative">
+		<div className={`relative ${full ? 'w-full' : ''}`}>
 			<div
 				className={cn(
 					'relative rounded-sm border px-3 py-2 bg-component-secondary label-md cursor-pointer h-12 flex items-center',

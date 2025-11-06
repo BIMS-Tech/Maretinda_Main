@@ -4,11 +4,13 @@ import { Funnel } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BsGrid3X2Gap } from 'react-icons/bs';
+import { BsGrid3X2Gap, BsSliders } from 'react-icons/bs';
+import { MdOutlineClose } from 'react-icons/md';
 import { TiThListOutline } from 'react-icons/ti';
 import { Configure, useHits } from 'react-instantsearch';
 import { InstantSearchNext } from 'react-instantsearch-nextjs';
 
+import { Button } from '@/components/atoms';
 import { SelectField } from '@/components/molecules';
 import {
 	AlgoliaProductSidebar,
@@ -85,6 +87,7 @@ const ProductsListing = ({
 }) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
 	const [selectedSort, setSelectedSort] = useState('Default');
+	const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 	const { items, results } = useHits();
 	const layoutLimit = isBigCard ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
 
@@ -134,19 +137,29 @@ const ProductsListing = ({
 
 	return (
 		<>
-			<div className="text-[#999] font-medium text-[20px] flex justify-between w-full border-b-[1px] border-[#00000021] mb-12">
-				<div className="flex gap-[7px] items-center pb-[18px] ">
+			<div className="text-[#999] font-medium text-[20px] grid grid-cols-2 grid-rows-2 gap-y-6 gap-x-[20px] md:grid-flow-col md:grid-cols-none md:grid-rows-1 justify-between w-full border-b-[1px] border-[#00000021] mb-12">
+				<div className="md:hidden order-1">
+					<Button
+						className="w-full bg-white rounded-[5px] border-black flex justify-center items-center py-[15px] gap-[10px] font-poppins font-medium text-base border-[1px]"
+						onClick={() => setIsFilterModalOpen(true)}
+					>
+						<BsSliders size={24} />
+						Filter
+					</Button>
+				</div>
+				<div className="hidden md:flex order-1 gap-[7px] items-center pb-[18px] ">
 					<Funnel height={18} width={18} /> Filter
 				</div>
-				<div>{`${count} results`}</div>
-				<div className="flex items-center pb-[18px] ">
+				<div className="order-3 md:order-2">{`${count} of ${count} results`}</div>
+				<div className="order-2 md:order-3 text-[16px] md:text-[20px] flex items-center rounded-[5px] pl-[10px] md:p-0 md:pb-[18px] border-black border-[1px] md:border-none">
 					<span className="text-nowrap">Sort by: </span>
 					<SelectField
-						className="ml-1 text-black bg-transparent border-none !font-medium !text-[20px] !p-0 !h-auto w-[180px]"
+						className="ml-1 text-black bg-transparent border-none !font-medium !text-[16px] md:!text-[20px] !p-0 !h-auto md:w-[180px]"
+						full
 						options={sortByDropdownOptions}
 					/>
 				</div>
-				<div className="h-full flex">
+				<div className="order-4 h-full flex justify-end">
 					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
 						<BsGrid3X2Gap size={27} />
 					</div>
@@ -160,9 +173,38 @@ const ProductsListing = ({
 			<div className="md:flex gap-4">
 				<div className="w-[280px] shrink-0">
 					<div className="hidden md:block">
-						<ProductListingActiveFilters />
+						<AlgoliaProductSidebar />
 					</div>
-					<AlgoliaProductSidebar />
+					<div className="md:hidden">
+						{/** biome-ignore lint/a11y/noStaticElementInteractions: Not necessary for modal background */}
+						{/** biome-ignore lint/a11y/useKeyWithClickEvents: Use close button instead */}
+						<div
+							className={`fixed inset-0 bg-black/20 z-40 transition-opacity duration-300 ${
+								isFilterModalOpen
+									? 'opacity-100 visible'
+									: 'opacity-0 invisible'
+							}`}
+							onClick={() => setIsFilterModalOpen(false)}
+						/>
+						<div
+							className={`fixed top-0 left-0 py-8 px-6 max-w-[336px] bg-white shadow-xl z-50 transform transition-transform duration-300 ${
+								isFilterModalOpen
+									? 'translate-x-0'
+									: '-translate-x-full'
+							}`}
+						>
+							<div className="flex justify-between border-b-[1px] pb-6 mb-2">
+								<h2 className="font-semibold text-[21px]">
+									Filter & Sort
+								</h2>
+								<MdOutlineClose
+									onClick={() => setIsFilterModalOpen(false)}
+									size={27}
+								/>
+							</div>
+							<AlgoliaProductSidebar isModal />
+						</div>
+					</div>
 				</div>
 				<div className="w-full">
 					{!items.length ? (
