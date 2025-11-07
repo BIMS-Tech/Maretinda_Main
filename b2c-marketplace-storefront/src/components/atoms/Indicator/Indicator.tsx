@@ -60,8 +60,8 @@ export function Indicator({
 					variant === 'light' ? 'bg-tertiary' : 'bg-white',
 				)}
 				style={{
-					left: (wrapperWidth / maxStep) * (step - 1),
-					width: wrapperWidth / maxStep,
+					left: (wrapperWidth / maxStep) * (step - 1) || 0,
+					width: wrapperWidth / maxStep || 0,
 				}}
 			/>
 		</div>

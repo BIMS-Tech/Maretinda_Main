@@ -38,7 +38,7 @@ const ProductImageCarousel: React.FC<CarouselProps> = ({ slides }) => {
 			<Slider {...settings}>
 				{slides.map((slide) => (
 					<Image
-						alt={slide.name}
+						alt={`${slide ? `slide-${slide.name}` : 'slide'} `}
 						className="w-full h-full max-h-[220px] object-cover object-center"
 						height={220}
 						key={slide.id}
