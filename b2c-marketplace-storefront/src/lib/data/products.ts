@@ -22,6 +22,7 @@ export const listProducts = async ({
 	queryParams?: HttpTypes.FindParams &
 		HttpTypes.StoreProductParams & {
 			handle?: string;
+			q?: string;
 		};
 	category_id?: string;
 	collection_id?: string;
@@ -71,13 +72,13 @@ export const listProducts = async ({
 			headers,
 			method: 'GET',
 			query: {
-				country_code: countryCode,
 				category_id,
 				collection_id,
-				region_id: region?.id,
+				country_code: countryCode,
 				fields: '*variants.calculated_price,+variants.inventory_quantity,*variants,*attribute_values,*attribute_values.attribute',
 				limit,
 				offset,
+				region_id: region?.id,
 				...queryParams,
 			},
 		})
