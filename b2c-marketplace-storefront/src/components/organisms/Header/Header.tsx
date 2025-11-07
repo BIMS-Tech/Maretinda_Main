@@ -77,12 +77,12 @@ export const Header = async () => {
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
 					<NavbarSearch />
 				</div>
-				<div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-6 sm:min-w-[230px] w-[-webkit-fill-available] sm:w-auto">
+				<div className="flex items-center justify-end gap-2 sm:gap-4 lg:gap-6 sm:min-w-[245px] w-[-webkit-fill-available] sm:w-auto">
 					<UserDropdown user={user} />
 					<CartDropdown cart={cart} />
 					{user && (
 						<LocalizedClientLink
-							className="relative"
+							className="relative hidden sm:block"
 							href="/user/wishlist"
 						>
 							<WishlistIcon2 size={20} />

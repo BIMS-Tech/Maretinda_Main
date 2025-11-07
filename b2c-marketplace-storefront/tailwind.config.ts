@@ -55,6 +55,8 @@ export default {
 					DEFAULT: 'var(--brand-bg)',
 				},
 				brandPurple: 'rgba(var(--bg-brand-purple))',
+				brandPurpleLight: 'rgba(var(--bg-brand-purple-light))',
+				brandPurpleLighten: 'rgba(var(--bg-brand-purple-lighten))',
 				component: {
 					DEFAULT: 'rgba(var(--bg-component-primary))',
 					hover: 'rgba(var(--bg-component-primary-hover))',

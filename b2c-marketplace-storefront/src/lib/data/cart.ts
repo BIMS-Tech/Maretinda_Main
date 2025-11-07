@@ -289,7 +289,7 @@ export async function applyPromotions(codes: string[]) {
 		.then(async ({ cart }) => {
 			const cartCacheTag = await getCacheTag('carts');
 			revalidateTag(cartCacheTag);
-			// @ts-expect-error
+
 			const applied = cart.promotions?.some((promotion: any) =>
 				codes.includes(promotion.code),
 			);

@@ -9,6 +9,7 @@ import { GalleryCarousel } from './GalleryCarousel/GalleryCarousel';
 import { GalleryCarouselNew } from './GalleryCarousel/GalleryCarouselNew';
 import { Header } from './Header/Header';
 import { HomeProductsCarousel } from './HomeProductsCarousel/HomeProductsCarousel';
+import { Layout } from './Layout/Layout';
 import { ProductCard } from './ProductCard/ProductCard';
 import { ProductDetails } from './ProductDetails/ProductDetails';
 import { ProductGallery } from './ProductGallery/ProductGallery';
@@ -38,11 +39,15 @@ export {
 	CartSummary,
 	CategoryCard,
 	Footer,
-	GalleryCarousel, GalleryCarouselNew, Header,
+	GalleryCarousel,
+	GalleryCarouselNew,
+	Header,
 	HomeProductsCarousel,
+	Layout,
 	ProductCard,
 	ProductDetails,
-	ProductGallery, ProductListingActiveFilters,
+	ProductGallery,
+	ProductListingActiveFilters,
 	ProductListingHeader,
 	ProductSidebar,
 	ProductsList,

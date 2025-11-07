@@ -97,6 +97,8 @@
 	--brand-purple-700: 42, 27, 62; /* Darker shade */
 	--brand-purple-800: 29, 18, 43; /* Very dark shade (near black) */
 	--brand-purple-900: 55, 34, 72; /* Deepest, darkest shade (near black) */
+	--brand-purple-light: 155, 128, 210; /* Light Purple */
+	--brand-purple-lighten: 253, 242, 255; /* Light Purple */
 
 	/* Buttons actions */
 	--brand-cta-25: 255, 250, 237; /* Very light tint (near white) */
@@ -117,6 +119,8 @@
 	--bg-secondary: var(--neutral-25);
 	--bg-tertiary: var(--neutral-1000);
 	--bg-brand-purple: var(--brand-purple-900);
+	--bg-brand-purple-light: var(--brand-purple-light);
+	--bg-brand-purple-lighten: var(--brand-purple-lighten);
 
 	--bg-component-primary: var(--neutral-0);
 	--bg-component-primary-hover: var(--neutral-25);
@@ -125,8 +129,8 @@
 	--bg-component-secondary-hover: var(--neutral-50);
 	--bg-component-secondary-pressed: var(--neutral-100);
 
-	--bg-action-primary: var(--brand-cta-500);
-	--bg-action-primary-hover: var(--brand-cta-600);
+	--bg-action-primary: var(--brand-cta-400);
+	--bg-action-primary-hover: var(--brand-cta-500);
 	--bg-action-primary-pressed: var(--brand-cta-700);
 	--bg-action-secondary: rgba(var(--neutral-1000), 0.05);
 	--bg-action-secondary-hover: rgba(var(--neutral-1000), 0.1);

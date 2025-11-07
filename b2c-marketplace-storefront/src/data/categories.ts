@@ -80,7 +80,6 @@ export const categoryThemes = {
 	accessories: {
 		accent: '#F06292',
 		bgClass: 'bg-purple-50',
-		description: 'Stylish accessories for every occasion',
 		icon: '💎',
 		primary: '#9C27B0',
 		secondary: '#E91E63',
@@ -89,16 +88,14 @@ export const categoryThemes = {
 	fashion: {
 		accent: '#666666',
 		bgClass: 'bg-red-50',
-		description: 'Latest fashion trends and styles',
 		icon: '👗',
 		primary: '#000000',
 		secondary: '#333333',
 		textClass: 'text-gray-800',
 	},
-	food: {
+	'food-items': {
 		accent: '#FFEB3B',
 		bgClass: 'bg-blue-50',
-		description: 'Delicious meals and local delicacies',
 		icon: '🥘',
 		primary: '#FF9800',
 		secondary: '#FFC107',
@@ -107,7 +104,6 @@ export const categoryThemes = {
 	groceries: {
 		accent: '#CDDC39',
 		bgClass: 'bg-green-50',
-		description: 'Fresh groceries delivered to your door',
 		icon: '🍎',
 		primary: '#4CAF50',
 		secondary: '#8BC34A',
@@ -116,18 +112,8 @@ export const categoryThemes = {
 	shopping: {
 		accent: '#00BCD4',
 		bgClass: 'bg-yellow-500',
-		description: 'Everything you need in one place',
 		icon: '🛍️',
 		primary: '#2196F3',
-		secondary: '#03A9F4',
-		textClass: 'text-blue-800',
-	},
-	technology: {
-		accent: '#00BCD4',
-		bgClass: 'bg-pink-50',
-		description: 'Everything you need in one place',
-		icon: '🛍️',
-		primary: '#F506A4',
 		secondary: '#03A9F4',
 		textClass: 'text-blue-800',
 	},

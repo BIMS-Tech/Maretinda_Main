@@ -22,7 +22,6 @@ const FeaturedProductsCard: React.FC<FeaturedProductsCardProps> = ({
 	size = 'small',
 	title,
 }) => {
-	console.log(bgColor);
 	return (
 		<Card
 			className={cn(

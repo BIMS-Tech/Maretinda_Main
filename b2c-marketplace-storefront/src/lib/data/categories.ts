@@ -19,7 +19,15 @@ export const listCategories = async ({
 		}>('/store/product-categories', {
 			cache: 'force-cache',
 			query: {
-				fields: 'handle, name, rank, parent_category_id',
+				fields: [
+					'category_children.handle',
+					'category_children.name',
+					'category_children.rank',
+					'handle',
+					'name',
+					'rank',
+					'parent_category_id',
+				].join(', '),
 				limit,
 				...query,
 			},

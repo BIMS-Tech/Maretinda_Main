@@ -2,9 +2,9 @@ import { Divider } from '@medusajs/ui';
 import { formatDistanceToNow } from 'date-fns';
 
 import { Avatar, StarRating } from '@/components/atoms';
-import type { SingleProductReview } from '@/types/product';
+import type { Review } from '@/lib/data/reviews';
 
-export const SellerReview = ({ review }: { review: SingleProductReview }) => {
+export const SellerReview = ({ review }: { review: Review }) => {
 	return (
 		<div className="mb-10 border-b pb-4 flex flex-col items-start gap-6">
 			<div className="flex items-center justify-between w-full">
@@ -37,7 +37,7 @@ export const SellerReview = ({ review }: { review: SingleProductReview }) => {
 						starSize={16}
 					/>
 					<span className="text-md text-black/60 !font-medium">
-						<span className="text-black">4.5/</span>5
+						<span className="text-black">{review.rating}/</span>5
 					</span>
 				</div>
 			</div>

@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { TabsContent, TabsList } from '@/components/molecules';
 
 // import { ProductsList } from "../ProductsList/ProductsList"
-import { ProductsPagination } from '../ProductsPagination/ProductsPagination';
+import { ProductsPaginationWrapper } from '../ProductsPagination/ProductsPaginationWrapper';
 // import { listProducts } from "@/lib/data/products"
 
 export const wishlistTabs = [
@@ -28,7 +28,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
 					<div className="grid sm:grid-cols-2 xl:grid-cols-4 mt-8">
 						{/* <ProductsList products={products} /> */}
 					</div>
-					<ProductsPagination pages={2} />
+					<ProductsPaginationWrapper pages={2} />
 				</Suspense>
 			</TabsContent>
 			<TabsContent activeTab={tab} value="products">
@@ -36,7 +36,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
 					<div className="grid sm:grid-cols-2 xl:grid-cols-4 mt-8">
 						{/* <ProductsList products={products} /> */}
 					</div>
-					<ProductsPagination pages={2} />
+					<ProductsPaginationWrapper pages={2} />
 				</Suspense>
 			</TabsContent>
 			<TabsContent activeTab={tab} value="collections">
@@ -44,7 +44,7 @@ export const WishlistTabs = async ({ tab }: { tab: string }) => {
 					<div className="grid sm:grid-cols-2 xl:grid-cols-4 mt-8">
 						{/* <ProductsList products={products} /> */}
 					</div>
-					<ProductsPagination pages={2} />
+					<ProductsPaginationWrapper pages={2} />
 				</Suspense>
 			</TabsContent>
 		</div>

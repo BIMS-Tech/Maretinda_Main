@@ -15,67 +15,40 @@ import { cn } from '@/lib/utils';
 
 import { ProductListingActiveFilters } from '../ProductListingActiveFilters/ProductListingActiveFilters';
 
-export const AlgoliaProductSidebar = () => {
-	const [isMobile, setIsMobile] = useState(false);
-	const [isOpen, setIsOpen] = useState(false);
-
+export const AlgoliaProductSidebar = ({
+	isModal = false,
+}: {
+	isModal?: boolean;
+}) => {
 	const { allSearchParams } = useGetAllSearchParams();
 
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobile(window.innerWidth < 768);
-		};
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
-	}, []);
-
-	return isMobile ? (
-		<>
-			<Button
-				className="w-full uppercase mb-4"
-				onClick={() => setIsOpen(true)}
-			>
-				Filters
-			</Button>
-			{isOpen && (
-				<Modal heading="Filters" onClose={() => setIsOpen(false)}>
-					<div className="px-4">
-						<ProductListingActiveFilters />
-						<StoreFilter
-							defaultOpen={Boolean(allSearchParams.store)}
-						/>
-						<BrandFilter
-							defaultOpen={Boolean(allSearchParams.brand)}
-						/>
-						<PriceFilter
-							defaultOpen={Boolean(
-								allSearchParams.min_price ||
-									allSearchParams.max_price,
-							)}
-						/>
-						<ConditionFilter
-							defaultOpen={Boolean(allSearchParams.condition)}
-						/>
-						<SizeFilter
-							defaultOpen={Boolean(allSearchParams.size)}
-						/>
-						<ColorFilter
-							defaultOpen={Boolean(allSearchParams.color)}
-						/>
-						{/* <RatingFilter defaultOpen={Boolean(allSearchParams.rating)} /> */}
-					</div>
-				</Modal>
-			)}
-		</>
-	) : (
+	return (
 		<div className="flex flex-col gap-12">
-			<StoreFilter />
-			<BrandFilter />
-			<PriceFilter />
-			<ConditionFilter />
-			<SizeFilter />
-			<ColorFilter />
-			{/* <RatingFilter /> */}
+			<ProductListingActiveFilters />
+			<StoreFilter
+				defaultOpen={!isModal || Boolean(allSearchParams.store)}
+			/>
+			<BrandFilter
+				defaultOpen={!isModal || Boolean(allSearchParams.brand)}
+			/>
+			<PriceFilter
+				defaultOpen={
+					!isModal ||
+					Boolean(
+						allSearchParams.min_price || allSearchParams.max_price,
+					)
+				}
+			/>
+			<ConditionFilter
+				defaultOpen={!isModal || Boolean(allSearchParams.condition)}
+			/>
+			<SizeFilter
+				defaultOpen={!isModal || Boolean(allSearchParams.size)}
+			/>
+			<ColorFilter
+				defaultOpen={!isModal || Boolean(allSearchParams.color)}
+			/>
+			{/* <RatingFilter defaultOpen={!isModal || Boolean(allSearchParams.rating)} /> */}
 		</div>
 	);
 };
@@ -261,7 +234,7 @@ function PriceFilter({ defaultOpen = true }: { defaultOpen?: boolean }) {
 						</li>
 					))}
 				</ul>
-				<div className="mt-6 flex items-stretch">
+				<div className="mt-6 mb-[1px] flex items-stretch">
 					<Input
 						className="bg-white text-black py-[9px] text-center max-w-[76px]"
 						onChange={(e) =>

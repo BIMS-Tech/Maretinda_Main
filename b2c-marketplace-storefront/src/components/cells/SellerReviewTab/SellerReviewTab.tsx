@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { SellerReview } from '@/components/molecules';
 import { REVIEW_LIMIT, REVIEW_PAGINATION_LIMIT } from '@/const';
-import type { SingleProductReview } from '@/types/product';
+import type { Review } from '@/lib/data/reviews';
 import type { SellerProps } from '@/types/seller';
 
 export const SellerReviewTab = ({ seller }: { seller: SellerProps }) => {
 	const filteredReviews = seller.reviews?.filter(
 		(r) => r !== null,
-	) as SingleProductReview[];
+	) as Review[];
 
 	const [limit, setLimit] = useState(REVIEW_LIMIT);
 	const observerTarget = useRef(null);
@@ -78,7 +78,7 @@ export const SellerReviewTab = ({ seller }: { seller: SellerProps }) => {
 									textAlign: 'center',
 								}}
 							>
-								**Loading more reviews...**
+								Loading more reviews...
 							</div>
 						)}
 					</>

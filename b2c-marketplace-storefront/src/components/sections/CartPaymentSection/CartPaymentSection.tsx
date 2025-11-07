@@ -65,7 +65,10 @@ const CartPaymentSection = ({
 	};
 
 	const paidByGiftcard =
-		cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0;
+		'gift_cards' in (cart || {}) && 
+		Array.isArray((cart as any)?.gift_cards) && 
+		(cart as any).gift_cards.length > 0 && 
+		cart?.total === 0;
 
 	const paymentReady =
 		(activeSession && cart?.shipping_methods.length !== 0) ||

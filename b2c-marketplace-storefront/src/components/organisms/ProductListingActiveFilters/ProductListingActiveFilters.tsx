@@ -16,7 +16,7 @@ export const ProductListingActiveFilters = () => {
 	const { clearAllFilters } = useFilters(filters[0]?.[0] || "");
 
 	return (
-		<div className="mb-12 mr-[27px]">
+		<div className="mr-[27px]">
 			<div className="flex justify-between mb-6">
 				<div className="label-xl text-black !leading-[21px]">Refine by</div>
 				<button

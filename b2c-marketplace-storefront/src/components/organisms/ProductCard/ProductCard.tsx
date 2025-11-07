@@ -58,10 +58,10 @@ export const ProductCard = ({
 	);
 
 	return (
-		<div className="py-5 px-2">
+		<div className="py-5 px-2 sm:max-w-[315px] lg:max-w-[320px] lg:min-w-[303px] min-h-[400px] ">
 			<div
 				className={clsx(
-					' group bg-white shadow-lg rounded-sm flex flex-col justify-start w-full sm:max-w-[315px] lg:max-w-[295px] min-w-[250px] min-h-[400px] overflow-hidden',
+					' group bg-white hover:shadow-lg rounded-sm flex flex-col justify-start w-full overflow-hidden',
 				)}
 			>
 				<div className="relative w-full bg-primary">
@@ -72,7 +72,7 @@ export const ProductCard = ({
 							) : product.thumbnail ? (
 								<Image
 									alt={product.title}
-									className="object-cover w-full object-center h-full transition-all duration-300"
+									className="object-cover w-full object-center h-full transition-all duration-300 max-h-[220px]"
 									height={220}
 									priority
 									src={decodeURIComponent(product.thumbnail)}
@@ -109,7 +109,7 @@ export const ProductCard = ({
 				</div>
 				<div className="relative flex flex-1">
 					<LocalizedClientLink
-						className="flex flex-col justify-between p-3.5 w-full"
+						className="flex flex-col justify-between px-4 py-5 w-full"
 						href={`/products/${product.handle}`}
 					>
 						<div>
@@ -150,7 +150,7 @@ export const ProductCard = ({
 							</p>
 						</div>
 					</LocalizedClientLink>
-					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-3.5 z-10">
+					<Button className="absolute rounded-sm bg-action text-action-on-primary !font-medium group-hover:block hidden h-auto lg:h-[40px] w-[calc(100%-32px)] -mx-[calc(50%-16px)] left-1/2 bottom-5 z-10">
 						Add to Cart
 					</Button>
 				</div>
