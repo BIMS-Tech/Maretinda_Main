@@ -28,7 +28,7 @@ export const UserDropdown = ({
 
 	return (
 		<div
-			className="relative h-8 lg:h-[56px] flex items-center justify-center min-w-[45px]"
+			className="relative h-8 lg:h-[56px] flex items-center justify-center min-w-[30px] lg:min-w-[35px] xl:min-w-[45px]"
 			onFocus={() => setOpen(true)}
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}

@@ -53,7 +53,7 @@ export const CartDropdown = ({
 
 	return (
 		<div
-			className="relative h-8 lg:h-[56px] flex justify-center items-center min-w-[45px]"
+			className="relative h-8 lg:h-[56px] flex justify-center items-center min-w-[30px] md:min-w-[35px] xl:min-w-[45px]"
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>

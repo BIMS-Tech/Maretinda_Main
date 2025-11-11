@@ -29,7 +29,7 @@ export const LogoutButton: React.FC<LogoutButtonProps> = ({
 		<button
 			className={cn(
 				!unstyled &&
-					'label-md !font-medium text-black capitalize px-6 py-2.5 my-3 md:my-2.5 flex items-center gap-4',
+					'label-md !font-medium text-black capitalize px-4 md:px-6 py-2.5 my-3 md:my-2.5 flex items-center gap-4',
 				className,
 			)}
 			disabled={isLoading}

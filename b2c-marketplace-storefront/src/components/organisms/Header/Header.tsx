@@ -82,12 +82,12 @@ export const Header = async () => {
 					<CartDropdown cart={cart} />
 					{user && (
 						<LocalizedClientLink
-							className="relative hidden sm:block min-w-[45px] pl-2"
+							className="relative hidden sm:block min-w-[30px] md:min-w-[35px] xl:min-w-[45px] xl:pl-2"
 							href="/user/wishlist"
 						>
 							<WishlistIcon2 className="ml-2" size={20} />
 							{Boolean(wishlistCount) && (
-								<Badge className="absolute -top-2 left-8 w-4 h-4 p-0">
+								<Badge className="absolute -top-2 -right-2 md:-right-0 md:left-6 xl:left-8 w-4 h-4 p-0">
 									{wishlistCount}
 								</Badge>
 							)}

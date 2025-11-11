@@ -1,14 +1,11 @@
 import Image from 'next/image';
 
-import { Badge } from '@/components/atoms';
 import { CartDropdown } from '@/components/cells';
 import { SellNowButton } from '@/components/cells/SellNowButton/SellNowButton';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
 import { NavbarSearch } from '@/components/molecules';
 // import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
-import { WishlistIcon2 } from '@/icons';
 import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -60,23 +57,9 @@ export const NavbarLessHeader = async () => {
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
 					<NavbarSearch />
 				</div>
-				<div className="flex items-center justify-end gap-1 sm:gap-2 lg:gap-3 sm:min-w-[245px] w-[-webkit-fill-available] sm:w-auto">
+				<div className="flex items-center justify-end gap-1 sm:gap-2 lg:gap-2 sm:min-w-[245px] w-[-webkit-fill-available] sm:w-auto">
 					<UserDropdown user={user} />
 					<CartDropdown cart={cart} />
-					{user && (
-						<LocalizedClientLink
-							className="relative"
-							href="/user/wishlist"
-						>
-							<WishlistIcon2 />
-							{Boolean(wishlistCount) && (
-								<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
-									{wishlistCount}
-								</Badge>
-							)}
-						</LocalizedClientLink>
-					)}
-					{user && <MessageButton />}
 					{/* <CountrySelector regions={regions} /> */}
 					<SellNowButton />
 				</div>
