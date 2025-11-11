@@ -190,6 +190,7 @@
 	--border-primary: var(--neutral-50);
 	--border-secondary: var(--neutral-800);
 	--border-action: var(--brand-900);
+	--border-action-primary: var(--brand-cta-400);
 	--border-negative-primary: var(--red-700);
 	--border-negative-secondary: var(--red-200);
 	--border-positive-primary: var(--green-800);

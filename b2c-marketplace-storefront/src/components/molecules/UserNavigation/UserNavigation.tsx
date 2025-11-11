@@ -75,7 +75,7 @@ export const UserNavigation = () => {
 	}
 
 	return (
-		<Card className="h-min px-4 lg:p-8 shadow !border-black/15">
+		<Card className="h-min px-4 lg:p-8 shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] !border-black/15">
 			<div className="flex items-center gap-3">
 				<Avatar
 					className="rounded-full h-12 w-12"
