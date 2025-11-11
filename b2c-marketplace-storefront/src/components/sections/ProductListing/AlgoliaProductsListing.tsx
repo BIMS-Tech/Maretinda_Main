@@ -15,7 +15,6 @@ import { SelectField } from '@/components/molecules';
 import {
 	AlgoliaProductSidebar,
 	ProductCard,
-	ProductListingActiveFilters,
 	ProductsPagination,
 } from '@/components/organisms';
 import { ProductBigCard } from '@/components/organisms/ProductCard/ProductBigCard';
@@ -29,6 +28,7 @@ import { cn } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
 export const AlgoliaProductsListing = ({
+	categories,
 	category_id,
 	collection_id,
 	seller_handle,
@@ -37,6 +37,7 @@ export const AlgoliaProductsListing = ({
 	user = null,
 	wishlist = [],
 }: {
+	categories?: HttpTypes.StoreProductCategory[];
 	category_id?: string;
 	collection_id?: string;
 	locale?: string;
@@ -45,18 +46,25 @@ export const AlgoliaProductsListing = ({
 	user?: HttpTypes.StoreCustomer | null;
 	wishlist?: Wishlist[] | [];
 }) => {
-	const searchParamas = useSearchParams();
+	const searchParams = useSearchParams();
 
-	const facetFilters: string = getFacedFilters(searchParamas);
-	const query: string = searchParamas.get('query') || '';
+	const facetFilters: string = getFacedFilters(searchParams);
+	const query: string = searchParams.get('query') || '';
+
+	const categoryId =
+		category_id ||
+		categories?.find(
+			({ handle }) => handle === searchParams.get('category'),
+		)?.id ||
+		'';
 
 	const filters = `${
 		seller_handle
 			? `NOT seller:null AND seller.handle:${seller_handle} AND `
 			: 'NOT seller:null AND '
 	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${
-		category_id
-			? ` AND categories.id:${category_id}${
+		categoryId
+			? ` AND categories.id:${categoryId}${
 					collection_id !== undefined
 						? ` AND collections.id:${collection_id}`
 						: ''
@@ -93,7 +101,7 @@ const ProductsListing = ({
 
 	const [pageLimit, setPageLimit] = useState(layoutLimit);
 
-	const searchParamas = useSearchParams();
+	const searchParams = useSearchParams();
 
 	useEffect(() => {
 		listProducts({
@@ -115,7 +123,7 @@ const ProductsListing = ({
 
 	if (!results?.processingTimeMS) return <ProductListingSkeleton />;
 
-	const page: number = +(searchParamas.get('page') || 1);
+	const page: number = +(searchParams.get('page') || 1);
 	const filteredProducts = items.filter((pr) =>
 		prod?.some((p: any) => p.id === pr.objectID),
 	);

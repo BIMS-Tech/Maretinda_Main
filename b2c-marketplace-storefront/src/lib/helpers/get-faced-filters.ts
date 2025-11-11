@@ -48,7 +48,7 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
 			} else {
 				values += `${getOption(key)}:"${splittedSize[0]}"`;
 			}
-			facet += ` AND ${values}`;
+			if (key !== 'category') facet += ` AND ${values}`;
 		} else {
 			if (key === 'min_price') minPrice = value;
 			if (key === 'max_price') maxPrice = value;
