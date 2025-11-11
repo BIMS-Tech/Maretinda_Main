@@ -13,6 +13,7 @@ import {
 import { Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ProfileIcon2 } from '@/icons';
+import Spinner from '@/icons/spinner';
 
 export const UserDropdown = ({
 	user,
@@ -20,17 +21,19 @@ export const UserDropdown = ({
 	user: HttpTypes.StoreCustomer | null;
 }) => {
 	const [open, setOpen] = useState(false);
+	const [isLoginClicked, setIsLoginClicked] = useState(false);
+	const [isRegisterClicked, setIsRegisterClicked] = useState(false);
 
 	const unreads = useUnreads();
 
 	return (
 		<div
-			className="relative h-8 lg:h-[56px] flex items-center"
+			className="relative h-8 lg:h-[56px] flex items-center justify-center min-w-[45px]"
 			onFocus={() => setOpen(true)}
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>
-			<LocalizedClientLink href="/user">
+			<LocalizedClientLink href={user ? '/user' : '/login'}>
 				<ProfileIcon2 size={20} />
 			</LocalizedClientLink>
 			<Dropdown className="top-[32px] lg:top-[54px]" show={open}>
@@ -97,14 +100,26 @@ export const UserDropdown = ({
 							<NavigationItem
 								className="bg-tertiary capitalize text-tertiary label-lg rounded-full justify-center"
 								href="/login"
+								onClick={() => {
+									setIsLoginClicked(true);
+									setTimeout(() => {
+										setIsLoginClicked(false);
+									}, 300);
+								}}
 							>
-								Sign In
+								{isLoginClicked ? <Spinner /> : 'Sign In'}
 							</NavigationItem>
 							<NavigationItem
 								className="justify-center capitalize label-lg"
 								href="/register"
+								onClick={() => {
+									setIsRegisterClicked(true);
+									setTimeout(() => {
+										setIsRegisterClicked(false);
+									}, 300);
+								}}
 							>
-								Register
+								{isRegisterClicked ? <Spinner /> : 'Register'}
 							</NavigationItem>
 						</div>
 
