@@ -103,6 +103,7 @@ export default {
 			borderColor: {
 				action: 'rgba(var(--border-action))',
 				brandPurple: 'rgba(var(--bg-brand-purple))',
+				brandYellow: 'rgba(var(--border-action-primary))',
 				DEFAULT: 'rgba(var(--border-primary))',
 				disabled: 'rgba(var(--border-disabled))',
 				negative: {

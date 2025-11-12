@@ -12,29 +12,38 @@ export const OrderTotals = ({ orderSet }: { orderSet: any }) => {
 	const currency_code = orderSet.payment_collection.currency_code;
 
 	return (
-		<Card className="mb-8 p-4">
-			<p className="text-secondary label-md mb-2 flex justify-between">
+		<Card className="p-3 sm:!p-6 user-content-wrapper mt-12">
+			<p className="text-primary label-lg !font-normal mb-4 flex justify-between">
 				Subtotal:
-				<span className="text-primary">
+				<span className="font-bold">
 					{convertToLocale({
 						amount: subtotal,
 						currency_code,
 					})}
 				</span>
 			</p>
-			<p className="text-secondary label-md flex justify-between">
+			<p className="text-primary label-lg !font-normal mb-4 flex justify-between">
 				Delivery:
-				<span className="text-primary">
+				<span className="font-bold">
 					{convertToLocale({
 						amount: delivery,
 						currency_code,
 					})}
 				</span>
 			</p>
-			<Divider className="my-4" />
-			<p className="text-secondary label-md flex justify-between items-center">
+			<p className="text-primary label-lg !font-normal flex justify-between">
+				Coupon Discount::
+				<span className="font-bold">
+					{convertToLocale({
+						amount: 0,
+						currency_code,
+					})}
+				</span>
+			</p>
+			<Divider className="my-8" />
+			<p className="text-primary label-xl !font-bold flex justify-between items-center">
 				Total:{' '}
-				<span className="text-primary heading-md">
+				<span>
 					{convertToLocale({
 						amount: total,
 						currency_code,

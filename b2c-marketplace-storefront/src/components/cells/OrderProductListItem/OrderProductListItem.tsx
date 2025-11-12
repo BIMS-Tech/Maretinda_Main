@@ -16,49 +16,75 @@ export const OrderProductListItem = ({
 	withDivider?: boolean;
 }) => (
 	<Fragment>
-		{withDivider && <Divider className="mt-4" />}
-		<li className={cn('flex items-center', withDivider && 'mt-4')}>
-			<div className="w-[66px] h-16 relative rounded-sm overflow-hidden flex items-center justify-center">
+		<li className={cn('flex items-center')}>
+			{/* <div className="w-[100px] h-[100px] relative rounded-sm overflow-hidden flex items-center justify-center">
 				{item.thumbnail ? (
 					<Image
 						alt={item.title}
-						className="object-cover"
-						height={66}
+						className="object-cover object-center"
+						height={100}
 						src={item.thumbnail}
-						width={66}
+						width={100}
 					/>
 				) : (
 					<Image
 						alt={item.title}
 						className="opacity-25"
-						height={45}
+						height={100}
 						src={'/images/placeholder.svg'}
-						width={45}
+						width={100}
 					/>
 				)}
-			</div>
-			<div className="grid grid-cols-1 sm:grid-cols-5 w-full px-4 sm:gap-4">
-				<div className="sm:col-span-2">
-					<p className="label-md text-secondary">
-						{item.product_title}
-					</p>
-					<LocalizedClientLink
-						className="heading-xs text-primary"
-						href={`/products/${item.variant?.product?.handle}`}
-						target="_blank"
-					>
-						{item.variant?.product?.title}
-					</LocalizedClientLink>
+			</div> */}
+			<div className="grid grid-cols-1 sm:grid-cols-5 w-full sm:gap-4">
+				<div className="sm:col-span-2 flex items-center gap-4">
+					<div className="min-w-[90px] h-[90px] relative rounded-sm overflow-hidden flex items-center justify-center">
+						{item.thumbnail ? (
+							<Image
+								alt={item.title}
+								className="object-cover object-center"
+								height={90}
+								src={item.thumbnail}
+								width={90}
+							/>
+						) : (
+							<Image
+								alt={item.title}
+								className="opacity-25"
+								height={90}
+								src={'/images/placeholder.svg'}
+								width={90}
+							/>
+						)}
+					</div>
+					<div className="flex flex-col w-full">
+						<p className="label-md !font-normal text-primary">
+							{item.product_title}
+						</p>
+						<LocalizedClientLink
+							className="heading-xs text-secondary"
+							href={`/products/${item.variant?.product?.handle}`}
+							target="_blank"
+						>
+							{item.variant?.product?.title}
+						</LocalizedClientLink>
+					</div>
 				</div>
-				<div className="sm:col-span-2 flex flex-col justify-center">
-					<p className="label-md text-secondary">
+				<div className="flex flex-col justify-center">
+					<p className="label-md !font-bold text-[#999]">
 						{`Variant: `}
 						<span className="text-primary">
 							{item?.variant_title || item?.variant?.title}
 						</span>
 					</p>
 				</div>
-				<div className="flex sm:justify-end label-lg text-primary sm:items-center">
+				<div className="flex flex-col justify-center sm:items-end">
+					<p className="label-md !font-bold text-[#999]">
+						{`Quantity: `}
+						<span className="text-primary">{item?.quantity}</span>
+					</p>
+				</div>
+				<div className="flex sm:justify-end label-md !font-bold text-primary sm:items-center">
 					{convertToLocale({
 						amount: item.unit_price,
 						currency_code: currency_code,
@@ -66,5 +92,6 @@ export const OrderProductListItem = ({
 				</div>
 			</div>
 		</li>
+		{withDivider && <Divider className="my-6" />}
 	</Fragment>
 );

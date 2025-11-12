@@ -44,7 +44,7 @@ export const Chat = ({
 				onClick={() => setModal(true)}
 				variant={variant}
 			>
-				{icon ? <MessageIcon size={20} /> : 'Write to seller'}
+				{icon ? <MessageIcon size={20} /> : 'Write to Seller'}
 			</Button>
 			{modal && (
 				<Modal heading="Chat" onClose={() => setModal(false)}>
