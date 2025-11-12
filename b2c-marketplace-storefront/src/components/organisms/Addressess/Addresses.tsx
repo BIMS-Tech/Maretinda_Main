@@ -130,13 +130,13 @@ export const Addresses = ({
 								</div>
 								<div className="flex gap-2 sm:gap-4 flex-col-reverse sm:flex-row">
 									<Button
-										className="w-fit px-4 md:px-8 py-1 md:py-2.5 font-medium"
+										className="w-fit px-4 md:px-8 py-1 md:py-2.5 !font-medium"
 										onClick={() => handleEdit(address.id)}
 									>
 										Edit
 									</Button>
 									<Button
-										className="w-fit px-4 md:px-8 py-1 md:py-2.5 font-medium"
+										className="w-fit px-4 md:px-8 py-1 md:py-2.5 !font-medium"
 										onClick={() =>
 											setDeleteAddress(address.id)
 										}
