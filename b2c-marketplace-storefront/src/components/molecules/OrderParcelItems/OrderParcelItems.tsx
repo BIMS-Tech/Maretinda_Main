@@ -7,13 +7,15 @@ export const OrderParcelItems = ({
 	items: any[];
 	currency_code: string;
 }) => {
+	console.log(items);
 	return (
 		<>
-			{items.map((item) => (
+			{items.map((item, index) => (
 				<OrderProductListItem
 					currency_code={currency_code}
 					item={item}
 					key={item.id + item.variant_id}
+					withDivider={index !== items.length - 1}
 				/>
 			))}
 		</>

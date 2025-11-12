@@ -1,4 +1,4 @@
-import { OrderAddresses } from '@/components/organisms/OrderAddresses/OrderAddresses';
+// import { OrderAddresses } from '@/components/organisms/OrderAddresses/OrderAddresses';
 import { OrderParcels } from '@/components/organisms/OrderParcels/OrderParcels';
 import { OrderTotals } from '@/components/organisms/OrderTotals/OrderTotals';
 

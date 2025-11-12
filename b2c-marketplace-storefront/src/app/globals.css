@@ -19,6 +19,10 @@
 	@apply text-[12px] font-light tracking-normal;
 }
 
+.text-caption {
+	@apply text-[12px] font-normal tracking-normal;
+}
+
 .label-sm {
 	@apply text-[12px] leading-[20px] font-normal tracking-normal;
 }
@@ -234,5 +238,5 @@ button:disabled svg path {
 }
 
 .user-content-wrapper {
-	@apply shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border !border-black/15 rounded-sm p-5 lg:p-8;
+	@apply shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border !border-black/15 rounded-sm p-4 sm:p-5 lg:p-8;
 }
