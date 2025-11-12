@@ -4,9 +4,8 @@ import { Funnel } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { BsGrid3X2Gap, BsSliders } from 'react-icons/bs';
+import { BsSliders } from 'react-icons/bs';
 import { MdOutlineClose } from 'react-icons/md';
-import { TiThListOutline } from 'react-icons/ti';
 import { Configure, useHits } from 'react-instantsearch';
 import { InstantSearchNext } from 'react-instantsearch-nextjs';
 
@@ -15,12 +14,12 @@ import { SelectField } from '@/components/molecules';
 import {
 	AlgoliaProductSidebar,
 	ProductCard,
-	ProductListingActiveFilters,
 	ProductsPagination,
 } from '@/components/organisms';
 import { ProductBigCard } from '@/components/organisms/ProductCard/ProductBigCard';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { PRODUCT_LIMIT, PRODUCT_LIMIT_BIG_CARD } from '@/const';
+import { CardViewIcon, ListViewIcon } from '@/icons';
 import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
 import { getFacedFilters } from '@/lib/helpers/get-faced-filters';
@@ -113,11 +112,34 @@ const ProductsListing = ({
 		});
 	}, [locale]);
 
+	useEffect(() => {
+		if (isFilterModalOpen) {
+			// Save current scroll position
+			const scrollY = window.scrollY;
+			document.body.style.position = 'fixed';
+			document.body.style.top = `-${scrollY}px`;
+			document.body.style.left = '0';
+			document.body.style.right = '0';
+			document.body.style.width = '100%';
+
+			return () => {
+				// Unlock scroll
+				document.body.style.position = '';
+				document.body.style.top = '';
+				document.body.style.left = '';
+				document.body.style.right = '';
+				document.body.style.width = '';
+
+				window.scrollTo(0, scrollY);
+			};
+		}
+	}, [isFilterModalOpen]);
+
 	if (!results?.processingTimeMS) return <ProductListingSkeleton />;
 
 	const page: number = +(searchParamas.get('page') || 1);
 	const filteredProducts = items.filter((pr) =>
-		prod?.some((p: any) => p.id === pr.objectID),
+		prod?.some((p: HttpTypes.StoreProduct) => p.id === pr.objectID),
 	);
 	const products = filteredProducts.slice(
 		(page - 1) * pageLimit,
@@ -160,12 +182,12 @@ const ProductsListing = ({
 					/>
 				</div>
 				<div className="order-4 h-full flex justify-end">
-					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
-						<BsGrid3X2Gap size={27} />
+					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex justify-center">
+						<CardViewIcon size={27} />
 					</div>
 
-					<div className="w-[45px] pb-[18px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
-						<TiThListOutline size={24} />
+					<div className="w-[45px] pb-[18px] border-[rgba(var(--brand-purple-500))] flex justify-center">
+						<ListViewIcon size={27} />
 					</div>
 				</div>
 			</div>
@@ -177,6 +199,7 @@ const ProductsListing = ({
 					</div>
 					<div className="md:hidden">
 						{/** biome-ignore lint/a11y/noStaticElementInteractions: Not necessary for modal background */}
+						{/** biome-ignore lint/a11y/noNoninteractiveElementInteractions: Not necessary for modal background */}
 						{/** biome-ignore lint/a11y/useKeyWithClickEvents: Use close button instead */}
 						<div
 							className={`fixed inset-0 bg-black/20 z-40 transition-opacity duration-300 ${
@@ -187,7 +210,7 @@ const ProductsListing = ({
 							onClick={() => setIsFilterModalOpen(false)}
 						/>
 						<div
-							className={`fixed top-0 left-0 py-8 px-6 max-w-[336px] bg-white shadow-xl z-50 transform transition-transform duration-300 ${
+							className={`fixed top-0 left-0 py-8 px-6 max-w-[336px] h-[90vh] overflow-y-auto bg-white shadow-xl z-50 transform transition-transform duration-300 ${
 								isFilterModalOpen
 									? 'translate-x-0'
 									: '-translate-x-full'

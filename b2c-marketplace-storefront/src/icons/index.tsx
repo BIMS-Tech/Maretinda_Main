@@ -535,10 +535,10 @@ export function DislikeIcon({
 }
 
 export function CloseIcon({
-	color = "#090909",
+	color = '#090909',
 	size = 24,
-	className = "",
-	pathClassName = "",
+	className = '',
+	pathClassName = '',
 }: IconProps & { pathClassName?: string }) {
 	return (
 		<svg
@@ -2518,6 +2518,114 @@ export function ReturnIcon2({
 					<rect fill="white" height="40" width="40" />
 				</clipPath>
 			</defs>
+		</svg>
+	);
+}
+
+export function CardViewIcon({
+	color = '#999999',
+	size = 40,
+	className = '',
+}: IconProps) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			height={size}
+			viewBox="0 0 29 20"
+			width={size}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<title>Card View Icon</title>
+			<path
+				d="M7 1H2C1.44772 1 1 1.44772 1 2V7C1 7.55228 1.44772 8 2 8H7C7.55228 8 8 7.55228 8 7V2C8 1.44772 7.55228 1 7 1Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M17 1H12C11.4477 1 11 1.44772 11 2V7C11 7.55228 11.4477 8 12 8H17C17.5523 8 18 7.55228 18 7V2C18 1.44772 17.5523 1 17 1Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M27 1H22C21.4477 1 21 1.44772 21 2V7C21 7.55228 21.4477 8 22 8H27C27.5523 8 28 7.55228 28 7V2C28 1.44772 27.5523 1 27 1Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M7 12H2C1.44772 12 1 12.4477 1 13V18C1 18.5523 1.44772 19 2 19H7C7.55228 19 8 18.5523 8 18V13C8 12.4477 7.55228 12 7 12Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M17 12H12C11.4477 12 11 12.4477 11 13V18C11 18.5523 11.4477 19 12 19H17C17.5523 19 18 18.5523 18 18V13C18 12.4477 17.5523 12 17 12Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M27 12H22C21.4477 12 21 12.4477 21 13V18C21 18.5523 21.4477 19 22 19H27C27.5523 19 28 18.5523 28 18V13C28 12.4477 27.5523 12 27 12Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+		</svg>
+	);
+}
+
+export function ListViewIcon({
+	color = '#999999',
+	size = 40,
+	className = '',
+}: IconProps) {
+	return (
+		<svg
+			className={className}
+			fill="none"
+			height={size}
+			viewBox="0 0 30 20"
+			width={size}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<title>List View Icon</title>
+			<path
+				d="M2 1H7C7.55228 1 8 1.44772 8 2V7C8 7.55228 7.55228 8 7 8H2C1.44772 8 1 7.55228 1 7V2C1 1.44772 1.44772 1 2 1Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M13.5714 1H26.4286C27.8487 1 29 1.17411 29 1.38889V7.61111C29 7.82589 27.8487 8 26.4286 8H13.5714C12.1513 8 11 7.82589 11 7.61111V1.38889C11 1.17411 12.1513 1 13.5714 1Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M2 12H7C7.55228 12 8 12.4477 8 13V18C8 18.5523 7.55228 19 7 19H2C1.44772 19 1 18.5523 1 18V13C1 12.4477 1.44772 12 2 12Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
+			<path
+				d="M13.5714 12H26.4286C27.8487 12 29 12.4477 29 13V18C29 18.5523 27.8487 19 26.4286 19H13.5714C12.1513 19 11 18.5523 11 18V13C11 12.4477 12.1513 12 13.5714 12Z"
+				stroke={color}
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				stroke-width="2"
+			/>
 		</svg>
 	);
 }
