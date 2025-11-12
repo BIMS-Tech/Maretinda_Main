@@ -10,6 +10,7 @@ import {
 	useMemo,
 	useRef,
 } from 'react';
+import type { FieldError } from 'react-hook-form';
 
 import NativeSelect, {
 	type NativeSelectProps,
@@ -18,9 +19,10 @@ import NativeSelect, {
 const CountrySelect = forwardRef<
 	HTMLSelectElement,
 	NativeSelectProps & {
+		error?: FieldError;
 		region?: HttpTypes.StoreRegion;
 	}
->(({ placeholder = 'Country', region, defaultValue, ...props }, ref) => {
+>(({ error, placeholder = 'Country', region, defaultValue, ...props }, ref) => {
 	const innerRef = useRef<HTMLSelectElement>(null);
 
 	useImperativeHandle<HTMLSelectElement | null, HTMLSelectElement | null>(
@@ -49,22 +51,26 @@ const CountrySelect = forwardRef<
 	};
 
 	// Normalize value to string for Listbox
-	const normalizedValue = typeof props.value === 'string' 
-		? props.value 
-		: Array.isArray(props.value) 
-			? props.value[0] 
-			: props.value !== undefined 
-				? String(props.value) 
-				: undefined;
+	const normalizedValue =
+		typeof props.value === 'string'
+			? props.value
+			: Array.isArray(props.value)
+				? props.value[0]
+				: props.value !== undefined
+					? String(props.value)
+					: undefined;
 
 	return (
-		<label className="label-md">
-			<p className="mb-2">Country</p>
+		<label className="label-sm block">
+			<p className={clsx('mb-2', error && 'text-negative')}>
+				Country/Region<span className="text-red-500/50">*</span>
+			</p>
 			<Listbox onChange={handleSelect} value={normalizedValue}>
 				<div className="relative">
 					<Listbox.Button
 						className={clsx(
 							'relative w-full flex justify-between items-center px-4 h-12 bg-component-secondary text-left  cursor-default focus:outline-none border rounded-lg focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-gray-300 focus-visible:ring-offset-2 focus-visible:border-gray-300 text-base-regular',
+							'focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white',
 						)}
 						data-testid="shipping-address-select"
 					>

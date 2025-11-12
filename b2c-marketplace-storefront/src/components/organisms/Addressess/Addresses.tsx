@@ -39,6 +39,7 @@ export const Addresses = ({
 				city: address.city || '',
 				company: address.company || '',
 				countryCode: address.country_code || '',
+				email: user.email || '',
 				firstName: address.first_name || '',
 				lastName: address.last_name || '',
 				phone: address.phone || user.phone || '',
@@ -64,46 +65,53 @@ export const Addresses = ({
 		<>
 			<div
 				className={cn(
-					'md:col-span-3 user-content-wrapper',
-					isEmpty(user.addresses) ? 'space-y-8' : 'space-y-4',
+					'md:col-span-3 user-content-wrapper h-full',
+					isEmpty(user.addresses)
+						? 'space-y-8 p-1 before'
+						: 'space-y-4',
 				)}
 			>
-				<h1 className="heading-md uppercase">Addresses</h1>
+				<h1 className="font-lora font-bold text-4xl text-black">
+					Addresses
+				</h1>
 				{isEmpty(user.addresses) ? (
-					<div className="text-center">
-						<h3 className="heading-lg text-primary uppercase">
+					<div className="flex flex-col text-center items-center w-full lg:pt-24 lg:px-26">
+						<p className="text-5xl font-bold font-lora text-primary w-full">
 							No saved shipping addresses
-						</h3>
-						<p className="text-lg text-secondary mt-2">
+						</p>
+						<p className="text-base font-normal text-black text-secondary w-full mt-6">
 							You currently have no saved shipping addresses.{' '}
 							<br />
 							Add an address to make your checkout process quicker
 							and easier.
 						</p>
-						<Button className="mt-4" onClick={handleAdd}>
-							Add address
+						<Button
+							className="mt-6 !font-medium text-md px-14 pt-[10px]"
+							onClick={handleAdd}
+						>
+							Add Shipping Address
 						</Button>
 					</div>
 				) : (
 					<>
 						{user.addresses.map((address) => (
 							<Card
-								className="px-4 flex justify-between items-start gap-4 max-w-2xl"
+								className="px-8 py-[42px] flex justify-between items-start gap-4 w-full"
 								key={address.id}
 							>
 								<div className="flex flex-col ">
-									<h4 className="label-md text-primary">
+									<h4 className="text-3xl font-semibold text-primary mb-6">
 										{address.address_name}
 									</h4>
-									<p className="label-md text-secondary">
+									<p className="text-base text-primary">
 										{`${address.first_name} ${address.last_name}`}
 									</p>
 									{address.company && (
-										<p className="label-md text-secondary">
+										<p className="text-base text-primary">
 											{address.company}
 										</p>
 									)}
-									<p className="label-md text-secondary">
+									<p className="text-base text-primary">
 										{`${address.address_1}, ${address.postal_code} ${
 											address.city
 										}${address.province ? `, ${address.province}` : ''}${`, ${
@@ -116,42 +124,45 @@ export const Addresses = ({
 											address.country_code?.toUpperCase()
 										}`}`}
 									</p>
-									<p className="label-md text-secondary">
+									<p className="text-base text-primary">
 										{`${user.email}, ${address.phone || user.phone}`}
 									</p>
 								</div>
 								<div className="flex gap-2 sm:gap-4 flex-col-reverse sm:flex-row">
 									<Button
-										className="text-negative"
+										className="w-fit px-4 md:px-8 py-1 md:py-2.5 font-medium"
+										onClick={() => handleEdit(address.id)}
+									>
+										Edit
+									</Button>
+									<Button
+										className="w-fit px-4 md:px-8 py-1 md:py-2.5 font-medium"
 										onClick={() =>
 											setDeleteAddress(address.id)
 										}
-										variant="tonal"
 									>
 										Delete
-									</Button>
-									<Button
-										onClick={() => handleEdit(address.id)}
-										variant="tonal"
-									>
-										Edit
 									</Button>
 								</div>
 							</Card>
 						))}
 						{user.addresses.length < 6 && (
-							<Button onClick={handleAdd}>Add address</Button>
+							<Button
+								className="!font-medium text-md px-14 pt-[10px]"
+								onClick={handleAdd}
+							>
+								Add Shipping Address
+							</Button>
 						)}
 					</>
 				)}
 			</div>
 			{showForm && (
 				<Modal
-					heading={
-						defaultValues?.addressId
-							? `Edit adddress: ${defaultValues.addressName}`
-							: 'Add address'
-					}
+					childrenClass="px-6 pt-6"
+					heading="Shipping Address"
+					headingClass="text-lg font-semibold max-h-[60px] pb-4 px-10 flex-row text-black"
+					modalClass="max-w-[670px] h-[690px]"
 					onClose={() => setShowForm(false)}
 				>
 					<AddressForm
@@ -165,21 +176,25 @@ export const Addresses = ({
 			)}
 			{deleteAddress && (
 				<Modal
-					heading="Confirm your action"
+					childrenClass="px-6 pt-6"
+					heading="Shipping Address"
+					headingClass="text-lg font-semibold max-h-[60px] pb-4 px-10 flex-row text-black"
 					onClose={() => setDeleteAddress(null)}
 				>
-					<div className="px-4 flex flex-col gap-4">
+					<div className="px-4 flex flex-col gap-4 text-base font-normal">
 						<p>Are you sure you want to delete this address?</p>
-						<div className="flex justify-end gap-4">
+						<div className="flex justify-end gap-2">
 							<Button
+								className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
 								onClick={() => setDeleteAddress(null)}
-								variant="tonal"
+								type="button"
 							>
 								Cancel
 							</Button>
 							<Button
+								className="w-fit px-2 py-1 font-medium"
 								onClick={() => handleDelete(deleteAddress)}
-								variant="destructive"
+								type="submit"
 							>
 								Delete
 							</Button>

@@ -31,9 +31,9 @@ export const emptyDefaultAddressValues = {
 	city: '',
 	company: '',
 	countryCode: '',
+	email: '',
 	firstName: '',
 	lastName: '',
-	metadata: {},
 	phone: '',
 	postalCode: '',
 	province: '',
@@ -71,14 +71,14 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 		formData.append('address_name', data.addressName);
 		formData.append('first_name', data.firstName);
 		formData.append('last_name', data.lastName);
+		formData.append('email', data.email);
 		formData.append('address_1', data.address);
-		formData.append('address_2', '');
-		formData.append('province', data.province);
 		formData.append('city', data.city);
 		formData.append('country_code', data.countryCode);
 		formData.append('postal_code', data.postalCode);
 		formData.append('company', data.company);
 		formData.append('phone', data.phone);
+		formData.append('province', data.province);
 
 		const res = data.addressId
 			? await updateCustomerAddress(formData)
@@ -96,58 +96,66 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 	return (
 		<form onSubmit={handleSubmit(submit)}>
 			<div className="px-4 space-y-4">
-				<div className="max-w-full grid grid-cols-2 items-top gap-4 mb-4">
-					<LabeledInput
-						className="col-span-2"
-						error={errors.firstName as FieldError}
-						label="Address name"
-						placeholder="Type address name"
-						{...register('addressName')}
-					/>
+				<div className="max-w-full grid grid-cols-2 items-top gap-3 mb-4">
 					<LabeledInput
 						error={errors.firstName as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
 						label="First name"
-						placeholder="Type first name"
+						placeholder="Enter your first name..."
 						{...register('firstName')}
 					/>
 					<LabeledInput
-						error={errors.firstName as FieldError}
+						error={errors.lastName as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
 						label="Last name"
-						placeholder="Type last name"
+						placeholder="Enter your last name..."
 						{...register('lastName')}
 					/>
 					<LabeledInput
-						error={errors.company as FieldError}
-						label="Company (optional)"
-						placeholder="Type company"
-						{...register('company')}
+						error={errors.phone as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Ph Number"
+						placeholder="Enter your ph number..."
+						{...register('phone')}
+					/>
+					<LabeledInput
+						error={errors.email as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Email Address"
+						placeholder="Enter your email address..."
+						{...register('email')}
 					/>
 					<LabeledInput
 						error={errors.address as FieldError}
-						label="Address"
-						placeholder="Type address"
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Street Address"
+						placeholder="Enter your address..."
 						{...register('address')}
 					/>
 					<LabeledInput
+						error={errors.company as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Company"
+						placeholder="Enter your company..."
+						{...register('company')}
+					/>
+					<LabeledInput
 						error={errors.city as FieldError}
-						label="City"
-						placeholder="Type city"
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="City/Town"
+						placeholder="Enter your city..."
 						{...register('city')}
-					/>
-					<LabeledInput
-						error={errors.postalCode as FieldError}
-						label="Postal code"
-						placeholder="Type postal code"
-						{...register('postalCode')}
-					/>
-					<LabeledInput
-						error={errors.province as FieldError}
-						label="State / Province"
-						placeholder="Type state / province"
-						{...register('province')}
 					/>
 					<div>
 						<CountrySelect
+							error={errors.countryCode as FieldError}
 							region={region as HttpTypes.StoreRegion}
 							{...register('countryCode')}
 							className="h-12"
@@ -159,16 +167,47 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 							</p>
 						)}
 					</div>
-
 					<LabeledInput
-						error={errors.phone as FieldError}
-						label="Phone"
-						placeholder="Type phone number"
-						{...register('phone')}
+						error={errors.province as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="State/Province"
+						placeholder="Enter your state..."
+						{...register('province')}
+					/>
+					<LabeledInput
+						error={errors.province as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Address Name"
+						placeholder="Enter your address name..."
+						{...register('addressName')}
+					/>
+					<LabeledInput
+						className="col-span-2"
+						error={errors.postalCode as FieldError}
+						important
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Postal code"
+						placeholder="Enter your postal code..."
+						{...register('postalCode')}
 					/>
 				</div>
 				{error && <p className="label-md text-negative">{error}</p>}
-				<Button className="w-full ">Save address</Button>
+				<div className="flex justify-end gap-2">
+					<Button
+						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
+						type="button"
+					>
+						Cancel
+					</Button>
+					<Button
+						className="w-fit px-2 py-1 font-medium"
+						type="submit"
+					>
+						Save
+					</Button>
+				</div>
 			</div>
 		</form>
 	);
