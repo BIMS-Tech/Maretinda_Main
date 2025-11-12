@@ -178,21 +178,21 @@ export const Addresses = ({
 				<Modal
 					childrenClass="px-6 pt-6"
 					heading="Shipping Address"
-					headingClass="text-lg font-semibold max-h-[60px] pb-4 px-10 flex-row text-black"
+					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					onClose={() => setDeleteAddress(null)}
 				>
-					<div className="px-4 flex flex-col gap-4 text-base font-normal">
+					<div className=" flex flex-col gap-4 text-base font-normal">
 						<p>Are you sure you want to delete this address?</p>
 						<div className="flex justify-end gap-2">
 							<Button
-								className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
+								className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm !font-medium"
 								onClick={() => setDeleteAddress(null)}
 								type="button"
 							>
 								Cancel
 							</Button>
 							<Button
-								className="w-fit px-2 py-1 font-medium"
+								className="w-fit px-2 py-1 !font-medium"
 								onClick={() => handleDelete(deleteAddress)}
 								type="submit"
 							>
