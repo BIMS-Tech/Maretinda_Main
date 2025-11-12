@@ -37,7 +37,7 @@ export const Modal = ({
 			>
 				<div
 					className={cn(
-						'flex justify-between items-center heading-md border-b px-4 pb-5',
+						'flex justify-between items-center !text-lg border-b pb-5',
 						headingClass,
 					)}
 				>

@@ -161,7 +161,7 @@ export const Addresses = ({
 				<Modal
 					childrenClass="px-6 pt-6"
 					heading="Shipping Address"
-					headingClass="text-lg font-semibold max-h-[60px] pb-4 px-10 flex-row text-black"
+					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					modalClass="max-w-[670px] h-[690px]"
 					onClose={() => setShowForm(false)}
 				>
