@@ -95,7 +95,7 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 
 	return (
 		<form onSubmit={handleSubmit(submit)}>
-			<div className="px-4 space-y-4">
+			<div className="space-y-4">
 				<div className="max-w-full grid grid-cols-2 items-top gap-3 mb-4">
 					<LabeledInput
 						error={errors.firstName as FieldError}
@@ -196,13 +196,13 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 				{error && <p className="label-md text-negative">{error}</p>}
 				<div className="flex justify-end gap-2">
 					<Button
-						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
+						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm !font-medium"
 						type="button"
 					>
 						Cancel
 					</Button>
 					<Button
-						className="w-fit px-2 py-1 font-medium"
+						className="w-fit px-2 py-1 !font-medium"
 						type="submit"
 					>
 						Save

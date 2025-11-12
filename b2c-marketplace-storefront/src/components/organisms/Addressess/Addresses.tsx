@@ -71,7 +71,7 @@ export const Addresses = ({
 						: 'space-y-4',
 				)}
 			>
-				<h1 className="font-lora font-bold text-4xl text-black">
+				<h1 className="text-3xl capitalize text-black font-lora !font-bold">
 					Addresses
 				</h1>
 				{isEmpty(user.addresses) ? (
@@ -100,7 +100,7 @@ export const Addresses = ({
 								key={address.id}
 							>
 								<div className="flex flex-col ">
-									<h4 className="text-3xl font-semibold text-primary mb-6">
+									<h4 className="text-2xl font-semibold text-primary mb-6">
 										{address.address_name}
 									</h4>
 									<p className="text-base text-primary">
