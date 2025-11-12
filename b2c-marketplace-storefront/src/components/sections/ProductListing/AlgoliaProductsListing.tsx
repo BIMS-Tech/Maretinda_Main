@@ -11,11 +11,10 @@ import { Configure, useHits } from 'react-instantsearch';
 import { InstantSearchNext } from 'react-instantsearch-nextjs';
 
 import { Button } from '@/components/atoms';
-import { SelectField } from '@/components/molecules';
+import { SelectField, TabsContent, TabsList } from '@/components/molecules';
 import {
 	AlgoliaProductSidebar,
 	ProductCard,
-	ProductListingActiveFilters,
 	ProductsPagination,
 } from '@/components/organisms';
 import { ProductBigCard } from '@/components/organisms/ProductCard/ProductBigCard';
@@ -25,7 +24,6 @@ import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
 import { getFacedFilters } from '@/lib/helpers/get-faced-filters';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
-import { cn } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
 export const AlgoliaProductsListing = ({
@@ -73,27 +71,38 @@ export const AlgoliaProductsListing = ({
 };
 
 const ProductsListing = ({
-	// TODO: remove this in favor of layout toggle in product listing
-	// once the layout toggle is implemented.
-	isBigCard = true,
 	locale,
 	user,
 	wishlist,
 }: {
-	isBigCard?: boolean;
 	locale?: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[] | [];
 }) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
 	const [selectedSort, setSelectedSort] = useState('Default');
+	const [activeTab, setActiveTab] = useState('card');
+	const [offset, setOffset] = useState(
+		activeTab === 'card' ? PRODUCT_LIMIT : PRODUCT_LIMIT_BIG_CARD,
+	);
 	const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 	const { items, results } = useHits();
-	const layoutLimit = isBigCard ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
 
-	const [pageLimit, setPageLimit] = useState(layoutLimit);
+	const [pageLimit, setPageLimit] = useState(offset);
 
 	const searchParamas = useSearchParams();
+
+	useEffect(() => {
+		if (activeTab === 'card') {
+			setPageLimit(PRODUCT_LIMIT);
+			setOffset(PRODUCT_LIMIT);
+		}
+
+		if (activeTab === 'list') {
+			setPageLimit(PRODUCT_LIMIT_BIG_CARD);
+			setOffset(PRODUCT_LIMIT_BIG_CARD);
+		}
+	}, [activeTab]);
 
 	useEffect(() => {
 		listProducts({
@@ -135,6 +144,33 @@ const ProductsListing = ({
 		{ label: 'Price: high to low', value: 'Price: high to low' },
 	];
 
+	const tabsList = [
+		{
+			children: (
+				<button
+					className="w-[45px] pb-[18px] flex items-center justify-center"
+					onClick={() => setActiveTab('card')}
+					type="button"
+				>
+					<BsGrid3X2Gap size={27} />
+				</button>
+			),
+			label: 'Card',
+		},
+		{
+			children: (
+				<button
+					className="w-[45px] pb-[18px] flex items-center justify-center"
+					onClick={() => setActiveTab('list')}
+					type="button"
+				>
+					<TiThListOutline size={24} />
+				</button>
+			),
+			label: 'List',
+		},
+	];
+
 	return (
 		<>
 			<div className="text-[#999] font-medium text-[20px] grid grid-cols-2 grid-rows-2 gap-y-6 gap-x-[20px] md:grid-flow-col md:grid-cols-none md:grid-rows-1 justify-between w-full border-b-[1px] border-[#00000021] mb-12">
@@ -159,14 +195,8 @@ const ProductsListing = ({
 						options={sortByDropdownOptions}
 					/>
 				</div>
-				<div className="order-4 h-full flex justify-end">
-					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
-						<BsGrid3X2Gap size={27} />
-					</div>
-
-					<div className="w-[45px] pb-[18px] border-[rgba(var(--brand-purple-500))] flex items-center justify-center">
-						<TiThListOutline size={24} />
-					</div>
+				<div className="h-full flex">
+					<TabsList activeTab={activeTab} list={tabsList} />
 				</div>
 			</div>
 
@@ -219,49 +249,58 @@ const ProductsListing = ({
 						</div>
 					) : (
 						<div className="w-full">
-							<ul
-								className={cn(
-									'flex flex-wrap gap-2',
-									isBigCard && 'flex-row',
-								)}
-							>
-								{products.map(
-									(hit, index) =>
-										prod?.find(
-											(p: any) => p.id === hit.objectID,
-										) &&
-										(isBigCard ? (
-											<ProductBigCard
-												api_product={prod?.find(
-													(p: any) =>
-														p.id === hit.objectID,
-												)}
-												id={index}
-												key={hit.objectID}
-												product={hit}
-												user={user}
-												wishlist={wishlist}
-											/>
-										) : (
-											<ProductCard
-												api_product={prod?.find(
-													(p: any) =>
-														p.id === hit.objectID,
-												)}
-												key={hit.objectID}
-												product={hit}
-												user={user}
-												wishlist={wishlist}
-											/>
-										)),
-								)}
+							<ul className={'flex flex-wrap gap-2'}>
+								<TabsContent activeTab={activeTab} value="card">
+									{products.map(
+										(hit) =>
+											prod?.find(
+												(p: any) =>
+													p.id === hit.objectID,
+											) && (
+												<ProductCard
+													api_product={prod?.find(
+														(p: any) =>
+															p.id ===
+															hit.objectID,
+													)}
+													key={hit.objectID}
+													product={hit}
+													user={user}
+													wishlist={wishlist}
+												/>
+											),
+									)}
+								</TabsContent>
+
+								<TabsContent activeTab={activeTab} value="list">
+									{products.map(
+										(hit, index) =>
+											prod?.find(
+												(p: any) =>
+													p.id === hit.objectID,
+											) && (
+												<ProductBigCard
+													api_product={prod?.find(
+														(p: any) =>
+															p.id ===
+															hit.objectID,
+													)}
+													id={index}
+													key={hit.objectID}
+													product={hit}
+													user={user}
+													wishlist={wishlist}
+												/>
+											),
+									)}
+								</TabsContent>
 							</ul>
 						</div>
 					)}
 					{pageLimit < filteredProducts.length && (
 						<ProductsPagination
 							isInfinite
-							offset={layoutLimit}
+							offset={offset}
 							pageLimit={pageLimit}
 							// pages={pages}
 							setPageLimit={setPageLimit}

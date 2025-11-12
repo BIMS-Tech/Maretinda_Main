@@ -4,8 +4,9 @@ import type { HttpTypes } from '@medusajs/types';
 import { Badge } from '@medusajs/ui';
 import clsx from 'clsx';
 import type { BaseHit, Hit } from 'instantsearch.js';
-import { truncate } from 'lodash';
+import { isNull, truncate } from 'lodash';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
@@ -29,6 +30,19 @@ export const ProductBigCard = ({
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[];
 }) => {
+	// TODO: check if the product has attributes, remove this comment or code block
+	// once conversation has been settled regarding display of this section
+	const [hasAttributes, setHasAttributes] = useState(false);
+	useEffect(() => {
+		setHasAttributes(
+			!isNull(product.height) ||
+				!isNull(product.length) ||
+				!isNull(product.width) ||
+				!isNull(product.weight) ||
+				!isNull(product.material),
+		);
+	}, [product]);
+
 	if (!api_product) {
 		return null;
 	}
@@ -37,6 +51,26 @@ export const ProductBigCard = ({
 		// biome-ignore lint/style/noNonNullAssertion: api_product will always be present
 		product: api_product! as HttpTypes.StoreProduct,
 	});
+
+	// TODO: gets attributes from the product, remove this comment or code block
+	// once conversation has been settled regarding display of this section
+	const attributes = Object.entries(product)
+		.map(([key, value]) => {
+			if (
+				key === 'length' ||
+				key === 'width' ||
+				key === 'height' ||
+				key === 'weight' ||
+				key === 'material'
+			) {
+				return {
+					key,
+					value,
+				};
+			}
+			return null;
+		})
+		.filter((item) => item !== null) as { key: string; value: string }[];
 
 	return (
 		<div className={cn('px-2', id === 0 ? 'pt-0 pb-2' : 'py-2')}>
@@ -132,19 +166,24 @@ export const ProductBigCard = ({
 											}) || '',
 									}}
 								/>
-								<div className="product-details text-base">
-									<ul>
-										<li className="!py-0">
-											{product.height || 'height'}
-										</li>
-										<li className="!py-0">
-											{product.width || 'width'}
-										</li>
-										<li className="!py-0">
-											{product.length || 'length'}
-										</li>
-									</ul>
-								</div>
+								{/* TODO: Renders the product attributes, remove this comment or code block once conversation
+										has been settled regarding display of this section */}
+								{hasAttributes && (
+									<div className="product-details text-base">
+										<ul>
+											{attributes.map((item, index) =>
+												item && index < 3 ? (
+													<li
+														className="!py-0"
+														key={item.key}
+													>
+														{item.key}: {item.value}
+													</li>
+												) : null,
+											)}
+										</ul>
+									</div>
+								)}
 							</div>
 						</div>
 
