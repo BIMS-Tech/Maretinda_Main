@@ -28,7 +28,7 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 	const {
 		register,
 		handleSubmit,
-		formState: { errors, isSubmitted },
+		formState: { errors },
 		setValue,
 		clearErrors,
 	} = useForm<FormData>({
@@ -45,88 +45,79 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 
 	return (
 		<div>
-			{!isSubmitted ? (
-				<form onSubmit={handleSubmit(onSubmit)}>
-					<div className="px-4 pb-5">
-						<label className="label-sm">
-							<p
-								className={cn(
-									errors?.reason && 'text-negative',
-								)}
-							>
-								Reason
-							</p>
-							<SelectField
-								options={reasonOptions}
-								{...register('reason')}
-								className={cn(
-									errors?.reason && 'border-negative',
-								)}
-								selectOption={(value) => {
-									setValue('reason', value);
-									clearErrors('reason');
-								}}
-							/>
-							{errors?.reason && (
-								<p className="label-sm text-negative">
-									{errors.reason.message}
-								</p>
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<div className="px-4 pb-2">
+					<label className="label-sm">
+						<p
+							className={cn(
+								errors?.reason && 'text-negative',
+								'text-sm font-medium mb-4',
 							)}
-						</label>
-
-						<label className="label-sm">
-							<p
-								className={cn(
-									'mt-5',
-									errors?.comment && 'text-negative',
-								)}
-							>
-								Comment
-							</p>
-							<Textarea
-								rows={5}
-								{...register('comment')}
-								className={cn(
-									errors.comment && 'border-negative',
-								)}
-							/>
-							{errors?.comment && (
-								<p className="label-sm text-negative">
-									{errors.comment.message}
-								</p>
-							)}
-						</label>
-					</div>
-
-					<div className="border-t px-4 pt-5">
-						<Button className="w-full py-3 uppercase" type="submit">
-							Report Seller
-						</Button>
-					</div>
-				</form>
-			) : (
-				<div className="text-center">
-					<div className="px-4 pb-5">
-						<h4 className="heading-lg uppercase">Thank you!</h4>
-						<p className="max-w-[466px] mx-auto mt-4 text-lg text-secondary">
-							We&apos;ll check the listing to see if it violates
-							our guidelines and take the necessary action to
-							ensure a safe shopping experience for everyone.
-							Thank you for helping us maintain a trusted
-							community.
-						</p>
-					</div>
-
-					<div className="border-t px-4 pt-5">
-						<Button
-							className="w-full py-3 uppercase"
-							onClick={onClose}
 						>
-							Got it
-						</Button>
-					</div>
+							Reason<span className="text-red-500/50">*</span>
+						</p>
+						<SelectField
+							options={reasonOptions}
+							{...register('reason')}
+							className={cn(
+								errors?.reason && 'border-negative',
+								'bg-white',
+							)}
+							selectOption={(value) => {
+								setValue('reason', value);
+								clearErrors('reason');
+							}}
+						/>
+						{errors?.reason && (
+							<p className="label-sm text-negative">
+								{errors.reason.message}
+							</p>
+						)}
+					</label>
+
+					<label className="label-sm">
+						<p
+							className={cn(
+								'mt-5 mb-4',
+								errors?.comment && 'text-negative',
+								'text-sm font-medium',
+							)}
+						>
+							Comment
+							<span className="text-red-500/50">*</span>
+						</p>
+						<Textarea
+							rows={5}
+							{...register('comment')}
+							className={cn(
+								errors.comment && 'border-negative',
+								'bg-white focus:border-[#2563EB] focus:outline-none focus:ring-2',
+							)}
+						/>
+						{errors?.comment && (
+							<p className="label-sm text-negative">
+								{errors.comment.message}
+							</p>
+						)}
+					</label>
 				</div>
-			)}
+
+				<div className="flex justify-end gap-2 px-4 pt-5">
+					<Button
+						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
+						onClick={onClose}
+						type="button"
+					>
+						Cancel
+					</Button>
+					<Button
+						className="w-fit px-2 py-1 font-medium"
+						type="submit"
+					>
+						Report Seller
+					</Button>
+				</div>
+			</form>
 		</div>
 	);
 };
