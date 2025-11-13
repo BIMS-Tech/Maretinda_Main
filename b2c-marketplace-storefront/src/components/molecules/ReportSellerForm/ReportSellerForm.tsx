@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,12 +47,12 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 	return (
 		<div>
 			<form onSubmit={handleSubmit(onSubmit)}>
-				<div className="px-4 pb-2">
-					<label className="label-sm">
+				<div>
+					<label className="label-md">
 						<p
 							className={cn(
+								'text-sm font-medium text-black',
 								errors?.reason && 'text-negative',
-								'text-sm font-medium mb-4',
 							)}
 						>
 							Reason<span className="text-red-500/50">*</span>
@@ -60,8 +61,8 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 							options={reasonOptions}
 							{...register('reason')}
 							className={cn(
+								'bg-white mt-2',
 								errors?.reason && 'border-negative',
-								'bg-white',
 							)}
 							selectOption={(value) => {
 								setValue('reason', value);
@@ -75,12 +76,11 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 						)}
 					</label>
 
-					<label className="label-sm">
+					<label className="label-md">
 						<p
 							className={cn(
-								'mt-5 mb-4',
+								'text-sm font-medium text-black mt-5',
 								errors?.comment && 'text-negative',
-								'text-sm font-medium',
 							)}
 						>
 							Comment
@@ -90,8 +90,8 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 							rows={5}
 							{...register('comment')}
 							className={cn(
+								'bg-white focus:border-[#2563EB] focus:outline-none focus:ring-2 mt-2',
 								errors.comment && 'border-negative',
-								'bg-white focus:border-[#2563EB] focus:outline-none focus:ring-2',
 							)}
 						/>
 						{errors?.comment && (
@@ -102,16 +102,16 @@ export const ReportSellerForm = ({ onClose }: { onClose: () => void }) => {
 					</label>
 				</div>
 
-				<div className="flex justify-end gap-2 px-4 pt-5">
+				<div className="flex justify-end gap-2 pt-5">
 					<Button
-						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm font-medium"
+						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm !font-medium"
 						onClick={onClose}
 						type="button"
 					>
 						Cancel
 					</Button>
 					<Button
-						className="w-fit px-2 py-1 font-medium"
+						className="w-fit px-2 py-1 !font-medium"
 						type="submit"
 					>
 						Report Seller

@@ -159,10 +159,10 @@ export const Addresses = ({
 			</div>
 			{showForm && (
 				<Modal
-					childrenClass="px-6 pt-6"
+					childrenClass="px-6 pt-6 flex-1 overflow-y-auto"
 					heading="Shipping Address"
 					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
-					modalClass="max-w-[670px] h-[690px]"
+					modalClass="max-w-[670px] flex flex-col"
 					onClose={() => setShowForm(false)}
 				>
 					<AddressForm
@@ -181,7 +181,7 @@ export const Addresses = ({
 					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					onClose={() => setDeleteAddress(null)}
 				>
-					<div className=" flex flex-col gap-4 text-base font-normal">
+					<div className="flex flex-col gap-4 text-base font-normal">
 						<p>Are you sure you want to delete this address?</p>
 						<div className="flex justify-end gap-2">
 							<Button

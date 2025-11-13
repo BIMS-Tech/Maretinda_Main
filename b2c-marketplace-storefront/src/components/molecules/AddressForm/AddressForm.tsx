@@ -96,7 +96,7 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 	return (
 		<form onSubmit={handleSubmit(submit)}>
 			<div className="space-y-4">
-				<div className="max-w-full grid grid-cols-2 items-top gap-3 mb-4">
+				<div className="max-w-full grid grid-cols-2 items-top gap-3 mb-8">
 					<LabeledInput
 						error={errors.firstName as FieldError}
 						important

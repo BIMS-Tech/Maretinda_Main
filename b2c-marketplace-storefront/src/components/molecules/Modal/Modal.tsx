@@ -21,7 +21,7 @@ export const Modal = ({
 	return (
 		<div
 			className={cn(
-				'fixed top-0 left-0 w-full h-full flex justify-center z-30',
+				'fixed top-0 left-0 w-full h-full flex justify-center items-center z-30',
 				className,
 			)}
 		>

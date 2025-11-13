@@ -33,7 +33,7 @@ export const SellerFooter = ({ seller }: { seller: SellerProps }) => {
 				<Modal
 					childrenClass="px-6 pt-6"
 					heading="Report Seller"
-					headingClass="text-lg font-semibold max-h-[60px] pb-4 px-10 flex-row text-black"
+					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					modalClass="max-w-[670px]"
 					onClose={() => setOpenModal(false)}
 				>
