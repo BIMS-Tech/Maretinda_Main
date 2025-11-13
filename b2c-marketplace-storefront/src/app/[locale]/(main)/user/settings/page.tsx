@@ -11,7 +11,9 @@ export default async function ReviewsPage() {
 	return (
 		<Layout>
 			<div className="md:col-span-3 user-content-wrapper">
-				<h1 className="heading-md uppercase mb-8">Settings</h1>
+				<h1 className="mb-14 font-lora font-bold text-4xl text-black">
+					Settings
+				</h1>
 				<ProfileDetails user={user} />
 				<ProfilePassword user={user} />
 			</div>

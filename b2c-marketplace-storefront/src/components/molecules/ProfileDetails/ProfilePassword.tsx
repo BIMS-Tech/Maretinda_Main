@@ -2,13 +2,15 @@
 
 // import { ProfilePasswordForm } from "../ProfilePasswordForm/ProfilePasswordForm"
 import type { HttpTypes } from '@medusajs/types';
-import { Divider, Heading } from '@medusajs/ui';
+import { Divider } from '@medusajs/ui';
 import { useState } from 'react';
 
 import { Button } from '@/components/atoms';
 import { Card } from '@/components/atoms/Card/Card';
+import { ProfileHeading } from '@/components/atoms/Heading/ProfileHeading';
 import { InfoIcon } from '@/icons';
 import { sendResetPasswordEmail } from '@/lib/data/customer';
+import { cn } from '@/lib/utils';
 
 import { Modal } from '../Modal/Modal';
 
@@ -28,27 +30,29 @@ export const ProfilePassword = ({
 
 	return (
 		<>
-			<Card className="bg-secondary p-4 flex justify-between items-center mt-8">
-				<Heading className="heading-sm uppercase" level="h2">
-					Password
-				</Heading>
-				<Button
-					className="uppercase flex items-center gap-2 font-semibold"
-					onClick={() => setShowForm(true)}
-					variant="tonal"
-				>
-					Change password
-				</Button>
-			</Card>
-			<Card className="p-0">
-				<div className="p-4">
-					<p className="label-md text-secondary">Current password</p>
-					<p className="label-lg text-primary">****************</p>
+			<ProfileHeading
+				buttonText="Change Password"
+				className="mt-12"
+				onButtonClick={() => setShowForm(true)}
+				title="Profile Details"
+			/>
+			<Card
+				className={cn(
+					'p-0 rounded-t-none',
+					'shadow-[0px_4px_8px_0px_#00000014,_0px_2px_4px_0px_#00000014,_0px_0px_0px_1px_#00000014]',
+					'text-black',
+				)}
+			>
+				<div className="pt-6 pb-4 px-[19px]">
+					<p className="text-[14px] leading-[25px]">
+						Current password
+					</p>
+					<p className="text-base font-bold">****************</p>
 				</div>
 				<Divider />
-				<div className="p-4">
-					<p className="label-md text-secondary flex items-center gap-4">
-						<InfoIcon className="text-secondary" size={18} />
+				<div className="py-6 px-[19px]">
+					<p className="flex items-center gap-2 text-base">
+						<InfoIcon size={15} />
 						Always remember to choose a unique password to protect
 						your account.
 					</p>
@@ -57,6 +61,8 @@ export const ProfilePassword = ({
 			{showForm && (
 				<Modal
 					heading="Change password"
+					headingClass="py-[19px] px-6 text-black font-medium"
+					modalClass="py-[9.5px]"
 					onClose={() => setShowForm(false)}
 				>
 					<div className="flex p-4 justify-center">

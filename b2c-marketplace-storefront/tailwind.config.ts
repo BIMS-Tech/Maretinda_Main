@@ -51,6 +51,8 @@ export default {
 				brand: {
 					cta: {
 						400: 'rgba(var(--brand-cta-400))',
+						500: 'rgba(var(--brand-cta-500))',
+						600: 'rgba(var(--brand-cta-600))',
 					},
 					DEFAULT: 'var(--brand-bg)',
 				},

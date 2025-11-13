@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { updateCustomer } from '@/lib/data/customer';
+import { cn } from '@/lib/utils';
 
 import { type ProfileDetailsFormData, profileDetailsSchema } from './schema';
 
@@ -65,7 +66,7 @@ const Form: React.FC<Props> = ({ handleClose }) => {
 		}
 
 		setError('');
-		handleClose && handleClose();
+		handleClose?.();
 	};
 
 	return (
@@ -74,30 +75,57 @@ const Form: React.FC<Props> = ({ handleClose }) => {
 				<div className="max-w-full grid grid-cols-2 items-top gap-4 mb-4">
 					<LabeledInput
 						error={errors.firstName as FieldError}
+						important
+						inputClassName="text-[13px]"
 						label="First name"
+						labelClassName="text-[14px]"
 						placeholder="Type first name"
 						{...register('firstName')}
 					/>
 					<LabeledInput
 						error={errors.lastName as FieldError}
+						important
+						inputClassName="text-[13px]"
 						label="Last name"
+						labelClassName="text-[14px]"
 						placeholder="Type last name"
 						{...register('lastName')}
 					/>
 					<LabeledInput
 						error={errors.phone as FieldError}
+						important
+						inputClassName="text-[13px]"
 						label="Phone"
+						labelClassName="text-[14px]"
 						placeholder="Type phone number"
 						{...register('phone')}
 					/>
 					<LabeledInput
 						disabled
+						important
+						inputClassName="text-[13px]"
 						label="Email"
+						labelClassName="text-[14px]"
 						{...register('email')}
 					/>
 				</div>
 				{error && <p className="label-md text-negative">{error}</p>}
-				<Button className="w-full ">Save</Button>
+				<div className="flex justify-end py-4 gap-2">
+					<Button
+						className={cn(
+							'bg-white',
+							'py-1 px-2 rounded-[6px]',
+							'text-[#18181b] text-[13px] leading-[20px] font-medium',
+							'shadow-[0px_0px_0px_1px_#00000014,_0px_1px_2px_0px_#0000001F]',
+						)}
+						onClick={handleClose}
+					>
+						Cancel
+					</Button>
+					<Button className="py-1 px-2 rounded-[6px] text-[13px] leading-[20px] font-medium">
+						Save
+					</Button>
+				</div>
 			</div>
 		</form>
 	);

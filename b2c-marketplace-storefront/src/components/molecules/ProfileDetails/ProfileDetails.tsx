@@ -1,11 +1,12 @@
 'use client';
 
-import { PencilSquare } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
-import { Divider, Heading } from '@medusajs/ui';
+import { Divider } from '@medusajs/ui';
 import { useState } from 'react';
 
-import { Button, Card } from '@/components/atoms';
+import { Card } from '@/components/atoms';
+import { ProfileHeading } from '@/components/atoms/Heading/ProfileHeading';
+import { cn } from '@/lib/utils';
 
 import { Modal } from '../Modal/Modal';
 import { ProfileDetailsForm } from '../ProfileDetailsForm/ProfileDetailsForm';
@@ -15,40 +16,40 @@ export const ProfileDetails = ({ user }: { user: HttpTypes.StoreCustomer }) => {
 
 	return (
 		<>
-			<Card className="bg-secondary p-4 flex justify-between items-center">
-				<Heading className="heading-sm uppercase" level="h2">
-					Profile details
-				</Heading>
-				<Button
-					className="uppercase flex items-center gap-2 font-semibold"
-					onClick={() => setShowForm(true)}
-					variant="tonal"
-				>
-					<PencilSquare />
-					Edit details
-				</Button>
-			</Card>
-			<Card className="p-0">
-				<div className="p-4">
-					<p className="label-md text-secondary">Name</p>
-					<p className="label-lg text-primary">
+			<ProfileHeading
+				buttonText="Edit Details"
+				onButtonClick={() => setShowForm(true)}
+				title="Profile Details"
+			/>
+			<Card
+				className={cn(
+					'p-0 rounded-t-none',
+					'shadow-[0px_4px_8px_0px_#00000014,_0px_2px_4px_0px_#00000014,_0px_0px_0px_1px_#00000014]',
+					'text-black',
+				)}
+			>
+				<div className="py-6 px-[19px]">
+					<p className="text-[14px]">Name</p>
+					<p className="text-base font-bold">
 						{`${user.first_name} ${user.last_name}`}
 					</p>
 				</div>
 				<Divider />
-				<div className="p-4">
-					<p className="label-md text-secondary">Email</p>
-					<p className="label-lg text-primary">{user.email}</p>
+				<div className="py-6 px-[19px]">
+					<p className="text-[14px]">Email</p>
+					<p className="text-base font-bold">{user.email}</p>
 				</div>
 				<Divider />
-				<div className="p-4">
-					<p className="label-md text-secondary">Phone number</p>
-					<p className="label-lg text-primary">{user.phone}</p>
+				<div className="py-6 px-[19px]">
+					<p className="text-[14px]">Phone number</p>
+					<p className="text-base font-bold">{user.phone}</p>
 				</div>
 			</Card>
 			{showForm && (
 				<Modal
 					heading="Edit profile details"
+					headingClass="py-[19px] px-6 text-black font-medium"
+					modalClass="py-[9.5px]"
 					onClose={() => setShowForm(false)}
 				>
 					<ProfileDetailsForm

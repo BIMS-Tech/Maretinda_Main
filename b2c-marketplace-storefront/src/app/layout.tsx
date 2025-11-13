@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import { Inter, Lora, Poppins } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { Inter, Lora, Poppins } from "next/font/google";
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
@@ -8,7 +8,7 @@ import { Toaster } from '@medusajs/ui';
 const funnelDisplay = Inter({
 	subsets: ['latin'],
 	variable: '--font-funnel-sans',
-	weight: ['300', '400', '500', '600'],
+	weight: ['300', '400', '500', '600', '700'],
 });
 
 const lora = Lora({
@@ -18,9 +18,9 @@ const lora = Lora({
 });
 
 const poppins = Poppins({
-	subsets: ["latin"],
-	variable: "--font-poppins",
-	weight: ["400", "500", "600", "700"],
+	subsets: ['latin'],
+	variable: '--font-poppins',
+	weight: ['400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
