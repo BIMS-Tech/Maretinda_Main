@@ -31,13 +31,13 @@ export const Modal = ({
 			/>
 			<div
 				className={cn(
-					'absolute bg-primary z-20 my-20 py-5 rounded-sm max-w-[600px] w-full max-h-[80vh] overflow-y-auto shadow-lg',
+					'absolute bg-primary z-20 my-20 rounded-sm max-w-[600px] w-full max-h-[80vh] overflow-y-auto shadow-lg',
 					modalClass,
 				)}
 			>
 				<div
 					className={cn(
-						'flex justify-between items-center !text-lg border-b pb-5',
+						'flex justify-between items-center !text-lg border-b py-5',
 						headingClass,
 					)}
 				>
@@ -46,7 +46,7 @@ export const Modal = ({
 						<CloseIcon size={20} />
 					</div>
 				</div>
-				<div className={cn('pt-5', childrenClass)}>{children}</div>
+				<div className={cn('py-5', childrenClass)}>{children}</div>
 			</div>
 		</div>
 	);

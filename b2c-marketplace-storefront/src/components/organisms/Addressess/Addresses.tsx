@@ -68,7 +68,7 @@ export const Addresses = ({
 					'md:col-span-3 user-content-wrapper h-full',
 					isEmpty(user.addresses)
 						? 'space-y-8 p-1 before'
-						: 'space-y-4',
+						: 'space-y-10',
 				)}
 			>
 				<h1 className="text-3xl capitalize text-black font-lora !font-bold">
@@ -93,7 +93,7 @@ export const Addresses = ({
 						</Button>
 					</div>
 				) : (
-					<>
+					<div className="flex flex-col gap-4 items-start">
 						{user.addresses.map((address) => (
 							<Card
 								className="px-8 py-[42px] flex justify-between items-start gap-4 w-full"
@@ -154,7 +154,7 @@ export const Addresses = ({
 								Add Shipping Address
 							</Button>
 						)}
-					</>
+					</div>
 				)}
 			</div>
 			{showForm && (
