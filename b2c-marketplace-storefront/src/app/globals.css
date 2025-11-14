@@ -240,3 +240,7 @@ button:disabled svg path {
 .user-content-wrapper {
 	@apply shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border !border-black/15 rounded-sm p-4 sm:p-5 lg:p-8;
 }
+
+.toggleIcon {
+	@apply bg-transparent hover:!bg-transparent active:!bg-secondary w-[45px] rounded-none p-0 pb-[18px] border-[rgba(var(--brand-purple-500))] flex justify-center;
+}
