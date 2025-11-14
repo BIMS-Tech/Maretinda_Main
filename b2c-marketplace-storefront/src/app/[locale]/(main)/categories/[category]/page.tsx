@@ -61,9 +61,9 @@ async function Category({
 			<Image
 				alt="A product"
 				className="w-full h-auto rounded-md"
-				height={2484}
+				height={672}
 				src={`/images/categories/${category.handle}-banner.png`}
-				width={672}
+				width={2484}
 			/>
 
 			{/* Sub-categories Grid */}
