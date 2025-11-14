@@ -86,13 +86,9 @@ const Form = () => {
 							labelClassName="text-black/50 font-normal text-sm md:text-base"
 							{...register('email')}
 						/>
-						{error && (
-							<Alert dismissible={true} variant="error">
-								{error}
-							</Alert>
-						)}
+						{error && <Alert variant="error">{error}</Alert>}
 						{isSuccess && (
-							<Alert dismissible={true} variant="success">
+							<Alert variant="success">
 								If an account with that email address exists,
 								you will receive an email with instructions to
 								reset your password. Please check your inbox and
