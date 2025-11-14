@@ -74,12 +74,10 @@ export const AlgoliaProductsListing = ({
 const ProductsListing = ({
 	// TODO: remove this in favor of layout toggle in product listing
 	// once the layout toggle is implemented.
-	isBigCard = true,
 	locale,
 	user,
 	wishlist,
 }: {
-	isBigCard?: boolean;
 	locale?: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[] | [];
@@ -88,8 +86,8 @@ const ProductsListing = ({
 	const [selectedSort, setSelectedSort] = useState('Default');
 	const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 	const { items, results } = useHits();
-	const layoutLimit = isBigCard ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
-
+	const [isToggleActive, setIsToggleActive] = useState(true);
+	const layoutLimit = isToggleActive ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
 	const [pageLimit, setPageLimit] = useState(layoutLimit);
 
 	const searchParamas = useSearchParams();
@@ -182,13 +180,22 @@ const ProductsListing = ({
 					/>
 				</div>
 				<div className="order-4 h-full flex justify-end">
-					<div className="w-[45px] pb-[18px] border-b-[3px] border-[rgba(var(--brand-purple-500))] flex justify-center">
+					<Button
+						className={cn(
+							`toggleIcon ${isToggleActive && 'border-b-[3px]'}`,
+						)}
+						onClick={() => setIsToggleActive(true)}
+					>
 						<CardViewIcon size={27} />
-					</div>
-
-					<div className="w-[45px] pb-[18px] border-[rgba(var(--brand-purple-500))] flex justify-center">
+					</Button>
+					<Button
+						className={cn(
+							`toggleIcon ${!isToggleActive && 'border-b-[3px]'}`,
+						)}
+						onClick={() => setIsToggleActive(false)}
+					>
 						<ListViewIcon size={27} />
-					</div>
+					</Button>
 				</div>
 			</div>
 
@@ -229,7 +236,7 @@ const ProductsListing = ({
 						</div>
 					</div>
 				</div>
-				<div className="w-full">
+				<div className="w-full max-w-[952px]">
 					{!items.length ? (
 						<div className="text-center w-full my-10">
 							<h2 className="uppercase text-primary heading-lg">
@@ -245,7 +252,7 @@ const ProductsListing = ({
 							<ul
 								className={cn(
 									'flex flex-wrap gap-2',
-									isBigCard && 'flex-row',
+									isToggleActive && 'flex-row',
 								)}
 							>
 								{products.map(
@@ -253,7 +260,7 @@ const ProductsListing = ({
 										prod?.find(
 											(p: any) => p.id === hit.objectID,
 										) &&
-										(isBigCard ? (
+										(!isToggleActive ? (
 											<ProductBigCard
 												api_product={prod?.find(
 													(p: any) =>
