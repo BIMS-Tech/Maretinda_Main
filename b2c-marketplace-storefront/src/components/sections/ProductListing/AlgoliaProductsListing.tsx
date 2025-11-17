@@ -174,7 +174,7 @@ const ProductsListing = ({
 				<div className="order-2 md:order-3 text-[16px] md:text-[20px] flex items-center rounded-[5px] pl-[10px] md:p-0 md:pb-[18px] border-black border-[1px] md:border-none">
 					<span className="text-nowrap">Sort by: </span>
 					<SelectField
-						className="ml-1 text-black bg-transparent border-none !font-medium !text-[16px] md:!text-[20px] !p-0 !h-auto md:w-[180px]"
+						className="ml-2 text-black bg-transparent border-none !font-medium !text-[16px] md:!text-[20px] !p-0 !h-auto md:min-w-[192px]"
 						full
 						options={sortByDropdownOptions}
 					/>
@@ -248,7 +248,7 @@ const ProductsListing = ({
 							</p>
 						</div>
 					) : (
-						<div className="w-full">
+						<div className="w-[calc(100%+32px)] -mx-4 sm:mx-auto sm:w-full">
 							<ul
 								className={cn(
 									'flex flex-wrap gap-2',
