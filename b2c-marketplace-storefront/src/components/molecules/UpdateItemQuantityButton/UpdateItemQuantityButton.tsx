@@ -20,7 +20,7 @@ export const UpdateItemQuantityButton = ({
 			className={`flex items-center gap-4 mt-2 ${isProductPage && 'border border-black rounded-sm h-[46px] !mt-0 px-3'}`}
 		>
 			<Button
-				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
+				className={`w-8 h-8 flex items-center justify-center disabled:border-none disabled:opacity-25 ${isProduct}`}
 				disabled={quantity === 1}
 				onClick={() => setQuantity((prevQuantity) => prevQuantity - 1)}
 				variant="tonal"
