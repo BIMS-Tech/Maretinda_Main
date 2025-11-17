@@ -52,7 +52,7 @@ export const SelectField = ({
 		<div className={`relative ${full ? 'w-full' : ''}`}>
 			<div
 				className={cn(
-					'relative rounded-sm border px-3 py-2 bg-component-secondary label-md cursor-pointer h-12 flex items-center',
+					'relative rounded-sm border px-3 py-2 bg-component-secondary label-md cursor-pointer h-12 flex gap-2 items-center',
 					open && 'border-primary',
 					className,
 				)}
@@ -61,20 +61,20 @@ export const SelectField = ({
 			>
 				{selectedOption || placeholder}
 				<CollapseIcon
-					className={clsx('absolute right-3 transition', {
+					className={clsx('transition', {
 						'rotate-180': open,
 					})}
 					size={20}
 				/>
 			</div>
 			{open && (
-				<ul className="absolute border border-primary bg-component-secondary rounded-sm w-full top-[47px] z-10">
+				<ul className="absolute border border-black/15 bg-component-secondary rounded-sm w-full top-[47px] z-10">
 					{options.map(
 						({ label, value, hidden }, index) =>
 							!hidden && (
 								<li
 									className={cn(
-										'relative label-md py-2 px-3 hover:bg-component-secondary-hover',
+										'relative label-md py-2 px-3 hover:bg-component-secondary-hover text-black cursor-pointer',
 										index === 0 && 'rounded-t-sm',
 										index === options.length - 1 &&
 											'rounded-b-sm',
@@ -84,13 +84,13 @@ export const SelectField = ({
 										selectOptionHandler(label, value)
 									}
 								>
-									{label}
 									{label === selectedOption && (
 										<TickThinIcon
-											className="absolute top-[10px] right-2"
+											className="absolute top-[10px] left-2"
 											size={20}
 										/>
 									)}
+									<span className="ml-5">{label}</span>
 								</li>
 							),
 					)}
