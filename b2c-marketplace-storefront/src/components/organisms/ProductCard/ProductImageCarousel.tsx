@@ -34,7 +34,7 @@ const ProductImageCarousel: React.FC<CarouselProps> = ({ slides }) => {
 	};
 
 	return (
-		<div className="slider-product-images w-full max-w-full mx-auto h-[220px] overflow-hidden">
+		<div className="slider-product-images w-full max-w-[480px] mx-auto h-[220px] overflow-hidden">
 			<Slider {...settings}>
 				{slides.map((slide) => (
 					<Image
