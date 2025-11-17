@@ -39,14 +39,14 @@ export const ProductBigCard = ({
 	});
 
 	return (
-		<div className={cn('px-2', id === 0 ? 'pt-0 pb-2' : 'py-2')}>
+		<div className={cn(id === 0 ? 'pt-0 pb-2' : 'py-2')}>
 			<div
 				className={clsx(
-					'group bg-white shadow-lg rounded-sm flex flex-row gap-2 justify-start w-full max-w-[925px] min-w-[250px] min-h-[398px] max-h-[398] overflow-hidden p-[27px]',
+					'group bg-white hover:shadow-lg rounded-sm flex flex-col sm:flex-row gap-10 justify-start w-full min-h-[398px] overflow-hidden p-4 sm:p-6',
 				)}
 			>
-				<div className="relative flex flex-col justify-center w-2/5 min-w-[344px] max-h-[344px] bg-primary py-14 pr-14">
-					<div className="absolute top-14 left-0 flex flex-row w-full justify-between items-center h-11 gap-1 z-10 pr-14">
+				<div className="relative flex flex-col items-center justify-center gap-5 max-w-[295px] self-center sm:w-2/5 sm:max-w-[295px] bg-primary my-9">
+					<div className="flex flex-row w-full justify-between items-center h-11 gap-1 z-10">
 						<div className="px-1.5 py-1">
 							{cheapestPrice?.calculated_price !==
 								cheapestPrice?.original_price && (
@@ -67,7 +67,10 @@ export const ProductBigCard = ({
 							/>
 						</div>
 					</div>
-					<LocalizedClientLink href={`/products/${product.handle}`}>
+					<LocalizedClientLink
+						className="w-full"
+						href={`/products/${product.handle}`}
+					>
 						<div className="overflow-hidden w-full flex flex-col justify-center align-center h-full max-h-[220px]">
 							{product.images.length > 1 ? (
 								<ProductImageCarousel slides={product.images} />
@@ -91,14 +94,14 @@ export const ProductBigCard = ({
 						</div>
 					</LocalizedClientLink>
 				</div>
-				<div className="w-3/5 min-w-[516px] flex flex-col max-h-[344px] justify-between">
+				<div className="flex-1 flex flex-col justify-between">
 					<LocalizedClientLink
-						className="flex flex-col justify-between w-full min-h-[280px]"
+						className="flex flex-col justify-between min-h-[280px]"
 						href={`/products/${product.handle}`}
 					>
-						<div className="max-h-[224px]">
-							<div className="max-h-[94px]">
-								<h3 className="text-3xl font-bold truncate">
+						<div>
+							<div className="max-w-[558px]">
+								<h3 className="text-3xl font-bold line-clamp-2">
 									{product.title}
 								</h3>
 								<div className="flex items-center gap-2 mt-2">
@@ -119,7 +122,7 @@ export const ProductBigCard = ({
 									</span>
 								</div>
 							</div>
-							<div className="mt-4 max-h-[114px]">
+							<div className="mt-4">
 								<div
 									className="text-base text-black"
 									// biome-ignore lint/security/noDangerouslySetInnerHtml: use to display markup content
