@@ -43,7 +43,7 @@ export const CategoryNavDropdown = ({
 				{name}
 				<CollapseIcon className="-rotate-90 md:hidden" size={18} />
 			</LocalizedClientLink>
-			{open && (
+			{open && subcategories.length > 0 && (
 				<div className="hidden md:block absolute top-[144px] lg:top-[70px] left-0 bg-primary text-primary z-30 w-full min-h-60 border-b py-10 lg:py-8">
 					<div className="container !max-w-7xl mx-auto grid grid-cols-3 lg:grid-cols-5 justify-items-start lg:justify-items-center gap-6 gap-y-10 lg:gap-10">
 						{subcategories
