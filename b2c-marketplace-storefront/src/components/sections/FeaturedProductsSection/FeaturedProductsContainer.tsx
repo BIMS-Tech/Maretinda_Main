@@ -130,7 +130,7 @@ const FeaturedProductsContainer: React.FC<
 	FeaturedProductsSectionProps
 > = () => {
 	return (
-		<div className="grid grid-cols-1 gap-6 md:grid-cols-7 lg:grid-cols-11 mx-auto">
+		<div className="grid grid-cols-1 gap-5 md:grid-cols-7 lg:grid-cols-11 mx-auto">
 			{CARD_DATA.map((card) => (
 				<FeaturedProductsCard
 					bgColor={card.bgColor}

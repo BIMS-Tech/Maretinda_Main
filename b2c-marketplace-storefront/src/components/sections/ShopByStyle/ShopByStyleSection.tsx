@@ -40,7 +40,7 @@ export function ShopByStyleSection() {
 			</div>
 			<div
 				className={clsx([
-					'flex flex-col gap-[26px] lg:gap-0 lg:grid',
+					'flex flex-col gap-5 lg:gap-0 lg:grid',
 					'grid-cols-[minmax(0,_580px)_minmax(290px,_1fr)_minmax(280px,_296px)]',
 					'grid-rows-[329px_316px]',
 				])}
@@ -48,11 +48,10 @@ export function ShopByStyleSection() {
 				{styles.map((style, index) => (
 					<ShopByStyleContainer
 						className={clsx([
-							index === 0 &&
-								'hidden lg:block lg:mt-[2px] row-span-2',
-							index === 1 && 'lg:ml-[23px] col-span-2',
-							index === 2 && 'lg:ml-[23px] lg:mr-[19px] lg:mt-8',
-							index === 3 && 'hidden lg:block lg:mt-8',
+							index === 0 && 'hidden lg:block row-span-2',
+							index === 1 && 'lg:ml-5 col-span-2',
+							index === 2 && 'lg:ml-5 lg:mr-5 lg:mt-5',
+							index === 3 && 'hidden lg:block lg:mt-5',
 						])}
 						description={style.description}
 						href={style.href}
