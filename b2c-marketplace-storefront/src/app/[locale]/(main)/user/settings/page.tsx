@@ -14,8 +14,10 @@ export default async function ReviewsPage() {
 				<h1 className="mb-14 font-lora font-bold text-4xl text-black">
 					Settings
 				</h1>
-				<ProfileDetails user={user} />
-				<ProfilePassword user={user} />
+				<div className="flex flex-col gap-12">
+					<ProfileDetails user={user} />
+					<ProfilePassword user={user} />
+				</div>
 			</div>
 		</Layout>
 	);
