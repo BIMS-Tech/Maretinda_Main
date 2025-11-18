@@ -14,7 +14,6 @@ import {
 import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { updateCustomer } from '@/lib/data/customer';
-import { cn } from '@/lib/utils';
 
 import { type ProfileDetailsFormData, profileDetailsSchema } from './schema';
 
@@ -71,8 +70,8 @@ const Form: React.FC<Props> = ({ handleClose }) => {
 
 	return (
 		<form onSubmit={handleSubmit(submit)}>
-			<div className="px-4 space-y-4">
-				<div className="max-w-full grid grid-cols-2 items-top gap-4 mb-4">
+			<div className="space-y-4">
+				<div className="max-w-full grid grid-cols-2 items-top gap-3 mb-8">
 					<LabeledInput
 						error={errors.firstName as FieldError}
 						important
@@ -110,19 +109,14 @@ const Form: React.FC<Props> = ({ handleClose }) => {
 					/>
 				</div>
 				{error && <p className="label-md text-negative">{error}</p>}
-				<div className="flex justify-end py-4 gap-2">
+				<div className="flex justify-end gap-2">
 					<Button
-						className={cn(
-							'bg-white',
-							'py-1 px-2 rounded-[6px]',
-							'text-[#18181b] text-[13px] leading-[20px] font-medium',
-							'shadow-[0px_0px_0px_1px_#00000014,_0px_1px_2px_0px_#0000001F]',
-						)}
+						className="w-fit px-2 py-1 bg-white !text-[13px] rounded-[6px] border border-black/10 shadow-sm !font-medium"
 						onClick={handleClose}
 					>
 						Cancel
 					</Button>
-					<Button className="py-1 px-2 rounded-[6px] text-[13px] leading-[20px] font-medium">
+					<Button className="py-1 px-2 rounded-[6px] !text-[13px] leading-[20px] !font-medium">
 						Save
 					</Button>
 				</div>

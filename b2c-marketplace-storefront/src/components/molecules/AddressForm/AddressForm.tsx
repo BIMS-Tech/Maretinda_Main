@@ -196,13 +196,13 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 				{error && <p className="label-md text-negative">{error}</p>}
 				<div className="flex justify-end gap-2">
 					<Button
-						className="w-fit px-2 py-1 bg-white border border-black/10 shadow-sm !font-medium"
+						className="w-fit px-2 py-1 bg-white !text-[13px] rounded-[6px] border border-black/10 shadow-sm !font-medium"
 						type="button"
 					>
 						Cancel
 					</Button>
 					<Button
-						className="w-fit px-2 py-1 !font-medium"
+						className="w-fit px-2 py-1 !text-[13px] !font-medium rounded-[6px]"
 						type="submit"
 					>
 						Save

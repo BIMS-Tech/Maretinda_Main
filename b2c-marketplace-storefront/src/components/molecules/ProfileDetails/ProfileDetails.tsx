@@ -26,8 +26,9 @@ export const ProfileDetails = ({ user }: { user: HttpTypes.StoreCustomer }) => {
 			/>
 			{showForm && (
 				<Modal
+					childrenClass="p-6"
 					heading="Edit profile details"
-					headingClass="py-[19px] px-6 text-black font-medium"
+					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					onClose={() => setShowForm(false)}
 				>
 					<ProfileDetailsForm

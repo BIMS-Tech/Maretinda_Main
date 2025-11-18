@@ -29,7 +29,7 @@ export const ProfileDetailsAccordionItems = ({
 	};
 
 	return (
-		<Card className="border-0 p-0">
+		<Card className="border-0 p-0 rounded-none">
 			<div className="flex flex-col sm:flex-row ms:items-center w-full hover:bg-component-secondary/40 p-4 px-6 gap-5 md:gap-10 transition-all duration-300">
 				<div className="flex-1 w-full flex flex-col gap-1.5 lg:gap-4 text-black text-base">
 					{isProfileContent(content) ? (
