@@ -20,7 +20,7 @@ export const CartItemsProducts = ({
 	return (
 		<div className="w-full">
 			{/* Table Header */}
-			<div className="grid grid-cols-12 gap-4 pb-4 border-b mb-4 font-medium text-sm" style={{ color: '#6b7280', borderColor: '#e5e7eb' }}>
+			<div className="grid grid-cols-12 gap-4 pb-4 border-b mb-4 !font-semibold text-lg text-black border-black/10">
 				<div className="col-span-5 text-left">Products</div>
 				<div className="col-span-2 text-center">Price</div>
 				<div className="col-span-2 text-center">Quantity</div>
@@ -44,9 +44,8 @@ export const CartItemsProducts = ({
 
 					return (
 						<div
+							className="grid grid-cols-12 gap-4 items-center py-4 border-b last:border-0 border-black/10"
 							key={product.id}
-							className="grid grid-cols-12 gap-4 items-center py-4 border-b last:border-0"
-							style={{ borderColor: '#f3f4f6' }}
 						>
 							{/* Product Image and Info */}
 							<div className="col-span-5 flex items-center gap-4">
@@ -79,20 +78,23 @@ export const CartItemsProducts = ({
 									<LocalizedClientLink
 										href={`/products/${product.product_handle}`}
 									>
-										<h3 className="font-medium truncate mb-1" style={{ color: '#111827', fontWeight: 500 }}>
+										<h3 className="!font-medium truncate mb-1 text-black text-lg">
 											{product.title || product.subtitle}
 										</h3>
 									</LocalizedClientLink>
 									{product.vendorName && (
-										<p className="text-xs" style={{ color: '#6b7280' }}>
-											Vendor: {product.vendorName}
+										<p className="text-xs text-[#999]">
+											Vendor:{' '}
+											<span className="font-semibold text-black">
+												{product.vendorName}
+											</span>
 										</p>
 									)}
 								</div>
 							</div>
 
 							{/* Price */}
-							<div className="col-span-2 text-center font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+							<div className="col-span-2 text-center font-medium text-black">
 								{unitPrice}
 							</div>
 
@@ -104,14 +106,20 @@ export const CartItemsProducts = ({
 										quantity={product.quantity}
 									/>
 								) : (
-									<span className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+									<span
+										className="font-medium"
+										style={{
+											color: '#111827',
+											fontWeight: 500,
+										}}
+									>
 										{product.quantity}
 									</span>
 								)}
 							</div>
 
 							{/* Subtotal */}
-							<div className="col-span-2 text-right font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+							<div className="col-span-2 text-right font-medium text-black">
 								{subtotal}
 							</div>
 

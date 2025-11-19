@@ -1,15 +1,15 @@
 'use client';
 
 import { Listbox, Transition } from '@headlessui/react';
-import { CheckCircleSolid, ChevronUpDown, Loader } from '@medusajs/icons';
+import { ChevronUpDown, Loader } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
-import { clx, Heading, Text } from '@medusajs/ui';
+import { clx, Heading } from '@medusajs/ui';
 import clsx from 'clsx';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useEffect, useState } from 'react';
+import { LuCheck } from 'react-icons/lu';
 
 import { Button } from '@/components/atoms';
-import { Modal, SelectField } from '@/components/molecules';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { setShippingMethod } from '@/lib/data/cart';
 import { calculatePriceForShippingOption } from '@/lib/data/fulfillment';
@@ -206,20 +206,17 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center gap-3">
 					{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
-						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
-							<CheckCircleSolid className="text-white" width={16} height={16} />
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-[#2563EB] text-white overflow-hidden">
+							<LuCheck size={15} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
-						Delivery
-					</h2>
+					<h2 className="text-xl text-black !font-bold">Delivery</h2>
 				</div>
 				{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
 					<button
-						type="button"
+						className="text-lg underline underline-offset-2 text-black"
 						onClick={handleEdit}
-						className="text-sm underline"
-						style={{ color: '#2563eb' }}
+						type="button"
 					>
 						Edit
 					</button>
@@ -375,11 +372,10 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							error={error}
 						/>
 						<Button
-							className="mt-4 rounded-md"
+							className="mt-4 py-2.5 !text-black !font-medium rounded-sm text-md"
 							disabled={!cart.shipping_methods?.[0]}
 							loading={isLoadingPrices}
 							onClick={handleSubmit}
-							style={{ backgroundColor: '#facc15', color: '#000' }}
 						>
 							Continue to payment
 						</Button>
@@ -388,22 +384,22 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 			) : (
 				<div className="pb-4">
 					{cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-						<div className="space-y-1">
-							<p className="text-sm font-medium mb-1" style={{ color: '#111827', fontWeight: 500 }}>
-								Method
-							</p>
+						<div className="space-y-1 text-black !font-normal text-lg">
+							<p className="!font-bold mb-1">Method</p>
 							{cart.shipping_methods?.map((method) => {
 								// Get seller name from the shipping method
-								const sellerName: string = typeof method.data?.seller_name === 'string' 
-									? method.data.seller_name 
-									: 'Local Clothing';
+								const sellerName: string =
+									typeof method.data?.seller_name === 'string'
+										? method.data.seller_name
+										: 'Local Clothing';
 								const shippingCost: string = convertToLocale({
 									amount: method.amount!,
 									currency_code: cart?.currency_code || 'USD',
 								});
 								return (
-									<p key={method.id} className="text-sm" style={{ color: '#6b7280' }}>
-										Vendor {sellerName} Shipping {shippingCost}
+									<p className="!font-normal" key={method.id}>
+										Vendor: {sellerName} Shipping{' '}
+										{shippingCost}
 									</p>
 								);
 							})}

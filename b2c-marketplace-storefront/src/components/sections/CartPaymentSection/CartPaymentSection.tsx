@@ -1,10 +1,10 @@
 'use client';
 
 import { RadioGroup } from '@headlessui/react';
-import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
-import { Container, Heading, Text } from '@medusajs/ui';
+import { Text } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { LuCheck } from 'react-icons/lu';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
@@ -65,9 +65,9 @@ const CartPaymentSection = ({
 	};
 
 	const paidByGiftcard =
-		'gift_cards' in (cart || {}) && 
-		Array.isArray((cart as any)?.gift_cards) && 
-		(cart as any).gift_cards.length > 0 && 
+		'gift_cards' in (cart || {}) &&
+		Array.isArray((cart as any)?.gift_cards) &&
+		(cart as any).gift_cards.length > 0 &&
 		cart?.total === 0;
 
 	const paymentReady =
@@ -130,20 +130,17 @@ const CartPaymentSection = ({
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center gap-3">
 					{!isOpen && paymentReady && (
-						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
-							<CheckCircleSolid className="text-white" width={16} height={16} />
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-[#2563EB] text-white overflow-hidden">
+							<LuCheck size={15} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
-						Payment
-					</h2>
+					<h2 className="text-xl text-black !font-bold">Payment</h2>
 				</div>
 				{!isOpen && paymentReady && (
 					<button
-						type="button"
+						className="text-lg underline underline-offset-2 text-black"
 						onClick={handleEdit}
-						className="text-sm underline"
-						style={{ color: '#2563eb' }}
+						type="button"
 					>
 						Edit
 					</button>
@@ -152,51 +149,37 @@ const CartPaymentSection = ({
 			<div>
 				<div className={isOpen ? 'block' : 'hidden'}>
 					{!paidByGiftcard && availablePaymentMethods?.length && (
-						<>
-							<RadioGroup
-								onChange={(value: string) =>
-									setPaymentMethod(value)
-								}
-								value={selectedPaymentMethod}
-							>
-								{availablePaymentMethods.map(
-									(paymentMethod) => (
-										<div key={paymentMethod.id}>
-											{isStripeFunc(paymentMethod.id) ? (
-												<StripeCardContainer
-													paymentInfoMap={
-														paymentInfoMap
-													}
-													paymentProviderId={
-														paymentMethod.id
-													}
-													selectedPaymentOptionId={
-														selectedPaymentMethod
-													}
-													setCardBrand={setCardBrand}
-													setCardComplete={
-														setCardComplete
-													}
-													setError={setError}
-												/>
-											) : (
-												<PaymentContainer
-													paymentInfoMap={
-														paymentInfoMap
-													}
-													paymentProviderId={
-														paymentMethod.id
-													}
-													selectedPaymentOptionId={
-														selectedPaymentMethod
-													}
-												/>
-											)}
-										</div>
-									),
-								)}
-							</RadioGroup>
-						</>
+						<RadioGroup
+							onChange={(value: string) =>
+								setPaymentMethod(value)
+							}
+							value={selectedPaymentMethod}
+						>
+							{availablePaymentMethods.map((paymentMethod) => (
+								<div key={paymentMethod.id}>
+									{isStripeFunc(paymentMethod.id) ? (
+										<StripeCardContainer
+											paymentInfoMap={paymentInfoMap}
+											paymentProviderId={paymentMethod.id}
+											selectedPaymentOptionId={
+												selectedPaymentMethod
+											}
+											setCardBrand={setCardBrand}
+											setCardComplete={setCardComplete}
+											setError={setError}
+										/>
+									) : (
+										<PaymentContainer
+											paymentInfoMap={paymentInfoMap}
+											paymentProviderId={paymentMethod.id}
+											selectedPaymentOptionId={
+												selectedPaymentMethod
+											}
+										/>
+									)}
+								</div>
+							))}
+						</RadioGroup>
 					)}
 
 					{paidByGiftcard && (
@@ -219,29 +202,28 @@ const CartPaymentSection = ({
 					/>
 
 					<Button
-						className="mt-4 rounded-md"
+						className="mt-4 py-2.5 !text-black !font-medium rounded-sm text-md"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard)
 						}
 						loading={isLoading}
 						onClick={handleSubmit}
-						style={{ backgroundColor: '#facc15', color: '#000' }}
+						style={{ backgroundColor: '#facc15' }}
 					>
 						Continue to review
 					</Button>
 				</div>
 
 				<div className={isOpen ? 'hidden' : 'block'}>
-					<div className="pb-4">
+					<div className="pb-4 text-lg !font-normal text-black">
 						{cart && paymentReady && activeSession ? (
-							<p className="text-sm" style={{ color: '#6b7280' }}>
-								{paymentInfoMap[activeSession?.provider_id]?.title || activeSession?.provider_id}
+							<p>
+								{paymentInfoMap[activeSession?.provider_id]
+									?.title || activeSession?.provider_id}
 							</p>
 						) : paidByGiftcard ? (
-							<p className="text-sm" style={{ color: '#6b7280' }}>
-								Gift card
-							</p>
+							<p>Gift card</p>
 						) : null}
 					</div>
 				</div>

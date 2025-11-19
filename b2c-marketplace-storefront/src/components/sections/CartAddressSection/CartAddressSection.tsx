@@ -1,14 +1,13 @@
 'use client';
 
-import { CheckCircleSolid } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
-import { Heading, Text, useToggleState } from '@medusajs/ui';
+import { useToggleState } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
+import { LuCheck } from 'react-icons/lu';
 
 import { Button } from '@/components/atoms';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import ShippingAddress from '@/components/organisms/ShippingAddress/ShippingAddress';
 import Spinner from '@/icons/spinner';
 import { setAddresses } from '@/lib/data/cart';
@@ -72,29 +71,26 @@ export const CartAddressSection = ({
 			<div className="flex items-center justify-between mb-6">
 				<div className="flex items-center gap-3">
 					{isAddress && !isOpen && (
-						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
-							<CheckCircleSolid className="text-white" width={16} height={16} />
+						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-[#2563EB] text-white overflow-hidden">
+							<LuCheck size={15} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+					<h2 className="text-xl text-black !font-bold">
 						Shipping Address
 					</h2>
 				</div>
 				{isAddress && !isOpen && (
 					<button
-						type="button"
+						className="text-lg underline underline-offset-2 text-black"
 						onClick={handleEdit}
-						className="text-sm underline"
-						style={{ color: '#2563eb' }}
+						type="button"
 					>
 						Edit
 					</button>
 				)}
 			</div>
-			
-			<form
-				action={formAction}
-			>
+
+			<form action={formAction}>
 				{isOpen ? (
 					<div className="pb-8">
 						<ShippingAddress
@@ -103,26 +99,26 @@ export const CartAddressSection = ({
 							customer={customer}
 							onChange={toggleSameAsBilling}
 						/>
-						
+
 						{/* Save Information Checkbox */}
-						<div className="mt-4 mb-6">
+						<div className="mt-8">
 							<label className="flex items-center gap-2 cursor-pointer">
 								<input
-									type="checkbox"
 									className="w-4 h-4 rounded border-gray-300"
 									defaultChecked
+									type="checkbox"
 								/>
-								<span className="text-sm" style={{ color: '#374151' }}>
-									Save this information for faster check-out next time
+								<span className="text-md !font-normal text-black">
+									Save this information for faster check-out
+									next time
 								</span>
 							</label>
 						</div>
 
 						<Button
-							type="submit"
-							className="mt-2 rounded-md"
+							className="mt-6 py-2.5 !text-black !font-medium rounded-sm text-md min-w-[112px]"
 							data-testid="submit-address-button"
-							style={{ backgroundColor: '#facc15', color: '#000' }}
+							type="submit"
 						>
 							Save
 						</Button>
@@ -134,16 +130,20 @@ export const CartAddressSection = ({
 				) : (
 					<div className="pb-4">
 						{cart && cart.shipping_address ? (
-							<div className="space-y-1">
-								<p className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>
-									{cart.shipping_address.first_name} {cart.shipping_address.last_name}
+							<div className="space-y-1 font-normal text-lg text-black">
+								<p>
+									{cart.shipping_address.first_name}{' '}
+									{cart.shipping_address.last_name}
 								</p>
-								<p className="text-sm" style={{ color: '#6b7280' }}>
+								<p>
 									{cart.shipping_address.address_1}
-									{cart.shipping_address.address_2 && `, ${cart.shipping_address.address_2}`}
-									, {cart.shipping_address.postal_code} {cart.shipping_address.city}, {cart.shipping_address.country_code?.toUpperCase()}
+									{cart.shipping_address.address_2 &&
+										`, ${cart.shipping_address.address_2}`}
+									, {cart.shipping_address.postal_code}{' '}
+									{cart.shipping_address.city},{' '}
+									{cart.shipping_address.country_code?.toUpperCase()}
 								</p>
-								<p className="text-sm" style={{ color: '#6b7280' }}>
+								<p>
 									{cart.email}, {cart.shipping_address.phone}
 								</p>
 							</div>

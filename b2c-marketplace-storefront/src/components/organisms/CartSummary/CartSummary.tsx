@@ -20,17 +20,17 @@ export const CartSummary = ({
 	discount?: number;
 }) => {
 	return (
-		<div className="space-y-3 text-sm">
+		<div className="space-y-4 text-black text-lg">
 			{/* Items Count */}
-			<div className="flex justify-between" style={{ color: '#374151' }}>
-				<span style={{ fontWeight: 400 }}>Items:</span>
-				<span style={{ fontWeight: 500 }}>{totalItems || 0}</span>
+			<div className="flex justify-between">
+				<span>Items:</span>
+				<span className="font-bold">{totalItems || 0}</span>
 			</div>
 
 			{/* Subtotal */}
-			<div className="flex justify-between" style={{ color: '#374151' }}>
-				<span style={{ fontWeight: 400 }}>Subtotal:</span>
-				<span style={{ fontWeight: 500 }}>
+			<div className="flex justify-between">
+				<span>Subtotal:</span>
+				<span className="font-bold">
 					{convertToLocale({
 						amount: item_total,
 						currency_code,
@@ -39,9 +39,9 @@ export const CartSummary = ({
 			</div>
 
 			{/* Shipping */}
-			<div className="flex justify-between" style={{ color: '#374151' }}>
-				<span style={{ fontWeight: 400 }}>Shipping:</span>
-				<span style={{ fontWeight: 500 }}>
+			<div className="flex justify-between">
+				<span>Shipping:</span>
+				<span className="font-bold">
 					{convertToLocale({
 						amount: shipping_total,
 						currency_code,
@@ -50,9 +50,9 @@ export const CartSummary = ({
 			</div>
 
 			{/* Taxes */}
-			<div className="flex justify-between" style={{ color: '#374151' }}>
-				<span style={{ fontWeight: 400 }}>Taxes:</span>
-				<span style={{ fontWeight: 500 }}>
+			<div className="flex justify-between">
+				<span>Taxes:</span>
+				<span className="font-bold">
 					{convertToLocale({
 						amount: tax,
 						currency_code,
@@ -61,9 +61,9 @@ export const CartSummary = ({
 			</div>
 
 			{/* Coupon Discount */}
-			<div className="flex justify-between" style={{ color: '#374151' }}>
-				<span style={{ fontWeight: 400 }}>Coupon Discount:</span>
-				<span style={{ fontWeight: 500 }}>
+			<div className="flex justify-between">
+				<span>Coupon Discount:</span>
+				<span className="font-bold">
 					{convertToLocale({
 						amount: discount || 0,
 						currency_code,
@@ -72,9 +72,9 @@ export const CartSummary = ({
 			</div>
 
 			{/* Total */}
-			<div className="flex justify-between border-t pt-4 mt-4" style={{ borderColor: '#e5e7eb' }}>
-				<span className="text-lg" style={{ color: '#111827', fontWeight: 700 }}>Total:</span>
-				<span className="text-lg" style={{ color: '#111827', fontWeight: 700 }}>
+			<div className="flex justify-between border-t pt-4 mt-4 border-black/10">
+				<span className="font-bold">Total:</span>
+				<span className="font-bold">
 					{convertToLocale({
 						amount: total,
 						currency_code,

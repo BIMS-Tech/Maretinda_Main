@@ -98,7 +98,7 @@ const ShippingAddress = ({
 	return (
 		<>
 			{customer && (addressesInRegion?.length || 0) > 0 && (
-				<Container className="mb-6 flex flex-col gap-y-4 p-0">
+				<Container className="mb-6 flex flex-col gap-y-4 p-0 shadow-none border-b border-black/10 rounded-none pb-5">
 					<p className="text-small-regular">
 						{`Hi ${customer.first_name}, do you want to use one of your saved addresses?`}
 					</p>
@@ -201,9 +201,12 @@ const ShippingAddress = ({
 					value={formData['shipping_address.city']}
 				/>
 				<div>
-					<label className="block text-sm font-medium mb-2" style={{ color: '#374151' }}>
+					{/* <label
+						className="block text-sm font-medium mb-2"
+						style={{ color: '#374151' }}
+					>
 						Country/Region *
-					</label>
+					</label> */}
 					<CountrySelect
 						autoComplete="country"
 						data-testid="shipping-country-select"
