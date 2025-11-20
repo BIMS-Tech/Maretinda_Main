@@ -172,6 +172,7 @@
 	--content-action-on-primary: var(--brand-purple-900);
 	--content-action-on-secondary: var(--neutral-1000);
 	--content-action-on-tertiary: var(--neutral-0);
+	--content-action-brand-yellow: var(--brand-cta-500);
 
 	--content-positive-primary: var(--green-800);
 	--content-positive-on-primary: var(--neutral-0);

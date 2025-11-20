@@ -40,7 +40,7 @@ export const InteractiveStarRating = ({
 						<StarIcon
 							className={cn(
 								isActive
-									? '[&>path]:fill-secondary'
+									? '[&>path]:fill-brandYellow'
 									: '[&>path]:fill-gray-200',
 							)}
 							size={24}
