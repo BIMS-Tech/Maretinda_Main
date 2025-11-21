@@ -138,14 +138,17 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 			return;
 		}
 
-		await setShippingMethod({
-			cartId: cart.id,
-			shippingMethodId: id,
-		}).catch((err) => {
-			setError(err.message);
-		});
-
-		setIsLoadingPrices(false);
+		try {
+			await setShippingMethod({
+				cartId: cart.id,
+				shippingMethodId: id,
+			});
+			router.refresh();
+		} catch (err: any) {
+			setError(err.message || 'Failed to set shipping method');
+		} finally {
+			setIsLoadingPrices(false);
+		}
 	};
 
 	useEffect(() => {
@@ -210,7 +213,7 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+					<h2 className="checkout-section-title">
 						Delivery
 					</h2>
 				</div>
@@ -230,53 +233,57 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 					<div className="grid">
 						<div data-testid="delivery-options-container">
 							<div className="pb-8 md:pt-0 pt-2">
-								{Object.keys(groupedBySellerId).map((key) => {
+								{!_shippingMethods || _shippingMethods.length === 0 ? (
+									<div className="text-center py-8">
+										<p className="text-gray-500 mb-2">No shipping methods available</p>
+										<p className="text-sm text-gray-400">Please make sure your shipping address is set correctly</p>
+									</div>
+								) : !groupedBySellerId || Object.keys(groupedBySellerId).length === 0 ? (
+									<div className="text-center py-8">
+										<p className="text-gray-500">No delivery options available for your location</p>
+									</div>
+								) : null}
+								{groupedBySellerId && Object.keys(groupedBySellerId).map((key) => {
 									return (
 										<div className="mb-4" key={key}>
-											<Heading
-												className="mb-2"
-												level="h3"
-											>
-												{
-													groupedBySellerId[key][0]
-														.seller_name
-												}
-											</Heading>
+											<h3 className="text-base font-medium mb-3" style={{ color: '#111827', fontWeight: 500 }}>
+												{groupedBySellerId[key][0].seller_name || 'Vendor'}
+											</h3>
 											<Listbox
 												onChange={(value) => {
-													handleSetShippingMethod(
-														value,
-													);
+													handleSetShippingMethod(value);
 												}}
-												value={
-													cart.shipping_methods?.[0]
-														?.id
-												}
+												value={cart.shipping_methods?.[0]?.id || null}
 											>
 												<div className="relative">
 													<Listbox.Button
 														className={clsx(
-															'relative w-full flex justify-between items-center px-4 h-12 bg-component-secondary text-left  cursor-default focus:outline-none border rounded-lg focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-white focus-visible:ring-offset-gray-300 focus-visible:ring-offset-2 focus-visible:border-gray-300 text-base-regular',
+															'relative w-full flex justify-between items-center px-4 h-12 bg-white text-left cursor-pointer focus:outline-none border border-gray-300 rounded-md focus-visible:ring-2 focus-visible:ring-opacity-75 focus-visible:ring-blue-500 focus-visible:ring-offset-2 text-sm',
 														)}
 													>
-														{({ open }) => (
-															<>
-																<span className="block truncate">
-																	Choose
-																	delivery
-																	option
-																</span>
-																<ChevronUpDown
-																	className={clx(
-																		'transition-rotate duration-200',
-																		{
-																			'transform rotate-180':
-																				open,
-																		},
-																	)}
-																/>
-															</>
-														)}
+														{({ open }) => {
+															const selectedMethod = cart.shipping_methods?.[0];
+															const selectedMethodName = selectedMethod ? 
+																groupedBySellerId[key]?.find((m: any) => m.id === selectedMethod.id)?.name || 'Choose delivery option'
+																: 'Choose delivery option';
+															
+															return (
+																<>
+																	<span className="block truncate" style={{ color: '#374151' }}>
+																		{selectedMethodName}
+																	</span>
+																	<ChevronUpDown
+																		className={clx(
+																			'transition-transform duration-200',
+																			{
+																				'transform rotate-180':
+																					open,
+																			},
+																		)}
+																	/>
+																</>
+															);
+														}}
 													</Listbox.Button>
 													<Transition
 														as={Fragment}
@@ -285,7 +292,7 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 														leaveTo="opacity-0"
 													>
 														<Listbox.Options
-															className="absolute z-20 w-full overflow-auto text-small-regular bg-white border rounded-lg border-top-0 max-h-60 focus:outline-none sm:text-sm"
+															className="absolute z-20 w-full overflow-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 focus:outline-none text-sm mt-1"
 															data-testid="shipping-address-options"
 														>
 															{groupedBySellerId[
@@ -294,9 +301,13 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 																(
 																	option: any,
 																) => {
+																	const isSelected = cart.shipping_methods?.[0]?.id === option.id;
 																	return (
 																		<Listbox.Option
-																			className="cursor-pointer select-none relative pl-6 pr-10 hover:bg-gray-50 py-4 border-b"
+																			className={clsx(
+																				'cursor-pointer select-none relative px-4 py-3 hover:bg-gray-50 border-b last:border-b-0',
+																				isSelected && 'bg-blue-50'
+																			)}
 																			key={
 																				option.id
 																			}
@@ -304,39 +315,29 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 																				option.id
 																			}
 																		>
-																			{
-																				option.name
-																			}
-																			{
-																				' - '
-																			}
-																			{option.price_type ===
-																			'flat' ? (
-																				convertToLocale(
-																					{
-																						amount: option.amount!,
-																						currency_code:
-																							cart?.currency_code,
-																					},
-																				)
-																			) : calculatedPricesMap[
-																					option
-																						.id
-																				] ? (
-																				convertToLocale(
-																					{
-																						amount: calculatedPricesMap[
-																							option
-																								.id
-																						],
-																						currency_code:
-																							cart?.currency_code,
-																					},
-																				)
-																			) : isLoadingPrices ? (
-																				<Loader />
-																			) : (
-																				'-'
+																			{({ selected }) => (
+																				<span className={clsx(
+																					'block truncate',
+																					selected ? 'font-medium' : 'font-normal'
+																				)} style={{ color: '#374151' }}>
+																					{option.name}
+																					{' - '}
+																					{option.price_type === 'flat' ? (
+																						convertToLocale({
+																							amount: option.amount!,
+																							currency_code: cart?.currency_code,
+																						})
+																					) : calculatedPricesMap[option.id] ? (
+																						convertToLocale({
+																							amount: calculatedPricesMap[option.id],
+																							currency_code: cart?.currency_code,
+																						})
+																					) : isLoadingPrices ? (
+																						<Loader />
+																					) : (
+																						'-'
+																					)}
+																				</span>
 																			)}
 																		</Listbox.Option>
 																	);
@@ -375,11 +376,12 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							error={error}
 						/>
 						<Button
-							className="mt-4 rounded-md"
+							className="mt-4 rounded-md !font-medium"
 							disabled={!cart.shipping_methods?.[0]}
 							loading={isLoadingPrices}
 							onClick={handleSubmit}
-							style={{ backgroundColor: '#facc15', color: '#000' }}
+							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
+							type="button"
 						>
 							Continue to payment
 						</Button>

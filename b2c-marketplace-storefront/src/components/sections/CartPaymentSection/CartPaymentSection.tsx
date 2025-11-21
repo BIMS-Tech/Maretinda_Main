@@ -18,6 +18,7 @@ import {
 import PaymentContainer, {
 	StripeCardContainer,
 } from '../../organisms/PaymentContainer/PaymentContainer';
+import GiyaPayContainer from '../../organisms/PaymentContainer/GiyaPayContainer';
 
 type StoreCardPaymentMethod = any & {
 	service_zone?: {
@@ -134,7 +135,7 @@ const CartPaymentSection = ({
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+					<h2 className="checkout-section-title">
 						Payment
 					</h2>
 				</div>
@@ -179,6 +180,20 @@ const CartPaymentSection = ({
 													}
 													setError={setError}
 												/>
+											) : isGiyaPayFunc(paymentMethod.id) ? (
+												<GiyaPayContainer
+													paymentProviderId={
+														paymentMethod.id
+													}
+													selectedPaymentOptionId={
+														selectedPaymentMethod
+													}
+													paymentSession={
+														cart.payment_collection?.payment_sessions?.find(
+															(ps: any) => ps.provider_id === paymentMethod.id
+														)
+													}
+												/>
 											) : (
 												<PaymentContainer
 													paymentInfoMap={
@@ -219,14 +234,15 @@ const CartPaymentSection = ({
 					/>
 
 					<Button
-						className="mt-4 rounded-md"
+						className="mt-4 rounded-md !font-medium"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard)
 						}
 						loading={isLoading}
 						onClick={handleSubmit}
-						style={{ backgroundColor: '#facc15', color: '#000' }}
+						style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
+						type="button"
 					>
 						Continue to review
 					</Button>

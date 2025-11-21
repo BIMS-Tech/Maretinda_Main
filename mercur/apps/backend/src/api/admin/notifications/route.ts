@@ -61,18 +61,38 @@ export const GET = async (
   req: AuthenticatedMedusaRequest<HttpTypes.AdminNotificationListParams>,
   res: MedusaResponse<HttpTypes.AdminNotificationListResponse>
 ) => {
-  const { rows: notifications, metadata } = await refetchEntities(
-    'notification',
-    { ...req.filterableFields, channel: 'feed' },
-    req.scope,
-    req.queryConfig.fields,
-    req.queryConfig.pagination
-  )
+  try {
+    // Check if scope is available
+    if (!req.scope) {
+      console.error('[Admin Notifications] Request scope is undefined')
+      return res.status(500).json({
+        message: 'Internal server error: Request scope not available'
+      })
+    }
 
-  res.json({
-    notifications,
-    count: metadata.count,
-    offset: metadata.skip,
-    limit: metadata.take
-  })
+    const { rows: notifications, metadata } = await refetchEntities(
+      'notification',
+      { ...req.filterableFields, channel: 'feed' },
+      req.scope,
+      req.queryConfig.fields,
+      req.queryConfig.pagination
+    )
+
+    res.json({
+      notifications,
+      count: metadata.count,
+      offset: metadata.skip,
+      limit: metadata.take
+    })
+  } catch (error) {
+    console.error('[Admin Notifications] Error fetching notifications:', error)
+    
+    // Return empty notifications list on error to prevent UI breaking
+    res.json({
+      notifications: [],
+      count: 0,
+      offset: 0,
+      limit: 20
+    })
+  }
 }

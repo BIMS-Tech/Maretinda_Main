@@ -47,7 +47,7 @@ const GiyaPayButton = ({
 				cart.payment_collection?.payment_sessions?.find(
 					(session: any) =>
 						session.provider_id === 'giyapay' ||
-						session.provider_id === 'pp_giyapay_giyapay',
+						session.provider_id?.startsWith('pp_giyapay'),
 				);
 
 			if (!activeSession) {

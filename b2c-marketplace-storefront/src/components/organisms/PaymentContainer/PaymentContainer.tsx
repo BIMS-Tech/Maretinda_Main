@@ -44,7 +44,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 					<Radio
 						value={selectedPaymentOptionId === paymentProviderId}
 					/>
-					<Text className="text-base-regular">
+					<Text className="payment-method-title">
 						{paymentInfoMap[paymentProviderId]?.title ||
 							paymentProviderId}
 					</Text>
@@ -108,7 +108,7 @@ export const StripeCardContainer = ({
 			{selectedPaymentOptionId === paymentProviderId &&
 				(stripeReady ? (
 					<div className="my-4 transition-all duration-150 ease-in-out">
-						<Text className="txt-medium-plus text-ui-fg-base mb-1">
+						<Text className="checkout-label">
 							Enter your card details:
 						</Text>
 						<CardElement

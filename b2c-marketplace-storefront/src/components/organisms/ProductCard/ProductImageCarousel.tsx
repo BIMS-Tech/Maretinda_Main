@@ -9,6 +9,7 @@ import 'slick-carousel/slick/slick.css';
 
 import NextButton from '@/components/atoms/Button/NextButton';
 import PrevButton from '@/components/atoms/Button/PrevButton';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 
 export type CarouselSlide = {
 	id: number;
@@ -42,7 +43,7 @@ const ProductImageCarousel: React.FC<CarouselProps> = ({ slides }) => {
 						className="w-full h-full max-h-[220px] object-cover object-center"
 						height={220}
 						key={slide.id}
-						src={slide.url}
+						src={getImageUrl(slide.url)}
 						width={295}
 					/>
 				))}

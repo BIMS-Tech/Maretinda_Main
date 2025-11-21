@@ -8,6 +8,7 @@ import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -54,7 +55,10 @@ export const ProductCard = ({
 	}
 
 	const imageGallery = product.images.map(
-		(image: { id: string; name: string; url: string }) => image,
+		(image: { id: string; name: string; url: string }) => ({
+			...image,
+			url: getImageUrl(image.url)
+		}),
 	);
 
 	return (
@@ -75,7 +79,7 @@ export const ProductCard = ({
 									className="object-cover w-full object-center h-full transition-all duration-300 max-h-[220px]"
 									height={220}
 									priority
-									src={decodeURIComponent(product.thumbnail)}
+									src={getImageUrl(decodeURIComponent(product.thumbnail))}
 									width={295}
 								/>
 							) : (

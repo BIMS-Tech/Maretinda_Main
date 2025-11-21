@@ -1,13 +1,9 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { Heading, Text } from '@medusajs/ui';
 import { useEffect, useState } from 'react';
-
-import OrderDetails from '@/components/organisms/OrderDefails/OrderDetails';
-import OrderShipping from '@/components/organisms/OrderDefails/OrderShipping';
-import OrderTotals from '@/components/organisms/OrderDefails/OrderTotals';
-import OrderItems from '@/components/organisms/OrderItems/OrderItems';
+import { convertToLocale } from '@/lib/helpers/money';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 
 export const OrderConfirmedSection = ({
 	order,
@@ -22,7 +18,6 @@ export const OrderConfirmedSection = ({
 		vendorName?: string;
 		description?: string;
 	}>(null);
-	const [isCod, setIsCod] = useState(false);
 
 	useEffect(() => {
 		const run = async () => {
@@ -33,7 +28,8 @@ export const OrderConfirmedSection = ({
 					'http://localhost:9000';
 				const publishable =
 					process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
-					process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY;
+					process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY ||
+					'pk_3ad019daf80f5cf6368abbb8bcae8f5694b15a8480728313ba87fd2e6eb02036';
 				const res = await fetch(
 					`${backendUrl}/store/giyapay/transaction?order_id=${order.id}`,
 					{
@@ -56,108 +52,177 @@ export const OrderConfirmedSection = ({
 						vendorName: data.vendorName,
 					});
 				}
-				// Also detect COD by checking order payments
-				const orderRes = await fetch(
-					`${backendUrl}/store/orders/${order.id}?fields=%2Apayment_collections.payments`,
-					{
-						cache: 'no-store',
-						headers: {
-							accept: 'application/json',
-							...(publishable
-								? { 'x-publishable-api-key': publishable }
-								: {}),
-						},
-					},
-				);
-				if (orderRes.ok) {
-					const body = await orderRes.json().catch(() => ({}) as any);
-					const o = (body?.order || body) as any;
-					const providers: string[] = (
-						o?.payment_collections?.payments || []
-					)
-						.map((p: any) => p?.provider_id)
-						.filter(Boolean);
-					setIsCod(providers.includes('pp_system_default'));
-				}
 			} catch {}
 		};
 		run();
 	}, [order?.id]);
-	return (
-		<div className="py-6">
-			<div className="content-container flex flex-col justify-center items-center gap-y-10 max-w-4xl h-full w-full mx-auto">
-				<div
-					className="flex flex-col gap-4 max-w-4xl h-full bg-white w-full py-10"
-					data-testid="order-complete-container"
-				>
-					<div className="text-center w-full">
-						<Heading
-							className="flex flex-col gap-y-3 text-ui-fg-base text-3xl mb-4"
-							level="h1"
-						>
-							<span>Thank you!</span>
-							<span>Your order was placed successfully.</span>
-						</Heading>
 
-						<Text>
-							We have sent the order confirmation details to{' '}
-							<span
-								className="text-ui-fg-medium-plus font-semibold"
-								data-testid="order-email"
-							>
-								{order.email}
-							</span>
-							.
-						</Text>
+	// Format delivery date (estimated 3-5 business days from now)
+	const deliveryDate = new Date();
+	deliveryDate.setDate(deliveryDate.getDate() + 5);
+	const formattedDeliveryDate = deliveryDate.toLocaleDateString('en-GB', {
+		day: '2-digit',
+		month: 'short',
+		year: 'numeric'
+	});
+
+	// Get payment method name
+	const getPaymentMethodName = () => {
+		if (txn?.gateway) {
+			return txn.gateway;
+		}
+		// Fallback to order payment collection
+		const paymentSession = order.payment_collections?.[0]?.payment_sessions?.[0];
+		if (paymentSession?.provider_id) {
+			const providerId = paymentSession.provider_id;
+			if (providerId.includes('gcash')) return 'GCash';
+			if (providerId.includes('visa')) return 'Visa';
+			if (providerId.includes('mastercard')) return 'Mastercard';
+			if (providerId.includes('instapay')) return 'InstaPay';
+			if (providerId.includes('paymaya')) return 'PayMaya';
+			if (providerId.includes('giyapay')) return 'GiyaPay';
+			if (providerId.includes('stripe')) return 'Credit Card';
+		}
+		return 'Online Payment';
+	};
+
+	return (
+		<div className="min-h-screen bg-gray-50 py-8">
+			<div className="max-w-4xl mx-auto px-4">
+				{/* Header Section */}
+				<div className="text-center mb-8">
+					<h1 className="text-4xl font-bold text-gray-900 mb-4">Thank You!</h1>
+					<p className="text-xl text-gray-700 mb-2">Your order was placed successfully.</p>
+					<p className="text-gray-600">
+						We have sent the order confirmation details to{' '}
+						<span className="font-semibold text-gray-900">{order.email}</span>.
+					</p>
+				</div>
+
+				{/* Order Summary Card */}
+				<div className="bg-purple-600 text-white rounded-lg p-6 mb-8">
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+						<div>
+							<p className="text-purple-200 text-sm font-medium">Order ID</p>
+							<p className="font-bold text-lg">#{order.display_id || order.id?.slice(-8).toUpperCase()}</p>
+						</div>
+						<div>
+							<p className="text-purple-200 text-sm font-medium">Payment Method</p>
+							<p className="font-bold text-lg">{getPaymentMethodName()}</p>
+						</div>
+						<div>
+							<p className="text-purple-200 text-sm font-medium">Transaction ID</p>
+							<p className="font-bold text-lg">{txn?.referenceNumber || order.id?.slice(-8).toUpperCase()}</p>
+						</div>
+						<div>
+							<p className="text-purple-200 text-sm font-medium">Delivery Date</p>
+							<p className="font-bold text-lg">{formattedDeliveryDate}</p>
+						</div>
 					</div>
-					{isCod && (
-						<div className="mt-2 border rounded-md p-4 bg-ui-button-neutral">
-							<Text className="font-medium">
-								Payment on Delivery
-							</Text>
-							<Text className="text-ui-fg-subtle">
-								Please prepare cash upon delivery. No payment
-								was captured online.
-							</Text>
+				</div>
+
+				{/* Order Details Section */}
+				<div className="bg-white rounded-lg shadow-sm border p-6">
+					<h2 className="text-2xl font-bold text-gray-900 mb-6">Order Details</h2>
+					
+					{/* Products Header */}
+					<div className="grid grid-cols-12 gap-4 pb-4 border-b border-gray-200 mb-4">
+						<div className="col-span-6">
+							<p className="font-semibold text-gray-900">Products</p>
 						</div>
-					)}
-					{txn && (
-						<div className="mt-2 grid grid-cols-2 gap-2 border rounded-md p-4">
-							<Text className="font-medium">Reference</Text>
-							<Text className="font-mono truncate">
-								{txn.referenceNumber}
-							</Text>
-							<Text className="font-medium">Amount</Text>
-							<Text>
-								{new Intl.NumberFormat('en-PH', {
-									currency: txn.currency || 'PHP',
-									style: 'currency',
-								}).format(txn.amount || 0)}
-							</Text>
-							<Text className="font-medium">Payment Method</Text>
-							<Text>{txn.gateway || '-'}</Text>
-							{txn.vendorName && (
-								<>
-									<Text className="font-medium">Vendor</Text>
-									<Text>{txn.vendorName}</Text>
-								</>
-							)}
-							{txn.description && (
-								<>
-									<Text className="font-medium">
-										Description
-									</Text>
-									<Text>{txn.description}</Text>
-								</>
-							)}
+						<div className="col-span-6">
+							<p className="font-semibold text-gray-900 text-right">Sub Total</p>
 						</div>
-					)}
-					{/* <OrderDetails order={order} />
-          <OrderItems order={order} />
-          <OrderTotals totals={order} />
-          <OrderShipping order={order} /> */}
-					{/*<PaymentDetails order={order} />
-          <Help /> */}
+					</div>
+
+					{/* Product Items */}
+					<div className="space-y-4 mb-6">
+						{order.items?.map((item: any, index: number) => (
+							<div key={index} className="flex items-center gap-4">
+								{/* Product Image */}
+								<div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+									{item.product?.thumbnail ? (
+										<img
+											src={getImageUrl(item.product.thumbnail)}
+											alt={item.product.title}
+											className="w-full h-full object-cover"
+										/>
+									) : (
+										<div className="w-full h-full bg-gray-200 flex items-center justify-center">
+											<span className="text-gray-400 text-xs">No Image</span>
+										</div>
+									)}
+								</div>
+
+								{/* Product Details */}
+								<div className="flex-1 grid grid-cols-12 gap-4 items-center">
+									<div className="col-span-6">
+										<h3 className="font-semibold text-gray-900 text-lg">
+											{item.product?.title || item.title}
+										</h3>
+										{item.variant && (
+											<p className="text-gray-600 text-sm">
+												Variant: {item.variant.title}
+											</p>
+										)}
+										<p className="text-gray-500 text-sm">
+											Quantity: <span className="font-medium">{item.quantity}</span>
+										</p>
+									</div>
+									<div className="col-span-6 text-right">
+										<p className="font-bold text-lg text-gray-900">
+											{convertToLocale({
+												amount: item.total || 0,
+												currency_code: order.currency_code || 'USD',
+											})}
+										</p>
+									</div>
+								</div>
+							</div>
+						))}
+					</div>
+
+					{/* Order Summary */}
+					<div className="border-t border-gray-200 pt-6">
+						<div className="space-y-3">
+							<div className="flex justify-between text-gray-700">
+								<span className="font-semibold">Subtotal:</span>
+								<span className="font-semibold">
+									{convertToLocale({
+										amount: order.item_total || 0,
+										currency_code: order.currency_code || 'USD',
+									})}
+								</span>
+							</div>
+							<div className="flex justify-between text-gray-700">
+								<span className="font-semibold">Delivery:</span>
+								<span className="font-semibold">
+									{convertToLocale({
+										amount: order.shipping_total || 0,
+										currency_code: order.currency_code || 'USD',
+									})}
+								</span>
+							</div>
+							<div className="flex justify-between text-gray-700">
+								<span className="font-semibold">Coupon Discount:</span>
+								<span className="font-semibold">
+									{convertToLocale({
+										amount: order.discount_total || 0,
+										currency_code: order.currency_code || 'USD',
+									})}
+								</span>
+							</div>
+							<div className="flex justify-between text-xl font-bold text-gray-900 pt-3 border-t border-gray-200">
+								<span>Total</span>
+								<span>
+									{convertToLocale({
+										amount: order.total || 0,
+										currency_code: order.currency_code || 'USD',
+									})}
+								</span>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

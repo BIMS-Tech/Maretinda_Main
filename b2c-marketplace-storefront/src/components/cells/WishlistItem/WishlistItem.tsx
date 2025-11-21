@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { convertToLocale } from '@/lib/helpers/money';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 import type { Wishlist } from '@/types/wishlist';
 import { FaStar } from "react-icons/fa";
 
@@ -49,7 +50,7 @@ export const WishlistItem = ({
 								className="object-cover aspect-square w-full object-center h-full transition-all duration-300 rounded-xs"
 								height={360}
 								priority
-								src={decodeURIComponent(product.thumbnail)}
+								src={getImageUrl(decodeURIComponent(product.thumbnail))}
 								width={360}
 							/>
 						) : (

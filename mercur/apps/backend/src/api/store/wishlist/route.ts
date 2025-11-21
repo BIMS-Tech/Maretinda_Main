@@ -150,7 +150,7 @@ export const GET = async (
   req: AuthenticatedMedusaRequest,
   res: MedusaResponse
 ) => {
-  // Check if authentication context is properly set
+  // Authentication is enforced by middleware, so auth_context should be available
   if (!req.auth_context?.actor_id) {
     return res.status(401).json({
       message: "Authentication required. Please log in to access your wishlist."

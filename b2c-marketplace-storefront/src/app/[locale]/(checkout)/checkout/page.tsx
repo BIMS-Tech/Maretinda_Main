@@ -53,7 +53,7 @@ async function CheckoutPageContent({}) {
 		<PaymentWrapper cart={cart}>
 			<main className="container !max-w-7xl mx-auto px-4 py-8">
 				{/* Checkout Title */}
-				<h1 className="text-3xl font-serif text-center mb-8" style={{ color: '#111827', fontWeight: 700 }}>
+				<h1 className="text-3xl font-serif text-center mb-8" style={{ color: '#111827', fontWeight: 900 }}>
 					Checkout
 				</h1>
 

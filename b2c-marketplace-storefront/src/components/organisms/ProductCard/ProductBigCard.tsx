@@ -11,6 +11,7 @@ import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 import { cn } from '@/lib/utils';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -80,7 +81,7 @@ export const ProductBigCard = ({
 									className="object-cover w-full object-center h-full transition-all duration-300"
 									height={220}
 									priority
-									src={decodeURIComponent(product.thumbnail)}
+									src={getImageUrl(decodeURIComponent(product.thumbnail))}
 									width={295}
 								/>
 							) : (

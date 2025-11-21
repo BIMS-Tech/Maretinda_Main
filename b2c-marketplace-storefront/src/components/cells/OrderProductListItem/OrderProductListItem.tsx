@@ -4,6 +4,7 @@ import { Fragment } from 'react';
 import { Divider } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { convertToLocale } from '@/lib/helpers/money';
+import { getImageUrl } from '@/lib/helpers/get-image-url';
 import { cn } from '@/lib/utils';
 
 export const OrderProductListItem = ({
@@ -44,7 +45,7 @@ export const OrderProductListItem = ({
 								alt={item.title}
 								className="object-cover object-center"
 								height={90}
-								src={item.thumbnail}
+								src={getImageUrl(item.thumbnail)}
 								width={90}
 							/>
 						) : (

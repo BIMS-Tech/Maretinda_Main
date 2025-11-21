@@ -76,7 +76,7 @@ export const CartAddressSection = ({
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
 					)}
-					<h2 className="text-xl" style={{ color: '#111827', fontWeight: 700 }}>
+					<h2 className="checkout-section-title">
 						Shipping Address
 					</h2>
 				</div>
@@ -120,9 +120,9 @@ export const CartAddressSection = ({
 
 						<Button
 							type="submit"
-							className="mt-2 rounded-md"
+							className="mt-2 rounded-md !font-medium"
 							data-testid="submit-address-button"
-							style={{ backgroundColor: '#facc15', color: '#000' }}
+							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
 						>
 							Save
 						</Button>

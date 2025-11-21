@@ -32,7 +32,7 @@ export const Cart = async () => {
 				{/* Right Column - Order Summary */}
 				<div className="lg:col-span-4">
 					<div className="bg-white rounded-lg p-6 h-fit sticky top-4" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
-						<h2 className="text-xl mb-4" style={{ color: '#111827', fontWeight: 700 }}>Order Summary</h2>
+						<h2 className="text-xl mb-4" style={{ color: '#111827', fontWeight: 900 }}>Order Summary</h2>
 						
 						{/* Coupon Code Section */}
 						<div className="mb-6">
@@ -55,7 +55,7 @@ export const Cart = async () => {
 							{customer ? (
 								<LocalizedClientLink href="/checkout?step=address">
 									<Button 
-										className="w-full py-4 !text-black font-medium rounded-md transition-colors hover:!bg-yellow-500"
+										className="w-full py-4 !text-black font-bold rounded-md transition-colors hover:!bg-yellow-500"
 										style={{ backgroundColor: '#facc15' }}
 									>
 										Proceed To Checkout
@@ -66,7 +66,7 @@ export const Cart = async () => {
 									href={`/user?returnTo=${encodeURIComponent('/checkout?step=address')}`}
 								>
 									<Button 
-										className="w-full py-4 !text-black font-medium rounded-md transition-colors hover:!bg-yellow-500"
+										className="w-full py-4 !text-black font-bold rounded-md transition-colors hover:!bg-yellow-500"
 										style={{ backgroundColor: '#facc15' }}
 									>
 										Login to checkout
