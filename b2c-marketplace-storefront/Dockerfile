@@ -6,10 +6,10 @@ FROM base AS deps
 WORKDIR /app
 
 # Copy package files
-COPY b2c-marketplace-storefront/package*.json ./
+COPY package*.json ./
 
 # Install dependencies (including devDependencies for build)
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
 # Copy source code
-COPY b2c-marketplace-storefront/ ./
+COPY . ./
 
 # Build the application
 ENV NEXT_TELEMETRY_DISABLED 1

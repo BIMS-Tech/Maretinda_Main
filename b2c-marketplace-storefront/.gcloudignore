@@ -12,23 +12,37 @@
 .git
 .gitignore
 
-# Node.js dependencies:
+# Node.js dependencies (will be installed during build):
 node_modules/
 
-# Ignore everything except storefront
-backend/
-vendor-panel/
-mercur/
-configure-giyapay.js
-*.md
-!README.md
+# Build outputs
+.next/
+dist/
+build/
 
-# Keep only the storefront
-!b2c-marketplace-storefront/
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# But ignore storefront node_modules (will be installed during build)
-b2c-marketplace-storefront/node_modules/
-b2c-marketplace-storefront/.next/
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Ignore all yarn.lock files to prevent buildpack confusion
-**/yarn.lock
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Storybook build outputs
+storybook-static/

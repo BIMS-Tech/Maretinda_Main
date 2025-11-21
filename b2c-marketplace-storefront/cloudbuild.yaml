@@ -3,16 +3,17 @@ steps:
   # Install dependencies
   - name: 'node:22-alpine'
     entrypoint: 'npm'
-    args: ['install']
-    dir: 'b2c-marketplace-storefront'
+    args: ['install', '--legacy-peer-deps']
+    env:
+      - 'NODE_ENV=production'
     
   # Build the Next.js application
   - name: 'node:22-alpine'
     entrypoint: 'npm'
     args: ['run', 'build']
-    dir: 'b2c-marketplace-storefront'
     env:
       - 'NODE_ENV=production'
+      - 'NEXT_TELEMETRY_DISABLED=1'
     
   # Build and push Docker image
   - name: 'gcr.io/cloud-builders/docker'
