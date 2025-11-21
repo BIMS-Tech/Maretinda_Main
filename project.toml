@@ -1,0 +1,18 @@
+[project]
+id = "maretinda-storefront"
+name = "Maretinda Storefront"
+version = "0.1.0"
+
+[[build.buildpacks]]
+id = "google.nodejs.runtime"
+
+[[build.buildpacks]]
+id = "google.nodejs.npm"
+
+[[build.buildpacks]]
+id = "google.config.entrypoint"
+
+[build.env]
+GOOGLE_NODEJS_VERSION = "22.*"
+GOOGLE_NODE_ENV = "production"
+NPM_CONFIG_PRODUCTION = "false"
