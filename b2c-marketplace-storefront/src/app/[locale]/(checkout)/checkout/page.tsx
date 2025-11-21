@@ -11,7 +11,6 @@ import { retrieveCart } from '@/lib/data/cart';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
-import { retrieveRegion } from '@/lib/data/regions';
 
 export const metadata: Metadata = {
 	description: 'My cart page - Checkout',
@@ -51,7 +50,7 @@ async function CheckoutPageContent({}) {
 
 	return (
 		<PaymentWrapper cart={cart}>
-			<main className="container !max-w-7xl mx-auto px-4 py-8">
+			<main className="container !max-w-7xl mx-auto px-4 !py-14">
 				{/* Checkout Title */}
 				<h1 className="text-3xl font-serif text-center mb-8" style={{ color: '#111827', fontWeight: 900 }}>
 					Checkout
@@ -62,20 +61,25 @@ async function CheckoutPageContent({}) {
 					{/* Left Column - Checkout Steps */}
 					<div className="lg:col-span-7 space-y-4">
 						{/* Shipping Address Section */}
-						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
-							<CartAddressSection cart={cart} customer={customer} />
+						<div className="bg-white user-content-wrapper">
+							<CartAddressSection
+								cart={cart}
+								customer={customer}
+							/>
 						</div>
 
 						{/* Delivery Section */}
-						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+						<div className="bg-white user-content-wrapper">
 							<CartShippingMethodsSection
-								availableShippingMethods={shippingMethods as any}
+								availableShippingMethods={
+									shippingMethods as any
+								}
 								cart={cart}
 							/>
 						</div>
 
 						{/* Payment Section */}
-						<div className="bg-white rounded-lg p-6" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+						<div className="bg-white  user-content-wrapper">
 							<CartPaymentSection
 								availablePaymentMethods={paymentMethods}
 								cart={cart}
@@ -85,7 +89,7 @@ async function CheckoutPageContent({}) {
 
 					{/* Right Column - Order Summary */}
 					<div className="lg:col-span-5">
-						<div className="bg-white rounded-lg p-6 h-fit sticky top-4" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
+						<div className="bg-white !p-6 h-fit sticky top-4 user-content-wrapper">
 							<CartReview cart={cart} />
 						</div>
 					</div>

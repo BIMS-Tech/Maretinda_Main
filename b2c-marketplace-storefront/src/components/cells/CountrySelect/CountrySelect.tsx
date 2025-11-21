@@ -61,7 +61,7 @@ const CountrySelect = forwardRef<
 					: undefined;
 
 	return (
-		<label className="label-sm block">
+		<label className="label-md block">
 			<p className={clsx('mb-2', error && 'text-negative')}>
 				Country/Region<span className="text-red-500/50">*</span>
 			</p>

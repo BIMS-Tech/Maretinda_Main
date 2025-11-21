@@ -173,6 +173,7 @@ export default {
 				},
 			},
 			fill: {
+				brandYellow: 'rgba(var(--content-action-brand-yellow))',
 				disabled: 'rgba(var(--content-disabled))',
 				primary: 'rgba(var(--content-action-on-primary))',
 				secondary: 'rgba(var(--content-action-on-secondary))',

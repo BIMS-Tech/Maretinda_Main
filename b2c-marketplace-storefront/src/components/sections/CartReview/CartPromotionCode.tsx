@@ -17,7 +17,7 @@ export default function CartPromotionCode({
 
 	const handleApplyPromotionCode = async () => {
 		if (!promotionCode.trim()) return;
-		
+
 		setIsLoading(true);
 		try {
 			const res = await applyPromotions([promotionCode]);
@@ -42,19 +42,19 @@ export default function CartPromotionCode({
 				<div className="mb-3">
 					{cart.promotions.map((promo) => (
 						<div
-							key={promo.id}
 							className="text-sm text-green-600 mb-1"
+							key={promo.id}
 						>
 							✓ {promo.code} applied
 						</div>
 					))}
 				</div>
 			)}
-			
+
 			{/* Coupon Input */}
-			<div className="flex gap-2 items-center">
+			<div className="flex gap-1.5 items-end">
 				<Input
-					className="flex-1 h-10 px-3"
+					className="flex-1 h-10 px-3 rounded-l-[6px] rounded-r-none"
 					onChange={(e) => setPromotionCode(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') {
@@ -65,7 +65,7 @@ export default function CartPromotionCode({
 					value={promotionCode}
 				/>
 				<Button
-					className="!bg-yellow-400 hover:!bg-yellow-500 !text-black font-medium whitespace-nowrap px-4 h-10"
+					className=" !text-black !font-medium whitespace-nowrap px-4 h-10 rounded-l-none rounded-r-[6px]"
 					disabled={isLoading || !promotionCode.trim()}
 					loading={isLoading}
 					onClick={handleApplyPromotionCode}

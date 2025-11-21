@@ -159,7 +159,7 @@ export const Addresses = ({
 			</div>
 			{showForm && (
 				<Modal
-					childrenClass="px-6 pt-6 flex-1 overflow-y-auto"
+					childrenClass="p-6 flex-1 overflow-y-auto"
 					heading="Shipping Address"
 					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					modalClass="max-w-[670px] flex flex-col"

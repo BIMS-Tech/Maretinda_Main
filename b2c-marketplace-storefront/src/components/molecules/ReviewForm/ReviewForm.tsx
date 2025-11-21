@@ -12,7 +12,7 @@ import {
 
 import { Button } from '@/components/atoms';
 import { InteractiveStarRating } from '@/components/atoms/InteractiveStarRating/InteractiveStarRating';
-import { createReview, type Order, Review } from '@/lib/data/reviews';
+import { createReview, type Order } from '@/lib/data/reviews';
 import { cn } from '@/lib/utils';
 
 import { type ReviewFormData, reviewSchema } from './schema';
@@ -74,10 +74,13 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
 
 	return (
 		<form onSubmit={handleSubmit(submit)}>
-			<div className="px-4 space-y-4">
-				<div className="max-w-full grid grid-cols-1 items-top gap-4 mb-4">
+			<div className="space-y-4">
+				<div className="max-w-full grid grid-cols-1 items-top gap-4 mb-8">
 					<div>
-						<label className="label-sm block mb-2">Rating</label>
+						{/** biome-ignore lint/a11y/noLabelWithoutControl: no need */}
+						<label className="label-md !font-medium text-black/40 block mb-2">
+							Your rating*
+						</label>
 						<InteractiveStarRating
 							error={!!errors.rating}
 							onChange={(value) => setValue('rating', value)}
@@ -90,9 +93,13 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
 						)}
 					</div>
 
-					<label className={cn('label-sm block relative')}>
-						<p className={cn(error && 'text-negative')}>
-							Your opinion
+					<label
+						className={cn(
+							'label-md !font-medium text-black/40 block relative',
+						)}
+					>
+						<p className={cn(error && 'text-negative', 'mb-2')}>
+							Your review*
 						</p>
 						<textarea
 							className={cn(
@@ -121,7 +128,20 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
 					</label>
 				</div>
 				{error && <p className="label-md text-negative">{error}</p>}
-				<Button className="w-full">SUBMIT REVIEW</Button>
+				<div className="flex justify-end gap-2">
+					<Button
+						className="w-fit px-2 py-1 bg-white !text-[13px] rounded-[6px] border border-black/10 shadow-sm !font-medium"
+						type="button"
+					>
+						Cancel
+					</Button>
+					<Button
+						className="w-fit px-2 py-1 !text-[13px] !font-medium rounded-[6px]"
+						type="submit"
+					>
+						Submit Review
+					</Button>
+				</div>
 			</div>
 		</form>
 	);

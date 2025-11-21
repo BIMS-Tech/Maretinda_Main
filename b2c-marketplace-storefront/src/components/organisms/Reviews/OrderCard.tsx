@@ -12,44 +12,44 @@ export const OrderCard = ({
 	showForm?: (review: Order) => void;
 }) => {
 	return (
-		<Card className="flex gap-6 px-4 justify-between w-full">
+		<Card className="flex flex-col sm:flex-row gap-6 p-3 sm:p-6 justify-between w-full shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border-black/15">
 			<div className="flex gap-4 max-lg:items-center">
 				<div>
 					{order?.items?.[0]?.thumbnail ? (
 						<Image
 							alt="Seller photo"
-							className="border border-base-primary rounded-xs"
-							height={64}
+							className="border border-base-primary rounded-xs w-[64px] sm:w-[86px]"
+							height={86}
 							src={order.items[0].thumbnail}
-							width={64}
+							width={86}
 						/>
 					) : (
 						<Image
 							alt="Seller photo"
-							className="opacity-25 scale-75"
-							height={64}
+							className="opacity-25 scale-75 w-[64px] sm:w-[86px]"
+							height={86}
 							src={'/images/placeholder.svg'}
-							width={64}
+							width={86}
 						/>
 					)}
 				</div>
-				<div>
-					<p className="label-md text-primary font-normal">
+				<div className="flex flex-col gap-1">
+					<p className="label-md text-primary !font-semibold">
 						{order.seller.name}
 					</p>
-					<p className="label-md text-secondary">
+					<p className="label-lg text-primary !font-normal capitalize">
 						{order?.items?.[0]?.subtitle}
 					</p>
-					<p className="label-md text-secondary">
+					<p className="label-sm text-[#999]">
 						Date: {format(order.created_at, 'MMM dd, yyyy')}
 					</p>
 				</div>
 			</div>
 			<div className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 w-1/2">
 				{showForm ? (
-					<div className="flex justify-end w-full">
+					<div className="flex sm:justify-end w-full">
 						<Button
-							className="w-fit uppercase"
+							className="w-fit capitalize text-[13px] !font-medium p-2.5 px-6"
 							onClick={() => showForm(order)}
 						>
 							Write review

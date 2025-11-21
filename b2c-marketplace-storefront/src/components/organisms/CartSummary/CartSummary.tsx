@@ -20,7 +20,7 @@ export const CartSummary = ({
 	discount?: number;
 }) => {
 	return (
-		<div className="space-y-3 text-sm">
+		<div className="space-y-4 text-black text-lg">
 			{/* Items Count */}
 			<div className="flex justify-between checkout-summary-text">
 				<span style={{ fontWeight: 600 }}>Items:</span>

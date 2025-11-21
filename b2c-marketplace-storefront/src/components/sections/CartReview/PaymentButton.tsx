@@ -2,7 +2,6 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
-import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -156,7 +155,7 @@ const StripePaymentButton = ({
 	return (
 		<>
 			<Button
-				className="w-full"
+				className="w-full py-2.5 !text-black !font-medium rounded-sm text-md"
 				disabled={disabled || notReady}
 				loading={submitting}
 				onClick={handlePayment}
@@ -189,7 +188,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 	return (
 		<>
 			<Button
-				className="w-full"
+				className="w-full py-2.5 !text-black !font-medium rounded-sm text-md"
 				disabled={notReady}
 				onClick={handlePayment}
 			>
