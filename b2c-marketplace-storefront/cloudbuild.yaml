@@ -1,33 +1,23 @@
 # Google Cloud Build configuration for Maretinda Storefront
+# Uses Docker to avoid buildpack issues entirely
+
 steps:
-  # Install dependencies
-  - name: 'node:22-alpine'
-    entrypoint: 'npm'
-    args: ['install', '--legacy-peer-deps']
-    env:
-      - 'NODE_ENV=production'
-    
-  # Build the Next.js application
-  - name: 'node:22-alpine'
-    entrypoint: 'npm'
-    args: ['run', 'build']
-    env:
-      - 'NODE_ENV=production'
-      - 'NEXT_TELEMETRY_DISABLED=1'
-    
-  # Build and push Docker image
+  # Build Docker image directly (no buildpacks)
   - name: 'gcr.io/cloud-builders/docker'
     args: 
       - 'build'
       - '-t'
       - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '-t'
+      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:latest'
       - '.'
       
   # Push the image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--all-tags'
+      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME'
       
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -51,6 +41,8 @@ steps:
       - '2'
       - '--max-instances'
       - '10'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,NEXT_TELEMETRY_DISABLED=1'
 
 # Build configuration
 options:
