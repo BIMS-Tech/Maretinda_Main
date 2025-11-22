@@ -43,7 +43,6 @@ const nextConfig: NextConfig = {
 			fullUrl: true,
 		},
 	},
-	output: 'standalone',
 	reactStrictMode: true,
 	trailingSlash: false,
 };
