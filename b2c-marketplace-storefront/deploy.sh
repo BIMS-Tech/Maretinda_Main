@@ -34,3 +34,4 @@ gcloud run deploy $SERVICE_NAME \
 echo "✅ Deployment completed!"
 echo "🌐 Your storefront should be available at:"
 gcloud run services describe $SERVICE_NAME --region $REGION --project $PROJECT_ID --format 'value(status.url)'
+

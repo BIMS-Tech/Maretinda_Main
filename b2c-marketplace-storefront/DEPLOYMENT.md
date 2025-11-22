@@ -93,3 +93,4 @@ The app includes a health check endpoint at `/api/health` that returns:
   "service": "maretinda-storefront"
 }
 ```
+
