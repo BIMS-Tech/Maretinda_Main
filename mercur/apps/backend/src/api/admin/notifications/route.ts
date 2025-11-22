@@ -70,20 +70,20 @@ export const GET = async (
       })
     }
 
-    const { rows: notifications, metadata } = await refetchEntities(
-      'notification',
-      { ...req.filterableFields, channel: 'feed' },
-      req.scope,
-      req.queryConfig.fields,
-      req.queryConfig.pagination
-    )
+  const { rows: notifications, metadata } = await refetchEntities(
+    'notification',
+    { ...req.filterableFields, channel: 'feed' },
+    req.scope,
+    req.queryConfig.fields,
+    req.queryConfig.pagination
+  )
 
-    res.json({
-      notifications,
-      count: metadata.count,
-      offset: metadata.skip,
-      limit: metadata.take
-    })
+  res.json({
+    notifications,
+    count: metadata.count,
+    offset: metadata.skip,
+    limit: metadata.take
+  })
   } catch (error) {
     console.error('[Admin Notifications] Error fetching notifications:', error)
     
