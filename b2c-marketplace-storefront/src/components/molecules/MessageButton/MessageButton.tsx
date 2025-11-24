@@ -12,7 +12,7 @@ export const MessageButton = () => {
 
 	return (
 		<LocalizedClientLink
-			className="hidden sm:block relative"
+			className="hidden sm:block relative min-w-[30px] sm:pl-2 md:min-w-[35px] xl:min-w-[45px] md:pl-3 xl:pl-4"
 			href="/user/messages"
 		>
 			<MessageIcon2 size={20} />
