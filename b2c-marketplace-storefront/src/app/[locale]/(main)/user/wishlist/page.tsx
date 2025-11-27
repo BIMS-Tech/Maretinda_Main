@@ -34,8 +34,10 @@ export default async function Wishlist() {
 
 	return (
 		<Layout>
-			<Container className="md:col-span-3 space-y-8 p-[38px] flex flex-col gap-12 user-content-wrapper">
-				<h2 className="font-lora font-bold text-4xl">Wishlists</h2>
+			<Container className="md:col-span-3 flex flex-col user-content-wrapper">
+				<h1 className="mb-12 font-lora font-bold text-4xl text-black">
+					Wishlists
+				</h1>
 				{isEmpty(wishlist?.[0]?.products) ? (
 					<div className="max-w-96 mx-auto flex flex-col items-center justify-center">
 						<p className="text-lg text-secondary mb-6">
