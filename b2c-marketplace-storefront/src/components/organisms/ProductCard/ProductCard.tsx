@@ -7,8 +7,8 @@ import Image from 'next/image';
 import { Avatar, Button, StarRating } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { getImageUrl } from '@/lib/helpers/get-image-url';
+import { getProductPrice } from '@/lib/helpers/get-product-price';
 import type { SellerProps } from '@/types/seller';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -57,12 +57,12 @@ export const ProductCard = ({
 	const imageGallery = product.images.map(
 		(image: { id: string; name: string; url: string }) => ({
 			...image,
-			url: getImageUrl(image.url)
+			url: getImageUrl(image.url),
 		}),
 	);
 
 	return (
-		<div className="py-5 px-2 sm:max-w-[315px] lg:max-w-[312px] w-full min-h-[400px] ">
+		<div className="py-5 px-2 sm:max-w-[315px] lg:max-w-[312px] lg:w-[312px] w-full min-h-[400px] ">
 			<div
 				className={clsx(
 					' group bg-white hover:shadow-lg rounded-sm flex flex-col justify-start w-full overflow-hidden',
@@ -79,7 +79,9 @@ export const ProductCard = ({
 									className="object-cover w-full object-center h-full transition-all duration-300 max-h-[220px]"
 									height={220}
 									priority
-									src={getImageUrl(decodeURIComponent(product.thumbnail))}
+									src={getImageUrl(
+										decodeURIComponent(product.thumbnail),
+									)}
 									width={295}
 								/>
 							) : (
