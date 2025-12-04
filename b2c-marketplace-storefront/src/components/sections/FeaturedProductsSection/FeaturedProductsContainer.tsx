@@ -31,19 +31,19 @@ const renderImage = ({
 	return (
 		<div
 			className={cn(
-				'absolute bottom-0 right-0 pointer-events-none overflow-hidden flex justify-end items-end w-3/4 pr-8 md:pr-4',
+				'h-[325px] md:h-[390px] lg:h-[390px] absolute bottom-0 right-0 pointer-events-none overflow-hidden flex justify-end lg:justify-center items-end w-full',
 				className,
 			)}
 		>
 			<Image
 				alt={title}
 				className={cn(
-					'object-cover object-center w-[55%] md:w-[75%] lg:w-full',
+					'object-contain object-bottom w-full h-full',
 					imageClassName,
 				)}
 				fill={imageFill}
 				height={height}
-				sizes="100vw"
+				// sizes="100vw"
 				src={imageUrl}
 				width={width}
 			/>
@@ -54,6 +54,7 @@ const renderImage = ({
 const CARD_DATA: Array<{
 	bgColor: string;
 	buttonUrl: string;
+	category: string;
 	className?: string;
 	height?: number;
 	id?: number;
@@ -62,67 +63,76 @@ const CARD_DATA: Array<{
 	imageUrl: string;
 	size: string;
 	title: string;
+	textColor: string;
 	width?: number;
 }> = [
 	{
-		bgColor: '#FFE3DA',
-		buttonUrl: '/ph/categories/fashion',
-		id: 1,
-		imageClassName: 'w-[45%] md:w-[80%] lg:w-[75%]',
-		imageUrl: '/images/featured-products/fashion.png',
+		bgColor: '#EEEEEE',
+		buttonUrl: '/ph/categories/sofa',
+		category: 'Home & Living',
+		className: 'w-full h-full',
+		id: 2,
+		imageClassName: 'w-3/4 md:w-full',
+		imageUrl: '/images/featured-products/sofa.png',
 		size: 'large',
-		title: 'Fashion',
+		textColor: '#444',
+		title: 'Sofa',
 	},
 	{
-		bgColor: '#FFE3DA',
-		buttonUrl: '/ph/categories/sofa',
-		className: 'w-full h-full',
-		height: 0,
-		id: 2,
-		imageFill: true,
-		imageUrl: '/images/featured-products/sofa.jpg',
+		bgColor: '#D4EDF8',
+		buttonUrl: '/ph/categories/sneakers',
+		category: 'Clothing & Shoes',
+		id: 5,
+		imageClassName: 'w-3/4 md:w-full',
+		imageUrl: '/images/featured-products/sneakers.png',
 		size: 'small',
-		title: 'Sofa',
-		width: 0,
+		textColor: '#0A73A1',
+		title: 'Sneaker',
+	},
+	{
+		bgColor: '#FEF9C4',
+		buttonUrl: '/ph/categories/toys',
+		category: 'Toys & Entertainment',
+		id: 4,
+		imageClassName: 'w-3/4 md:w-full',
+		imageUrl: '/images/featured-products/toys.png',
+		size: 'small',
+		textColor: '#D4B100',
+		title: 'Toys',
+	},
+	{
+		bgColor: '#D8F5E0',
+		buttonUrl: '/ph/categories/groceries',
+		category: 'Food Items',
+		id: 6,
+		imageClassName: 'w-3/4 md:w-full',
+		imageUrl: '/images/featured-products/groceries.png',
+		size: 'small',
+		textColor: '#25D02C',
+		title: 'Groceries',
 	},
 	{
 		bgColor: '#FFF3D9',
 		buttonUrl: '/ph/categories/food',
+		category: 'Food Items',
 		className: 'w-3/4 md:w-full',
-		height: 550,
 		id: 3,
-		imageClassName: 'w-[60%] md:w-[100%] lg:w-[90%]',
+		imageClassName: 'w-3/4 md:w-full',
 		imageUrl: '/images/featured-products/food.png',
 		size: 'small',
+		textColor: '#D4B100',
 		title: 'Food',
-		width: 550,
 	},
 	{
-		bgColor: '#A7E0B3',
-		buttonUrl: '/ph/categories/toys',
-		id: 4,
-		imageClassName: 'w-[35%] md:w-full',
-		imageUrl: '/images/featured-products/toy.png',
-		size: 'small',
-		title: 'Toy',
-	},
-	{
-		bgColor: '#D8F5E0',
-		buttonUrl: '/ph/categories/sneakers',
-		id: 5,
-		imageClassName: 'w-[40%] md:w-full',
-		imageUrl: '/images/featured-products/sneakers.png',
-		size: 'small',
-		title: 'Sneaker',
-	},
-	{
-		bgColor: '#DBEAFF',
-		buttonUrl: '/ph/categories/groceries',
-		id: 6,
-		imageClassName: 'w-[60%] md:w-[90%]',
-		imageUrl: '/images/featured-products/groceries.png',
+		bgColor: '#FFE9DA',
+		buttonUrl: '/ph/categories/fashion',
+		category: 'Fashion  & Apparel',
+		id: 1,
+		imageClassName: 'w-3/4 md:w-full',
+		imageUrl: '/images/featured-products/fashion.png',
 		size: 'large',
-		title: 'Groceries',
+		textColor: '#C63D42',
+		title: 'Fashion',
 	},
 ];
 
@@ -135,8 +145,10 @@ const FeaturedProductsContainer: React.FC<
 				<FeaturedProductsCard
 					bgColor={card.bgColor}
 					buttonUrl={card.buttonUrl}
+					category={card.category}
 					key={card.id}
 					size={card.size}
+					textColor={card.textColor}
 					title={card.title}
 				>
 					{renderImage({
