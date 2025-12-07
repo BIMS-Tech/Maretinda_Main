@@ -6,6 +6,11 @@ on:
     paths: 
       - 'admin-panel/**'
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment'
+        required: false
+        default: 'false'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}

@@ -504,7 +504,7 @@ export const useUpdateProduct = (
         method: "GET",
         query: {
           fields:
-            "-status,-options,-variants,-type,-collection,-attribute_values",
+            "-status,-options,-variants,-type,-collection,-attribute_values,-secondary_categories",
         },
       })
 
