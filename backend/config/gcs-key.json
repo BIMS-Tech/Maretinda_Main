@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "maretinda-test",
+  "private_key_id": "8c9f11bee5101baeb793d0674a10eccacabaee71",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCguBX6B7owgJz+\nHJ8+Oz1OmkYNvloCb5E2w/zWmtoiLjEca0jN0m4dRHH064YTfYB6A1rRIt3Z/Tlw\nbQCKS5/YZcg2GiLEd6z0AoMfUFCH6TpTSoKcersDX4Mw6BtvqnrW8GC/7Uvm5rCf\nZ8kvVGOSMDNHRBUycD226dOaXgb7oNWuT4l18cfYYaAqKkV/AnLjKJH8a8lNjYMX\nltS/4JFDdoO6/09FTThaTEY5BQn7DT3XEpbKbIHF75rlCHjdH/TM/q/IBtCSsR6e\nTAtskEwRZ7GGfGh2wvpZsIRPjc3Gl6EMJvLqOckZmfw31r/bSskwU3lJTW8DKiKu\naHd4krETAgMBAAECggEABcw0CUt4KDNNtoJCRISpMHVhbRqtF+rDwn/zJ8LiAr3q\nSkG/mHQPiARLqKEzUcDDG9gI3T4I4kn/n6ySljBgd9NDCCveX0vlWebIwMEy/Qqu\n11r693mm1sLm+CKK/V+NlVBbvGOZy3uxMJVzL/lOfJYjuICkGXmmPhi36Bj6sLBh\nR5+eZ9gTrwSm0H2c+8W6bql6h6eKVMewDGwSz0ZzQ+yvJqo1z1x8oDOODWk1UOrl\nGJzqQR94NHVzaDqeLs5KNiqO/gNaEp6q2a6LxJqVr+dmZH2Bxfz3Ei671j3DXiXe\n2ZmhVVOEfjYVzO8hxwxQ9zhhB35EoQ4JQ+rwNLS4OQKBgQDR3pjhs4BINmLhCi5g\nRgwIIeIVk0Jh5HUM2DiL3ofH3BLPwaXWTvve1hxG2RxDw+cEc6Fga9Zn7VNByq4/\n2C0JcPfPbJHSXGaBn3FySB9aqEkexTPGvznToKrH1MwQpiKclN6fsHQjha1i4zeJ\n+d+0fg7cMcLBtwunfCVngl3/ywKBgQDEC8h9Vy3n+sCYL6JP7gvC66dj0hZGB292\ncoFAFhFxPnuj+p6hPINjdAiS+HMLTB5zZ1RVmwO39GD2pIu0IzZoj6ZCZX1/tD1z\nNsPCrtDIbRJ99N9jxMtj+evALwAxSV9vPitbNYGLnmyerH4Tt4WHxkc0hHf3Al04\n4wFGmvba2QKBgDtHI2mEuPQsoGst5AF/Z4CYiXJMoNBjpggVvosLNNDnwUx7Russ\nbgn38g603j3pxIPGYUuJygqaxwxrQiJ4Xegvx18ILHv9a1qrfXCpHGoP5G9Thhda\nBexXkkVVPrppIpeVmPgD8BnkdR/cS+Cl+mDRxkK9r2Pl3t3Uu//rm79XAoGBAK9h\nrzFaPWorbAJ5kqYY2hK9iJkHR//MBQ4cr74qP95kPG3c9e5eWVguZME+XIT9yrwI\n82xF6hS2HcxoNcaoPbNa1yzM6HHHR7X7hzNx+rtiwElIOFRjqGS/HwVlxrFQ53x4\nTIcjHcpOpvNocr2mz2FAo1C7NSsXxVfv1KNaXH45AoGBAL7ApGaabieLl4fP6/A9\nwKBWNGEA6RJV9CAnx52vQo9MWNeFCluH25jNt64GDkZcO3GguL/wqPz+9nwb8N7k\nq33DemyEjM0kFW7Xwtbbml9cbZkRi/0t74WAzrs58zotN6IFga2pSifG5tkOk5FQ\n6xPiL+uyP5RL1GRLHlLVo/5C\n-----END PRIVATE KEY-----\n",
+  "client_email": "upload-service@maretinda-test.iam.gserviceaccount.com",
+  "client_id": "107930574800162035788",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/upload-service%40maretinda-test.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

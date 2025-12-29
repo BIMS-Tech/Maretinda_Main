@@ -38,7 +38,7 @@ export const ProductDetailsHeader = ({
 	user,
 	wishlist,
 }: {
-	product: HttpTypes.StoreProduct & { seller?: SellerProps };
+	product: HttpTypes.StoreProduct & { seller?: SellerProps; reviews?: any[] };
 	locale: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist?: Wishlist[];
@@ -48,6 +48,13 @@ export const ProductDetailsHeader = ({
 	const [quantity, setQuantity] = useState(1);
 	const { allSearchParams } = useGetAllSearchParams();
 	const router = useRouter();
+
+	// Calculate real product ratings
+	const productReviews = product.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
+	const reviewCount = productReviews.length;
+	const averageRating = reviewCount > 0
+		? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+		: 0;
 
 	const { cheapestVariant } = getProductPrice({
 		product,
@@ -129,15 +136,18 @@ export const ProductDetailsHeader = ({
 					<h2 className="label-md text-secondary">
 						{/* {product?.brand || "No brand"} */}
 					</h2>
-					<h1 className="heading-lg text-primary font-lora !font-bold">
-						{product.title}
-					</h1>
+				<h1 className="heading-lg text-primary font-lora !font-bold">
+					{product.title}
+				</h1>
+				{reviewCount > 0 && (
 					<div className="flex items-center gap-2 my-2">
-						<StarRating rate={4} starSize={16} />
+						<StarRating rate={averageRating} starSize={16} />
 						<span className="text-md text-black/60 !font-medium">
-							<span className="text-black">4.5/</span>5
+							<span className="text-black">{averageRating.toFixed(1)}/</span>5
+							{' '}({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
 						</span>
 					</div>
+				)}
 					<div className="mt-2 flex gap-2 items-center">
 						<span
 							className={cn(

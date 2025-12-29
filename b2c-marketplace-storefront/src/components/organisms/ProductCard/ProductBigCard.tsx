@@ -25,7 +25,7 @@ export const ProductBigCard = ({
 	wishlist,
 }: {
 	product: Hit<HttpTypes.StoreProduct> | Partial<Hit<BaseHit>>;
-	api_product?: HttpTypes.StoreProduct | null;
+	api_product?: (HttpTypes.StoreProduct & { reviews?: any[] }) | null;
 	id: number;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[];
@@ -38,6 +38,13 @@ export const ProductBigCard = ({
 		// biome-ignore lint/style/noNonNullAssertion: api_product will always be present
 		product: api_product! as HttpTypes.StoreProduct,
 	});
+
+	// Calculate real product ratings
+	const productReviews = api_product.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
+	const reviewCount = productReviews.length;
+	const averageRating = reviewCount > 0
+		? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+		: 0;
 
 	return (
 		<div className={cn(id === 0 ? 'pt-0 pb-2' : 'py-2')}>
@@ -116,12 +123,14 @@ export const ProductBigCard = ({
 										</p>
 									)}
 								</div>
+							{reviewCount > 0 && (
 								<div className="flex items-center gap-2 mt-2">
-									<StarRating rate={4} starSize={16} />
+									<StarRating rate={averageRating} starSize={16} />
 									<span className="text-md text-black/60 !font-medium">
-										(88)
+										({reviewCount})
 									</span>
 								</div>
+							)}
 							</div>
 							<div className="mt-4">
 								<div

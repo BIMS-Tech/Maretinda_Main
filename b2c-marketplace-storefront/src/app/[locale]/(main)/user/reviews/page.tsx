@@ -1,4 +1,5 @@
-import { LoginForm } from '@/components/molecules';
+import { redirect } from 'next/navigation';
+
 import { Layout, ReviewsToWrite } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
@@ -6,7 +7,9 @@ import { listOrders } from '@/lib/data/orders';
 export default async function Page() {
 	const user = await retrieveCustomer();
 
-	if (!user) return <LoginForm />;
+	if (!user) {
+		redirect('/login');
+	}
 
 	const orders = await listOrders();
 

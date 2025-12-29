@@ -17,9 +17,12 @@ export default async function UserPage({
 	const { id } = await params;
 
 	const user = await retrieveCustomer();
-	const orderSet = await retrieveOrderSet(id);
 
-	if (!user) return redirect('/user');
+	if (!user) {
+		redirect('/login');
+	}
+
+	const orderSet = await retrieveOrderSet(id);
 
 	// const orderSet2 = {
 	// 	billing_address: {

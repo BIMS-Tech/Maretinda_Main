@@ -1,6 +1,7 @@
 import { isEmpty } from 'lodash';
+import { redirect } from 'next/navigation';
 
-import { LoginForm, ParcelAccordion } from '@/components/molecules';
+import { ParcelAccordion } from '@/components/molecules';
 import { Layout } from '@/components/organisms';
 import { OrdersPagination } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -15,7 +16,9 @@ export default async function UserPage({
 }) {
 	const user = await retrieveCustomer();
 
-	if (!user) return <LoginForm />;
+	if (!user) {
+		redirect('/login');
+	}
 
 	const orders = await listOrders();
 

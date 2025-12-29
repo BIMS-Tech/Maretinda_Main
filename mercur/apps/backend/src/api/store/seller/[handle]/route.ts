@@ -1,6 +1,8 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
+import sellerReview from '../../../../links/seller-review'
+
 /**
  * @oas [get] /store/seller/{handle}
  * operationId: "StoreGetSellerByHandle"
@@ -42,13 +44,40 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     data: [seller]
   } = await query.graph({
     entity: 'seller',
-    fields: req.queryConfig.fields,
+    fields: req.queryConfig.fields.filter(f => !f.startsWith('reviews')),
     filters: {
       handle: req.params.handle
     }
   })
 
+  if (!seller) {
+    return res.json({ seller: null })
+  }
+
+  // Fetch reviews through the link table if requested
+  const wantsReviews = req.queryConfig.fields.some(f => f.startsWith('reviews'))
+  let reviews = []
+  
+  if (wantsReviews) {
+    const reviewFields = req.queryConfig.fields
+      .filter(f => f.startsWith('reviews.'))
+      .map(f => `review.${f.replace('reviews.', '')}`)
+    
+    const { data: reviewRelations } = await query.graph({
+      entity: sellerReview.entryPoint,
+      fields: reviewFields.length ? reviewFields : ['review.*', 'review.customer.*'],
+      filters: {
+        seller_id: seller.id
+      }
+    })
+
+    reviews = reviewRelations.map((relation) => relation.review)
+  }
+
   res.json({
-    seller
+    seller: {
+      ...seller,
+      reviews: wantsReviews ? reviews : undefined
+    }
   })
 }

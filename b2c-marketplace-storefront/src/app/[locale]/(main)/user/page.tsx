@@ -1,4 +1,5 @@
-import Unauthorized from '@/app/unauthorized';
+import { redirect } from 'next/navigation';
+
 import { Button } from '@/components/atoms/Button/Button';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { Layout } from '@/components/organisms';
@@ -7,7 +8,9 @@ import { retrieveCustomer } from '@/lib/data/customer';
 export default async function UserPage() {
 	const user = await retrieveCustomer();
 
-	if (!user) return Unauthorized();
+	if (!user) {
+		redirect('/login');
+	}
 
 	return (
 		<Layout>

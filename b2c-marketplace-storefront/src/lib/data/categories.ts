@@ -17,12 +17,16 @@ export const listCategories = async ({
 		.fetch<{
 			product_categories: HttpTypes.StoreProductCategory[];
 		}>('/store/product-categories', {
-			cache: 'force-cache',
+			next: { revalidate: 60 }, // Revalidate every 60 seconds
 			query: {
 				fields: [
+					'id',
+					'category_children.id',
 					'category_children.handle',
 					'category_children.name',
 					'category_children.rank',
+					'category_children.description',
+					'description',
 					'handle',
 					'name',
 					'rank',
@@ -33,6 +37,16 @@ export const listCategories = async ({
 			},
 		})
 		.then(({ product_categories }) => product_categories);
+
+	// If no heading categories specified, treat all top-level categories as children categories
+	if (headingCategories.length === 0) {
+		return {
+			categories: categories.filter(
+				({ parent_category_id }) => !parent_category_id,
+			),
+			parentCategories: [],
+		};
+	}
 
 	const parentCategories = categories.filter(({ name }) =>
 		headingCategories.includes(name.toLowerCase()),

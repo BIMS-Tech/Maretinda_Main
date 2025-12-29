@@ -38,16 +38,38 @@ export const uploadFilesQuery = async (files: any[]) => {
     formData.append("files", file)
   }
 
-  return await fetch(`${backendUrl}/vendor/uploads`, {
-    method: "POST",
-    body: formData,
-    headers: {
-      authorization: `Bearer ${token}`,
-      "x-publishable-api-key": publishableApiKey,
-    },
-  })
-    .then((res) => res.json())
-    .catch(() => null)
+  // Upload directly to Google Cloud Storage via /uploads-vendor
+  try {
+    console.log('[Upload] 📤 Uploading', files.length, 'files to Google Cloud Storage...')
+    const uploadStart = Date.now()
+    
+    const response = await fetch(`${backendUrl}/uploads-vendor`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        authorization: `Bearer ${token}`,
+        "x-publishable-api-key": publishableApiKey,
+      },
+    })
+    
+    const uploadTime = Date.now() - uploadStart
+    console.log('[Upload] Response received in', uploadTime, 'ms')
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('[Upload] ❌ Error:', errorText)
+      throw new Error(`Upload failed: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    console.log('[Upload] ✅ Success!', data.files?.length, 'files uploaded to GCS')
+    console.log('[Upload] Files stored at: Google Cloud Storage')
+    
+    return data
+  } catch (error) {
+    console.error('[Upload] ❌ Exception:', error)
+    throw error // Re-throw so UI can show error
+  }
 }
 
 export const fetchQuery = async (

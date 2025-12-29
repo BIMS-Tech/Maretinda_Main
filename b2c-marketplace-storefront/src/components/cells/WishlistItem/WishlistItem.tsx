@@ -13,6 +13,7 @@ import { DeleteWishlistButton } from '../WishlistButton/DeleteWishlistButton';
 
 interface StoreProduct extends HttpTypes.StoreProduct {
 	seller?: SellerProps;
+	reviews?: any[];
 }
 
 export const WishlistItem = ({
@@ -33,6 +34,13 @@ export const WishlistItem = ({
 		amount: product.calculated_amount,
 		currency_code: product.currency_code,
 	});
+
+	// Calculate real product ratings
+	const productReviews = api_product?.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
+	const reviewCount = productReviews.length;
+	const averageRating = reviewCount > 0
+		? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+		: 0;
 
 	return (
 		<div
@@ -88,12 +96,14 @@ export const WishlistItem = ({
 								$160
 							</span>
 						</div>
+					{reviewCount > 0 && (
 						<div className="flex items-center gap-2">
-							<StarRating rate={4} starSize={16} />
+							<StarRating rate={averageRating} starSize={16} />
 							<span className="text-md text-black/60 !font-medium">
-								(88)
+								({reviewCount})
 							</span>
 						</div>
+					)}
 
 						<div className="text-[#065f46] font-medium text-[14px]">
 							Available in stock

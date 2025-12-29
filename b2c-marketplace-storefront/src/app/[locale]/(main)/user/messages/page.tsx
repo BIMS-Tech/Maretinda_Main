@@ -1,4 +1,5 @@
-import { LoginForm } from '@/components/molecules/LoginForm/LoginForm';
+import { redirect } from 'next/navigation';
+
 import { Layout } from '@/components/organisms';
 import { UserMessagesSection } from '@/components/sections/UserMessagesSection/UserMessagesSection';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -6,7 +7,9 @@ import { retrieveCustomer } from '@/lib/data/customer';
 export default async function MessagesPage() {
 	const user = await retrieveCustomer();
 
-	if (!user) return <LoginForm />;
+	if (!user) {
+		redirect('/login');
+	}
 
 	return (
 		<Layout>

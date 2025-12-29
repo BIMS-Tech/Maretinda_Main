@@ -17,6 +17,7 @@ export const ProductTabs = ({
 }: {
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
+		reviews?: any[];
 	};
 	seller: SellerProps;
 }) => {
@@ -44,7 +45,7 @@ export const ProductTabs = ({
 						<ProductTabDetails product={product} />
 					</Tabs.Content>
 					<Tabs.Content value="rating">
-						<ProductTabRating seller={seller} />
+						<ProductTabRating product={product} />
 					</Tabs.Content>
 					<Tabs.Content value="shipping">
 						<ProductTabShipping product={product} />

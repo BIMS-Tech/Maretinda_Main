@@ -13,16 +13,19 @@ import { navigation } from './navigation';
 import { OrderCard } from './OrderCard';
 
 export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
-	const [showForm, setShowForm] = useState<
-		| (HttpTypes.StoreOrder & {
-				seller: { id: string; name: string; reviews?: any[] };
-				reviews: any[];
-		  })
-		| null
-	>(null);
+	const [showForm, setShowForm] = useState<{
+		order: Order;
+		productId?: string;
+	} | null>(null);
 	const pathname = usePathname();
 
 	console.log(pathname);
+
+	const handleShowForm = (order: Order) => {
+		// Get the first product from the order items
+		const firstProductId = order.items?.[0]?.product_id;
+		setShowForm({ order, productId: firstProductId });
+	};
 
 	return (
 		<>
@@ -60,7 +63,7 @@ export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
 								<OrderCard
 									key={order.id}
 									order={order}
-									showForm={setShowForm}
+									showForm={handleShowForm}
 								/>
 							))
 						)}
@@ -74,10 +77,11 @@ export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
 					headingClass="!font-semibold max-h-[60px] pb-4 px-6 flex-row text-black"
 					onClose={() => setShowForm(null)}
 				>
-					<ReviewForm
-						handleClose={() => setShowForm(null)}
-						seller={showForm}
-					/>
+				<ReviewForm
+					handleClose={() => setShowForm(null)}
+					order={showForm.order}
+					productId={showForm.productId}
+				/>
 				</Modal>
 			)}
 		</>

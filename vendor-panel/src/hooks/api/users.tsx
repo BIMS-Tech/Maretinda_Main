@@ -34,7 +34,7 @@ export const useMe = (
         method: "GET",
         query: {
           fields:
-            "id,name,description,phone,email,media,address_line,postal_code,country_code,city,region,metadata,tax_id,photo,store_status,dft_bank_name,dft_bank_code,dft_swift_code,dft_bank_address,dft_beneficiary_name,dft_beneficiary_code,dft_beneficiary_address,dft_account_number",
+            "id,name,description,phone,email,media,address_line,postal_code,country_code,city,region,metadata,tax_id,photo,store_status,bank_name,account_number,account_name,branch_name,swift_code,beneficiary_address,beneficiary_bank_address,dft_bank_name,dft_bank_code,dft_swift_code,dft_bank_address,dft_beneficiary_name,dft_beneficiary_code,dft_beneficiary_address,dft_account_number",
         },
       }),
     queryKey: usersQueryKeys.me(),
@@ -58,6 +58,39 @@ export const useUpdateMe = (
   return useMutation({
     mutationFn: (body) =>
       fetchQuery("/vendor/sellers/me", {
+        method: "POST",
+        body,
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.lists(),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.me(),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+/**
+ * Hook for updating bank information only
+ * Uses a separate endpoint to bypass Mercur plugin validation
+ */
+export const useUpdateBankInfo = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserResponse,
+    FetchError,
+    Partial<StoreVendor>,
+    QueryKey
+  >
+) => {
+  return useMutation({
+    mutationFn: (body) =>
+      fetchQuery("/vendor/sellers/me/bank-info", {
         method: "POST",
         body,
       }),

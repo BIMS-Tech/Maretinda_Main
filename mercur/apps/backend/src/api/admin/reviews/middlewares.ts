@@ -23,5 +23,10 @@ export const reviewsMiddlewares: MiddlewareRoute[] = [
         adminReviewsConfig.retrieve
       )
     ]
+  },
+  {
+    method: ['DELETE'],
+    matcher: '/admin/reviews/:id',
+    middlewares: []
   }
 ]

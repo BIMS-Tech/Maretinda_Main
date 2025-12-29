@@ -1,0 +1,2 @@
+export { TalkJSProvider } from './TalkJSProvider';
+

@@ -32,12 +32,16 @@ const nextConfig: NextConfig = {
 				hostname: 's3.eu-central-1.amazonaws.com',
 				protocol: 'https',
 			},
-			{
-				hostname: 's3.ap-southeast-1.amazonaws.com',
-				protocol: 'https',
-			},
-		],
-	},
+		{
+			hostname: 's3.ap-southeast-1.amazonaws.com',
+			protocol: 'https',
+		},
+		{
+			hostname: 'storage.googleapis.com',
+			protocol: 'https',
+		},
+	],
+},
 	logging: {
 		fetches: {
 			fullUrl: true,

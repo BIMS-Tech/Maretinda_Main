@@ -9,7 +9,7 @@ import { Form } from "../../../../../components/common/form"
 import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { StoreVendor } from "../../../../../types/user"
-import { useUpdateMe } from "../../../../../hooks/api"
+import { useUpdateMe, useUpdateBankInfo } from "../../../../../hooks/api"
 import { MediaSchema } from "../../../../products/product-create/constants"
 import {
   FileType,
@@ -26,7 +26,16 @@ export const EditStoreSchema = z.object({
   phone: z.string().optional(),
   email: z.string().optional(),
   media: z.array(MediaSchema).optional(),
-  // DFT Bank Information
+  // Bank Information (Settlement)
+  bank_name: z.string().min(1, "Bank name is required"),
+  account_number: z.string().min(1, "Account number is required"),
+  account_name: z.string().min(1, "Account name is required"),
+  branch_name: z.string().min(1, "Branch name is required"),
+  // Conditional fields for non-Metrobank
+  swift_code: z.string().optional(),
+  beneficiary_address: z.string().optional(),
+  beneficiary_bank_address: z.string().optional(),
+  // Legacy DFT fields (for backward compatibility)
   dft_bank_name: z.string().optional(),
   dft_bank_code: z.string().optional(),
   dft_swift_code: z.string().optional(),
@@ -35,7 +44,24 @@ export const EditStoreSchema = z.object({
   dft_beneficiary_code: z.string().optional(),
   dft_beneficiary_address: z.string().optional(),
   dft_account_number: z.string().optional(),
-})
+}).refine(
+  (data) => {
+    // If bank is not Metrobank, require additional fields
+    const isMetrobank = data.bank_name?.toLowerCase().includes('metrobank')
+    if (!isMetrobank) {
+      return (
+        data.swift_code &&
+        data.beneficiary_address &&
+        data.beneficiary_bank_address
+      )
+    }
+    return true
+  },
+  {
+    message: "Swift code, beneficiary address, and bank address are required for non-Metrobank banks",
+    path: ["swift_code"],
+  }
+)
 
 const SUPPORTED_FORMATS = [
   "image/jpeg",
@@ -59,11 +85,8 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
   const { banks, isLoading: banksLoading } = useBanks()
-  const [selectedBankName, setSelectedBankName] = useState(seller?.dft_bank_name || "")
+  const [selectedBankName, setSelectedBankName] = useState(seller?.bank_name || seller?.dft_bank_name || "")
   
-  // Debug: Uncomment to see bank data
-  // console.log('🏪 EditStoreForm - banks received:', banks.length)
-
   const form = useForm<z.infer<typeof EditStoreSchema>>({
     defaultValues: {
       name: seller.name,
@@ -71,6 +94,15 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
       phone: seller.phone,
       email: seller.email,
       media: [],
+      // New settlement fields
+      bank_name: seller.bank_name || seller.dft_bank_name || "",
+      account_number: seller.account_number || seller.dft_account_number || "",
+      account_name: seller.account_name || seller.dft_beneficiary_name || "",
+      branch_name: seller.branch_name || "",
+      swift_code: seller.swift_code || seller.dft_swift_code || "",
+      beneficiary_address: seller.beneficiary_address || seller.dft_beneficiary_address || "",
+      beneficiary_bank_address: seller.beneficiary_bank_address || seller.dft_bank_address || "",
+      // Legacy DFT fields
       dft_bank_name: seller.dft_bank_name || "",
       dft_bank_code: seller.dft_bank_code || "",
       dft_swift_code: seller.dft_swift_code || "",
@@ -83,18 +115,26 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
     resolver: zodResolver(EditStoreSchema),
   })
 
+  // Check if selected bank is Metrobank
+  const isMetrobank = selectedBankName.toLowerCase().includes('metrobank')
+
   // Auto-fill bank details when bank is selected
   const handleBankSelection = (bankName: string) => {
     setSelectedBankName(bankName)
     const selectedBank = banks.find(bank => bank.name === bankName)
     
     if (selectedBank) {
+      // New settlement fields
+      form.setValue("bank_name", selectedBank.name)
+      form.setValue("swift_code", selectedBank.swift_code || "")
+      
+      // Legacy DFT fields for backward compatibility
       form.setValue("dft_bank_name", selectedBank.name)
       form.setValue("dft_bank_code", selectedBank.code)
       form.setValue("dft_swift_code", selectedBank.swift_code || "")
       
       // Trigger validation
-      form.trigger(["dft_bank_name", "dft_bank_code", "dft_swift_code"])
+      form.trigger(["bank_name", "swift_code"])
     }
   }
 
@@ -104,7 +144,10 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
     keyName: "field_id",
   })
 
-  const { mutateAsync, isPending } = useUpdateMe()
+  const { mutateAsync: updateBasicInfo, isPending: isUpdatingBasic } = useUpdateMe()
+  const { mutateAsync: updateBankInfo, isPending: isUpdatingBank } = useUpdateBankInfo()
+  
+  const isPending = isUpdatingBasic || isUpdatingBank
 
   const hasInvalidFiles = useCallback(
     (fileList: FileType[]) => {
@@ -165,33 +208,41 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
       }
     }
 
-    await mutateAsync(
-      {
+    try {
+      // Update basic info (without bank fields to avoid validation error)
+      await updateBasicInfo({
         name: values.name,
         email: values.email,
         phone: values.phone,
         description: values.description,
         photo: uploadedMedia[0]?.url || seller.photo || "",
-        dft_bank_name: values.dft_bank_name,
-        dft_bank_code: values.dft_bank_code,
-        dft_swift_code: values.dft_swift_code,
-        dft_bank_address: values.dft_bank_address,
-        dft_beneficiary_name: values.dft_beneficiary_name,
-        dft_beneficiary_code: values.dft_beneficiary_code,
-        dft_beneficiary_address: values.dft_beneficiary_address,
-        dft_account_number: values.dft_account_number,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Store updated")
+      })
 
-          handleSuccess()
-        },
-        onError: (error) => {
-          toast.error(error.message)
-        },
-      }
-    )
+      // Update bank info separately using the new endpoint
+      await updateBankInfo({
+        bank_name: values.bank_name,
+        account_number: values.account_number,
+        account_name: values.account_name,
+        branch_name: values.branch_name,
+        swift_code: values.swift_code || "",
+        beneficiary_address: values.beneficiary_address || "",
+        beneficiary_bank_address: values.beneficiary_bank_address || "",
+        // Legacy DFT fields for backward compatibility
+        dft_bank_name: values.bank_name, // Mirror to legacy field
+        dft_bank_code: values.dft_bank_code || "",
+        dft_swift_code: values.swift_code || values.dft_swift_code || "",
+        dft_bank_address: values.beneficiary_bank_address || values.dft_bank_address || "",
+        dft_beneficiary_name: values.account_name, // Mirror to legacy field
+        dft_beneficiary_code: values.dft_beneficiary_code || "",
+        dft_beneficiary_address: values.beneficiary_address || values.dft_beneficiary_address || "",
+        dft_account_number: values.account_number, // Mirror to legacy field
+      })
+
+      toast.success("Store and bank information updated successfully")
+      handleSuccess()
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update store information")
+    }
   })
 
   return (
@@ -279,22 +330,33 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
               )}
             />
             
-            {/* DFT Bank Information Section */}
+            {/* Bank Information Section (Settlement) */}
             <div className="border-t border-ui-border-base pt-8">
               <div className="mb-6">
-                <h3 className="text-ui-fg-base font-medium">Bank Information for DFT</h3>
+                <h3 className="text-ui-fg-base font-medium">Bank Information for Settlement</h3>
                 <p className="text-ui-fg-subtle text-sm">
-                  Required for generating DFT files for bank transfers and payouts
+                  Required for automated settlement and payout processing
                 </p>
+                {isMetrobank && (
+                  <p className="text-ui-fg-interactive text-sm mt-1">
+                    ℹ️ Metrobank selected: Simplified fields (TAMA format)
+                  </p>
+                )}
+                {!isMetrobank && selectedBankName && (
+                  <p className="text-orange-600 text-sm mt-1">
+                    ⚠️ Non-Metrobank: Additional fields required (DFT format)
+                  </p>
+                )}
               </div>
               
+              {/* Always Required Fields */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <Form.Field
-                  name="dft_bank_name"
+                  name="bank_name"
                   control={form.control}
                   render={({ field }) => (
                     <Form.Item>
-                      <Form.Label>Bank Name</Form.Label>
+                      <Form.Label>Bank Name *</Form.Label>
                       <Form.Control>
                         <select
                           {...field}
@@ -312,7 +374,7 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
                           </option>
                           {banks.map((bank) => (
                             <option key={bank.code} value={bank.name}>
-                              {bank.name} - {bank.swift_code} ({bank.category})
+                              {bank.name}
                             </option>
                           ))}
                         </select>
@@ -323,49 +385,11 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
                 />
                 
                 <Form.Field
-                  name="dft_bank_code"
+                  name="account_number"
                   control={form.control}
                   render={({ field }) => (
                     <Form.Item>
-                      <Form.Label>Bank Code</Form.Label>
-                      <Form.Control>
-                        <Input 
-                          {...field} 
-                          placeholder="Auto-filled when bank is selected" 
-                          readOnly
-                          className="bg-ui-bg-subtle"
-                        />
-                      </Form.Control>
-                      <Form.ErrorMessage />
-                    </Form.Item>
-                  )}
-                />
-                
-                <Form.Field
-                  name="dft_swift_code"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Form.Item>
-                      <Form.Label>SWIFT Code</Form.Label>
-                      <Form.Control>
-                        <Input 
-                          {...field} 
-                          placeholder="Auto-filled when bank is selected" 
-                          readOnly
-                          className="bg-ui-bg-subtle"
-                        />
-                      </Form.Control>
-                      <Form.ErrorMessage />
-                    </Form.Item>
-                  )}
-                />
-                
-                <Form.Field
-                  name="dft_account_number"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Form.Item>
-                      <Form.Label>Account Number</Form.Label>
+                      <Form.Label>Account Number *</Form.Label>
                       <Form.Control>
                         <Input {...field} placeholder="Enter account number" />
                       </Form.Control>
@@ -375,13 +399,13 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
                 />
                 
                 <Form.Field
-                  name="dft_beneficiary_name"
+                  name="account_name"
                   control={form.control}
                   render={({ field }) => (
                     <Form.Item>
-                      <Form.Label>Beneficiary Name</Form.Label>
+                      <Form.Label>Account Name *</Form.Label>
                       <Form.Control>
-                        <Input {...field} placeholder="Enter beneficiary name" />
+                        <Input {...field} placeholder="Enter account holder name" />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
@@ -389,13 +413,13 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
                 />
                 
                 <Form.Field
-                  name="dft_beneficiary_code"
+                  name="branch_name"
                   control={form.control}
                   render={({ field }) => (
                     <Form.Item>
-                      <Form.Label>Beneficiary Code</Form.Label>
+                      <Form.Label>Branch Name *</Form.Label>
                       <Form.Control>
-                        <Input {...field} placeholder="Enter beneficiary code" />
+                        <Input {...field} placeholder="Enter branch name" />
                       </Form.Control>
                       <Form.ErrorMessage />
                     </Form.Item>
@@ -403,35 +427,73 @@ export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
                 />
               </div>
               
-              <div className="mt-6">
-                <Form.Field
-                  name="dft_bank_address"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Form.Item>
-                      <Form.Label>Bank Address</Form.Label>
-                      <Form.Control>
-                        <Textarea {...field} placeholder="Enter bank address" />
-                      </Form.Control>
-                      <Form.ErrorMessage />
-                    </Form.Item>
-                  )}
-                />
-                
-                <Form.Field
-                  name="dft_beneficiary_address"
-                  control={form.control}
-                  render={({ field }) => (
-                    <Form.Item>
-                      <Form.Label>Beneficiary Address</Form.Label>
-                      <Form.Control>
-                        <Textarea {...field} placeholder="Enter beneficiary address" />
-                      </Form.Control>
-                      <Form.ErrorMessage />
-                    </Form.Item>
-                  )}
-                />
-              </div>
+              {/* Conditional Fields for Non-Metrobank */}
+              {!isMetrobank && selectedBankName && (
+                <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-md">
+                  <p className="text-sm font-medium text-orange-800 mb-4">
+                    Additional Information Required (Non-Metrobank)
+                  </p>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <Form.Field
+                      name="swift_code"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Form.Item>
+                          <Form.Label>SWIFT Code *</Form.Label>
+                          <Form.Control>
+                            <Input 
+                              {...field} 
+                              placeholder="Auto-filled when bank is selected" 
+                              readOnly
+                              className="bg-ui-bg-subtle"
+                            />
+                          </Form.Control>
+                          <Form.ErrorMessage />
+                        </Form.Item>
+                      )}
+                    />
+                    
+                    <Form.Field
+                      name="beneficiary_address"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Form.Item>
+                          <Form.Label>Beneficiary Address *</Form.Label>
+                          <Form.Control>
+                            <Input {...field} placeholder="Enter beneficiary address" />
+                          </Form.Control>
+                          <Form.ErrorMessage />
+                        </Form.Item>
+                      )}
+                    />
+                    
+                    <div className="md:col-span-2">
+                      <Form.Field
+                        name="beneficiary_bank_address"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Form.Item>
+                            <Form.Label>Beneficiary Bank Address *</Form.Label>
+                            <Form.Control>
+                              <Textarea {...field} placeholder="Enter bank's full address" />
+                            </Form.Control>
+                            <Form.ErrorMessage />
+                          </Form.Item>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Info box for Metrobank */}
+              {isMetrobank && (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-800">
+                    ✓ Metrobank detected: Your transactions will be processed via TAMA format. No additional fields required.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </RouteDrawer.Body>

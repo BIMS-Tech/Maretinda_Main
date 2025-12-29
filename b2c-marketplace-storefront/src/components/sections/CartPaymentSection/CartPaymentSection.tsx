@@ -18,7 +18,7 @@ import {
 import PaymentContainer, {
 	StripeCardContainer,
 } from '../../organisms/PaymentContainer/PaymentContainer';
-import GiyaPayContainer from '../../organisms/PaymentContainer/GiyaPayContainer';
+import GiyaPayGatewayDirect from '../../organisms/PaymentContainer/GiyaPayGatewayDirect';
 
 type StoreCardPaymentMethod = any & {
 	service_zone?: {
@@ -35,6 +35,9 @@ const CartPaymentSection = ({
 	cart: any;
 	availablePaymentMethods: StoreCardPaymentMethod[] | null;
 }) => {
+	console.log('[Payment] Cart payment collection:', cart.payment_collection);
+	console.log('[Payment] Available payment methods:', availablePaymentMethods);
+	
 	const activeSession = cart.payment_collection?.payment_sessions?.find(
 		(paymentSession: any) => paymentSession.status === 'pending',
 	);
@@ -56,12 +59,22 @@ const CartPaymentSection = ({
 	const isStripe = isStripeFunc(selectedPaymentMethod);
 
 	const setPaymentMethod = async (method: string) => {
+		console.log('[Payment] Selecting payment method:', method);
+		console.log('[Payment] isGiyaPay:', isGiyaPayFunc(method));
+		console.log('[Payment] Cart ID:', cart.id);
 		setError(null);
 		setSelectedPaymentMethod(method);
 		if (isStripeFunc(method) || isGiyaPayFunc(method)) {
-			await initiatePaymentSession(cart, {
-				provider_id: method,
-			});
+			console.log('[Payment] Initiating payment session...');
+			try {
+				const result = await initiatePaymentSession(cart, {
+					provider_id: method,
+				});
+				console.log('[Payment] Payment session initiated:', result);
+			} catch (error) {
+				console.error('[Payment] Failed to initiate payment session:', error);
+				setError(error instanceof Error ? error.message : 'Failed to initiate payment session');
+			}
 		}
 	};
 
@@ -128,14 +141,14 @@ const CartPaymentSection = ({
 	return (
 		<div>
 			{/* Header with Checkmark and Edit */}
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-3">
 					{!isOpen && paymentReady && (
 						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
 					)}
-					<h2 className="checkout-section-title">
+					<h2 className="text-2xl font-bold" style={{ color: '#111827' }}>
 						Payment
 					</h2>
 				</div>
@@ -143,7 +156,7 @@ const CartPaymentSection = ({
 					<button
 						type="button"
 						onClick={handleEdit}
-						className="text-sm underline"
+						className="text-sm font-medium underline"
 						style={{ color: '#2563eb' }}
 					>
 						Edit
@@ -160,56 +173,75 @@ const CartPaymentSection = ({
 								}
 								value={selectedPaymentMethod}
 							>
-								{availablePaymentMethods.map(
-									(paymentMethod) => (
-										<div key={paymentMethod.id}>
-											{isStripeFunc(paymentMethod.id) ? (
-												<StripeCardContainer
-													paymentInfoMap={
-														paymentInfoMap
-													}
-													paymentProviderId={
-														paymentMethod.id
-													}
-													selectedPaymentOptionId={
-														selectedPaymentMethod
-													}
-													setCardBrand={setCardBrand}
-													setCardComplete={
-														setCardComplete
-													}
-													setError={setError}
-												/>
-											) : isGiyaPayFunc(paymentMethod.id) ? (
-												<GiyaPayContainer
-													paymentProviderId={
-														paymentMethod.id
-													}
-													selectedPaymentOptionId={
-														selectedPaymentMethod
-													}
-													paymentSession={
-														cart.payment_collection?.payment_sessions?.find(
-															(ps: any) => ps.provider_id === paymentMethod.id
-														)
-													}
-												/>
-											) : (
-												<PaymentContainer
-													paymentInfoMap={
-														paymentInfoMap
-													}
-													paymentProviderId={
-														paymentMethod.id
-													}
-													selectedPaymentOptionId={
-														selectedPaymentMethod
-													}
-												/>
-											)}
-										</div>
-									),
-								)}
+								<div className="border border-gray-300 rounded-lg overflow-hidden">
+									{availablePaymentMethods.map(
+										(paymentMethod, index) => (
+											<div key={paymentMethod.id}>
+												{isStripeFunc(paymentMethod.id) ? (
+													<StripeCardContainer
+														paymentInfoMap={
+															paymentInfoMap
+														}
+														paymentProviderId={
+															paymentMethod.id
+														}
+														selectedPaymentOptionId={
+															selectedPaymentMethod
+														}
+														setCardBrand={setCardBrand}
+														setCardComplete={
+															setCardComplete
+														}
+														setError={setError}
+													/>
+												) : isGiyaPayFunc(paymentMethod.id) ? (
+													<>
+														{/* First, show a radio button to SELECT GiyaPay */}
+														<PaymentContainer
+															paymentInfoMap={
+																paymentInfoMap
+															}
+															paymentProviderId={
+																paymentMethod.id
+															}
+															selectedPaymentOptionId={
+																selectedPaymentMethod
+															}
+														/>
+														{/* Then, AFTER GiyaPay is selected and session is created, show payment buttons */}
+														{selectedPaymentMethod === paymentMethod.id && (
+															<GiyaPayGatewayDirect
+																paymentSession={
+																	cart.payment_collection?.payment_sessions?.find(
+																		(ps: any) => ps.provider_id === paymentMethod.id
+																	)
+																}
+																selectedPaymentOptionId={
+																	selectedPaymentMethod
+																}
+																onSelectMethod={(method) => {
+																	console.log('Selected GiyaPay method:', method);
+																}}
+															/>
+														)}
+													</>
+												) : (
+													<PaymentContainer
+														paymentInfoMap={
+															paymentInfoMap
+														}
+														paymentProviderId={
+															paymentMethod.id
+														}
+														selectedPaymentOptionId={
+															selectedPaymentMethod
+														}
+													/>
+												)}
+											</div>
+										),
+									)}
+								</div>
 							</RadioGroup>
 						</>
 					)}
@@ -234,7 +266,7 @@ const CartPaymentSection = ({
 					/>
 
 					<Button
-						className="mt-4 rounded-md !font-medium"
+						className="mt-6 rounded-lg !font-medium h-12 text-base"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard)
@@ -249,7 +281,7 @@ const CartPaymentSection = ({
 				</div>
 
 				<div className={isOpen ? 'hidden' : 'block'}>
-					<div className="pb-4">
+					<div className="pb-2">
 						{cart && paymentReady && activeSession ? (
 							<p className="text-sm" style={{ color: '#6b7280' }}>
 								{paymentInfoMap[activeSession?.provider_id]?.title || activeSession?.provider_id}

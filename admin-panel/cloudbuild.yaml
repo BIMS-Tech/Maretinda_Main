@@ -1,0 +1,42 @@
+# Admin Panel - Google Cloud Build configuration
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:${COMMIT_SHA}',
+      '.'
+    ]
+
+  # Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:${COMMIT_SHA}'
+    ]
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', '${_SERVICE}',
+      '--image', '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:${COMMIT_SHA}',
+      '--region', '${_REGION}',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--port', '3000',
+      '--memory', '2Gi',
+      '--cpu', '2',
+      '--max-instances', '10',
+      '--timeout', '300',
+      '--set-env-vars', 'NODE_ENV=production,PORT=3000,HOST=0.0.0.0'
+    ]
+
+# Substitutions
+substitutions:
+  _SERVICE: 'maretinda-admin'
+  _REGION: 'europe-west1'
+  _GAR_LOCATION: 'europe-west1'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

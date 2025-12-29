@@ -20,7 +20,7 @@ export const ProductDetailsPage = async ({
 	const prod = await listProducts({
 		countryCode: locale,
 		queryParams: {
-			fields: '*variants.calculated_price,+variants.inventory_quantity,+seller.handle,+metadata',
+			fields: '*variants.calculated_price,+variants.inventory_quantity,+seller.handle,+metadata,*reviews,*reviews.customer',
 			handle,
 		},
 	}).then(({ response }) => response.products[0]);

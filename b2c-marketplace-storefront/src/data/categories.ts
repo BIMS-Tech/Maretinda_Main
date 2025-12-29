@@ -77,6 +77,7 @@ export const categories = {
 
 // Category themes and styling
 export const categoryThemes = {
+	// Existing marketplace categories
 	accessories: {
 		accent: '#F06292',
 		bgClass: 'bg-purple-50',
@@ -115,6 +116,47 @@ export const categoryThemes = {
 		icon: '🛍️',
 		primary: '#2196F3',
 		secondary: '#03A9F4',
+		textClass: 'text-blue-800',
+	},
+	// Current database categories
+	sneakers: {
+		accent: '#FF4081',
+		bgClass: 'bg-pink-50',
+		icon: '👟',
+		primary: '#E91E63',
+		secondary: '#F06292',
+		textClass: 'text-pink-800',
+	},
+	sandals: {
+		accent: '#FFD54F',
+		bgClass: 'bg-amber-50',
+		icon: '🩴',
+		primary: '#FFA000',
+		secondary: '#FFB300',
+		textClass: 'text-amber-800',
+	},
+	boots: {
+		accent: '#8D6E63',
+		bgClass: 'bg-brown-50',
+		icon: '🥾',
+		primary: '#5D4037',
+		secondary: '#6D4C41',
+		textClass: 'text-brown-800',
+	},
+	sport: {
+		accent: '#4CAF50',
+		bgClass: 'bg-green-50',
+		icon: '⚽',
+		primary: '#2E7D32',
+		secondary: '#43A047',
+		textClass: 'text-green-800',
+	},
+	tops: {
+		accent: '#42A5F5',
+		bgClass: 'bg-blue-50',
+		icon: '👕',
+		primary: '#1976D2',
+		secondary: '#1E88E5',
 		textClass: 'text-blue-800',
 	},
 };

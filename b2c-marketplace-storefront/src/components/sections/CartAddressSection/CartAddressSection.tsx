@@ -69,14 +69,14 @@ export const CartAddressSection = ({
 	return (
 		<div>
 			{/* Header with Checkmark and Edit */}
-			<div className="flex items-center justify-between mb-6">
+			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-3">
 					{isAddress && !isOpen && (
 						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
 					)}
-					<h2 className="checkout-section-title">
+					<h2 className="text-2xl font-bold" style={{ color: '#111827' }}>
 						Shipping Address
 					</h2>
 				</div>
@@ -84,7 +84,7 @@ export const CartAddressSection = ({
 					<button
 						type="button"
 						onClick={handleEdit}
-						className="text-sm underline"
+						className="text-sm font-medium underline"
 						style={{ color: '#2563eb' }}
 					>
 						Edit
@@ -120,7 +120,7 @@ export const CartAddressSection = ({
 
 						<Button
 							type="submit"
-							className="mt-2 rounded-md !font-medium"
+							className="mt-6 rounded-lg !font-medium h-12 text-base"
 							data-testid="submit-address-button"
 							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
 						>
@@ -132,13 +132,13 @@ export const CartAddressSection = ({
 						/>
 					</div>
 				) : (
-					<div className="pb-4">
+					<div className="pb-2">
 						{cart && cart.shipping_address ? (
-							<div className="space-y-1">
-								<p className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+							<div className="space-y-0.5">
+								<p className="font-semibold text-base" style={{ color: '#111827' }}>
 									{cart.shipping_address.first_name} {cart.shipping_address.last_name}
 								</p>
-								<p className="text-sm" style={{ color: '#6b7280' }}>
+								<p className="text-sm leading-relaxed" style={{ color: '#6b7280' }}>
 									{cart.shipping_address.address_1}
 									{cart.shipping_address.address_2 && `, ${cart.shipping_address.address_2}`}
 									, {cart.shipping_address.postal_code} {cart.shipping_address.city}, {cart.shipping_address.country_code?.toUpperCase()}

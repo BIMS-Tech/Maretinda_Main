@@ -3,7 +3,7 @@
 import { ChevronDown } from '@medusajs/icons';
 import { DropdownMenu, Text } from '@medusajs/ui';
 import type React from 'react';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import type { Language } from '@/types/language';
@@ -37,28 +37,36 @@ const TopHeaderBanner: React.FC = () => {
 		options: Language[];
 		selected: Language;
 		onSelect: (option: Language) => void;
-	}> = ({ options, selected, onSelect }) => (
-		<DropdownMenu>
-			<DropdownMenu.Trigger className="flex justify-center items-center gap-2 text-xs text-ui-fg-on-color hover:text-ui-fg-subtle-on-color">
-				{selected.label}
-				<ChevronDown />
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content
-				align="end"
-				className="bg-primary shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)] px-4 py-2"
-			>
-				{options.map((option) => (
-					<DropdownMenu.Item
-						className="text-md hover:!bg-ui-bg-subtle-hover"
-						key={option.value}
-						onClick={() => onSelect(option)}
-					>
-						{option.label}
-					</DropdownMenu.Item>
-				))}
-			</DropdownMenu.Content>
-		</DropdownMenu>
-	);
+		idPrefix: string;
+	}> = ({ options, selected, onSelect, idPrefix }) => {
+		const dropdownId = useId();
+		
+		return (
+			<DropdownMenu key={`${idPrefix}-${dropdownId}`}>
+				<DropdownMenu.Trigger 
+					suppressHydrationWarning
+					className="flex justify-center items-center gap-2 text-xs text-ui-fg-on-color hover:text-ui-fg-subtle-on-color"
+				>
+					{selected.label}
+					<ChevronDown />
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content
+					align="end"
+					className="bg-primary shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)] px-4 py-2"
+				>
+					{options.map((option) => (
+						<DropdownMenu.Item
+							className="text-md hover:!bg-ui-bg-subtle-hover"
+							key={option.value}
+							onClick={() => onSelect(option)}
+						>
+							{option.label}
+						</DropdownMenu.Item>
+					))}
+				</DropdownMenu.Content>
+			</DropdownMenu>
+		);
+	};
 
 	return (
 		<div className="w-full bg-tertiary text-tertiary ">
@@ -78,6 +86,7 @@ const TopHeaderBanner: React.FC = () => {
 
 				<div className="flex justify-end items-center gap-4">
 					<DropdownSelector
+						idPrefix="language"
 						onSelect={(opt) =>
 							handleSelect(opt, setSelectedLanguage)
 						}
@@ -86,6 +95,7 @@ const TopHeaderBanner: React.FC = () => {
 					/>
 
 					<DropdownSelector
+						idPrefix="region"
 						onSelect={(opt) => handleSelect(opt, setSelectedRegion)}
 						options={REGION_OPTIONS}
 						selected={selectedRegion}

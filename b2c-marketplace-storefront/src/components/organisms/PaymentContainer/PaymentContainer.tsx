@@ -1,4 +1,4 @@
-import { Radio, Radio as RadioGroupOption } from '@headlessui/react';
+import { RadioGroup } from '@headlessui/react';
 import { clx, Text } from '@medusajs/ui';
 import { CardElement } from '@stripe/react-stripe-js';
 import type { StripeCardElementOptions } from '@stripe/stripe-js';
@@ -27,11 +27,11 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 	const isDevelopment = process.env.NODE_ENV === 'development';
 
 	return (
-		<RadioGroupOption
+		<RadioGroup.Option
 			className={clx(
-				'rounded-sm flex flex-col gap-y-2 text-small-regular cursor-pointer py-4 border rounded-rounded px-8 mb-2 hover:shadow-borders-interactive-with-active',
+				'flex items-center gap-x-4 cursor-pointer py-5 px-5 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors',
 				{
-					'border-primary/20':
+					'bg-blue-50':
 						selectedPaymentOptionId === paymentProviderId,
 				},
 			)}
@@ -39,28 +39,31 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 			key={paymentProviderId}
 			value={paymentProviderId}
 		>
-			<div className="flex items-center justify-between ">
-				<div className="flex items-center gap-x-4">
-					<Radio
-						value={selectedPaymentOptionId === paymentProviderId}
-					/>
-					<Text className="payment-method-title">
+			{({ checked }) => (
+				<>
+					<div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+						checked 
+							? 'border-blue-600 bg-blue-600' 
+							: 'border-gray-300 bg-white'
+					}`}>
+						{checked && (
+							<div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+						)}
+					</div>
+					<div className="flex-shrink-0 flex items-center justify-center">
+						{paymentInfoMap[paymentProviderId]?.icon}
+					</div>
+					<Text className="text-base font-semibold flex-1" style={{ color: '#111827' }}>
 						{paymentInfoMap[paymentProviderId]?.title ||
 							paymentProviderId}
 					</Text>
 					{isManual(paymentProviderId) && isDevelopment && (
 						<PaymentTest className="hidden small:block" />
 					)}
-				</div>
-				<span className="justify-self-end text-ui-fg-base">
-					{paymentInfoMap[paymentProviderId]?.icon}
-				</span>
-			</div>
-			{isManual(paymentProviderId) && isDevelopment && (
-				<PaymentTest className="small:hidden text-[10px]" />
+					{children}
+				</>
 			)}
-			{children}
-		</RadioGroupOption>
+		</RadioGroup.Option>
 	);
 };
 

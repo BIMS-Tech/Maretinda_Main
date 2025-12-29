@@ -1,49 +1,39 @@
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import type { HttpTypes } from '@medusajs/types';
+
 import { SellerReview } from '@/components/molecules/SellerReview/SellerReview';
-import type { SellerProps } from '@/types/seller';
 
-const ProductTabRating = ({ seller }: { seller: SellerProps }) => {
-	if (!seller) return null;
+const ProductTabRating = ({ product }: { product: HttpTypes.StoreProduct & { reviews?: any[] } }) => {
+	if (!product) return null;
 
-	const { reviews = [] } = seller;
+	const reviews = product.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
 
 	return (
-		<div className="product-details !text-base !text-black">
-			<div>
-				<div className="flex items-center justify-between">
-					<h3 className="text-black text-[18px] md:text-[22px] font-semibold mb-4">
-						Customer Reviews ({reviews.length})
-					</h3>
-					{reviews.length > 0 && (
-						<LocalizedClientLink
-							href={`/sellers/${seller.handle}/reviews`}
-						>
-							<span className="text-base text-black underline">
-								See all Reviews
-							</span>
-						</LocalizedClientLink>
-					)}
-				</div>
-				<div className="w-full mt-10">
-					{reviews.length > 0 ? (
-						reviews
-							?.filter((rev) => rev !== null)
-							.slice(-5)
-							.map((review) => (
+		<div className="w-full">
+			<div className="flex items-center justify-between mb-8">
+				<h2 className="text-2xl md:text-3xl font-bold text-black">
+					Customer Reviews ({reviews.length})
+				</h2>
+			</div>
+			
+			<div className="w-full">
+				{reviews.length > 0 ? (
+					<div className="space-y-0">
+						{reviews
+							.slice(0, 5)
+							.map((review: any) => (
 								<SellerReview key={review.id} review={review} />
-							))
-					) : (
-						<div className="text-center w-full my-10">
-							<h2 className="uppercase text-primary heading-lg">
-								no reviews
-							</h2>
-							<p className="mt-4 text-lg">
-								Sorry, there are currently no reviews for this
-								item
-							</p>
-						</div>
-					)}
-				</div>
+							))}
+					</div>
+				) : (
+					<div className="text-center w-full py-16 bg-gray-50 rounded-lg">
+						<h2 className="text-xl font-semibold text-gray-600 uppercase">
+							No Reviews Yet
+						</h2>
+						<p className="mt-2 text-base text-gray-500">
+							Be the first to review this product
+						</p>
+					</div>
+				)}
 			</div>
 		</div>
 	);

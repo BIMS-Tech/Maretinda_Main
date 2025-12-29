@@ -12,7 +12,8 @@ export const createReviewStep = createStep(
 
     const review = await service.createReviews(input)
 
-    await link.create([
+    // Create base links for customer and order
+    const links = [
       {
         [Modules.CUSTOMER]: {
           customer_id: input.customer_id
@@ -29,7 +30,21 @@ export const createReviewStep = createStep(
           review_id: review.id
         }
       }
-    ])
+    ]
+
+    // If this is a product review, link it to the product
+    if (input.reference === 'product' && input.reference_id) {
+      links.push({
+        [Modules.PRODUCT]: {
+          product_id: input.reference_id
+        },
+        [REVIEW_MODULE]: {
+          review_id: review.id
+        }
+      })
+    }
+
+    await link.create(links)
     return new StepResponse(review)
   }
 )

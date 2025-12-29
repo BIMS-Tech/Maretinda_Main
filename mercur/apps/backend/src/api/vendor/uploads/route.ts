@@ -1,83 +1,48 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import multer from "multer"
-import path from "path"
-import fs from "fs"
 
-// Configure multer for file uploads - same as admin panel
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), "static")
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true })
-    }
-    cb(null, uploadDir)
-  },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${file.originalname}`
-    cb(null, filename)
-  }
-})
-
-const upload = multer({ 
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow only image files
-    const allowedMimes = [
-      'image/jpeg',
-      'image/jpg', 
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml'
-    ]
-    
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true)
-    } else {
-      cb(new Error('Invalid file type. Only images are allowed.'))
-    }
-  }
-})
+// NOTE: Multer middleware is already applied via middlewares.ts
+// Files are pre-processed and saved to disk before this handler runs
 
 export const POST = async (
   req: MedusaRequest,
   res: MedusaResponse
 ) => {
   try {
-    // Use multer middleware
-    const uploadMiddleware = upload.array('files', 10) // Allow up to 10 files
+    // Files are already processed by multer middleware from middlewares.ts
+    const files = req.files as Express.Multer.File[]
     
-    uploadMiddleware(req as any, res as any, (err) => {
-      if (err) {
-        console.error('Vendor upload error:', err)
-        return res.status(400).json({ 
-          message: err.message || 'Upload failed',
-          error: err.message 
-        })
-      }
+    console.log('Vendor upload - received files:', files)
+    console.log('Vendor upload - files length:', files?.length)
+    
+    if (!files || files.length === 0) {
+      console.log('Vendor upload - no files received')
+      return res.status(400).json({ message: 'No files uploaded' })
+    }
 
-      const files = req.files as Express.Multer.File[]
-      
-      if (!files || files.length === 0) {
-        return res.status(400).json({ message: 'No files uploaded' })
-      }
-
-      // Generate response with file URLs - same format as admin panel
-      const uploadedFiles = files.map(file => ({
-        id: file.filename,
-        url: `${process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'}/static/${file.filename}`,
-        name: file.originalname,
+    // Debug each file
+    files.forEach((file, index) => {
+      console.log(`File ${index}:`, {
+        filename: file.filename,
+        originalname: file.originalname,
         size: file.size,
-        mime_type: file.mimetype
-      }))
-
-      res.status(200).json({
-        files: uploadedFiles
+        mimetype: file.mimetype,
+        path: file.path
       })
+    })
+
+    // Generate response with file URLs
+    const uploadedFiles = files.map(file => ({
+      id: file.filename,
+      url: `${process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'}/static/${file.filename}`,
+      name: file.originalname,
+      size: file.size,
+      mime_type: file.mimetype
+    }))
+
+    console.log('Vendor upload - response:', { files: uploadedFiles })
+
+    res.status(200).json({
+      files: uploadedFiles
     })
   } catch (error) {
     console.error('Vendor upload endpoint error:', error)

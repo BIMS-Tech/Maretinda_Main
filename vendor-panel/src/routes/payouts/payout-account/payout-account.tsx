@@ -6,7 +6,7 @@ import { z } from "zod"
 import { useState, useEffect } from "react"
 
 import { Form } from "../../../components/common/form"
-import { useMe, useUpdateMe } from "../../../hooks/api/users"
+import { useMe, useUpdateBankInfo } from "../../../hooks/api/users"
 import { useCreatePayoutAccount, usePayoutAccount } from "../../../hooks/api/payouts"
 import { useBanks } from "../../../hooks/api/banks"
 
@@ -28,7 +28,7 @@ export const PayoutAccount = () => {
   const navigate = useNavigate()
   const { seller } = useMe()
   const { payout_account } = usePayoutAccount()
-  const { mutateAsync: updateMe, isPending: isUpdatingMe } = useUpdateMe()
+  const { mutateAsync: updateBankInfo, isPending: isUpdatingMe } = useUpdateBankInfo()
   const { mutateAsync: createPayoutAccount, isPending: isCreatingAccount } = useCreatePayoutAccount()
   const { banks, isLoading: banksLoading } = useBanks()
   
@@ -65,8 +65,8 @@ export const PayoutAccount = () => {
 
   const handleSubmit = async (values: PayoutAccountFormData) => {
     try {
-      // First, update the seller's DFT information
-      await updateMe({
+      // First, update the seller's DFT information using the new bank-info endpoint
+      await updateBankInfo({
         dft_bank_name: values.dft_bank_name,
         dft_bank_code: values.dft_bank_code,
         dft_swift_code: values.dft_swift_code,

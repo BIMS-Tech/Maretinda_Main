@@ -11,7 +11,8 @@ interface TamaTransaction {
   vendor_name: string
   beneficiary_name: string
   beneficiary_account: string
-  amount: number
+  amount: number // Gross amount
+  net_amount: number // Net amount after fees
   transaction_date: Date
   remarks: string
 }
@@ -123,58 +124,70 @@ class TamaFileGeneratorService extends MedusaService({}) {
 
   /**
    * Format time for TAMA file (HH:MM AM/PM)
+   * Always returns 11:00 AM as per requirements
    */
   private formatTime(date: Date): string {
-    let hours = date.getHours()
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12
-    hours = hours ? hours : 12 // 0 should be 12
-    return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
+    return '11:00 AM'
   }
 
   /**
    * Generate TAMA header record
+   * Transaction Date should be T+1 (day after generation)
    */
   private generateHeaderRecord(fundingAccount: string, transactionDate: Date): string {
-    const formattedDate = this.formatDate(transactionDate)
-    const formattedTime = this.formatTime(transactionDate)
+    // T+1: Add one day to the transaction date
+    const tPlusOneDate = new Date(transactionDate)
+    tPlusOneDate.setDate(tPlusOneDate.getDate() + 1)
+    const formattedDate = this.formatDate(tPlusOneDate)
+    const formattedTime = this.formatTime(tPlusOneDate) // Always 11:00 AM
     
     return `H|${fundingAccount}|${formattedDate}|${formattedTime}`
   }
 
   /**
+   * Calculate net amount after fees
+   * Fees deducted:
+   * - Payment processing fee: 2.5% (GiyaPay fee)
+   * - Transaction fee: ₱5 per transaction (Maretinda fee)
+   */
+  private calculateNetAmount(grossAmount: number): number {
+    // Payment processing fee rate (default 2.5%)
+    const paymentProcessingFeeRate = 0.025
+    // Transaction fee per transaction (default ₱5)
+    const transactionFee = 5.00
+    
+    // Calculate payment processing fee
+    const paymentProcessingFee = grossAmount * paymentProcessingFeeRate
+    
+    // Calculate net amount after all fees
+    const netAmount = grossAmount - paymentProcessingFee - transactionFee
+    
+    // Ensure net amount is not negative
+    return Math.max(0, netAmount)
+  }
+
+  /**
    * Generate TAMA detail record
+   * Format: D||Reference Number|Last Name|First Name|Middle Name|Destination Account|Amount|Remarks
+   * Per requirements: Last Name, First Name, Middle Name should be blank
    */
   private generateDetailRecord(transaction: TamaTransaction): string {
-    const formattedAmount = this.formatAmount(transaction.amount)
+    // Use net_amount if available, otherwise calculate it
+    const netAmount = transaction.net_amount ?? this.calculateNetAmount(transaction.amount)
+    const formattedAmount = this.formatAmount(netAmount)
     
-    // TAMA format: D||Reference Number|Last Name|First Name||Destination Account|Amount|Remarks
-    // Based on sample: D||8SHF-SGS2-TWBO-SNDP|SABARRE|FRANCES THERESE||2463246242144|1000|SAMPLE METROBANK
+    // TAMA format per requirements:
+    // Constant: D
+    // Corporate Code: Leave blank (empty after D)
+    // Reference Number: Ref Number from GiyaPay
+    // Last Name: Leave blank
+    // First Name: Leave blank
+    // Middle Name: Leave blank (empty after First Name)
+    // Destination Account Number: Merchant's Bank Account Number
+    // Amount: NET AMOUNT (After deduction of fees). Place decimal point after 2 digits from the right.
+    // Remarks: Transaction Remarks
     
-    // Parse beneficiary name (assume format: "LAST NAME, FIRST NAME" or "FIRST NAME LAST NAME")
-    let lastName = ''
-    let firstName = ''
-    
-    if (transaction.beneficiary_name) {
-      const nameParts = transaction.beneficiary_name.trim().split(/[,\s]+/)
-      if (nameParts.length >= 2) {
-        if (transaction.beneficiary_name.includes(',')) {
-          // Format: "LAST, FIRST MIDDLE"
-          lastName = nameParts[0].trim()
-          firstName = nameParts.slice(1).join(' ').trim()
-        } else {
-          // Format: "FIRST MIDDLE LAST" - assume last word is last name
-          lastName = nameParts[nameParts.length - 1]
-          firstName = nameParts.slice(0, -1).join(' ')
-        }
-      } else {
-        // Single name - use as first name
-        firstName = transaction.beneficiary_name.trim()
-      }
-    }
-
-    return `D||${transaction.reference_number}|${lastName}|${firstName}||${transaction.beneficiary_account}|${formattedAmount}|${transaction.remarks || 'MARETINDA SETTLEMENT'}`
+    return `D||${transaction.reference_number}|||${transaction.beneficiary_account}|${formattedAmount}|${transaction.remarks || 'MARETINDA SETTLEMENT'}`
   }
 
   /**
@@ -231,17 +244,23 @@ class TamaFileGeneratorService extends MedusaService({}) {
 
       const results = await manager.query(query, params)
       
-      return results.map((row: any) => ({
-        id: row.id,
-        reference_number: row.reference_number,
-        vendor_id: row.vendor_id,
-        vendor_name: row.vendor_name,
-        beneficiary_name: row.beneficiary_name,
-        beneficiary_account: row.beneficiary_account,
-        amount: parseFloat(row.amount),
-        transaction_date: new Date(row.transaction_date),
-        remarks: row.remarks || 'MARETINDA SETTLEMENT'
-      }))
+      return results.map((row: any) => {
+        const grossAmount = parseFloat(row.amount)
+        const netAmount = this.calculateNetAmount(grossAmount)
+        
+        return {
+          id: row.id,
+          reference_number: row.reference_number,
+          vendor_id: row.vendor_id,
+          vendor_name: row.vendor_name,
+          beneficiary_name: row.beneficiary_name,
+          beneficiary_account: row.beneficiary_account,
+          amount: grossAmount,
+          net_amount: netAmount,
+          transaction_date: new Date(row.transaction_date),
+          remarks: row.remarks || 'MARETINDA SETTLEMENT'
+        }
+      })
 
     } catch (error) {
       console.error('[TamaFileGenerator] Error getting Metrobank transactions:', error)
@@ -283,7 +302,8 @@ class TamaFileGeneratorService extends MedusaService({}) {
     fundingAccount: string,
     generatedBy: string
   ): TamaFileMetadata {
-    const totalAmount = transactions.reduce((sum, txn) => sum + txn.amount, 0)
+    // Use net_amount for total (after fees)
+    const totalAmount = transactions.reduce((sum, txn) => sum + (txn.net_amount ?? this.calculateNetAmount(txn.amount)), 0)
     
     return {
       batch_id: batchId,

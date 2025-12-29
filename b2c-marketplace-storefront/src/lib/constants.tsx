@@ -1,64 +1,115 @@
 import React from "react"
 import { Cash, CreditCard } from "@medusajs/icons"
+import Image from "next/image"
 
-// GiyaPay icon component
+// GiyaPay icon component with proper branding
 const GiyaPayIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M2 4C2 2.89543 2.89543 2 4 2H20C21.1046 2 22 2.89543 22 4V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V4Z"
-      stroke="currentColor"
-      strokeWidth="2"
-      fill="none"
-    />
-    <path
-      d="M7 12L10 15L17 8"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+  <div className="flex items-center justify-center rounded-md overflow-hidden" style={{ width: '120px', height: '40px' }}>
+    <div className="w-full h-full bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 flex items-center justify-center px-3 rounded-md">
+      <span className="text-white font-bold text-sm tracking-wide">Pay with giyapay</span>
+    </div>
+  </div>
 )
 
-// InstaPay icon
-const InstaPayIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <path d="M8 12h8M8 8h4M8 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
+// Delivery truck icon for Cash on Delivery
+const DeliveryTruckIcon = () => (
+  <div className="flex items-center justify-center w-10 h-10">
+    <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Truck body */}
+      <rect x="6" y="18" width="20" height="10" fill="#FF6B35" rx="2"/>
+      {/* Window */}
+      <rect x="8" y="20" width="6" height="5" fill="#FFFFFF"/>
+      {/* Cargo area */}
+      <rect x="26" y="18" width="12" height="10" fill="#FFB84D" rx="2"/>
+      {/* Wheels */}
+      <circle cx="14" cy="30" r="3" fill="#4A5568"/>
+      <circle cx="32" cy="30" r="3" fill="#4A5568"/>
+      <circle cx="14" cy="30" r="1.5" fill="#CBD5E0"/>
+      <circle cx="32" cy="30" r="1.5" fill="#CBD5E0"/>
+    </svg>
+  </div>
 )
 
-// Visa icon
+// Visa icon with blue logo
 const VisaIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <text x="12" y="14" textAnchor="middle" fontSize="8" fill="currentColor" fontWeight="bold">VISA</text>
-  </svg>
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#1434CB"/>
+      <text x="24" y="20" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold" fontFamily="Arial">VISA</text>
+    </svg>
+  </div>
+)
+
+// GCash icon with blue circle
+const GCashIcon = () => (
+  <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+      <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold">G</text>
+    </svg>
+  </div>
+)
+
+// Union Pay icon
+const UnionPayIcon = () => (
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#E21836"/>
+      <text x="24" y="20" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial">UnionPay</text>
+    </svg>
+  </div>
+)
+
+// Grab icon with green logo
+const GrabIcon = () => (
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#00B14F"/>
+      <text x="24" y="20" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold" fontFamily="Arial">Grab</text>
+    </svg>
+  </div>
+)
+
+// QR Ph icon
+const QRPhIcon = () => (
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="white" stroke="#E5E7EB" strokeWidth="1"/>
+      <text x="12" y="20" textAnchor="middle" fontSize="8" fill="#EF4444" fontWeight="bold" fontFamily="Arial">QR</text>
+      <text x="32" y="20" textAnchor="middle" fontSize="8" fill="#F59E0B" fontWeight="bold" fontFamily="Arial">Ph</text>
+    </svg>
+  </div>
 )
 
 // Mastercard icon
 const MastercardIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <circle cx="9" cy="12" r="3" fill="currentColor" opacity="0.7"/>
-    <circle cx="15" cy="12" r="3" fill="currentColor" opacity="0.7"/>
-  </svg>
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#EB001B"/>
+      <circle cx="18" cy="16" r="7" fill="#FF5F00"/>
+      <circle cx="30" cy="16" r="7" fill="#F79E1B"/>
+    </svg>
+  </div>
 )
 
-// GCash icon
-const GCashIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <text x="12" y="14" textAnchor="middle" fontSize="6" fill="currentColor" fontWeight="bold">GCash</text>
-  </svg>
+// InstaPay icon
+const InstaPayIcon = () => (
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#10B981"/>
+      <text x="24" y="14" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial">Insta</text>
+      <text x="24" y="22" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial">Pay</text>
+    </svg>
+  </div>
 )
 
 // PayMaya icon
 const PayMayaIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="2" fill="none"/>
-    <text x="12" y="14" textAnchor="middle" fontSize="5" fill="currentColor" fontWeight="bold">PayMaya</text>
-  </svg>
+  <div className="flex items-center justify-center w-12 h-10">
+    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="32" rx="4" fill="#8BC34A"/>
+      <text x="24" y="20" textAnchor="middle" fontSize="9" fill="white" fontWeight="bold" fontFamily="Arial">Maya</text>
+    </svg>
+  </div>
 )
 
 /* Map of payment provider_id to their title and icon. Add in any payment providers you want to use. */
@@ -88,9 +139,13 @@ export const paymentInfoMap: Record<
   },
   pp_system_default: {
     title: "Cash on Delivery",
-    icon: <Cash />,
+    icon: <DeliveryTruckIcon />,
   },
   giyapay: {
+    title: "GiyaPay",
+    icon: <GiyaPayIcon />,
+  },
+  pp_giyapay_giyapay: {
     title: "GiyaPay",
     icon: <GiyaPayIcon />,
   },

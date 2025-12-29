@@ -19,7 +19,8 @@ import { type ReviewFormData, reviewSchema } from './schema';
 
 interface Props {
 	handleClose?: () => void;
-	seller: Order;
+	order: Order;
+	productId?: string;
 }
 
 export const ReviewForm: React.FC<Props> = ({ ...props }) => {
@@ -39,7 +40,7 @@ export const ReviewForm: React.FC<Props> = ({ ...props }) => {
 	);
 };
 
-const Form: React.FC<Props> = ({ handleClose, seller }) => {
+const Form: React.FC<Props> = ({ handleClose, order, productId }) => {
 	const [error, setError] = useState<string>();
 	const {
 		watch,
@@ -50,12 +51,13 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
 	} = useFormContext();
 
 	const submit = async (data: FieldValues) => {
+		// Create product review if productId is provided, otherwise seller review
 		const body = {
 			customer_note: data.opinion,
-			order_id: seller.id,
+			order_id: order.id,
 			rating: data.rating,
-			reference: 'seller',
-			reference_id: seller.seller.id,
+			reference: productId ? 'product' : 'seller',
+			reference_id: productId || order.seller.id,
 		};
 
 		const response = await createReview(body);
@@ -107,7 +109,7 @@ const Form: React.FC<Props> = ({ handleClose, seller }) => {
 								error &&
 									'border-negative focus:border-negative',
 							)}
-							placeholder="Write your opinion about this seller..."
+							placeholder={productId ? "Write your opinion about this product..." : "Write your opinion about this seller..."}
 							{...register('opinion')}
 						/>
 						<div

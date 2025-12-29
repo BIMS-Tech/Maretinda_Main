@@ -42,7 +42,7 @@ async function CheckoutPageContent({}) {
 
 	// Redirect to login if user is not authenticated
 	if (!customer) {
-		redirect('/user?returnTo=/checkout');
+		redirect('/login?returnTo=/checkout');
 	}
 
 	const shippingMethods = await listCartShippingMethods(cart.id, false);
@@ -50,16 +50,16 @@ async function CheckoutPageContent({}) {
 
 	return (
 		<PaymentWrapper cart={cart}>
-			<main className="container !max-w-7xl mx-auto px-4 !py-14">
+			<main className="container !max-w-7xl mx-auto px-4 !py-12">
 				{/* Checkout Title */}
-				<h1 className="text-3xl font-serif text-center mb-8" style={{ color: '#111827', fontWeight: 900 }}>
+				<h1 className="text-4xl font-bold text-center mb-10" style={{ color: '#111827' }}>
 					Checkout
 				</h1>
 
 				{/* Two Column Layout */}
-				<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+				<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 					{/* Left Column - Checkout Steps */}
-					<div className="lg:col-span-7 space-y-4">
+					<div className="lg:col-span-7 space-y-5">
 						{/* Shipping Address Section */}
 						<div className="bg-white user-content-wrapper">
 							<CartAddressSection
@@ -79,7 +79,7 @@ async function CheckoutPageContent({}) {
 						</div>
 
 						{/* Payment Section */}
-						<div className="bg-white  user-content-wrapper">
+						<div className="bg-white user-content-wrapper">
 							<CartPaymentSection
 								availablePaymentMethods={paymentMethods}
 								cart={cart}
@@ -89,7 +89,7 @@ async function CheckoutPageContent({}) {
 
 					{/* Right Column - Order Summary */}
 					<div className="lg:col-span-5">
-						<div className="bg-white !p-6 h-fit sticky top-4 user-content-wrapper">
+						<div className="bg-white h-fit sticky top-4 user-content-wrapper">
 							<CartReview cart={cart} />
 						</div>
 					</div>

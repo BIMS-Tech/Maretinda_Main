@@ -26,37 +26,17 @@ export const GET = async (
     const sampleTransactionDate = new Date(Date.now() - 24 * 60 * 60 * 1000) // Yesterday
     const settlementExample = SettlementCalendar.calculateSettlement(sampleTransactionDate)
     
-    // Get GiyaPay service to query recent transactions
-    const giyaPayService = req.scope.resolve('giyaPayService')
-    let recentTransactions = []
+    // Note: Settlement is based on vendor's order payments, not GiyaPay gateway transactions
+    // GiyaPay transactions are marketplace-wide (one transaction covers multiple vendors)
+    // Settlement calculations should use vendor's completed orders instead
+    
+    // For now, provide settlement schedule information without transaction-specific data
+    // In production, this should query the vendor's orders and calculate settlements from those
     let settlementStatuses = []
     
-    try {
-      const transactions = await giyaPayService.getTransactionsByVendor(seller.id, 'SUCCESS')
-      recentTransactions = transactions.slice(0, 10) // Last 10 transactions
-      
-      settlementStatuses = recentTransactions.map(txn => {
-        const settlement = SettlementCalendar.calculateSettlement(new Date(txn.created_at))
-        return {
-          transaction_id: txn.id,
-          transaction_date: txn.created_at,
-          amount: parseFloat(txn.amount),
-          settlement_timeline: SettlementCalendar.formatSettlementTimeline(settlement),
-          processing_date: settlement.processingDate.toISOString(),
-          crediting_date: settlement.creditingDate.toISOString(),
-          status: SettlementCalendar.getSettlementStatus(new Date(txn.created_at)),
-          business_days_to_credit: settlement.businessDaysToCredit,
-          is_weekend_transaction: settlement.isWeekendTransaction,
-          is_holiday_transaction: settlement.isHolidayTransaction
-        }
-      })
-    } catch (error) {
-      console.warn('Could not fetch recent transactions for settlement info')
-    }
-
-    // Calculate today's settlement activities
-    const transactionsForProcessing = SettlementCalendar.getTransactionsForProcessing(recentTransactions)
-    const transactionsForCrediting = SettlementCalendar.getTransactionsForCrediting(recentTransactions)
+    // Placeholder for today's activities - should be calculated from vendor's orders
+    const transactionsForProcessing = []
+    const transactionsForCrediting = []
 
     const settlementInfo = {
       vendor_id: seller.id,

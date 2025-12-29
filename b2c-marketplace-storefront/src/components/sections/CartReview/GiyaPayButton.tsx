@@ -54,39 +54,52 @@ const GiyaPayButton = ({
 				throw new Error('GiyaPay payment session not found');
 			}
 
-			const paymentData = activeSession.data;
+			const sessionData = activeSession.data;
+			const formData = sessionData?.form_data || sessionData;
+
+			// Get selected payment method from localStorage (set by GiyaPayGatewayDirect)
+			const selectedMethod = typeof window !== 'undefined' 
+				? localStorage.getItem('giyapay_selected_method') 
+				: null;
+
+			if (!selectedMethod) {
+				throw new Error('Please select a payment method (VISA, GCash, InstaPay, etc.)');
+			}
+
+			// Get checkout URL from session data
+			const checkoutUrl = sessionData?.checkout_url || 
+				(sessionData?.sandbox_mode ? 'https://sandbox.giyapay.com/checkout' : 'https://pay.giyapay.com/checkout');
 
 			// Create the form for GiyaPay checkout
 			const form = document.createElement('form');
 			form.method = 'POST';
-			// Use the API URL from backend configuration, but replace /api/payment with /checkout
-			const backendApiUrl =
-				(typeof paymentData.api_url === 'string' ? paymentData.api_url : null) || 
-				'https://pay.giyapay.com/api/payment';
-			form.action = backendApiUrl.replace('/api/payment', '/checkout');
+			form.action = checkoutUrl;
 
 			// Add all required fields as hidden inputs
 			const fields = {
-				amount: (paymentData.amount as number).toString(),
-				cancel_callback: paymentData.cancel_callback,
-				currency: paymentData.currency,
-				description: paymentData.description,
-				error_callback: paymentData.error_callback,
-				merchant_id: paymentData.merchant_id,
-				nonce: paymentData.nonce,
-				// Do not force a method; let GiyaPay's checkout handle selection
-				order_id: paymentData.order_id,
-				signature: paymentData.signature,
-				success_callback: paymentData.success_callback,
-				timestamp: (paymentData.timestamp as number).toString(),
+				success_callback: formData.success_callback,
+				error_callback: formData.error_callback,
+				cancel_callback: formData.cancel_callback,
+				merchant_id: formData.merchant_id,
+				amount: formData.amount,
+				currency: formData.currency,
+				nonce: formData.nonce,
+				timestamp: formData.timestamp,
+				description: formData.description,
+				signature: formData.signature,
+				payment_method: selectedMethod, // Include the selected payment method
+				order_id: formData.order_id,
+				...(formData.customer_email && { customer_email: formData.customer_email }),
 			};
 
 			Object.entries(fields).forEach(([name, value]) => {
-				const input = document.createElement('input');
-				input.type = 'hidden';
-				input.name = name;
-				input.value = value as string;
-				form.appendChild(input);
+				if (value !== undefined && value !== null) {
+					const input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = name;
+					input.value = String(value);
+					form.appendChild(input);
+				}
 			});
 
 			// Add form to page and submit

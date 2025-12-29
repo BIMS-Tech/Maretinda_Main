@@ -16,6 +16,7 @@ import ProductImageCarousel from './ProductImageCarousel';
 
 interface StoreProduct extends HttpTypes.StoreProduct {
 	seller?: SellerProps;
+	reviews?: any[];
 }
 
 export const ProductCard = ({
@@ -37,6 +38,13 @@ export const ProductCard = ({
 		// biome-ignore lint/style/noNonNullAssertion: api_product will always be available
 		product: api_product! as StoreProduct,
 	});
+
+	// Calculate real product ratings
+	const productReviews = api_product.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
+	const reviewCount = productReviews.length;
+	const averageRating = reviewCount > 0
+		? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
+		: 0;
 
 	const isDiscounted =
 		cheapestPrice?.calculated_price !== cheapestPrice?.original_price;
@@ -133,12 +141,14 @@ export const ProductCard = ({
 									</p>
 								)}
 							</div>
+						{reviewCount > 0 && (
 							<div className="flex items-center gap-2 mt-2">
-								<StarRating rate={4} starSize={16} />
+								<StarRating rate={averageRating} starSize={16} />
 								<span className="text-md text-black/60 !font-medium">
-									(88)
+									({reviewCount})
 								</span>
 							</div>
+						)}
 						</div>
 
 						<div className="flex items-center gap-2.5 mt-6">

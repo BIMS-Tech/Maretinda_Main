@@ -10,11 +10,21 @@ export const HomeCategories = async ({ heading }: { heading: string }) => {
 	const { categories } = (await listCategories()) as {
 		categories: HttpTypes.StoreProductCategory[];
 	};
-	let subCategories: HttpTypes.StoreProductCategory[] = [];
-
+	
+	// Display top-level categories if no subcategories exist
+	let categoriesToDisplay: HttpTypes.StoreProductCategory[] = [];
+	
+	// First, try to collect all subcategories
 	categories.forEach((category) => {
-		subCategories = [...subCategories, ...category.category_children];
+		if (category.category_children && category.category_children.length > 0) {
+			categoriesToDisplay = [...categoriesToDisplay, ...category.category_children];
+		}
 	});
+	
+	// If no subcategories found, display top-level categories
+	if (categoriesToDisplay.length === 0) {
+		categoriesToDisplay = categories;
+	}
 
 	return (
 		<section className="bg-primary w-full">
@@ -22,10 +32,10 @@ export const HomeCategories = async ({ heading }: { heading: string }) => {
 				<Heading label="Categories" />
 			</div>
 			<Carousel
-				items={subCategories?.map((category, index) => (
+				items={categoriesToDisplay?.map((category, index) => (
 					<CategoryCard
 						category={{
-							description: category.description,
+							description: category.description || category.name,
 							handle: category.handle,
 							id: index + 1,
 							name: category.name,

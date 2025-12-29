@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/services/giyapay-gcash-provider.ts","./src/services/giyapay-instapay-provider.ts","./src/services/giyapay-mastercard-provider.ts","./src/services/giyapay-paymaya-provider.ts","./src/services/giyapay-provider.ts","./src/services/giyapay-visa-provider.ts"],"version":"5.9.3"}

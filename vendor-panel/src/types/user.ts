@@ -26,7 +26,15 @@ export interface StoreVendor {
   country_code?: string
   tax_id?: string
   store_status?: "ACTIVE" | "SUSPENDED" | "INACTIVE"
-  // DFT Bank Information
+  // Settlement Bank Information (New)
+  bank_name?: string
+  account_number?: string
+  account_name?: string
+  branch_name?: string
+  swift_code?: string
+  beneficiary_address?: string
+  beneficiary_bank_address?: string
+  // DFT Bank Information (Legacy - for backward compatibility)
   dft_bank_name?: string
   dft_bank_code?: string
   dft_swift_code?: string

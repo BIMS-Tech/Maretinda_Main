@@ -1,4 +1,6 @@
-import { LoginForm, ProfileDetails } from '@/components/molecules';
+import { redirect } from 'next/navigation';
+
+import { ProfileDetails } from '@/components/molecules';
 import { ProfilePassword } from '@/components/molecules/ProfileDetails/ProfilePassword';
 import { Layout } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -6,7 +8,9 @@ import { retrieveCustomer } from '@/lib/data/customer';
 export default async function ReviewsPage() {
 	const user = await retrieveCustomer();
 
-	if (!user) return <LoginForm />;
+	if (!user) {
+		redirect('/login');
+	}
 
 	return (
 		<Layout>
