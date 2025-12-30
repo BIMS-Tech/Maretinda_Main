@@ -13,8 +13,9 @@
     "medusa"
   ],
   "scripts": {
-    "build": "npm run build:giyapay && medusa build",
+    "build": "npm run build:giyapay && medusa build && npm run postbuild:copy",
     "build:giyapay": "cd src/modules/payment-giyapay && npm install && npm run build",
+    "postbuild:copy": "mkdir -p .medusa/server/src/modules/payment-giyapay && cp -r src/modules/payment-giyapay/dist .medusa/server/src/modules/payment-giyapay/ && cp src/modules/payment-giyapay/package.json .medusa/server/src/modules/payment-giyapay/",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
     "dev": "medusa develop",

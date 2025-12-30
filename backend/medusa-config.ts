@@ -73,7 +73,7 @@ module.exports = defineConfig({
       options: {
         providers: [
           {
-            resolve: './src/modules/payment-giyapay/dist',
+            resolve: './src/modules/payment-giyapay',
             id: 'giyapay',
             options: {
               // GiyaPay configuration options will be loaded from service
