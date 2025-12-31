@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "tsup && node ./scripts/generate-types.js",
     "build:preview": "vite build",
+    "gcp-build": "vite build",
     "build:admin": "medusa build",
     "preview": "vite preview",
     "start": "vite preview --host 0.0.0.0 --port 3000 --strictPort",

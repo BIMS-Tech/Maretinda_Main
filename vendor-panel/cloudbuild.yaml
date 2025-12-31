@@ -47,7 +47,7 @@ steps:
 
 # Substitutions - Update these with your actual values
 substitutions:
-  _SERVICE: 'maretinda-main'
+  _SERVICE: 'maretinda-vendor-panel-test'
   _REGION: 'europe-west1'
   _GAR_LOCATION: 'europe-west1'
   _BACKEND_URL: 'https://maretindatest.medusajs.app'
