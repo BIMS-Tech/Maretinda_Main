@@ -1,4 +1,4 @@
-# Admin Panel Dockerfile
+# Admin Panel Dockerfile for Cloud Run
 FROM node:22-alpine AS base
 
 # Install curl for health checks
@@ -9,7 +9,7 @@ WORKDIR /app
 # Stage 1: Dependencies
 FROM base AS deps
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --production=false
 
 # Stage 2: Builder
 FROM base AS builder
@@ -33,20 +33,29 @@ ENV VITE_MEDUSA_BASE=$VITE_MEDUSA_BASE
 ENV VITE_MEDUSA_B2B_PANEL=$VITE_MEDUSA_B2B_PANEL
 ENV NODE_ENV=production
 
-# Build the application
-RUN yarn build:preview
+# Build the application (creates /app/dist)
+RUN echo "Building with BACKEND_URL: $VITE_MEDUSA_BACKEND_URL" && \
+    yarn build:preview && \
+    echo "Build complete. Checking dist folder..." && \
+    ls -la dist/ || echo "Dist folder not found!"
 
-# Stage 3: Runner
-FROM base AS runner
+# Stage 3: Runner - Slim production image
+FROM node:22-alpine AS runner
+
+# Install curl for health checks and serve for static file serving
+RUN apk add --no-cache curl && \
+    npm install -g serve
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 appuser
+    adduser --system --uid 1001 appuser && \
+    mkdir -p /app && \
+    chown -R appuser:nodejs /app
 
-# Copy built files and dependencies
+WORKDIR /app
+
+# Copy only the built dist folder
 COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
-COPY --from=builder --chown=appuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=appuser:nodejs /app/package.json ./package.json
 
 USER appuser
 
@@ -55,12 +64,11 @@ EXPOSE 3000
 
 # Set runtime environment variables
 ENV PORT=3000
-ENV HOST=0.0.0.0
 ENV NODE_ENV=production
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/ || exit 1
 
-# Start the application (serves the built files)
-CMD ["yarn", "start"]
+# Start static file server on port 3000
+CMD ["serve", "-s", "dist", "-l", "3000", "--no-clipboard"]

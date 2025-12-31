@@ -40,8 +40,8 @@ steps:
       '--cpu', '2',
       '--max-instances', '10',
       '--min-instances', '0',
-      '--timeout', '300',
-      '--set-env-vars', 'NODE_ENV=production,PORT=3000,HOST=0.0.0.0'
+      '--timeout', '3600',
+      '--set-env-vars', 'NODE_ENV=production'
     ]
 
 # Substitutions - Update these with your actual values
