@@ -7,7 +7,7 @@
     "build": "tsup && node ./scripts/generate-types.js",
     "build:preview": "vite build",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port 3000",
+    "start": "BROWSER=none vite preview --host 0.0.0.0 --port 3000 --open false",
     "test": "vitest --run",
     "i18n:validate": "node ./scripts/i18n/validate-translation.js",
     "i18n:schema": "node ./scripts/i18n/generate-schema.js",
