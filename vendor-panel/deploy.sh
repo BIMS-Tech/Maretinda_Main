@@ -5,7 +5,7 @@ set -e
 
 # Configuration
 PROJECT_ID="maretinda-test"
-SERVICE_NAME="maretinda-vendor-panel-test"
+SERVICE_NAME="maretinda-main"
 REGION="europe-west1"
 IMAGE_NAME="$REGION-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_NAME"
 BACKEND_URL="https://maretindatest.medusajs.app"
@@ -44,7 +44,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --min-instances 0 \
   --timeout 300 \
   --clear-env-vars \
-  --set-env-vars "NODE_ENV=production" \
+  --set-env-vars "NODE_ENV=production,PORT=3000,BROWSER=none,CI=true" \
   --project "$PROJECT_ID"
 
 echo "✅ Deployment complete!"

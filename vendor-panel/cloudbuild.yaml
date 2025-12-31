@@ -41,12 +41,13 @@ steps:
       '--max-instances', '10',
       '--min-instances', '0',
       '--timeout', '3600',
-      '--set-env-vars', 'NODE_ENV=production'
+      '--clear-env-vars',
+      '--set-env-vars', 'NODE_ENV=production,PORT=3000,BROWSER=none,CI=true'
     ]
 
 # Substitutions - Update these with your actual values
 substitutions:
-  _SERVICE: 'maretinda-vendor-panel-test'
+  _SERVICE: 'maretinda-main'
   _REGION: 'europe-west1'
   _GAR_LOCATION: 'europe-west1'
   _BACKEND_URL: 'https://maretindatest.medusajs.app'
