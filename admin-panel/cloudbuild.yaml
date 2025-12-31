@@ -1,10 +1,15 @@
 # Admin Panel - Google Cloud Build configuration
 steps:
-  # Build the Docker image
+  # Build the Docker image with build arguments
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
+      '--build-arg', 'VITE_MEDUSA_BACKEND_URL=${_BACKEND_URL}',
+      '--build-arg', 'VITE_MEDUSA_STOREFRONT_URL=${_STOREFRONT_URL}',
+      '--build-arg', 'VITE_MEDUSA_BASE=/',
+      '--build-arg', 'VITE_MEDUSA_B2B_PANEL=false',
       '-t', '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:${COMMIT_SHA}',
+      '-t', '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:latest',
       '.'
     ]
 
@@ -13,6 +18,12 @@ steps:
     args: [
       'push',
       '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:${COMMIT_SHA}'
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      '${_GAR_LOCATION}-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/${_SERVICE}:latest'
     ]
 
   # Deploy to Cloud Run
@@ -28,15 +39,20 @@ steps:
       '--memory', '2Gi',
       '--cpu', '2',
       '--max-instances', '10',
+      '--min-instances', '0',
       '--timeout', '300',
       '--set-env-vars', 'NODE_ENV=production,PORT=3000,HOST=0.0.0.0'
     ]
 
-# Substitutions
+# Substitutions - Update these with your actual values
 substitutions:
-  _SERVICE: 'maretinda-admin'
+  _SERVICE: 'maretinda-admin-panel-test'
   _REGION: 'europe-west1'
   _GAR_LOCATION: 'europe-west1'
+  _BACKEND_URL: 'https://maretindatest.medusajs.app'
+  _STOREFRONT_URL: 'https://your-storefront-url.com'
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+  timeout: '1800s'
