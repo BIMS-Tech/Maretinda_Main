@@ -41,7 +41,11 @@ export default defineConfig(({ mode }) => {
       ),
     },
     server: {
-      open: true,
+      open: false,
+    },
+    preview: {
+      open: false,
+      strictPort: true,
     },
     optimizeDeps: {
       entries: [],

@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
       __B2B_PANEL__: JSON.stringify(B2B_PANEL),
     },
     server: {
-      open: true,
+      open: false,
       proxy: {
         "/admin": {
           target: BACKEND_URL,
@@ -63,6 +63,10 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
+    },
+    preview: {
+      open: false,
+      strictPort: true,
     },
   };
 });
