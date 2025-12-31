@@ -1,4 +1,4 @@
-# Admin Panel Dockerfile for Cloud Run
+# Admin Panel Dockerfile
 FROM node:22-alpine AS base
 
 # Install curl for health checks
@@ -6,10 +6,12 @@ RUN apk add --no-cache curl
 
 WORKDIR /app
 
-# Stage 1: Dependencies
-FROM base AS deps
+# Install dependencies for building and serving
+RUN apk add --no-cache curl
+
+# Copy package files
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=false
+RUN yarn install --frozen-lockfile
 
 # Stage 2: Builder
 FROM base AS builder
@@ -27,48 +29,40 @@ ARG VITE_MEDUSA_BASE=/
 ARG VITE_MEDUSA_B2B_PANEL=false
 
 # Set environment variables for build
-ENV VITE_MEDUSA_BACKEND_URL=$VITE_MEDUSA_BACKEND_URL
-ENV VITE_MEDUSA_STOREFRONT_URL=$VITE_MEDUSA_STOREFRONT_URL
-ENV VITE_MEDUSA_BASE=$VITE_MEDUSA_BASE
-ENV VITE_MEDUSA_B2B_PANEL=$VITE_MEDUSA_B2B_PANEL
-ENV NODE_ENV=production
+ENV VITE_MEDUSA_BACKEND_URL=$VITE_MEDUSA_BACKEND_URL \
+    VITE_MEDUSA_STOREFRONT_URL=$VITE_MEDUSA_STOREFRONT_URL \
+    VITE_MEDUSA_BASE=$VITE_MEDUSA_BASE \
+    VITE_MEDUSA_B2B_PANEL=$VITE_MEDUSA_B2B_PANEL \
+    NODE_ENV=production
 
-# Build the application (creates /app/dist)
-RUN echo "Building with BACKEND_URL: $VITE_MEDUSA_BACKEND_URL" && \
-    yarn build:preview && \
-    echo "Build complete. Checking dist folder..." && \
-    ls -la dist/ || echo "Dist folder not found!"
+# Build the application
+RUN yarn build:preview
 
-# Stage 3: Runner - Slim production image
-FROM node:22-alpine AS runner
-
-# Install curl for health checks and serve for static file serving
-RUN apk add --no-cache curl && \
-    npm install -g serve
+# Stage 3: Runner
+FROM base AS runner
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 appuser && \
-    mkdir -p /app && \
-    chown -R appuser:nodejs /app
+    adduser --system --uid 1001 appuser
 
-WORKDIR /app
-
-# Copy only the built dist folder
+# Copy built files and dependencies
 COPY --from=builder --chown=appuser:nodejs /app/dist ./dist
+COPY --from=builder --chown=appuser:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=appuser:nodejs /app/package.json ./package.json
 
 USER appuser
 
-# Expose port
+# Expose port 3000 (NOT 5173 - that's dev server)
 EXPOSE 3000
 
 # Set runtime environment variables
 ENV PORT=3000
+ENV HOST=0.0.0.0
 ENV NODE_ENV=production
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000/ || exit 1
 
-# Start static file server on port 3000
-CMD ["serve", "-s", "dist", "-l", "3000", "--no-clipboard"]
+# Start the application (serves the built files)
+CMD ["yarn", "start"]

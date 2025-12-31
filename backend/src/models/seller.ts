@@ -27,3 +27,4 @@ const Seller = model.define("seller", {
 
 export default Seller
 
+

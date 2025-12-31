@@ -17,3 +17,4 @@ ADD COLUMN IF NOT EXISTS dft_beneficiary_address text,
 ADD COLUMN IF NOT EXISTS dft_account_number text;
 
 
+
