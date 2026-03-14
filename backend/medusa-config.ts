@@ -87,12 +87,12 @@ module.exports = defineConfig({
       options: {
         providers: [
           {
-            resolve: '@mercurjs/resend/providers/resend',
-            id: 'resend',
+            resolve: './src/modules/notification-resend',
+            id: 'maretinda-resend',
             options: {
               channels: ['email'],
               api_key: process.env.RESEND_API_KEY,
-              from: process.env.RESEND_FROM_EMAIL
+              from: process.env.RESEND_FROM_EMAIL || 'orders@maretinda.com'
             }
           },
           {

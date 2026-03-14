@@ -1,0 +1,12 @@
+{
+  "name": "notification-resend",
+  "version": "1.0.0",
+  "description": "Custom Resend notification provider with Maretinda email templates",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@medusajs/framework": "^2.0.0",
+    "@medusajs/types": "^2.0.0",
+    "resend": "^6.9.0"
+  }
+}

@@ -4,59 +4,56 @@ import {
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
 
-/**
- * Custom subscriber to handle customer.created event
- * This overrides the broken subscriber from @mercurjs/resend
- */
+/** Resend provider template name - must match @mercurjs/resend emailTemplates key */
+const BUYER_ACCOUNT_CREATED_TEMPLATE = "buyerAccountCreatedEmailTemplate"
+
 export default async function customerCreatedHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
   try {
     const customerId = data.id
-    
-    console.log(`✅ Customer created successfully: ${customerId}`)
-
-    // Get customer data
     const customerService = container.resolve(Modules.CUSTOMER)
     const customer = await customerService.retrieveCustomer(customerId)
 
-    // Get store data
     const storeService = container.resolve(Modules.STORE)
     const stores = await storeService.listStores()
     const store = stores[0]
 
-    console.log(`📧 Would send welcome email to: ${customer.email}`)
-    console.log(`🏪 Store: ${store?.name || 'Maretinda Marketplace'}`)
+    const storeName = store?.name || "Maretinda Marketplace"
+    const storefrontUrl =
+      process.env.STOREFRONT_URL ||
+      process.env.STORE_URL ||
+      "https://your-storefront.com"
+    const userName =
+      [customer.first_name, customer.last_name].filter(Boolean).join(" ") ||
+      "Customer"
 
-    // Optional: Send notification through the notification module
-    try {
-      const notificationService = container.resolve(Modules.NOTIFICATION)
-      
-      await notificationService.createNotifications({
-        to: customer.email,
-        channel: 'email',
-        template: 'customer-created',
+    const notificationService = container.resolve(Modules.NOTIFICATION)
+    await notificationService.createNotifications({
+      to: customer.email,
+      channel: "email",
+      template: BUYER_ACCOUNT_CREATED_TEMPLATE,
+      content: {
+        subject: `Welcome to ${storeName}, ${userName}!`,
+      },
+      data: {
         data: {
-          customer_name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email,
-          customer_email: customer.email,
-          store_name: store?.name || 'Maretinda Marketplace',
+          user_name: userName,
+          store_name: storeName,
+          storefront_url: storefrontUrl,
         },
-      })
-      
-      console.log(`✉️ Welcome notification queued for ${customer.email}`)
-    } catch (notificationError) {
-      // Notification is optional, don't fail if it errors
-      console.warn('⚠️ Could not send welcome notification:', notificationError.message)
-    }
+      },
+    })
+    console.log(`✉️ Welcome email sent to ${customer.email}`)
   } catch (error) {
-    console.error('❌ Error in customer.created subscriber:', error)
-    // Don't throw - we don't want to fail the customer creation process
+    console.error(
+      "❌ customer.created email failed:",
+      error instanceof Error ? error.message : error
+    )
   }
 }
 
 export const config: SubscriberConfig = {
   event: "customer.created",
 }
-
-

@@ -4,78 +4,108 @@ import {
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
 
-/**
- * Custom subscriber to handle order.placed event for buyer notifications
- * This overrides the broken subscriber from @mercurjs/resend
- */
+/** Resend provider template - must match @mercurjs/resend emailTemplates key */
+const BUYER_NEW_ORDER_TEMPLATE = "buyerNewOrderEmailTemplate"
+
+const storefrontUrl = () =>
+  process.env.STOREFRONT_URL ||
+  process.env.STORE_URL ||
+  "https://your-storefront.com"
+
 export default async function orderPlacedBuyerHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
   try {
     const orderId = data.id
-    
-    console.log(`✅ Order placed successfully: ${orderId}`)
-
-    // Get order data
     const orderService = container.resolve(Modules.ORDER)
     const order = await orderService.retrieveOrder(orderId, {
-      relations: ["items", "shipping_address", "billing_address"]
+      relations: ["items", "shipping_address", "billing_address", "shipping_methods"],
     })
 
-    // Get customer data if available
-    if (order.customer_id) {
-      const customerService = container.resolve(Modules.CUSTOMER)
-      const customer = await customerService.retrieveCustomer(order.customer_id)
-
-      // Get store data
-      const storeService = container.resolve(Modules.STORE)
-      const stores = await storeService.listStores()
-      const store = stores[0]
-
-      console.log(`📧 Would send order confirmation email to buyer: ${customer.email || order.email}`)
-      console.log(`🏪 Store: ${store?.name || 'Maretinda Marketplace'}`)
-      console.log(`📦 Order ID: ${order.display_id}`)
-      console.log(`💰 Total: ${order.total}`)
-
-      // Optional: Send notification through the notification module
-      try {
-        const notificationService = container.resolve(Modules.NOTIFICATION)
-        
-        const emailTo = customer.email || order.email
-        if (!emailTo) {
-          console.warn('⚠️ No email address available for order confirmation')
-          return
-        }
-        
-        await notificationService.createNotifications({
-          to: emailTo,
-          channel: 'email',
-          template: 'order-placed-buyer',
-          data: {
-            customer_name: `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.email,
-            customer_email: customer.email || order.email,
-            store_name: store?.name || 'Maretinda Marketplace',
-            order_id: order.display_id,
-            order_date: order.created_at,
-            order_total: order.total,
-            currency: order.currency_code,
-          },
-        })
-        
-        console.log(`✉️ Order confirmation notification queued for buyer`)
-      } catch (notificationError) {
-        // Notification is optional, don't fail if it errors
-        console.warn('⚠️ Could not send order confirmation notification:', notificationError.message)
-      }
+    const emailTo = order.email || (order.customer_id ? (await container.resolve(Modules.CUSTOMER).retrieveCustomer(order.customer_id).catch(() => null))?.email : null)
+    if (!emailTo) {
+      console.warn("⚠️ No email for order confirmation:", orderId)
+      return
     }
+
+    const storeService = container.resolve(Modules.STORE)
+    const stores = await storeService.listStores()
+    const store = stores[0]
+    const storeName = store?.name || "Maretinda Marketplace"
+    const baseUrl = storefrontUrl()
+    const orderAddress = `${baseUrl.replace(/\/$/, "")}/user/orders/${order.id}`
+
+    let userName = "Customer"
+    if (order.customer_id) {
+      try {
+        const customer = await container.resolve(Modules.CUSTOMER).retrieveCustomer(order.customer_id)
+        userName = [customer.first_name, customer.last_name].filter(Boolean).join(" ") || customer.email || userName
+      } catch (_) {}
+    }
+
+    const shippingMethods = (order as any).shipping_methods || []
+    const shippingAddress = (order as any).shipping_address || {}
+    const items = (order as any).items || []
+
+    const orderForTemplate = {
+      display_id: (order as any).display_id ?? order.id,
+      total: (order as any).total ?? 0,
+      currency_code: (order as any).currency_code ?? "USD",
+      email: order.email,
+      items: items.map((item: any) => ({
+        thumbnail: item.thumbnail || "",
+        product_title: item.title ?? item.product_title ?? "Product",
+        variant_title: item.variant_title ?? "",
+        unit_price: item.unit_price ?? 0,
+        quantity: item.quantity ?? 1,
+      })),
+      shipping_methods: [
+        {
+          amount: shippingMethods[0]?.amount ?? 0,
+          name: shippingMethods[0]?.name ?? "Standard",
+        },
+      ],
+      shipping_address: {
+        first_name: shippingAddress.first_name ?? "",
+        last_name: shippingAddress.last_name ?? "",
+        company: shippingAddress.company ?? "",
+        address_1: shippingAddress.address_1 ?? "",
+        address_2: shippingAddress.address_2 ?? "",
+        postal_code: shippingAddress.postal_code ?? "",
+        city: shippingAddress.city ?? "",
+        province: shippingAddress.province ?? "",
+        phone: shippingAddress.phone ?? "",
+      },
+    }
+
+    const notificationService = container.resolve(Modules.NOTIFICATION)
+    await notificationService.createNotifications({
+      to: emailTo,
+      channel: "email",
+      template: BUYER_NEW_ORDER_TEMPLATE,
+      content: {
+        subject: `Order Confirmation - #${orderForTemplate.display_id}`,
+      },
+      data: {
+        data: {
+          user_name: userName,
+          order_address: orderAddress,
+          store_name: storeName,
+          storefront_url: baseUrl,
+          order: orderForTemplate,
+        },
+      },
+    })
+    console.log(`✉️ Order confirmation email sent to ${emailTo}`)
   } catch (error) {
-    console.error('❌ Error in order.placed buyer subscriber:', error)
-    // Don't throw - we don't want to fail the order process
+    console.error(
+      "❌ order.placed buyer email failed:",
+      error instanceof Error ? error.message : error
+    )
   }
 }
 
 export const config: SubscriberConfig = {
   event: "order.placed",
 }
-

@@ -1,0 +1,1 @@
+export { MaretindaResendProvider } from "./resend"

@@ -3,102 +3,167 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-/**
- * Custom subscriber to handle order.placed event for seller notifications
- * This overrides the broken subscriber from @mercurjs/resend
- */
+/** Resend provider template - must match @mercurjs/resend emailTemplates key */
+const SELLER_NEW_ORDER_TEMPLATE = "sellerNewOrderEmailTemplate"
+
+const storefrontUrl = () =>
+  process.env.STOREFRONT_URL ||
+  process.env.STORE_URL ||
+  "https://your-storefront.com"
+
+/** Get distinct sellers for given product IDs. Uses Query API first, falls back to raw SQL if needed. */
+async function getSellersForProductIds(
+  container: any,
+  productIds: string[]
+): Promise<{ id: string; name: string; email: string }[]> {
+  if (productIds.length === 0) return []
+
+  // Try Query API (entity "product" with seller relation - depends on b2c link)
+  try {
+    const query = container.resolve(ContainerRegistrationKeys.QUERY)
+    const { data: products } = await query.graph({
+      entity: "product",
+      fields: ["id", "seller.id", "seller.name", "seller.email"],
+      filters: { id: productIds },
+    })
+    if (products?.length) {
+      const seen = new Set<string>()
+      const sellers: { id: string; name: string; email: string }[] = []
+      for (const p of products) {
+        const s = (p as any).seller
+        if (s?.id && !seen.has(s.id)) {
+          seen.add(s.id)
+          if (s.email) sellers.push({ id: s.id, name: s.name ?? "Seller", email: s.email })
+        }
+      }
+      if (sellers.length) return sellers
+    }
+  } catch (_) {
+    // Fall through to raw SQL
+  }
+
+  // Fallback: raw SQL (PG_CONNECTION may be Knex; in subscriber context it can throw or have different API)
+  let pgConnection: any
+  try {
+    pgConnection = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+  } catch (_) {
+    return []
+  }
+  if (!pgConnection?.raw) return []
+
+  try {
+    const placeholders = productIds.map(() => "?").join(",")
+    const result = await pgConnection.raw(
+      `SELECT DISTINCT s.id, s.name, s.email FROM seller s
+       JOIN seller_seller_product_product ssp ON ssp.seller_id = s.id
+       WHERE ssp.product_id IN (${placeholders})`,
+      productIds
+    )
+    const rows = result?.rows ?? result ?? []
+    return rows.filter((r: any) => r?.email).map((r: any) => ({
+      id: r.id,
+      name: r.name ?? "Seller",
+      email: r.email,
+    }))
+  } catch (_) {
+    return []
+  }
+}
+
 export default async function orderPlacedSellerHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
   try {
     const orderId = data.id
-    
-    console.log(`🔔 Notifying seller about new order: ${orderId}`)
-
-    // Get order data
     const orderService = container.resolve(Modules.ORDER)
     const order = await orderService.retrieveOrder(orderId, {
-      relations: ["items", "items.product", "shipping_address", "billing_address"]
+      relations: ["items", "items.product", "shipping_address", "billing_address"],
     })
 
-    // Get store data
     const storeService = container.resolve(Modules.STORE)
     const stores = await storeService.listStores()
     const store = stores[0]
+    const storeName = store?.name || "Maretinda Marketplace"
+    const baseUrl = storefrontUrl()
 
-    // Try to identify the seller/vendor from order items
-    // In a marketplace, we need to find which sellers' products are in this order
-    const productIds = order.items?.map((item: any) => item.product_id).filter(Boolean) || []
-    
-    if (productIds.length > 0) {
+    const productIds = (order as any).items?.map((i: any) => i.product_id).filter(Boolean) || []
+    if (productIds.length === 0) {
+      console.warn("⚠️ No product IDs in order:", orderId)
+      return
+    }
+
+    const sellers = await getSellersForProductIds(container, productIds)
+
+    let customerFirstName = ""
+    let customerLastName = ""
+    if ((order as any).customer_id) {
       try {
-        // Query to find sellers for these products
-        const { ContainerRegistrationKeys } = await import("@medusajs/framework/utils")
-        const pgConnection = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-        
-        const sellerQuery = `
-          SELECT DISTINCT s.id, s.name, s.email
-          FROM seller s
-          JOIN seller_seller_product_product ssp ON ssp.seller_id = s.id
-          WHERE ssp.product_id = ANY($1::text[])
-        `
-        
-        const result = await pgConnection.raw(sellerQuery, [productIds])
-        const sellers = result?.rows || result || []
+        const customer = await container.resolve(Modules.CUSTOMER).retrieveCustomer((order as any).customer_id)
+        customerFirstName = customer.first_name ?? ""
+        customerLastName = customer.last_name ?? ""
+      } catch (_) {}
+    }
 
-        console.log(`📧 Found ${sellers.length} seller(s) to notify`)
+    const items = (order as any).items || []
+    const orderForTemplate = {
+      id: order.id,
+      display_id: (order as any).display_id ?? order.id,
+      seller: { name: "", email: "" },
+      customer: { first_name: customerFirstName, last_name: customerLastName },
+      items: items.map((item: any) => ({
+        id: item.id,
+        thumbnail: item.thumbnail || "",
+        product_title: item.title ?? item.product_title ?? "Product",
+        variant_title: item.variant_title ?? "",
+        unit_price: item.unit_price ?? 0,
+        quantity: item.quantity ?? 1,
+      })),
+    }
 
-        // Notify each seller
-        for (const seller of sellers) {
-          console.log(`📧 Would send new order notification to seller: ${seller.name} (${seller.email || 'no email'})`)
-          console.log(`🏪 Store: ${store?.name || 'Maretinda Marketplace'}`)
-          console.log(`📦 Order ID: ${order.display_id}`)
+    const notificationService = container.resolve(Modules.NOTIFICATION)
 
-          if (seller.email) {
-            // Optional: Send notification through the notification module
-            try {
-              const notificationService = container.resolve(Modules.NOTIFICATION)
-              
-              await notificationService.createNotifications({
-                to: seller.email,
-                channel: 'email',
-                template: 'order-placed-seller',
-                data: {
-                  seller_name: seller.name,
-                  seller_email: seller.email,
-                  store_name: store?.name || 'Maretinda Marketplace',
-                  order_id: order.display_id,
-                  order_date: order.created_at,
-                  order_total: order.total,
-                  currency: order.currency_code,
-                  customer_email: order.email,
-                },
-              })
-              
-              console.log(`✉️ New order notification queued for seller: ${seller.name}`)
-            } catch (notificationError) {
-              // Notification is optional, don't fail if it errors
-              console.warn(`⚠️ Could not send notification to seller ${seller.name}:`, notificationError.message)
-            }
-          } else {
-            console.warn(`⚠️ Seller ${seller.name} has no email address`)
-          }
-        }
-      } catch (dbError) {
-        console.error('❌ Error querying sellers:', dbError)
+    for (const seller of sellers) {
+      if (!seller.email) {
+        console.warn(`⚠️ Seller ${seller.name} has no email`)
+        continue
       }
-    } else {
-      console.warn('⚠️ No product IDs found in order items')
+      orderForTemplate.seller = { name: seller.name ?? "Seller", email: seller.email }
+
+      try {
+        await notificationService.createNotifications({
+          to: seller.email,
+          channel: "email",
+          template: SELLER_NEW_ORDER_TEMPLATE,
+          content: {
+            subject: `New order #${orderForTemplate.display_id} received`,
+          },
+          data: {
+            data: {
+              order: orderForTemplate,
+              store_name: storeName,
+              storefront_url: baseUrl,
+            },
+          },
+        })
+        console.log(`✉️ New order email sent to seller: ${seller.name}`)
+      } catch (err) {
+        console.error(
+          `❌ Seller order email failed for ${seller.name}:`,
+          err instanceof Error ? err.message : err
+        )
+      }
     }
   } catch (error) {
-    console.error('❌ Error in order.placed seller subscriber:', error)
-    // Don't throw - we don't want to fail the order process
+    console.error(
+      "❌ order.placed seller subscriber:",
+      error instanceof Error ? error.message : error
+    )
   }
 }
 
 export const config: SubscriberConfig = {
   event: "order.placed",
 }
-
