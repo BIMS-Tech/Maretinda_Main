@@ -6,6 +6,7 @@ export async function POST(req: NextRequest) {
 	try {
 		const body = await req.json();
 		const backendUrl =
+			process.env.MEDUSA_BACKEND_URL ||
 			process.env.NEXT_PUBLIC_BACKEND_URL ||
 			process.env.BACKEND_URL ||
 			'http://localhost:9000';
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
 	try {
 		const backendUrl =
+			process.env.MEDUSA_BACKEND_URL ||
 			process.env.NEXT_PUBLIC_BACKEND_URL ||
 			process.env.BACKEND_URL ||
 			'http://localhost:9000';

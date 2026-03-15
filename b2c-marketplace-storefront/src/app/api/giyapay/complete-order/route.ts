@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Call Medusa backend to verify signature and complete the order
     // The backend has access to the merchant secret from the database (admin panel config)
-    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
+    const backendUrl = process.env.MEDUSA_BACKEND_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
     const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || 
                            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY || '';
     
