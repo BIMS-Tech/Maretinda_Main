@@ -372,7 +372,7 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
     const amountInCents = Math.round(Number(amount) * 100).toString()
 
     // Use storefront URL for callbacks
-    const storefrontUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:3000"
+    const storefrontUrl = process.env.STOREFRONT_URL || process.env.STORE_CORS?.split(",")[0] || "http://localhost:3000"
     
     console.log('[GiyaPay Gateway Direct] Preparing payment for order:', orderId)
     
