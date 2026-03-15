@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, X } from '@medusajs/icons';
+import { ArrowUpTray, X } from '@medusajs/icons';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useCallback, useState } from 'react';
@@ -223,7 +223,7 @@ export const ImageUploader = ({
 				/>
 
 				<div className="flex flex-col items-center justify-center text-center">
-					<Upload className="w-12 h-12 text-gray-400 mb-4" />
+					<ArrowUpTray className="w-12 h-12 text-gray-400 mb-4" />
 					<p className="text-sm text-gray-600 mb-2">
 						<span className="font-semibold text-blue-600">
 							Click to upload
