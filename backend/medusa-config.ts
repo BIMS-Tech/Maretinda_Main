@@ -6,6 +6,9 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    ...(process.env.DB_HOST ? {
+      databaseDriverOptions: { host: process.env.DB_HOST }
+    } : {}),
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -17,7 +20,7 @@ module.exports = defineConfig({
     }
   },
   admin: {
-    disable: false,
+    disable: process.env.NODE_ENV === 'production',
   },
   loaders: [
     {

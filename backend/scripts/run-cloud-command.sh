@@ -43,7 +43,7 @@ fi
 
 # Configuration (update these for your project)
 PROJECT_ID="${GOOGLE_CLOUD_PROJECT:-your-project-id}"
-REGION="${REGION:-asia-southeast1}"
+REGION="${REGION:-us-central1}"
 IMAGE="gcr.io/${PROJECT_ID}/maretinda-backend"
 JOB_PREFIX="maretinda-cmd"
 
@@ -109,8 +109,9 @@ gcloud run jobs create "$JOB_NAME" \
   --command="npm" \
   --args="$ARGS" \
   --region="$REGION" \
-  --set-secrets=DATABASE_URL=database-url:latest \
-  --set-env-vars="NODE_ENV=production" \
+  --set-secrets=DATABASE_URL=DATABASE_URL:latest \
+  --set-env-vars="NODE_ENV=production,DB_HOST=/cloudsql/maretinda-test:us-central1:maretinda-db-test-2" \
+  --set-cloudsql-instances=maretinda-test:us-central1:maretinda-db-test-2 \
   --max-retries=0 \
   --task-timeout=10m \
   --execute-now \

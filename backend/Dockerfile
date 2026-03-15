@@ -18,17 +18,21 @@ RUN apk add --no-cache \
 FROM base AS deps
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY yarn.lock* ./
+# Enable corepack for Yarn 3
+RUN corepack enable
 
-# Install dependencies
-RUN npm ci --only=production && \
-    npm ci --only=development
+# Copy package files
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Install all dependencies (prod + dev needed for build)
+RUN yarn install --immutable
 
 # Stage 3: Builder
 FROM base AS builder
 WORKDIR /app
+
+# Enable corepack for Yarn 3
+RUN corepack enable
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -43,7 +47,7 @@ RUN npm run build
 
 # Build main application
 WORKDIR /app
-RUN npm run build
+RUN yarn build
 
 # Stage 4: Production runner
 FROM node:20-alpine AS runner
@@ -53,7 +57,8 @@ WORKDIR /final
 RUN apk add --no-cache \
     bash \
     curl \
-    tini
+    tini && \
+    corepack enable
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -61,6 +66,7 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Copy necessary files from builder
 COPY --from=builder --chown=medusa:nodejs /app/package*.json ./
+COPY --from=builder --chown=medusa:nodejs /app/.yarnrc.yml ./
 COPY --from=builder --chown=medusa:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=medusa:nodejs /app/.medusa ./.medusa
 COPY --from=builder --chown=medusa:nodejs /app/medusa-config.ts ./medusa-config.ts
@@ -95,5 +101,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 ENTRYPOINT ["/sbin/tini", "--"]
 
 # Start the server
-CMD ["npm", "start"]
+CMD ["node_modules/.bin/medusa", "start"]
 
