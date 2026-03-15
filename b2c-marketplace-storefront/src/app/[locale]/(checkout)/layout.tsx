@@ -8,7 +8,12 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }>) {
 	const APP_ID = process.env.NEXT_PUBLIC_TALKJS_APP_ID;
-	const user = await retrieveCustomer();
+	const customer = await retrieveCustomer();
+	const user = customer ? {
+		...customer,
+		first_name: customer.first_name ?? '',
+		last_name: customer.last_name ?? '',
+	} : null;
 
 	return (
 		<TalkJSProvider appId={APP_ID} user={user}>
