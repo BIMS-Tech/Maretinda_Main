@@ -13,6 +13,7 @@ export default async function RootLayout({
 		...customer,
 		first_name: customer.first_name ?? '',
 		last_name: customer.last_name ?? '',
+		phone: customer.phone ?? undefined,
 	} : null;
 
 	return (
