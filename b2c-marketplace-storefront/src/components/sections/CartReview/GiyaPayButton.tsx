@@ -54,7 +54,7 @@ const GiyaPayButton = ({
 				throw new Error('GiyaPay payment session not found');
 			}
 
-			const sessionData = activeSession.data;
+			const sessionData = activeSession.data as any;
 			const formData = sessionData?.form_data || sessionData;
 
 			// Get selected payment method from localStorage (set by GiyaPayGatewayDirect)

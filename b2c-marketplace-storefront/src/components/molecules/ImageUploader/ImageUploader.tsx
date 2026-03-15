@@ -273,7 +273,7 @@ export const ImageUploader = ({
 									onClick={() => handleRemove(index)}
 									type="button"
 								>
-									<X size={16} />
+									<X className="w-4 h-4" />
 								</button>
 							)}
 						</div>
