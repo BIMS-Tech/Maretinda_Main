@@ -12,6 +12,19 @@ import { getCategoryByHandle } from '@/lib/data/categories';
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
+const CATEGORY_BANNERS: Record<string, string> = {
+	'accessories': '/images/categories/accessories-banner.png',
+	'fashion': '/images/categories/fashion-banner.png',
+	'food': '/images/categories/food-banner.png',
+	'food-items': '/images/categories/food-items-banner.png',
+	'groceries': '/images/categories/groceries-banner.png',
+	'shopping': '/images/categories/shopping-banner.png',
+}
+
+function getCategoryBanner(handle: string): string {
+	return CATEGORY_BANNERS[handle] ?? '/images/categories/shopping-banner.png'
+}
+
 export async function generateMetadata({
 	params,
 }: {
@@ -84,10 +97,10 @@ async function SubCategory({
 			</div>
 
 			<Image
-				alt="A product"
+				alt={category.name}
 				className="w-full h-auto rounded-md"
 				height={2484}
-				src={`/images/categories/${category.handle}-banner.png`}
+				src={getCategoryBanner(category.handle)}
 				width={672}
 			/>
 
