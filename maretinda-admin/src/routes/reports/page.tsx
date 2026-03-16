@@ -112,10 +112,10 @@ const ReportsPage = () => {
 
   const handleView = async (report: Report) => {
     try {
-      const endpoint = report.report_type === 'TAMA' 
-        ? `/admin/tama/${report.id}` 
-        : `/admin/dft/${report.id}`
-      
+      const endpoint = report.report_type === 'TAMA'
+        ? `${__BACKEND_URL__}/admin/tama/${report.id}`
+        : `${__BACKEND_URL__}/admin/dft/${report.id}`
+
       const response = await fetch(endpoint, {
         credentials: 'include',
         headers: {
@@ -142,10 +142,10 @@ const ReportsPage = () => {
 
   const handleDelete = async (report: Report) => {
     try {
-      const endpoint = report.report_type === 'TAMA' 
-        ? `/admin/tama/${report.id}` 
-        : `/admin/dft/${report.id}`
-      
+      const endpoint = report.report_type === 'TAMA'
+        ? `${__BACKEND_URL__}/admin/tama/${report.id}`
+        : `${__BACKEND_URL__}/admin/dft/${report.id}`
+
       const response = await fetch(endpoint, {
         method: 'DELETE',
         credentials: 'include',
@@ -153,7 +153,7 @@ const ReportsPage = () => {
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (!response.ok) {
         throw new Error('Delete failed')
       }
@@ -184,9 +184,9 @@ const ReportsPage = () => {
         const report = reports.find(r => r.id === reportId)
         if (!report) return
 
-        const endpoint = report.report_type === 'TAMA' 
-          ? `/admin/tama/${report.id}` 
-          : `/admin/dft/${report.id}`
+        const endpoint = report.report_type === 'TAMA'
+          ? `${__BACKEND_URL__}/admin/tama/${report.id}`
+          : `${__BACKEND_URL__}/admin/dft/${report.id}`
         
         return fetch(endpoint, {
           method: 'DELETE',
