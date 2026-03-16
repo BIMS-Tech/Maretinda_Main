@@ -244,6 +244,7 @@ class GiyaPayService extends MedusaService({}) {
         reference_number: row.reference_number,
         order_id: row.order_id,
         cart_id: row.cart_id,
+        vendor_id: row.vendor_id,
         amount: parseFloat(row.amount),
         currency: row.currency,
         status: row.status,
