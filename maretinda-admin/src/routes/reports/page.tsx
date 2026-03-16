@@ -43,7 +43,7 @@ const ReportsPage = () => {
   const fetchReports = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/admin/reports`, {
+      const response = await fetch(`${__BACKEND_URL__}/admin/reports`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ const ReportsPage = () => {
   const handleGenerateSettlement = async () => {
     try {
       setGenerating(true)
-      const response = await fetch(`/admin/settlement/generate`, {
+      const response = await fetch(`${__BACKEND_URL__}/admin/settlement/generate`, {
         method: 'POST',
         credentials: 'include',
         headers: {
