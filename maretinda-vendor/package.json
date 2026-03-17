@@ -9,7 +9,7 @@
     "gcp-build": "vite build",
     "build:admin": "medusa build",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port 3000 --strictPort",
+    "start": "vite preview --host 0.0.0.0 --port 5174 --strictPort",
     "test": "vitest --run",
     "i18n:validate": "node ./scripts/i18n/validate-translation.js",
     "i18n:schema": "node ./scripts/i18n/generate-schema.js",

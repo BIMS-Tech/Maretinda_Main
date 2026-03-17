@@ -1,0 +1,26 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'maretinda-backend'
+      - '--image=us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--quiet'
+
+images:
+  - 'us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'

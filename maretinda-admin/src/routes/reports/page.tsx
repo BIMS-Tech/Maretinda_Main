@@ -500,7 +500,7 @@ const ReportsPage = () => {
                     </Badge>
                   </div>
                 </div>
-                <Button size="small" variant="secondary" onClick={() => setViewingReport(null)}>
+                <Button size="small" variant="transparent" onClick={() => setViewingReport(null)}>
                   Close
                 </Button>
               </div>
@@ -517,6 +517,12 @@ const ReportsPage = () => {
               <Button
                 size="small"
                 variant="secondary"
+                onClick={() => setViewingReport(null)}
+              >
+                Close
+              </Button>
+              <Button
+                size="small"
                 onClick={() => {
                   handleDownload(viewingReport.report)
                   setViewingReport(null)
@@ -524,9 +530,6 @@ const ReportsPage = () => {
               >
                 <ArrowDownTray />
                 Download Full File
-              </Button>
-              <Button size="small" onClick={() => setViewingReport(null)}>
-                Close
               </Button>
             </div>
           </div>
