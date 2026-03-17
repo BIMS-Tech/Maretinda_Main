@@ -36,19 +36,19 @@ export const GET = async (
       }
       
       // Default Gateway Direct payment methods
-      const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA']
+      const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH']
       const enabledMethods = config?.enabledMethods || defaultMethods
       
       return res.json({
         enabledMethods,
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA'],
+        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH'],
         isEnabled: true
       })
     } catch (serviceError) {
       console.log('[GiyaPay Store Methods] Service not available, returning defaults')
       return res.json({
-        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA'],
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA'],
+        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH'],
+        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH'],
         isEnabled: true
       })
     }

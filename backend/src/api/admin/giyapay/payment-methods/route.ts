@@ -3,7 +3,7 @@ import { z } from "zod"
 
 // Validation schema for GiyaPay Gateway Direct payment methods
 const GiyaPayMethodsConfigSchema = z.object({
-  enabledMethods: z.array(z.enum(['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA'])),
+  enabledMethods: z.array(z.enum(['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH'])),
 })
 
 type AuthenticatedMedusaRequest = MedusaRequest & {
@@ -38,18 +38,18 @@ export async function GET(
       const config = await giyaPayService.getConfig()
       
       // Default Gateway Direct payment methods (all methods from GiyaPay docs)
-      const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA']
+      const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'QRPH']
       const enabledMethods = config?.enabledMethods || defaultMethods
-      
+
       return res.status(200).json({
         enabledMethods,
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA']
+        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH']
       })
     } catch (serviceError) {
       console.log('[GiyaPay Methods] Service not available, returning defaults')
       return res.status(200).json({
-        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA'],
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA']
+        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'QRPH'],
+        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'QRPH']
       })
     }
   } catch (error) {
