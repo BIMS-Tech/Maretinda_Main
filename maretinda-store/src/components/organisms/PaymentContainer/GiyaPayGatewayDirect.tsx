@@ -28,7 +28,7 @@ const GiyaPayGatewayDirect = ({
     } else {
       // Default to all methods if not specified
       console.log('[GiyaPay] No enabled methods in session, using defaults');
-      setEnabledMethods(['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA']);
+      setEnabledMethods(['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'QRPH']);
     }
   }, [paymentSession]);
 
@@ -55,19 +55,6 @@ const GiyaPayGatewayDirect = ({
         </div>
       ),
     },
-    'GCASH': {
-      title: 'GCash',
-      description: 'Pay with GCash e-wallet',
-      buttonImage: 'https://pay.giyapay.com/images/btn-gcash.png',
-      icon: (
-        <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
-            <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold" fontFamily="Arial, sans-serif">G</text>
-          </svg>
-        </div>
-      ),
-    },
     'INSTAPAY': {
       title: 'InstaPay',
       description: 'Bank transfer via InstaPay',
@@ -80,40 +67,15 @@ const GiyaPayGatewayDirect = ({
         </div>
       ),
     },
-    'PAYMAYA': {
-      title: 'PayMaya',
-      description: 'Pay with PayMaya e-wallet',
-      buttonImage: 'https://pay.giyapay.com/images/btn-paymaya.png',
+    'GCASH': {
+      title: 'GCash',
+      description: 'Pay with GCash e-wallet',
+      buttonImage: 'https://pay.giyapay.com/images/btn-gcash.png',
       icon: (
-        <div className="flex items-center justify-center" style={{ width: '64px', height: '32px' }}>
-          <div className="w-full h-full bg-green-500 rounded flex items-center justify-center px-2">
-            <span className="text-white font-bold text-xs">PayMaya</span>
-          </div>
-        </div>
-      ),
-    },
-    'UNIONPAY': {
-      title: 'Union Pay',
-      description: 'Pay with UnionPay',
-      buttonImage: '',
-      icon: (
-        <div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-          <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="48" height="32" rx="4" fill="#E21836"/>
-            <text x="24" y="20" textAnchor="middle" fontSize="9" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">UnionPay</text>
-          </svg>
-        </div>
-      ),
-    },
-    'GRAB': {
-      title: 'Grab',
-      description: 'Pay with Grab',
-      buttonImage: '',
-      icon: (
-        <div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-          <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="48" height="32" rx="4" fill="#00B14F"/>
-            <text x="24" y="20" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">Grab</text>
+        <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
+            <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold" fontFamily="Arial, sans-serif">G</text>
           </svg>
         </div>
       ),
@@ -191,7 +153,7 @@ const GiyaPayGatewayDirect = ({
     (sessionData.sandbox_mode ? 'https://sandbox.giyapay.com/checkout' : 'https://pay.giyapay.com/checkout');
 
   return (
-    <div className="mt-0 -mx-5 -mb-5">
+    <div>
       <div className="space-y-0">
         {enabledMethods.map((method, index) => {
           const config = paymentMethodConfig[method as keyof typeof paymentMethodConfig];

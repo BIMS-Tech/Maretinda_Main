@@ -4,10 +4,16 @@ import Image from "next/image"
 
 // GiyaPay icon component with proper branding
 const GiyaPayIcon = () => (
-  <div className="flex items-center justify-center rounded-md overflow-hidden" style={{ width: '120px', height: '40px' }}>
-    <div className="w-full h-full bg-gradient-to-r from-orange-400 via-pink-500 to-pink-600 flex items-center justify-center px-3 rounded-md">
-      <span className="text-white font-bold text-sm tracking-wide">Pay with giyapay</span>
-    </div>
+  <div
+    className="flex items-center justify-center rounded-md px-4"
+    style={{
+      background: 'linear-gradient(135deg, #f97316 0%, #ec4899 50%, #db2777 100%)',
+      minWidth: '160px',
+      height: '40px',
+    }}
+  >
+    <span className="text-white font-bold text-sm tracking-wide">Pay with </span>
+    <span className="text-white font-extrabold text-sm italic ml-1" style={{ fontFamily: 'Georgia, serif' }}>giyapay</span>
   </div>
 )
 
@@ -49,48 +55,6 @@ const GCashIcon = () => (
   </div>
 )
 
-// Union Pay icon
-const UnionPayIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#E21836"/>
-      <text x="24" y="20" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial">UnionPay</text>
-    </svg>
-  </div>
-)
-
-// Grab icon with green logo
-const GrabIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#00B14F"/>
-      <text x="24" y="20" textAnchor="middle" fontSize="10" fill="white" fontWeight="bold" fontFamily="Arial">Grab</text>
-    </svg>
-  </div>
-)
-
-// QR Ph icon
-const QRPhIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="white" stroke="#E5E7EB" strokeWidth="1"/>
-      <text x="12" y="20" textAnchor="middle" fontSize="8" fill="#EF4444" fontWeight="bold" fontFamily="Arial">QR</text>
-      <text x="32" y="20" textAnchor="middle" fontSize="8" fill="#F59E0B" fontWeight="bold" fontFamily="Arial">Ph</text>
-    </svg>
-  </div>
-)
-
-// Mastercard icon
-const MastercardIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#EB001B"/>
-      <circle cx="18" cy="16" r="7" fill="#FF5F00"/>
-      <circle cx="30" cy="16" r="7" fill="#F79E1B"/>
-    </svg>
-  </div>
-)
-
 // InstaPay icon
 const InstaPayIcon = () => (
   <div className="flex items-center justify-center w-12 h-10">
@@ -102,15 +66,6 @@ const InstaPayIcon = () => (
   </div>
 )
 
-// PayMaya icon
-const PayMayaIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#8BC34A"/>
-      <text x="24" y="20" textAnchor="middle" fontSize="9" fill="white" fontWeight="bold" fontFamily="Arial">Maya</text>
-    </svg>
-  </div>
-)
 
 /* Map of payment provider_id to their title and icon. Add in any payment providers you want to use. */
 export const paymentInfoMap: Record<
@@ -149,25 +104,17 @@ export const paymentInfoMap: Record<
     title: "GiyaPay",
     icon: <GiyaPayIcon />,
   },
-  "pp_giyapay_instapay": {
-    title: "InstaPay",
-    icon: <InstaPayIcon />,
-  },
   "pp_giyapay_visa": {
-    title: "Visa/Mastercard",
+    title: "VISA",
     icon: <VisaIcon />,
-  },
-  "pp_giyapay_mastercard": {
-    title: "Visa/Mastercard", 
-    icon: <MastercardIcon />,
   },
   "pp_giyapay_gcash": {
     title: "GCash",
     icon: <GCashIcon />,
   },
-  "pp_giyapay_paymaya": {
-    title: "PayMaya",
-    icon: <PayMayaIcon />,
+  "pp_giyapay_instapay": {
+    title: "InstaPay",
+    icon: <InstaPayIcon />,
   },
   // Add more payment providers here
 }

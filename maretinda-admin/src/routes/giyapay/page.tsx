@@ -302,24 +302,25 @@ export const GiyaPay = () => {
                 </div>
               </div>
 
-              {/* PayMaya */}
+              {/* QR Ph */}
               <div className="flex items-center space-x-3 p-4 border rounded-lg">
                 <Switch
-                  id="paymaya"
-                  checked={enabledMethods.includes('PAYMAYA')}
-                  onCheckedChange={() => toggleMethod('PAYMAYA')}
+                  id="qrph"
+                  checked={enabledMethods.includes('QRPH')}
+                  onCheckedChange={() => toggleMethod('QRPH')}
                   disabled={!isEditingMethods}
                 />
                 <div className="flex-1">
-                  <Label htmlFor="paymaya" className="font-medium">
-                    PayMaya
+                  <Label htmlFor="qrph" className="font-medium">
+                    QR Ph
                   </Label>
                   <Text className="text-ui-fg-subtle" size="small">
-                    Accept payments via PayMaya e-wallet
+                    Accept payments via QR Ph
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-green-500 rounded text-white text-xs font-bold">
-                  PM
+                <div className="w-12 h-8 flex items-center justify-center rounded text-xs font-bold border border-gray-200" style={{ background: 'white' }}>
+                  <span style={{ color: '#EF4444' }}>QR</span>
+                  <span style={{ color: '#F59E0B' }}>Ph</span>
                 </div>
               </div>
 

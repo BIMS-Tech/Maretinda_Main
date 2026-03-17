@@ -138,6 +138,10 @@ const CartPaymentSection = ({
 		setError(null);
 	}, [isOpen]);
 
+	const giyaPayMethod = availablePaymentMethods?.find((m) => isGiyaPayFunc(m.id));
+	const codMethods = availablePaymentMethods?.filter((m) => !isGiyaPayFunc(m.id) && !isStripeFunc(m.id));
+	const stripeMethod = availablePaymentMethods?.find((m) => isStripeFunc(m.id));
+
 	return (
 		<div>
 			{/* Header with Checkmark and Edit */}
@@ -166,84 +170,72 @@ const CartPaymentSection = ({
 			<div>
 				<div className={isOpen ? 'block' : 'hidden'}>
 					{!paidByGiftcard && availablePaymentMethods?.length && (
-						<>
-							<RadioGroup
-								onChange={(value: string) =>
-									setPaymentMethod(value)
-								}
-								value={selectedPaymentMethod}
-							>
-								<div className="border border-gray-300 rounded-lg overflow-hidden">
-									{availablePaymentMethods.map(
-										(paymentMethod, index) => (
-											<div key={paymentMethod.id}>
-												{isStripeFunc(paymentMethod.id) ? (
-													<StripeCardContainer
-														paymentInfoMap={
-															paymentInfoMap
-														}
-														paymentProviderId={
-															paymentMethod.id
-														}
-														selectedPaymentOptionId={
-															selectedPaymentMethod
-														}
-														setCardBrand={setCardBrand}
-														setCardComplete={
-															setCardComplete
-														}
-														setError={setError}
-													/>
-												) : isGiyaPayFunc(paymentMethod.id) ? (
-													<>
-														{/* First, show a radio button to SELECT GiyaPay */}
-														<PaymentContainer
-															paymentInfoMap={
-																paymentInfoMap
-															}
-															paymentProviderId={
-																paymentMethod.id
-															}
-															selectedPaymentOptionId={
-																selectedPaymentMethod
-															}
-														/>
-														{/* Then, AFTER GiyaPay is selected and session is created, show payment buttons */}
-														{selectedPaymentMethod === paymentMethod.id && (
-															<GiyaPayGatewayDirect
-																paymentSession={
-																	cart.payment_collection?.payment_sessions?.find(
-																		(ps: any) => ps.provider_id === paymentMethod.id
-																	)
-																}
-																selectedPaymentOptionId={
-																	selectedPaymentMethod
-																}
-																onSelectMethod={(method) => {
-																	console.log('Selected GiyaPay method:', method);
-																}}
-															/>
-														)}
-													</>
-												) : (
-													<PaymentContainer
-														paymentInfoMap={
-															paymentInfoMap
-														}
-														paymentProviderId={
-															paymentMethod.id
-														}
-														selectedPaymentOptionId={
-															selectedPaymentMethod
-														}
-													/>
-												)}
-											</div>
-										),
-									)}
-								</div>
-							</RadioGroup>
-						</>
+						<RadioGroup
+							onChange={(value: string) => setPaymentMethod(value)}
+							value={selectedPaymentMethod}
+						>
+							<div className="flex flex-col gap-3">
+								{/* GiyaPay — own card */}
+								{giyaPayMethod && (
+									<div
+										className="border rounded-lg overflow-hidden"
+										style={{
+											borderColor: selectedPaymentMethod === giyaPayMethod.id ? '#3b82f6' : '#d1d5db',
+											borderWidth: selectedPaymentMethod === giyaPayMethod.id ? '2px' : '1px',
+										}}
+									>
+										<PaymentContainer
+											paymentInfoMap={paymentInfoMap}
+											paymentProviderId={giyaPayMethod.id}
+											selectedPaymentOptionId={selectedPaymentMethod}
+											hideTitle
+										/>
+									</div>
+								)}
+
+								{/* GiyaPay sub-methods — own grouped card */}
+								{giyaPayMethod && selectedPaymentMethod === giyaPayMethod.id && (
+									<div className="border border-gray-300 rounded-lg overflow-hidden">
+										<GiyaPayGatewayDirect
+											paymentSession={
+												cart.payment_collection?.payment_sessions?.find(
+													(ps: any) => ps.provider_id === giyaPayMethod.id
+												)
+											}
+											selectedPaymentOptionId={selectedPaymentMethod}
+											onSelectMethod={(method) => {
+												console.log('Selected GiyaPay method:', method);
+											}}
+										/>
+									</div>
+								)}
+
+								{/* Stripe — own card */}
+								{stripeMethod && (
+									<div className="border border-gray-300 rounded-lg overflow-hidden">
+										<StripeCardContainer
+											paymentInfoMap={paymentInfoMap}
+											paymentProviderId={stripeMethod.id}
+											selectedPaymentOptionId={selectedPaymentMethod}
+											setCardBrand={setCardBrand}
+											setCardComplete={setCardComplete}
+											setError={setError}
+										/>
+									</div>
+								)}
+
+								{/* Cash on Delivery & other non-GiyaPay methods — each in own card */}
+								{codMethods?.map((paymentMethod) => (
+									<div key={paymentMethod.id} className="border border-gray-300 rounded-lg overflow-hidden">
+										<PaymentContainer
+											paymentInfoMap={paymentInfoMap}
+											paymentProviderId={paymentMethod.id}
+											selectedPaymentOptionId={selectedPaymentMethod}
+										/>
+									</div>
+								))}
+							</div>
+						</RadioGroup>
 					)}
 
 					{paidByGiftcard && (

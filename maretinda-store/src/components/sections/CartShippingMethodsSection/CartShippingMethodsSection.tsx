@@ -206,12 +206,12 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 					<div className="grid">
 						<div data-testid="delivery-options-container">
 							<div className="pb-6">
-								{!_shippingMethods || _shippingMethods.length === 0 ? (
+								{(!_shippingMethods || _shippingMethods.length === 0) && !(cart.shipping_methods?.length) ? (
 									<div className="text-center py-8">
 										<p className="text-gray-500 mb-2">No shipping methods available</p>
 										<p className="text-sm text-gray-400">Please make sure your shipping address is set correctly</p>
 									</div>
-								) : !groupedBySellerId || Object.keys(groupedBySellerId).length === 0 ? (
+								) : (!groupedBySellerId || Object.keys(groupedBySellerId).length === 0) && !(cart.shipping_methods?.length) ? (
 									<div className="text-center py-8">
 										<p className="text-gray-500">No delivery options available for your location</p>
 									</div>

@@ -15,6 +15,7 @@ type PaymentContainerProps = {
 	disabled?: boolean;
 	paymentInfoMap: Record<string, { title: string; icon: JSX.Element }>;
 	children?: React.ReactNode;
+	hideTitle?: boolean;
 };
 
 const PaymentContainer: React.FC<PaymentContainerProps> = ({
@@ -23,6 +24,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 	paymentInfoMap,
 	disabled = false,
 	children,
+	hideTitle = false,
 }) => {
 	const isDevelopment = process.env.NODE_ENV === 'development';
 
@@ -53,10 +55,12 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 					<div className="flex-shrink-0 flex items-center justify-center">
 						{paymentInfoMap[paymentProviderId]?.icon}
 					</div>
-					<Text className="text-base font-semibold flex-1" style={{ color: '#111827' }}>
-						{paymentInfoMap[paymentProviderId]?.title ||
-							paymentProviderId}
-					</Text>
+					{!hideTitle && (
+						<Text className="text-base font-semibold flex-1" style={{ color: '#111827' }}>
+							{paymentInfoMap[paymentProviderId]?.title ||
+								paymentProviderId}
+						</Text>
+					)}
 					{isManual(paymentProviderId) && isDevelopment && (
 						<PaymentTest className="hidden small:block" />
 					)}
