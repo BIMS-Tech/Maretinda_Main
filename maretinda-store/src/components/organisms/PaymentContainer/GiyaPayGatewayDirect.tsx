@@ -28,7 +28,7 @@ const GiyaPayGatewayDirect = ({
     } else {
       // Default to all methods if not specified
       console.log('[GiyaPay] No enabled methods in session, using defaults');
-      setEnabledMethods(['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'QRPH']);
+      setEnabledMethods(['MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY']);
     }
   }, [paymentSession]);
 
@@ -90,6 +90,32 @@ const GiyaPayGatewayDirect = ({
             <rect width="48" height="32" rx="4" fill="white" stroke="#E5E7EB" strokeWidth="1"/>
             <text x="16" y="20" textAnchor="middle" fontSize="9" fill="#EF4444" fontWeight="bold" fontFamily="Arial, sans-serif">QR</text>
             <text x="32" y="20" textAnchor="middle" fontSize="9" fill="#F59E0B" fontWeight="bold" fontFamily="Arial, sans-serif">Ph</text>
+          </svg>
+        </div>
+      ),
+    },
+    'WECHATPAY': {
+      title: 'WeChat Pay',
+      description: 'Pay with WeChat Pay',
+      buttonImage: '',
+      icon: (
+        <div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
+          <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="32" rx="4" fill="#07C160"/>
+            <text x="24" y="21" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">WeChat</text>
+          </svg>
+        </div>
+      ),
+    },
+    'UNIONPAY': {
+      title: 'UnionPay',
+      description: 'Pay with UnionPay',
+      buttonImage: '',
+      icon: (
+        <div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
+          <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="32" rx="4" fill="#C0153E"/>
+            <text x="24" y="21" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">UnionPay</text>
           </svg>
         </div>
       ),
