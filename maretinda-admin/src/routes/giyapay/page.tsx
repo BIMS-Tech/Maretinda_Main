@@ -281,24 +281,45 @@ export const GiyaPay = () => {
                 </div>
               </div>
 
-              {/* InstaPay */}
+              {/* WeChat Pay */}
               <div className="flex items-center space-x-3 p-4 border rounded-lg">
                 <Switch
-                  id="instapay"
-                  checked={enabledMethods.includes('INSTAPAY')}
-                  onCheckedChange={() => toggleMethod('INSTAPAY')}
+                  id="wechatpay"
+                  checked={enabledMethods.includes('WECHATPAY')}
+                  onCheckedChange={() => toggleMethod('WECHATPAY')}
                   disabled={!isEditingMethods}
                 />
                 <div className="flex-1">
-                  <Label htmlFor="instapay" className="font-medium">
-                    InstaPay
+                  <Label htmlFor="wechatpay" className="font-medium">
+                    WeChat Pay
                   </Label>
                   <Text className="text-ui-fg-subtle" size="small">
-                    Accept payments via InstaPay bank transfers
+                    Accept payments via WeChat Pay
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-green-600 rounded text-white text-xs font-bold">
-                  IP
+                <div className="w-12 h-8 flex items-center justify-center bg-green-500 rounded text-white text-xs font-bold">
+                  WC
+                </div>
+              </div>
+
+              {/* UnionPay */}
+              <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                <Switch
+                  id="unionpay"
+                  checked={enabledMethods.includes('UNIONPAY')}
+                  onCheckedChange={() => toggleMethod('UNIONPAY')}
+                  disabled={!isEditingMethods}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="unionpay" className="font-medium">
+                    UnionPay
+                  </Label>
+                  <Text className="text-ui-fg-subtle" size="small">
+                    Accept payments via UnionPay
+                  </Text>
+                </div>
+                <div className="w-12 h-8 flex items-center justify-center bg-red-700 rounded text-white text-xs font-bold">
+                  UP
                 </div>
               </div>
 
