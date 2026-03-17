@@ -2791,8 +2791,8 @@
   },
   "login": {
     "forgotPassword": "Forgot password? - <0>Reset</0>",
-    "title": "Welcome to Medusa",
-    "hint": "Sign in to access the account area"
+    "title": "Maretinda Admin",
+    "hint": "Sign in to your admin account"
   },
   "invite": {
     "title": "Welcome to Medusa",
