@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import * as fs from 'fs'
 import * as path from 'path'
 import DftFileGeneratorService from '../../../../../services/dft-file-generator'
+import { createGCSService } from '../../../../../utils/google-cloud-storage'
 
 /**
  * @oas [get] /admin/dft/{id}/download
@@ -74,35 +75,47 @@ export async function GET(
     }
 
     const dftGeneration = rows[0]
+    const gcsPath = `settlement/dft/${dftGeneration.file_name}`
+    const gcs = createGCSService()
 
-    // Get or create DFT service
-    let dftService: DftFileGeneratorService
-    try {
-      dftService = req.scope.resolve("dftFileGeneratorService") as any
-    } catch (serviceError) {
-      dftService = new DftFileGeneratorService(req.scope)
-      req.scope.register({
-        dftFileGeneratorService: { resolve: () => dftService, lifetime: "SINGLETON" }
-      })
-    }
+    let fileContent: string | null = null
 
-    // Try to read file from disk
+    // 1. Try local disk
     const dftDir = path.join(process.cwd(), 'static', 'settlement', 'dft')
     const filePath = dftGeneration.file_path || path.join(dftDir, dftGeneration.file_name)
-
-    let fileContent: string
 
     if (await fs.promises.access(filePath).then(() => true).catch(() => false)) {
       console.log(`[Admin DFT Download] File found on disk: ${filePath}`)
       fileContent = await fs.promises.readFile(filePath, 'utf-8')
-    } else {
-      console.log(`[Admin DFT Download] File not found on disk, regenerating: ${filePath}`)
+    }
 
-      // Regenerate file
+    // 2. Try GCS
+    if (!fileContent && gcs) {
+      console.log(`[Admin DFT Download] Checking GCS: ${gcsPath}`)
+      fileContent = await gcs.readTextFile(gcsPath)
+      if (fileContent) {
+        console.log(`[Admin DFT Download] File found in GCS: ${gcsPath}`)
+      }
+    }
+
+    // 3. Regenerate from transactions
+    if (!fileContent) {
+      console.log(`[Admin DFT Download] Regenerating file for: ${dftGeneration.file_name}`)
+
+      let dftService: DftFileGeneratorService
+      try {
+        dftService = req.scope.resolve("dftFileGeneratorService") as any
+      } catch (serviceError) {
+        dftService = new DftFileGeneratorService(req.scope)
+        req.scope.register({
+          dftFileGeneratorService: { resolve: () => dftService, lifetime: "SINGLETON" }
+        })
+      }
+
       const transactions = await dftService.getNonMetrobankTransactions()
-      
+
       if (!transactions || transactions.length === 0) {
-        res.status(500).json({
+        res.status(404).json({
           message: 'Unable to regenerate DFT file',
           error: 'No transactions available'
         })
@@ -111,16 +124,23 @@ export async function GET(
 
       fileContent = dftService.generateFileContent(transactions)
 
-      // Save regenerated file
-      await fs.promises.mkdir(dftDir, { recursive: true })
-      await fs.promises.writeFile(filePath, fileContent)
+      // Save to GCS
+      if (gcs) {
+        const saved = await gcs.saveTextFile(gcsPath, fileContent, 'text/plain')
+        if (saved.success) {
+          console.log(`[Admin DFT Download] Saved to GCS: ${gcsPath}`)
+        } else {
+          console.warn(`[Admin DFT Download] GCS save failed:`, saved.error)
+        }
+      }
 
-      // Update file path in database
-      await pgConnection.raw(`
-        UPDATE "dft_generation" 
-        SET file_path = ?, updated_at = NOW()
-        WHERE id = ?
-      `, [filePath, id])
+      // Try local disk as well (non-fatal)
+      try {
+        await fs.promises.mkdir(dftDir, { recursive: true })
+        await fs.promises.writeFile(filePath, fileContent)
+      } catch (writeError) {
+        console.warn('[Admin DFT Download] Could not save to local disk (read-only filesystem):', (writeError as Error).message)
+      }
     }
 
     // Send file as download
@@ -128,14 +148,13 @@ export async function GET(
     res.setHeader('Content-Disposition', `attachment; filename="${dftGeneration.file_name}"`)
     res.status(200).send(fileContent)
 
-    console.log(`[Admin DFT Download] ✅ Sending DFT file: ${dftGeneration.file_name} (${fileContent.split('\n').length} lines)`)
+    console.log(`[Admin DFT Download] ✅ Sent: ${dftGeneration.file_name} (${fileContent.split('\n').length} lines)`)
 
   } catch (error) {
-    console.error('[Admin DFT Download] ❌ Error downloading DFT file:', error)
+    console.error('[Admin DFT Download] ❌ Error:', error)
     res.status(500).json({
       message: 'Failed to download DFT file',
       error: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 }
-

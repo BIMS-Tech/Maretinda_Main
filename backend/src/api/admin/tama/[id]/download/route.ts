@@ -1,6 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import TamaFileGeneratorService from '../../../../../services/tama-file-generator'
+import { createGCSService } from '../../../../../utils/google-cloud-storage'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -35,7 +36,7 @@ export async function GET(
 ): Promise<void> {
   try {
     const { id } = req.params
-    
+
     if (!id) {
       res.status(400).json({
         message: 'TAMA generation ID is required',
@@ -43,7 +44,7 @@ export async function GET(
       })
       return
     }
-    
+
     // Get database connection
     let pgConnection: any
     try {
@@ -59,15 +60,15 @@ export async function GET(
       })
       return
     }
-    
+
     // Get TAMA generation record
     const results = await pgConnection.raw(`
       SELECT * FROM "tama_generation"
       WHERE id = ? AND deleted_at IS NULL
     `, [id])
-    
+
     const rows = results?.rows || results || []
-    
+
     if (rows.length === 0) {
       res.status(404).json({
         message: 'TAMA generation not found',
@@ -75,37 +76,47 @@ export async function GET(
       })
       return
     }
-    
+
     const tamaGeneration = rows[0]
-    
-    // Get or create TAMA service
-    let tamaService: TamaFileGeneratorService
-    try {
-      tamaService = req.scope.resolve("tamaFileGeneratorService") as any
-    } catch (serviceError) {
-      tamaService = new TamaFileGeneratorService(req.scope)
-      req.scope.register({
-        tamaFileGeneratorService: { resolve: () => tamaService, lifetime: "SINGLETON" }
-      })
-    }
-    
-    // Get file path
+    const gcsPath = `settlement/tama/${tamaGeneration.file_name}`
+    const gcs = createGCSService()
+
+    let fileContent: string | null = null
+
+    // 1. Try local disk
     const tamaDir = path.join(process.cwd(), 'static', 'settlement', 'tama')
     const filePath = tamaGeneration.file_path || path.join(tamaDir, tamaGeneration.file_name)
-    
-    let fileContent: string
-    
+
     if (fs.existsSync(filePath)) {
-      // Read from file system
-      fileContent = fs.readFileSync(filePath, 'utf8')
       console.log(`[Admin TAMA Download] File found on disk: ${filePath}`)
-    } else {
-      // Regenerate file content from database
-      console.log(`[Admin TAMA Download] File not found on disk, regenerating: ${filePath}`)
-      
-      // Get transactions for this batch (we'll need to store them or regenerate)
+      fileContent = fs.readFileSync(filePath, 'utf8')
+    }
+
+    // 2. Try GCS
+    if (!fileContent && gcs) {
+      console.log(`[Admin TAMA Download] Checking GCS: ${gcsPath}`)
+      fileContent = await gcs.readTextFile(gcsPath)
+      if (fileContent) {
+        console.log(`[Admin TAMA Download] File found in GCS: ${gcsPath}`)
+      }
+    }
+
+    // 3. Regenerate from transactions
+    if (!fileContent) {
+      console.log(`[Admin TAMA Download] Regenerating file for: ${tamaGeneration.file_name}`)
+
+      let tamaService: TamaFileGeneratorService
+      try {
+        tamaService = req.scope.resolve("tamaFileGeneratorService") as any
+      } catch (serviceError) {
+        tamaService = new TamaFileGeneratorService(req.scope)
+        req.scope.register({
+          tamaFileGeneratorService: { resolve: () => tamaService, lifetime: "SINGLETON" }
+        })
+      }
+
       const transactions = await tamaService.getMetrobankTransactions()
-      
+
       if (transactions.length === 0) {
         res.status(404).json({
           message: 'Unable to regenerate TAMA file',
@@ -113,37 +124,49 @@ export async function GET(
         })
         return
       }
-      
-      // Regenerate file content
+
       fileContent = tamaService.generateFileContent(
         transactions,
-        tamaGeneration.funding_account || "2467246570570" // Default funding account
+        tamaGeneration.funding_account || "2467246570570"
       )
-      
-      // Save regenerated file
-      await fs.promises.mkdir(tamaDir, { recursive: true })
-      await fs.promises.writeFile(filePath, fileContent, 'utf8')
+
+      // Save to GCS
+      if (gcs) {
+        const saved = await gcs.saveTextFile(gcsPath, fileContent, 'text/plain')
+        if (saved.success) {
+          console.log(`[Admin TAMA Download] Saved to GCS: ${gcsPath}`)
+        } else {
+          console.warn(`[Admin TAMA Download] GCS save failed:`, saved.error)
+        }
+      }
+
+      // Try local disk as well (non-fatal)
+      try {
+        await fs.promises.mkdir(tamaDir, { recursive: true })
+        await fs.promises.writeFile(filePath, fileContent, 'utf8')
+      } catch (writeError) {
+        console.warn('[Admin TAMA Download] Could not save to local disk (read-only filesystem):', (writeError as Error).message)
+      }
     }
-    
+
     // Update downloaded_at timestamp
     await pgConnection.raw(`
-      UPDATE "tama_generation" 
+      UPDATE "tama_generation"
       SET "downloaded_at" = ?, "updated_at" = ?
       WHERE "id" = ?
     `, [new Date(), new Date(), id])
-    
-    // Set response headers for file download
+
     res.set({
       'Content-Type': 'text/plain',
       'Content-Disposition': `attachment; filename="${tamaGeneration.file_name}"`,
       'Cache-Control': 'no-cache',
       'Content-Length': Buffer.byteLength(fileContent, 'utf8').toString()
     })
-    
-    console.log(`[Admin TAMA Download] ✅ Sending TAMA file: ${tamaGeneration.file_name} (${fileContent.split('\n').length} lines)`)
-    
+
+    console.log(`[Admin TAMA Download] ✅ Sent: ${tamaGeneration.file_name} (${fileContent.split('\n').length} lines)`)
+
     res.status(200).send(fileContent)
-    
+
   } catch (error) {
     console.error('[Admin TAMA Download] ❌ Error downloading TAMA file:', error)
     res.status(500).json({

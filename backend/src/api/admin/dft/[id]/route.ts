@@ -1,5 +1,6 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { createGCSService } from '../../../../utils/google-cloud-storage'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -152,11 +153,20 @@ export async function GET(
     try {
       const fileName = dftRecord.file_name
       const filePath = path.join(process.cwd(), 'static', 'settlement', 'dft', fileName)
-      
+
+      let fullContent: string | null = null
+
       if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf-8')
-        const lines = content.split('\n').slice(0, 10)
-        filePreview = lines.join('\n')
+        fullContent = fs.readFileSync(filePath, 'utf-8')
+      } else {
+        const gcs = createGCSService()
+        if (gcs) {
+          fullContent = await gcs.readTextFile(`settlement/dft/${fileName}`)
+        }
+      }
+
+      if (fullContent) {
+        filePreview = fullContent.split('\n').slice(0, 10).join('\n')
       }
     } catch (fileError) {
       console.warn(`[Admin DFT] Failed to read file preview:`, fileError)
