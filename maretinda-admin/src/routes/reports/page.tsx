@@ -82,7 +82,7 @@ const ReportsPage = () => {
 
   const handleDownload = async (report: Report) => {
     try {
-      const response = await fetch(report.download_url, {
+      const response = await fetch(`${__BACKEND_URL__}${report.download_url}`, {
         credentials: 'include'
       })
       
@@ -122,16 +122,27 @@ const ReportsPage = () => {
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to load file preview')
       }
-      
+
       const data = await response.json()
-      const preview = data.tama_generation?.file_preview || data.dft_generation?.file_preview || 'No preview available'
-      
-      setViewingReport({ report, content: preview })
-      
+      let preview = data.tama_generation?.file_preview || data.dft_generation?.file_preview
+
+      // If file preview is not available on disk, fetch from download endpoint
+      if (!preview) {
+        const downloadResponse = await fetch(`${__BACKEND_URL__}${report.download_url}`, {
+          credentials: 'include'
+        })
+        if (downloadResponse.ok) {
+          const text = await downloadResponse.text()
+          preview = text.split('\n').slice(0, 20).join('\n')
+        }
+      }
+
+      setViewingReport({ report, content: preview || 'No preview available' })
+
     } catch (error) {
       console.error('View error:', error)
       toast.error("Failed to view file", {
