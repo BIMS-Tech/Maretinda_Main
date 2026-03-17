@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
-import { 
-  Table, 
-  Container, 
-  Button, 
-  Badge, 
+import * as RadixDialog from "@radix-ui/react-dialog"
+import {
+  Table,
+  Container,
+  Button,
+  Badge,
   Heading,
   Text,
   DropdownMenu,
@@ -11,12 +12,13 @@ import {
   toast,
   Checkbox
 } from "@medusajs/ui"
-import { 
-  EllipsisHorizontal, 
-  ArrowDownTray, 
+import {
+  EllipsisHorizontal,
+  ArrowDownTray,
   Plus,
   Eye,
-  Trash
+  Trash,
+  XMark
 } from "@medusajs/icons"
 
 interface Report {
@@ -482,49 +484,52 @@ const ReportsPage = () => {
       </Container>
 
       {/* File Preview Modal */}
-      {viewingReport && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setViewingReport(null)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <RadixDialog.Root open={!!viewingReport} onOpenChange={(open) => { if (!open) setViewingReport(null) }}>
+        <RadixDialog.Portal>
+          <RadixDialog.Overlay className="bg-ui-bg-overlay fixed inset-0 z-50" />
+          <RadixDialog.Content className="bg-ui-bg-base shadow-elevation-modal fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col rounded-lg overflow-hidden">
+            <RadixDialog.Title className="sr-only">{viewingReport?.report.file_name}</RadixDialog.Title>
+            <RadixDialog.Description className="sr-only">Settlement file preview</RadixDialog.Description>
             <div className="p-6 border-b border-ui-border-base">
               <div className="flex items-start justify-between">
                 <div>
-                  <Heading level="h2">{viewingReport.report.file_name}</Heading>
+                  <Heading level="h2">{viewingReport?.report.file_name}</Heading>
                   <div className="flex gap-2 mt-2">
-                    {getReportTypeBadge(viewingReport.report.report_type)}
-                    {getStatusBadge(viewingReport.report.status)}
+                    {viewingReport && getReportTypeBadge(viewingReport.report.report_type)}
+                    {viewingReport && getStatusBadge(viewingReport.report.status)}
                     <Badge size="2xsmall">
-                      {viewingReport.report.transaction_count} transactions
+                      {viewingReport?.report.transaction_count} transactions
                     </Badge>
                     <Badge size="2xsmall">
-                      {formatAmount(viewingReport.report.total_amount, viewingReport.report.currency)}
+                      {viewingReport && formatAmount(viewingReport.report.total_amount, viewingReport.report.currency)}
                     </Badge>
                   </div>
                 </div>
-                <Button size="small" variant="transparent" onClick={() => setViewingReport(null)}>
-                  Close
-                </Button>
+                <RadixDialog.Close asChild>
+                  <IconButton size="small" variant="transparent">
+                    <XMark />
+                  </IconButton>
+                </RadixDialog.Close>
               </div>
             </div>
             <div className="p-6 overflow-auto flex-1">
               <div className="bg-ui-bg-subtle rounded-lg p-4 font-mono text-xs">
-                <pre className="whitespace-pre-wrap">{viewingReport.content}</pre>
+                <pre className="whitespace-pre-wrap text-ui-fg-base">{viewingReport?.content}</pre>
               </div>
               <Text size="small" className="text-ui-fg-muted mt-2">
                 Showing first 10-20 lines. Download for full file.
               </Text>
             </div>
             <div className="p-6 border-t border-ui-border-base flex justify-end gap-2">
-              <Button
-                size="small"
-                variant="secondary"
-                onClick={() => setViewingReport(null)}
-              >
-                Close
-              </Button>
+              <RadixDialog.Close asChild>
+                <Button size="small" variant="secondary">
+                  Close
+                </Button>
+              </RadixDialog.Close>
               <Button
                 size="small"
                 onClick={() => {
-                  handleDownload(viewingReport.report)
+                  if (viewingReport) handleDownload(viewingReport.report)
                   setViewingReport(null)
                 }}
               >
@@ -532,9 +537,9 @@ const ReportsPage = () => {
                 Download Full File
               </Button>
             </div>
-          </div>
-        </div>
-      )}
+          </RadixDialog.Content>
+        </RadixDialog.Portal>
+      </RadixDialog.Root>
     </Container>
   )
 }
