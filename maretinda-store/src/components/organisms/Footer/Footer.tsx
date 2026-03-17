@@ -127,8 +127,8 @@ export function Footer() {
 								className="space-y-3"
 							>
 								<Text className="block text-lg !font-normal text-tertiary">
-									111 Bijoy sarani, Dhaka, DH 1515,
-									Bangladesh.
+									KMC | Skyrise 4A &amp; 4B Proworking Space, Cebu IT Park,
+									4 W Geonzon St, Cebu City, 6000 Cebu, Philippines.
 								</Text>
 								<Link
 									className="block text-lg !font-normal text-tertiary"
@@ -153,7 +153,7 @@ export function Footer() {
 
 				<div className="flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between mt-20 gap-5 pb-2 lg:pb-0">
 					<p className="text-md text-tertiary text-center ">
-						© 2026 Maretinda, All Rights Reserved
+						© 2026 Maretinda, All Rights Reserved. Powered by BIMS Technologies.
 					</p>
 					<div className="flex items-center gap-3 justify-end">
 						<VisaIcon />
