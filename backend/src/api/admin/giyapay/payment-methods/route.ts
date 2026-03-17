@@ -36,14 +36,16 @@ export async function GET(
       }
 
       const config = await giyaPayService.getConfig()
-      
-      // Default Gateway Direct payment methods (all methods from GiyaPay docs)
+
+      const validMethods = ['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
       const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY']
-      const enabledMethods = config?.enabledMethods || defaultMethods
+      // Filter out any deprecated methods that may be stored in DB
+      const rawMethods = config?.enabledMethods || defaultMethods
+      const enabledMethods = rawMethods.filter((m: string) => validMethods.includes(m))
 
       return res.status(200).json({
         enabledMethods,
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
+        availableMethods: validMethods
       })
     } catch (serviceError) {
       console.log('[GiyaPay Methods] Service not available, returning defaults')
