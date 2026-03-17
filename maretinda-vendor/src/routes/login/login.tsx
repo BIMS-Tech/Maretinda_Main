@@ -51,7 +51,8 @@ export const Login = () => {
     )
   })
 
-  const serverError = form.formState.errors?.root?.serverError?.message || reason
+  const meaningfulReason = reason && !reason.toLowerCase().includes("failed to fetch") ? reason : ""
+  const serverError = form.formState.errors?.root?.serverError?.message || meaningfulReason
   const validationError =
     form.formState.errors.email?.message ||
     form.formState.errors.password?.message

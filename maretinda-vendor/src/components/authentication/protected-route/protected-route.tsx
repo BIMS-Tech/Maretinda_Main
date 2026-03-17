@@ -29,9 +29,11 @@ export const ProtectedRoute = () => {
       }
     }
     
+    // Only surface auth errors (4xx), not network/fetch errors
+    const isAuthError = error && (error as any).status >= 400 && (error as any).status < 500
     return (
       <Navigate
-        to={`/login${error?.message ? `?reason=${error.message}` : ""}`}
+        to={`/login${isAuthError ? `?reason=${error!.message}` : ""}`}
         state={{ from: location }}
         replace
       />
