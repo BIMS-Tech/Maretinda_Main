@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Alert, Button, Hint, Input } from "@medusajs/ui"
+import { Alert, Hint, Input } from "@medusajs/ui"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Link, useLocation, useNavigate } from "react-router-dom"
@@ -172,7 +172,7 @@ export const Login = () => {
                           <Input
                             autoComplete="email"
                             {...field}
-                            className="mt-1"
+                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
                             placeholder="admin@maretinda.com"
                           />
                         </Form.Control>
@@ -192,7 +192,7 @@ export const Login = () => {
                             type="password"
                             autoComplete="current-password"
                             {...field}
-                            className="mt-1"
+                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
                             placeholder="••••••••"
                           />
                         </Form.Control>

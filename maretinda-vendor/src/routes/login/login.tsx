@@ -180,7 +180,7 @@ export const Login = () => {
                           <Input
                             autoComplete="email"
                             {...field}
-                            className="mt-1"
+                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
                             placeholder="vendor@example.com"
                           />
                         </Form.Control>
@@ -200,7 +200,7 @@ export const Login = () => {
                             type="password"
                             autoComplete="current-password"
                             {...field}
-                            className="mt-1"
+                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
                             placeholder="••••••••"
                           />
                         </Form.Control>
