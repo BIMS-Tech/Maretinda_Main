@@ -7,56 +7,46 @@ import { Accordion, FilterCheckboxOption } from '@/components/molecules';
 import useFilters from '@/hooks/useFilters';
 import { SearchIcon } from '@/icons';
 
-const brandFilters = [
-	{ amount: 40, label: 'Abercrombie & Fitch' },
-	{ amount: 78, label: 'Adidas' },
-	{ amount: 7, label: 'Adore Me' },
-	{ amount: 16, label: 'AllSaints' },
-	{ amount: 7, label: 'American Eagle' },
-];
+export type BrandOption = {
+	id: string;
+	title: string;
+};
 
-export const BrandFilter = () => {
+export const BrandFilter = ({ brands }: { brands: BrandOption[] }) => {
 	const [brandsSearch, setBrandSearch] = useState('');
-	const [filteredOptions, setFilteredOptions] = useState(brandFilters);
+	const [filteredOptions, setFilteredOptions] = useState(brands);
 	const { updateFilters, isFilterActive } = useFilters('brand');
 
 	useEffect(() => {
-		if (!brandFilters) {
-			setFilteredOptions(brandFilters);
-		} else {
-			setFilteredOptions(
-				brandFilters.filter(({ label }) =>
-					label.toLowerCase().includes(brandsSearch.toLowerCase()),
-				),
-			);
-		}
-	}, [brandsSearch]);
+		setFilteredOptions(
+			brands.filter(({ title }) =>
+				title.toLowerCase().includes(brandsSearch.toLowerCase()),
+			),
+		);
+	}, [brandsSearch, brands]);
 
 	const selectHandler = (option: string) => {
 		updateFilters(option);
 	};
 
-	const searchBrandsHandler = (value: string) => {
-		setBrandSearch(value);
-	};
+	if (!brands.length) return null;
 
 	return (
 		<Accordion heading="Brand">
 			<Input
 				icon={<SearchIcon size={20} />}
-				onChange={(e) => searchBrandsHandler(e.target.value)}
+				onChange={(e) => setBrandSearch(e.target.value)}
 				placeholder="Search brands"
 				value={brandsSearch}
 			/>
 			<ul className="px-4 mt-4">
-				{filteredOptions.map(({ label, amount }) => (
-					<li className="mb-4" key={label}>
+				{filteredOptions.map(({ id, title }) => (
+					<li className="mb-4" key={id}>
 						<FilterCheckboxOption
-							amount={amount}
-							checked={isFilterActive(label)}
-							disabled={!amount}
-							label={label}
-							onCheck={selectHandler}
+							checked={isFilterActive(id)}
+							label={title}
+							onCheck={() => selectHandler(id)}
+							value={id}
 						/>
 					</li>
 				))}

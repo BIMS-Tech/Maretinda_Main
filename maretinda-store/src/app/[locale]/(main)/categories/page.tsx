@@ -7,6 +7,15 @@ import { CategoryCard } from '@/components/organisms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
+
+const DEFAULT_THEME = {
+	accent: '#00BCD4',
+	bgClass: 'bg-gray-50',
+	icon: '🏷️',
+	primary: '#6B7280',
+	secondary: '#9CA3AF',
+	textClass: 'text-gray-800',
+};
 import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
@@ -93,7 +102,7 @@ async function AllCategories({
 					const theme =
 						categoryThemes[
 							category.handle as keyof typeof categoryThemes
-						];
+						] ?? DEFAULT_THEME;
 					return (
 						<section
 							className={`p-8 rounded-xl ${theme.bgClass}`}

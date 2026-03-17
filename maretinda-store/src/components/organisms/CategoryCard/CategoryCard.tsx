@@ -54,11 +54,11 @@ export function CategoryCard({
 						className="object-contain rounded-lg transition-all group-hover:scale-125"
 						height={150}
 						onError={(e) => {
-							// Fallback to a default image or hide if not found
 							const target = e.target as HTMLImageElement;
-							target.style.display = 'none';
+							target.src = '/images/categories/shopping.png';
 						}}
 						src={`/images/categories/${category.handle}.png`}
+						unoptimized
 						width={150}
 					/>
 				</div>

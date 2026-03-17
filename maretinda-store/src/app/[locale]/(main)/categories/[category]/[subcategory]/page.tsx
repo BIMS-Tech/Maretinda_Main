@@ -9,6 +9,15 @@ import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
 import { getCategoryByHandle } from '@/lib/data/categories';
 
+const DEFAULT_THEME = {
+	accent: '#00BCD4',
+	bgClass: 'bg-gray-50',
+	icon: '🏷️',
+	primary: '#6B7280',
+	secondary: '#9CA3AF',
+	textClass: 'text-gray-800',
+};
+
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
@@ -55,23 +64,26 @@ export async function generateMetadata({
 
 async function SubCategory({
 	params,
+	searchParams,
 }: {
 	params: Promise<{
 		category: string;
 		subcategory: string;
 		locale: string;
 	}>;
+	searchParams?: Promise<Record<string, string | undefined>>;
 }) {
 	const {
 		category: categoryHandle,
 		subcategory: subcategoryHandle,
 		locale,
 	} = await params;
-	const theme = categoryThemes[categoryHandle as keyof typeof categoryThemes];
+	const resolvedSearchParams = searchParams ? await searchParams : {};
+	const theme = categoryThemes[categoryHandle as keyof typeof categoryThemes] ?? DEFAULT_THEME;
 	const category = await getCategoryByHandle([categoryHandle]);
 	const subcategory = await getCategoryByHandle([subcategoryHandle]);
 
-	if (!subcategory) {
+	if (!subcategory || !category) {
 		return notFound();
 	}
 
@@ -108,11 +120,15 @@ async function SubCategory({
 			<div className="mt-10">
 				<Suspense fallback={<ProductListingSkeleton />}>
 					{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-						<ProductListing locale={locale} showSidebar />
+						<ProductListing
+							category_id={subcategory.id}
+							locale={locale}
+							showSidebar
+							filterParams={resolvedSearchParams}
+						/>
 					) : (
 						<AlgoliaProductsListing
 							locale={locale}
-							// Add subcategory filter here when integrating with backend
 						/>
 					)}
 				</Suspense>

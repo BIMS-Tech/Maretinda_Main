@@ -65,19 +65,31 @@ export const listCategories = async ({
 };
 
 export const getCategoryByHandle = async (categoryHandle: string[]) => {
-	const handle = `${categoryHandle.join('/')}`;
+	const handle = categoryHandle.join('/');
 
-	return sdk.client
+	const { product_categories } = await sdk.client
 		.fetch<HttpTypes.StoreProductCategoryListResponse>(
 			`/store/product-categories`,
 			{
-				// next,
 				cache: 'no-cache',
 				query: {
-					fields: '*category_children',
-					handle,
+					fields: [
+						'id',
+						'handle',
+						'name',
+						'description',
+						'rank',
+						'parent_category_id',
+						'category_children.id',
+						'category_children.handle',
+						'category_children.name',
+						'category_children.rank',
+						'category_children.description',
+					].join(', '),
+					limit: 100,
 				},
 			},
-		)
-		.then(({ product_categories }) => product_categories[0]);
+		);
+
+	return product_categories.find((cat) => cat.handle === handle);
 };

@@ -25,6 +25,15 @@ function getCategoryBanner(handle: string): string {
 	return CATEGORY_BANNERS[handle] ?? '/images/categories/shopping-banner.png'
 }
 
+const DEFAULT_THEME = {
+	accent: '#00BCD4',
+	bgClass: 'bg-gray-50',
+	icon: '🏷️',
+	primary: '#6B7280',
+	secondary: '#9CA3AF',
+	textClass: 'text-gray-800',
+};
+
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
@@ -35,19 +44,24 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const { category } = await params;
 
-	return generateCategoryMetadata(await getCategoryByHandle([category]));
+	const cat = await getCategoryByHandle([category]);
+	if (!cat) return {};
+	return generateCategoryMetadata(cat);
 }
 
 async function Category({
 	params,
+	searchParams,
 }: {
 	params: Promise<{
 		category: string;
 		locale: string;
 	}>;
+	searchParams?: Promise<Record<string, string | undefined>>;
 }) {
 	const { category: handle, locale } = await params;
-	const theme = categoryThemes[handle as keyof typeof categoryThemes];
+	const resolvedSearchParams = searchParams ? await searchParams : {};
+	const theme = categoryThemes[handle as keyof typeof categoryThemes] ?? DEFAULT_THEME;
 	const category = await getCategoryByHandle([handle]);
 
 	if (!category) {
@@ -114,11 +128,15 @@ async function Category({
 				<h2 className="heading-lg mb-6">Featured Products</h2>
 				<Suspense fallback={<ProductListingSkeleton />}>
 					{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-						<ProductListing locale={locale} showSidebar />
+						<ProductListing
+							category_id={category.id}
+							locale={locale}
+							showSidebar
+							filterParams={resolvedSearchParams}
+						/>
 					) : (
 						<AlgoliaProductsListing
 							locale={locale}
-							// Add category filter here when integrating with backend
 						/>
 					)}
 				</Suspense>
