@@ -61,21 +61,21 @@ export const Login = () => {
       {/* Left panel — branding */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden"
-        style={{ background: "linear-gradient(145deg, #1a3a2a 0%, #1d6b45 40%, #15803d 100%)" }}
+        style={{ background: "linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%)" }}
       >
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-10">
           <div
             className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
-            style={{ background: "radial-gradient(circle, #4ade80 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
           />
           <div
             className="absolute bottom-0 right-0 w-80 h-80 rounded-full"
-            style={{ background: "radial-gradient(circle, #16a34a 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }}
           />
           <div
             className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full"
-            style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(circle, #a5b4fc 0%, transparent 70%)" }}
           />
         </div>
 
@@ -86,7 +86,7 @@ export const Login = () => {
             <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
             <span
               className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.2)", color: "#bbf7d0" }}
+              style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}
             >
               Vendor
             </span>
@@ -100,7 +100,7 @@ export const Login = () => {
             business with<br />
             Maretinda
           </h1>
-          <p className="text-green-200 text-base leading-relaxed max-w-xs">
+          <p className="text-indigo-200 text-base leading-relaxed max-w-xs">
             Manage your store, track orders, handle payments, and connect with customers — all from one dashboard.
           </p>
 
@@ -118,7 +118,7 @@ export const Login = () => {
                 >
                   {icon}
                 </span>
-                <span className="text-green-100 text-sm">{label}</span>
+                <span className="text-indigo-100 text-sm">{label}</span>
               </div>
             ))}
           </div>
@@ -126,7 +126,7 @@ export const Login = () => {
 
         {/* Bottom */}
         <div className="relative z-10">
-          <p className="text-green-300 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
+          <p className="text-indigo-300 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
         </div>
       </div>
 
@@ -135,10 +135,10 @@ export const Login = () => {
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
           <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
-          <span className="text-xl font-bold" style={{ color: "#15803d" }}>Maretinda</span>
+          <span className="text-xl font-bold" style={{ color: "#4338ca" }}>Maretinda</span>
           <span
             className="text-xs font-medium px-2 py-0.5 rounded-full"
-            style={{ background: "#dcfce7", color: "#15803d" }}
+            style={{ background: "#e0e7ff", color: "#4338ca" }}
           >
             Vendor
           </span>
@@ -149,7 +149,7 @@ export const Login = () => {
           <div className="mb-8">
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
-              style={{ background: "#dcfce7", color: "#15803d" }}
+              style={{ background: "#e0e7ff", color: "#4338ca" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               Vendor Portal
@@ -225,7 +225,7 @@ export const Login = () => {
                   type="submit"
                   disabled={isPending}
                   className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1"
-                  style={{ background: "linear-gradient(135deg, #15803d 0%, #22c55e 100%)" }}
+                  style={{ background: "linear-gradient(135deg, #312e81 0%, #6366f1 100%)" }}
                 >
                   {isPending ? "Signing in…" : "Sign In"}
                 </button>
@@ -246,7 +246,7 @@ export const Login = () => {
                     key="reset-password-link"
                     to="/reset-password"
                     className="font-medium transition-colors hover:opacity-80"
-                    style={{ color: "#15803d" }}
+                    style={{ color: "#4338ca" }}
                   />,
                 ]}
               />
@@ -261,7 +261,7 @@ export const Login = () => {
                       key="register-link"
                       to="/register"
                       className="font-medium transition-colors hover:opacity-80"
-                      style={{ color: "#15803d" }}
+                      style={{ color: "#4338ca" }}
                     />,
                   ]}
                 />
