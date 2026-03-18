@@ -159,10 +159,8 @@ const CartPaymentSection = ({
 		fetch('/api/giyapay/methods')
 			.then((r) => r.json())
 			.then((data) => {
-				if (data.isEnabled && Array.isArray(data.enabledMethods) && data.enabledMethods.length > 0) {
+				if (Array.isArray(data.enabledMethods) && data.enabledMethods.length > 0) {
 					setGiyaPayEnabledMethods(data.enabledMethods);
-				} else if (!data.isEnabled) {
-					setGiyaPayEnabledMethods([]);
 				}
 			})
 			.catch(() => {/* keep defaults */});
