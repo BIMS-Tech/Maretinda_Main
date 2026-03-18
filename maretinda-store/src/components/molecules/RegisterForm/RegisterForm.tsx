@@ -20,9 +20,28 @@ import { signup } from '@/lib/data/customer';
 
 import { type RegisterFormData, registerFormSchema } from './schema';
 
+const COUNTRY_CODES = [
+	{ code: '+63', label: '🇵🇭 +63 (Philippines)' },
+	{ code: '+1', label: '🇺🇸 +1 (USA/Canada)' },
+	{ code: '+44', label: '🇬🇧 +44 (UK)' },
+	{ code: '+61', label: '🇦🇺 +61 (Australia)' },
+	{ code: '+65', label: '🇸🇬 +65 (Singapore)' },
+	{ code: '+60', label: '🇲🇾 +60 (Malaysia)' },
+	{ code: '+62', label: '🇮🇩 +62 (Indonesia)' },
+	{ code: '+66', label: '🇹🇭 +66 (Thailand)' },
+	{ code: '+84', label: '🇻🇳 +84 (Vietnam)' },
+	{ code: '+81', label: '🇯🇵 +81 (Japan)' },
+	{ code: '+82', label: '🇰🇷 +82 (South Korea)' },
+	{ code: '+86', label: '🇨🇳 +86 (China)' },
+	{ code: '+91', label: '🇮🇳 +91 (India)' },
+	{ code: '+971', label: '🇦🇪 +971 (UAE)' },
+	{ code: '+966', label: '🇸🇦 +966 (Saudi Arabia)' },
+];
+
 export const RegisterForm = () => {
 	const methods = useForm<RegisterFormData>({
 		defaultValues: {
+			countryCode: '',
 			email: '',
 			firstName: '',
 			lastName: '',
@@ -59,7 +78,7 @@ const Form = () => {
 		register,
 		watch,
 		formState: { errors, isSubmitting },
-	} = useFormContext();
+	} = useFormContext<RegisterFormData>();
 
 	const submit = async (data: FieldValues) => {
 		const formData = new FormData();
@@ -67,7 +86,7 @@ const Form = () => {
 		formData.append('password', data.password);
 		formData.append('first_name', data.firstName);
 		formData.append('last_name', data.lastName);
-		formData.append('phone', data.phone);
+		formData.append('phone', `${data.countryCode}${data.phone}`);
 
 		if (passwordError.isValid) {
 			toast.error(errors.password?.message as string);
@@ -133,15 +152,38 @@ const Form = () => {
 						/>
 					</div>
 					<div className="flex flex-col md:flex-row gap-4 mb-4">
-						<LabeledInput
-							className="md:w-1/2"
-							error={errors.phone as FieldError}
-							important
-							inputClassName="border border-black bg-white"
-							label="Ph Number"
-							labelClassName="text-black/50 font-normal text-sm md:text-base"
-							{...register('phone')}
-						/>
+						<div className="md:w-1/2 flex flex-col gap-1">
+							<label className="text-black/50 font-normal text-sm md:text-base">
+								Phone Number <span className="text-red-500">*</span>
+							</label>
+							<div className="flex gap-2">
+								<select
+									className="border border-black bg-white rounded-sm px-2 py-[12px] text-sm focus:outline-none focus:ring-0 w-[155px] shrink-0"
+									{...register('countryCode')}
+								>
+									<option value="">Country code</option>
+									{COUNTRY_CODES.map((c) => (
+										<option key={c.code} value={c.code}>
+											{c.label}
+										</option>
+									))}
+								</select>
+								<LabeledInput
+									className="flex-1"
+									error={errors.phone as FieldError}
+									inputClassName="border border-black bg-white"
+									label="Phone number"
+									placeholder="Phone number"
+									type="tel"
+									{...register('phone')}
+								/>
+							</div>
+							{errors.countryCode && (
+								<p className="text-red-500 text-xs mt-1">
+									{errors.countryCode.message as string}
+								</p>
+							)}
+						</div>
 						<LabeledInput
 							className="md:w-1/2"
 							error={errors.email as FieldError}
