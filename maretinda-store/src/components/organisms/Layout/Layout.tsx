@@ -1,10 +1,13 @@
 import { UserNavigation } from '@/components/molecules/UserNavigation/UserNavigation';
+import { retrieveCustomer } from '@/lib/data/customer';
 
-export const Layout = ({
+export const Layout = async ({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) => {
+	const user = await retrieveCustomer();
+
 	return (
 		<main className="max-w-7xl w-full mx-auto">
 			<div className="container w-full">
@@ -14,7 +17,7 @@ export const Layout = ({
 					</h1>
 				</div>
 				<div className="grid grid-cols-1 md:grid-cols-4 mt-6 gap-5 md:gap-7">
-					<UserNavigation />
+					<UserNavigation user={user} />
 					{children}
 				</div>
 			</div>

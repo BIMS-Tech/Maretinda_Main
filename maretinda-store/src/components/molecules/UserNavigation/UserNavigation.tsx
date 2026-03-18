@@ -1,5 +1,6 @@
 'use client';
 
+import type { HttpTypes } from '@medusajs/types';
 import { useUnreads } from '@talkjs/react';
 import { usePathname } from 'next/navigation';
 
@@ -61,7 +62,11 @@ const navigationItems = [
 	},
 ];
 
-export const UserNavigation = () => {
+export const UserNavigation = ({
+	user,
+}: {
+	user: HttpTypes.StoreCustomer | null;
+}) => {
 	const unreads = useUnreads();
 	const path = usePathname();
 	const targetSegment = '/ph';
@@ -79,16 +84,16 @@ export const UserNavigation = () => {
 			<div className="flex items-center gap-3">
 				<Avatar
 					className="rounded-full h-12 w-12"
-					initials="M"
+					initials={user?.first_name?.[0]?.toUpperCase() ?? 'U'}
 					size="large"
 					src={'/talkjs-placeholder.jpg'}
 				/>
 				<div className="flex flex-col gap-1">
 					<span className="label-sm !font-medium text-[#18181B]">
-						Hello!
+						Hello, {user?.first_name ?? 'there'}!
 					</span>
 					<span className="label-lg !font-medium text-black !leading-none">
-						Pansu2970
+						{user?.first_name} {user?.last_name}
 					</span>
 				</div>
 			</div>

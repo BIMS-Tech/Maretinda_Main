@@ -154,10 +154,10 @@ export const OrderConfirmedSection = ({
 							<div key={index} className="flex items-center gap-4">
 								{/* Product Image */}
 								<div className="w-16 h-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
-									{item.product?.thumbnail ? (
+									{(item.thumbnail || item.product?.thumbnail) ? (
 										<img
-											src={getImageUrl(item.product.thumbnail)}
-											alt={item.product.title}
+											src={getImageUrl(item.thumbnail || item.product?.thumbnail)}
+											alt={item.product?.title || item.title}
 											className="w-full h-full object-cover"
 										/>
 									) : (

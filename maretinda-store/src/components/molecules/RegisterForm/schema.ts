@@ -12,11 +12,13 @@ export const registerFormSchema = z.object({
 			message:
 				'Password must contain at least one uppercase letter and one special character',
 		}),
+	countryCode: z.string().nonempty('Please select a country code'),
 	phone: z
 		.string()
-		.min(6, 'Please enter phone number')
-		.regex(/^\+?\d+$/, {
-			message: 'Mobile phone must contain digits only',
+		.nonempty('Please enter phone number')
+		.min(5, 'Please enter a valid phone number')
+		.regex(/^\d+$/, {
+			message: 'Phone number must contain digits only',
 		}),
 	terms: z.boolean().refine((value) => value, {
 		message: 'Please accept terms and conditions',
