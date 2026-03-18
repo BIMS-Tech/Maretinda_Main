@@ -23,10 +23,9 @@ export const listCartShippingMethods = async (
 		.fetch<{ shipping_options: StoreCardShippingMethod[] | null }>(
 			`/store/shipping-options`,
 			{
-				next: { revalidate: 30 },
 				headers,
 				method: 'GET',
-				next,
+				next: { ...next, revalidate: 30 },
 				query: {
 					cart_id: cartId,
 					fields: '+service_zone.fulfllment_set.type,*service_zone.fulfillment_set.location.address',
