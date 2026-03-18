@@ -145,15 +145,29 @@ const CartPaymentSection = ({
 		}
 	};
 
-	// Load enabled methods from existing GiyaPay session if available
+	// Fetch enabled GiyaPay methods from backend on mount
 	useEffect(() => {
+		// First check if an existing session already has enabled_methods
 		const existingSession = cart.payment_collection?.payment_sessions?.find(
 			(ps: any) => isGiyaPayFunc(ps.provider_id)
 		);
 		if (existingSession?.data?.enabled_methods && Array.isArray(existingSession.data.enabled_methods)) {
 			setGiyaPayEnabledMethods(existingSession.data.enabled_methods);
+			return;
 		}
-	}, [cart]);
+		// Otherwise fetch from the Next.js API proxy
+		fetch('/api/giyapay/methods')
+			.then((r) => r.json())
+			.then((data) => {
+				if (data.isEnabled && Array.isArray(data.enabledMethods) && data.enabledMethods.length > 0) {
+					setGiyaPayEnabledMethods(data.enabledMethods);
+				} else if (!data.isEnabled) {
+					setGiyaPayEnabledMethods([]);
+				}
+			})
+			.catch(() => {/* keep defaults */});
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	const setGiyaPaySubMethod = async (method: string) => {
 		setError(null);
