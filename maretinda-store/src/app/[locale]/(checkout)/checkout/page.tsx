@@ -32,21 +32,24 @@ export default async function CheckoutPage({}) {
 }
 
 async function CheckoutPageContent({}) {
-	const cart = await retrieveCart();
+	const [cart, customer] = await Promise.all([
+		retrieveCart(),
+		retrieveCustomer(),
+	]);
 
 	if (!cart) {
 		return notFound();
 	}
-
-	const customer = await retrieveCustomer();
 
 	// Redirect to login if user is not authenticated
 	if (!customer) {
 		redirect('/login?returnTo=/checkout');
 	}
 
-	const shippingMethods = await listCartShippingMethods(cart.id, false);
-	const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? '');
+	const [shippingMethods, paymentMethods] = await Promise.all([
+		listCartShippingMethods(cart.id, false),
+		listCartPaymentMethods(cart.region?.id ?? ''),
+	]);
 
 	return (
 		<PaymentWrapper cart={cart}>

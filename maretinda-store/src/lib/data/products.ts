@@ -67,7 +67,7 @@ export const listProducts = async ({
 			products: (HttpTypes.StoreProduct & { seller?: SellerProps })[];
 			count: number;
 		}>(`/store/products`, {
-			cache: 'no-cache',
+			next: { revalidate: 30 },
 			headers,
 			method: 'GET',
 			query: {

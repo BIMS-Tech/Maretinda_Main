@@ -23,7 +23,7 @@ export const listCartShippingMethods = async (
 		.fetch<{ shipping_options: StoreCardShippingMethod[] | null }>(
 			`/store/shipping-options`,
 			{
-				cache: 'no-cache',
+				next: { revalidate: 30 },
 				headers,
 				method: 'GET',
 				next,

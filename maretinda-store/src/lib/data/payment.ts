@@ -18,10 +18,9 @@ export const listCartPaymentMethods = async (regionId: string) => {
 		.fetch<HttpTypes.StorePaymentProviderListResponse>(
 			`/store/payment-providers`,
 			{
-				cache: 'no-store', // Don't cache payment providers
 				headers,
 				method: 'GET',
-				next,
+				next: { ...next, revalidate: 60 },
 				query: { region_id: regionId },
 			},
 		)

@@ -14,21 +14,17 @@ export const TrendingProducts = async ({
 	locale?: string;
 	sellerProducts?: Product[];
 }) => {
-	const {
-		response: { products },
-	} = await listProducts({
-		countryCode: locale,
-		queryParams: {
-			limit: 99999,
-			order: 'created_at',
-		},
-	});
+	const [{ response: { products } }, user] = await Promise.all([
+		listProducts({
+			countryCode: locale,
+			queryParams: { limit: 24, order: 'created_at' },
+		}),
+		retrieveCustomer(),
+	]);
 
 	const finalProducts = (
 		sellerProducts.length ? sellerProducts : products
 	) as Product[];
-
-	const user = await retrieveCustomer();
 
 	let wishlist: Wishlist[] = [];
 	if (user) {
