@@ -131,9 +131,10 @@ const Form = () => {
 					</p>
 				</div>
 				<form noValidate onSubmit={handleSubmit(submit)}>
-					<div className="flex flex-col md:flex-row mx-auto gap-4 mb-4">
+					{/* Row 1: First Name & Last Name */}
+					<div className="flex flex-col md:flex-row gap-4 mb-4">
 						<LabeledInput
-							className="md:w-1/2"
+							className="flex-1"
 							error={errors.firstName as FieldError}
 							important
 							inputClassName="border border-black bg-white"
@@ -142,7 +143,7 @@ const Form = () => {
 							{...register('firstName')}
 						/>
 						<LabeledInput
-							className="md:w-1/2"
+							className="flex-1"
 							error={errors.lastName as FieldError}
 							important
 							inputClassName="border border-black bg-white"
@@ -151,52 +152,59 @@ const Form = () => {
 							{...register('lastName')}
 						/>
 					</div>
+
+					{/* Row 2: Email (full width) */}
+					<div className="mb-4">
+						<LabeledInput
+							error={errors.email as FieldError}
+							important
+							inputClassName="border border-black bg-white"
+							label="Email Address"
+							labelClassName="text-black/50 font-normal text-sm md:text-base"
+							type="email"
+							{...register('email')}
+						/>
+					</div>
+
+					{/* Row 3: Country Code & Phone Number */}
 					<div className="flex flex-col md:flex-row gap-4 mb-4">
-						<div className="md:w-1/2 flex flex-col gap-1">
+						<div className="md:w-[220px] flex flex-col gap-1.5">
 							<label className="text-black/50 font-normal text-sm md:text-base">
-								Phone Number <span className="text-red-500">*</span>
+								Country Code <span className="text-red-500">*</span>
 							</label>
-							<div className="flex gap-2">
-								<select
-									className="border border-black bg-white rounded-sm px-2 py-[12px] text-sm focus:outline-none focus:ring-0 w-[155px] shrink-0"
-									{...register('countryCode')}
-								>
-									<option value="">Country code</option>
-									{COUNTRY_CODES.map((c) => (
-										<option key={c.code} value={c.code}>
-											{c.label}
-										</option>
-									))}
-								</select>
-								<LabeledInput
-									className="flex-1"
-									error={errors.phone as FieldError}
-									inputClassName="border border-black bg-white"
-									label="Phone number"
-									placeholder="Phone number"
-									type="tel"
-									{...register('phone')}
-								/>
-							</div>
+							<select
+								className="border border-black bg-white rounded-sm px-3 py-[13px] text-sm focus:outline-none focus:ring-0 focus:border-primary w-full h-[46px]"
+								{...register('countryCode')}
+							>
+								<option value="">Select country code</option>
+								{COUNTRY_CODES.map((c) => (
+									<option key={c.code} value={c.code}>
+										{c.label}
+									</option>
+								))}
+							</select>
 							{errors.countryCode && (
-								<p className="text-red-500 text-xs mt-1">
+								<p className="text-red-500 text-xs">
 									{errors.countryCode.message as string}
 								</p>
 							)}
 						</div>
 						<LabeledInput
-							className="md:w-1/2"
-							error={errors.email as FieldError}
+							className="flex-1"
+							error={errors.phone as FieldError}
 							important
 							inputClassName="border border-black bg-white"
-							label="Email"
+							label="Phone Number"
 							labelClassName="text-black/50 font-normal text-sm md:text-base"
-							{...register('email')}
+							placeholder="e.g. 9123456789"
+							type="tel"
+							{...register('phone')}
 						/>
 					</div>
-					<div>
+
+					{/* Row 4: Password (full width) */}
+					<div className="mb-4">
 						<LabeledInput
-							className="mb-4"
 							error={errors.password as FieldError}
 							important
 							inputClassName="border border-black bg-white"
@@ -205,10 +213,6 @@ const Form = () => {
 							type="password"
 							{...register('password')}
 						/>
-						{/* <PasswordValidator
-              password={watch("password")}
-              setError={setPasswordError}
-            /> */}
 					</div>
 					<div>
 						<Checkbox
