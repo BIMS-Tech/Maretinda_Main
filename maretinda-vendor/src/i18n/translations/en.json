@@ -1417,6 +1417,9 @@
       "displayId": "Display ID",
       "refundableAmount": "Refundable amount",
       "returnableQuantity": "Returnable quantity"
+    },
+    "actions": {
+      "capturePayment": "Capture Payment"
     }
   },
   "draftOrders": {
@@ -2629,7 +2632,10 @@
         "placeholder": "wrong_size",
         "tooltip": "The value should be a unique identifier for the return reason."
       },
-      "label": { "label": "Label", "placeholder": "Wrong size" },
+      "label": {
+        "label": "Label",
+        "placeholder": "Wrong size"
+      },
       "description": {
         "label": "Description",
         "placeholder": "Customer received the wrong size"
