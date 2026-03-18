@@ -91,5 +91,5 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
 			},
 		);
 
-	return product_categories.find((cat) => cat.handle === handle);
+	return product_categories.find((cat) => cat.handle?.trim() === handle.trim());
 };

@@ -1,9 +1,9 @@
 import { z } from "zod"
 
 export const CreateCategoryDetailsSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().min(1).transform((val) => val.trim()),
   description: z.string().optional(),
-  handle: z.string().optional(),
+  handle: z.string().optional().transform((val) => val?.trim()),
   status: z.enum(["active", "inactive"]),
   visibility: z.enum(["public", "internal"]),
 })
