@@ -1,31 +1,62 @@
 'use client';
 
-import { redirect, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { Input } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { SearchIcon2 } from '@/icons';
 
-export const NavbarSearch = () => {
-	const [open, setOpen] = useState(false);
+type Category = {
+	id: string;
+	name: string;
+	handle: string;
+};
+
+export const NavbarSearch = ({
+	categories = [],
+}: {
+	categories?: Category[];
+}) => {
+	const router = useRouter();
 	const searchParams = useSearchParams();
-
+	const [open, setOpen] = useState(false);
 	const [search, setSearch] = useState(searchParams.get('query') || '');
+	const [selectedCategory, setSelectedCategory] = useState('all');
 
-	const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+	const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		if (search) {
-			redirect(`/categories?query=${search}`);
+		setOpen(false);
+		const query = search.trim();
+		if (selectedCategory && selectedCategory !== 'all') {
+			router.push(
+				`/categories/${selectedCategory}${query ? `?query=${encodeURIComponent(query)}` : ''}`,
+			);
+		} else if (query) {
+			router.push(`/categories?query=${encodeURIComponent(query)}`);
 		} else {
-			redirect(`/categories`);
+			router.push(`/categories`);
 		}
 	};
+
+	const options = [
+		{ label: 'All Categories', value: 'all' },
+		...categories.map((cat) => ({
+			label: cat.name,
+			value: cat.handle.trim(),
+		})),
+	];
+
+	const matchingCategories = search.trim()
+		? categories.filter((cat) =>
+				cat.name.toLowerCase().includes(search.toLowerCase()),
+			)
+		: categories;
 
 	return (
 		<form
 			className="flex items-center w-full relative"
-			method="POST"
 			onSubmit={submitHandler}
 		>
 			<Input
@@ -33,129 +64,41 @@ export const NavbarSearch = () => {
 				className="text-base bg-white rounded-[62px] w-full border-0 shadow-[0px_4px_4px_0px_rgba(0,0,0,0.1)]"
 				icon={<SearchIcon2 color="#372248" />}
 				isDropdownCategory
-				onBlur={() => setOpen(false)}
+				onBlur={() => setTimeout(() => setOpen(false), 150)}
+				onDropdownChange={setSelectedCategory}
 				onFocus={() => setOpen(true)}
-				options={[
-					{
-						label: 'All Categories',
-						value: 'All Categories',
-					},
-					{
-						label: "Men's Fashion",
-						value: "Men's Fashion",
-					},
-					{
-						label: 'Books',
-						value: 'Books',
-					},
-					{
-						label: 'Electronics',
-						value: 'Electronics',
-					},
-					{
-						label: 'Girls Fashion',
-						value: 'Girls Fashion',
-					},
-					{
-						label: 'Tops',
-						value: 'Tops',
-					},
-					{
-						label: 'Shirts',
-						value: 'Shirts',
-					},
-					{
-						label: 'Jeans',
-						value: 'Jeans',
-					},
-					{
-						label: 'Suits',
-						value: 'Suits',
-					},
-				]}
+				options={options}
 				placeholder="Search for products..."
 				value={search}
 			/>
 			<input className="hidden" type="submit" />
-			{open &&
-				(search ? (
-					<div className="absolute mx-auto px-3 py-6 top-full mt-2 w-full bg-white z-50 rounded-lg shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)]">
-						<div className="flex flex-col gap-3">
-							{/* Fix this where it fetches items from the server */}
-							{/* {column.items.map((link) => (
+			{open && (
+				<div className="absolute mx-auto px-3 py-6 top-full mt-2 w-full bg-white z-50 rounded-lg shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)]">
+					<div className="flex flex-col gap-3 m-0">
+						<h3 className="text-xl mb-1 !font-semibold px-4 w-full text-black">
+							{search.trim()
+								? 'Matching Categories'
+								: 'Browse Categories'}
+						</h3>
+						{matchingCategories.length === 0 ? (
+							<p className="text-base px-4 text-gray-500">
+								No categories found
+							</p>
+						) : (
+							matchingCategories.map((cat) => (
 								<LocalizedClientLink
-									className="text-base !font-medium px-4 block w-full hover:bg-gray-50 transition-colors"
-									href={`/categories/${link.path}`}
-									key={link.label}
-									onClick={onClick}
+									className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors rounded"
+									href={`/categories/${cat.handle.trim()}`}
+									key={cat.id}
+									onMouseDown={() => setOpen(false)}
 								>
-									{link.label}
+									{cat.name}
 								</LocalizedClientLink>
-							))} */}
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Lorem ipsum dolor sit amet consectetur
-							</LocalizedClientLink>
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Lorem ipsum dolor sit amet consectetur
-							</LocalizedClientLink>
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Lorem ipsum dolor sit amet consectetur
-							</LocalizedClientLink>
-						</div>
+							))
+						)}
 					</div>
-				) : (
-					<div className="absolute mx-auto px-3 py-6 top-full mt-2 w-full bg-white z-50 rounded-lg shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)]">
-						<div className="flex flex-col gap-3 m-0">
-							<h3 className="text-xl mb-1 !font-semibold px-4 w-full text-black">
-								Trending Searches
-							</h3>
-							{/* Fix this where the items are from the suggestions */}
-							{/* {column.items.map((link) => (
-								<LocalizedClientLink
-									className="text-base !font-medium px-4 block w-full hover:bg-gray-50 transition-colors"
-									href={`/categories/${link.path}`}
-									key={link.label}
-									onClick={onClick}
-								>
-									{link.label}
-								</LocalizedClientLink>
-							))} */}
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Neque minus pariatur est dolorem fugit
-							</LocalizedClientLink>
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Neque minus pariatur est dolorem fugit
-							</LocalizedClientLink>
-							<LocalizedClientLink
-								className="text-base !font-medium px-4 block w-full text-black hover:bg-gray-100 transition-colors"
-								href={`/categories/#`}
-								onClick={() => {}}
-							>
-								Neque minus pariatur est dolorem fugit
-							</LocalizedClientLink>
-						</div>
-					</div>
-				))}
+				</div>
+			)}
 		</form>
 	);
 };

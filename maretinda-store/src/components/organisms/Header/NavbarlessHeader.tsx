@@ -7,6 +7,7 @@ import { NavbarSearch } from '@/components/molecules';
 // import CountrySelector from '@/components/molecules/CountrySelector/CountrySelector';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { retrieveCart } from '@/lib/data/cart';
+import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import type { Wishlist } from '@/types/wishlist';
@@ -16,6 +17,7 @@ import TopHeaderBanner from '../TopHeader/TopHeader';
 export const NavbarLessHeader = async () => {
 	const cart = await retrieveCart().catch(() => null);
 	const user = await retrieveCustomer();
+	const { categories } = await listCategories();
 	let wishlist: Wishlist[] = [];
 
 	// Only try to get wishlist if user is authenticated
@@ -55,7 +57,7 @@ export const NavbarLessHeader = async () => {
 					</LocalizedClientLink>
 				</div>
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
-					<NavbarSearch />
+					<NavbarSearch categories={categories} />
 				</div>
 				<div className="flex items-center justify-end gap-1 sm:gap-2 lg:gap-2 sm:min-w-[245px] w-[-webkit-fill-available] sm:w-auto">
 					<UserDropdown user={user} />

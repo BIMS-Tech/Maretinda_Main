@@ -18,6 +18,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 	clearable?: boolean;
 	error?: boolean;
 	changeValue?: (value: string) => void;
+	onDropdownChange?: (value: string) => void;
 	options?: Option[];
 }
 
@@ -29,6 +30,7 @@ export function Input({
 	className,
 	error,
 	changeValue,
+	onDropdownChange,
 	options,
 	onChange,
 	...props
@@ -130,7 +132,10 @@ export function Input({
 									className="bg-white w-[175px] -mr-4 mt-2 z-50 py-3 px-0 shadow-[0px_4px_10px_2px_rgba(0,0,0,0.18)]"
 								>
 									<DropdownMenu.RadioGroup
-										onValueChange={setDropdownValue}
+										onValueChange={(val) => {
+											setDropdownValue(val);
+											onDropdownChange?.(val);
+										}}
 										value={dropdownValue}
 									>
 										{options.map((option) => (
