@@ -1,89 +1,79 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import multer from "multer"
-import path from "path"
-import fs from "fs"
+import { createGCSService } from "../../utils/google-cloud-storage"
+import { optimizeImage } from "../../utils/image-optimizer"
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(process.cwd(), "static")
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true })
-    }
-    cb(null, uploadDir)
+const ALLOWED_MIMES = [
+  "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+]
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIMES.includes(file.mimetype)) return cb(null, true)
+    cb(new Error("Invalid file type. Only images are allowed."))
   },
-  filename: (req, file, cb) => {
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${file.originalname}`
-    cb(null, filename)
-  }
 })
 
-const upload = multer({ 
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    // Allow only image files
-    const allowedMimes = [
-      'image/jpeg',
-      'image/jpg', 
-      'image/png',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml'
-    ]
-    
-    if (allowedMimes.includes(file.mimetype)) {
-      cb(null, true)
-    } else {
-      cb(new Error('Invalid file type. Only images are allowed.'))
-    }
-  }
-})
-
-export async function POST(
-  req: MedusaRequest,
-  res: MedusaResponse
-): Promise<void> {
+export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {
-    // Use multer middleware
-    const uploadMiddleware = upload.array('files', 10) // Allow up to 10 files
-    
-    uploadMiddleware(req as any, res as any, (err) => {
+    const gcs = createGCSService()
+    if (!gcs) {
+      return res.status(500).json({ message: "Cloud storage not configured" }) as any
+    }
+
+    const uploadMiddleware = upload.array("files", 10)
+
+    uploadMiddleware(req as any, res as any, async (err) => {
       if (err) {
-        console.error('Upload error:', err)
-        return res.status(400).json({ 
-          message: err.message || 'Upload failed',
-          error: err.message 
-        })
+        return res.status(400).json({ message: err.message || "Upload failed" })
       }
 
       const files = req.files as Express.Multer.File[]
-      
-      if (!files || files.length === 0) {
-        return res.status(400).json({ message: 'No files uploaded' })
+      if (!files?.length) {
+        return res.status(400).json({ message: "No files uploaded" })
       }
 
-      // Generate response with file URLs
-      const uploadedFiles = files.map(file => ({
-        id: file.filename,
-        url: `${process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'}/static/${file.filename}`,
-        name: file.originalname,
-        size: file.size,
-        mime_type: file.mimetype
-      }))
+      const uploadPromises = files.map(async (file) => {
+        let buffer = file.buffer
+        let contentType = file.mimetype
+        let filename = file.originalname
 
-      res.status(200).json({
-        files: uploadedFiles
+        // Optimize images to WebP
+        if (file.mimetype !== "image/svg+xml") {
+          const optimized = await optimizeImage(buffer, { format: "webp", quality: 85 })
+          buffer = optimized.buffer
+          contentType = optimized.contentType
+          filename = filename.replace(/\.[^.]+$/, "") + ".webp"
+        }
+
+        const result = await gcs.uploadFile(buffer, filename, {
+          folder: "uploads/images",
+          contentType,
+          makePublic: true,
+          cacheControl: "public, max-age=31536000",
+        })
+
+        if (!result.success) throw new Error(result.error || "Upload failed")
+
+        return {
+          id: result.fileName!,
+          url: result.publicUrl!,
+          name: file.originalname,
+          size: buffer.length,
+          mime_type: contentType,
+        }
       })
+
+      try {
+        const uploadedFiles = await Promise.all(uploadPromises)
+        res.status(200).json({ files: uploadedFiles })
+      } catch (uploadErr) {
+        res.status(500).json({ message: uploadErr instanceof Error ? uploadErr.message : "Upload failed" })
+      }
     })
   } catch (error) {
-    console.error('Upload endpoint error:', error)
-    res.status(500).json({ 
-      message: 'Internal server error',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    })
+    res.status(500).json({ message: "Internal server error" })
   }
 }

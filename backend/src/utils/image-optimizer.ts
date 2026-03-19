@@ -1,143 +1,154 @@
-/**
- * Image Optimization Utility (Optional Enhancement)
- * 
- * To enable:
- * 1. Install sharp: npm install sharp
- * 2. Import this in uploads-vendor/route.ts
- * 3. Call optimizeImage() before saving
- */
-
-// Uncomment to use:
-// import sharp from 'sharp'
+import sharp from "sharp"
 
 export interface OptimizationOptions {
   maxWidth?: number
   maxHeight?: number
   quality?: number
-  format?: 'jpeg' | 'png' | 'webp'
+  format?: "jpeg" | "png" | "webp"
   removeMetadata?: boolean
 }
 
+export interface OptimizationResult {
+  buffer: Buffer
+  contentType: string
+  extension: string
+  originalSize: number
+  optimizedSize: number
+}
+
+/**
+ * Optimize an image buffer: resize if oversized, strip EXIF, convert to WebP.
+ * Falls back to the original buffer on any error so uploads never fail.
+ */
 export const optimizeImage = async (
   buffer: Buffer,
   options: OptimizationOptions = {}
-): Promise<Buffer> => {
-  // Uncomment when sharp is installed:
-  /*
+): Promise<OptimizationResult> => {
   const {
     maxWidth = 2048,
     maxHeight = 2048,
     quality = 85,
-    format = 'webp',
-    removeMetadata = true
+    format = "webp",
+    removeMetadata = true,
   } = options
 
-  let pipeline = sharp(buffer)
+  const originalSize = buffer.length
 
-  // Resize if needed
-  const metadata = await pipeline.metadata()
-  if ((metadata.width && metadata.width > maxWidth) || 
-      (metadata.height && metadata.height > maxHeight)) {
-    pipeline = pipeline.resize(maxWidth, maxHeight, {
-      fit: 'inside',
-      withoutEnlargement: true
-    })
-  }
-
-  // Auto-rotate based on EXIF orientation
-  pipeline = pipeline.rotate()
-
-  // Remove metadata if requested
-  if (removeMetadata) {
-    pipeline = pipeline.withMetadata({
-      orientation: undefined,
-      exif: undefined,
-      icc: undefined
-    })
-  }
-
-  // Convert format and compress
-  switch (format) {
-    case 'jpeg':
-      pipeline = pipeline.jpeg({ quality, mozjpeg: true })
-      break
-    case 'png':
-      pipeline = pipeline.png({ quality, compressionLevel: 9 })
-      break
-    case 'webp':
-      pipeline = pipeline.webp({ quality })
-      break
-  }
-
-  return await pipeline.toBuffer()
-  */
-  
-  // Placeholder until sharp is installed:
-  return buffer
-}
-
-export const validateImage = async (buffer: Buffer): Promise<{
-  valid: boolean
-  width?: number
-  height?: number
-  format?: string
-  error?: string
-}> => {
-  // Uncomment when sharp is installed:
-  /*
   try {
+    let pipeline = sharp(buffer)
+
+    // Auto-rotate based on EXIF orientation first
+    pipeline = pipeline.rotate()
+
+    // Resize only if the image exceeds max dimensions (never upscale)
     const metadata = await sharp(buffer).metadata()
-    
-    if (!metadata.width || !metadata.height) {
-      return { valid: false, error: 'Invalid image: no dimensions' }
+    if (
+      (metadata.width && metadata.width > maxWidth) ||
+      (metadata.height && metadata.height > maxHeight)
+    ) {
+      pipeline = pipeline.resize(maxWidth, maxHeight, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+    }
+
+    // Strip metadata (EXIF, ICC, etc.) for privacy + smaller files
+    if (removeMetadata) {
+      pipeline = pipeline.withMetadata({})
+    }
+
+    // Convert and compress
+    let outputBuffer: Buffer
+    let contentType: string
+    let extension: string
+
+    switch (format) {
+      case "jpeg":
+        outputBuffer = await pipeline.jpeg({ quality, mozjpeg: true }).toBuffer()
+        contentType = "image/jpeg"
+        extension = "jpg"
+        break
+      case "png":
+        outputBuffer = await pipeline.png({ quality, compressionLevel: 9 }).toBuffer()
+        contentType = "image/png"
+        extension = "png"
+        break
+      case "webp":
+      default:
+        outputBuffer = await pipeline.webp({ quality }).toBuffer()
+        contentType = "image/webp"
+        extension = "webp"
+        break
     }
 
     return {
-      valid: true,
-      width: metadata.width,
-      height: metadata.height,
-      format: metadata.format
+      buffer: outputBuffer,
+      contentType,
+      extension,
+      originalSize,
+      optimizedSize: outputBuffer.length,
     }
-  } catch (error) {
+  } catch (err) {
+    console.error("[image-optimizer] Optimization failed, using original:", err)
     return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Invalid image file'
+      buffer,
+      contentType: "application/octet-stream",
+      extension: "bin",
+      originalSize,
+      optimizedSize: buffer.length,
     }
   }
-  */
-  
-  // Placeholder until sharp is installed:
-  return { valid: true }
 }
 
 /**
- * Usage in uploads-vendor/route.ts:
- * 
- * import { optimizeImage, validateImage } from '../../utils/image-optimizer'
- * 
- * // After multer processes files:
- * const files = req.files as Express.Multer.File[]
- * 
- * for (const file of files) {
- *   // Validate
- *   const validation = await validateImage(file.buffer)
- *   if (!validation.valid) {
- *     return res.status(400).json({ 
- *       message: validation.error 
- *     })
- *   }
- *   
- *   // Optimize
- *   const optimized = await optimizeImage(file.buffer, {
- *     maxWidth: 2048,
- *     maxHeight: 2048,
- *     quality: 85,
- *     format: 'webp',
- *     removeMetadata: true
- *   })
- *   
- *   // Save optimized version
- *   fs.writeFileSync(file.path, optimized)
- * }
+ * Generate a thumbnail (small square crop suitable for product cards).
  */
+export const generateThumbnail = async (
+  buffer: Buffer,
+  size = 400,
+  quality = 80
+): Promise<OptimizationResult> => {
+  const originalSize = buffer.length
+  try {
+    const outputBuffer = await sharp(buffer)
+      .rotate()
+      .resize(size, size, { fit: "cover", position: "center" })
+      .withMetadata({})
+      .webp({ quality })
+      .toBuffer()
 
+    return {
+      buffer: outputBuffer,
+      contentType: "image/webp",
+      extension: "webp",
+      originalSize,
+      optimizedSize: outputBuffer.length,
+    }
+  } catch (err) {
+    console.error("[image-optimizer] Thumbnail failed, using original:", err)
+    return {
+      buffer,
+      contentType: "application/octet-stream",
+      extension: "bin",
+      originalSize,
+      optimizedSize: buffer.length,
+    }
+  }
+}
+
+/**
+ * Quick validation — checks that the buffer is actually a recognizable image.
+ */
+export const validateImage = async (
+  buffer: Buffer
+): Promise<{ valid: boolean; width?: number; height?: number; format?: string; error?: string }> => {
+  try {
+    const metadata = await sharp(buffer).metadata()
+    if (!metadata.width || !metadata.height) {
+      return { valid: false, error: "Invalid image: no dimensions" }
+    }
+    return { valid: true, width: metadata.width, height: metadata.height, format: metadata.format }
+  } catch (err) {
+    return { valid: false, error: err instanceof Error ? err.message : "Invalid image file" }
+  }
+}

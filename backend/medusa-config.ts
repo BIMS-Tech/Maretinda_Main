@@ -63,6 +63,18 @@ module.exports = defineConfig({
       resolve: '@mercurjs/b2c-core/modules/wishlist'
     },
     {
+      resolve: '@medusajs/medusa/file',
+      options: {
+        providers: [
+          {
+            resolve: './src/modules/file-gcs',
+            id: 'gcs',
+            options: {}
+          }
+        ]
+      }
+    },
+    {
       resolve: '@medusajs/medusa/cache-inmemory'
     },
     {
