@@ -84,12 +84,14 @@ export class MaretindaResendProvider extends AbstractNotificationProviderService
           html,
         })
 
+        console.log(`[notification-resend] Raw result: ${JSON.stringify(result)}`)
         if (result.error) {
           console.error(`[notification-resend] Resend API error: ${JSON.stringify(result.error)}`)
-          throw new Error(result.error.message || "Resend API returned an error")
+          throw new Error((result.error as any).message || "Resend API returned an error")
         }
-        console.log(`[notification-resend] Email sent successfully: ${result.data?.id}`)
-        return { id: result.data?.id || "" }
+        const emailId = (result as any).id || result.data?.id || ""
+        console.log(`[notification-resend] Email sent successfully: ${emailId}`)
+        return { id: emailId }
       } catch (error: any) {
         console.error(`[notification-resend] Failed to send email: ${error.message}`)
         throw error
