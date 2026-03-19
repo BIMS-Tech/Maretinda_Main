@@ -2,11 +2,10 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/atoms';
 import { ErrorMessage } from '@/components/molecules';
-import { placeOrder } from '@/lib/data/cart';
 
 type GiyaPayButtonProps = {
 	cart: HttpTypes.StoreCart;
@@ -18,18 +17,45 @@ const GiyaPayButton = ({
 	'data-testid': dataTestId,
 }: GiyaPayButtonProps) => {
 	const [submitting, setSubmitting] = useState(false);
+	const [waitingForPayment, setWaitingForPayment] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const router = useRouter();
+	const popupRef = useRef<Window | null>(null);
+	const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	const onPaymentCompleted = () => {
-		placeOrder()
-			.then(() => {
+	// Listen for postMessage from giyapay success/cancel pages in the popup
+	useEffect(() => {
+		const handleMessage = (event: MessageEvent) => {
+			if (event.origin !== window.location.origin) return;
+
+			if (event.data?.type === 'giyapay_success' && event.data?.orderId) {
+				cleanup();
+				router.push(`/order/${event.data.orderId}/confirmed`);
+			} else if (event.data?.type === 'giyapay_cancel') {
+				cleanup();
 				setSubmitting(false);
-			})
-			.catch((err) => {
-				setErrorMessage(err.message);
+				setWaitingForPayment(false);
+			} else if (event.data?.type === 'giyapay_error') {
+				cleanup();
 				setSubmitting(false);
-			});
+				setWaitingForPayment(false);
+				setErrorMessage(event.data?.message || 'Payment failed. Please try again.');
+			}
+		};
+
+		window.addEventListener('message', handleMessage);
+		return () => window.removeEventListener('message', handleMessage);
+	}, [router]);
+
+	const cleanup = () => {
+		if (pollRef.current) {
+			clearInterval(pollRef.current);
+			pollRef.current = null;
+		}
+		if (popupRef.current && !popupRef.current.closed) {
+			popupRef.current.close();
+		}
+		popupRef.current = null;
 	};
 
 	const handlePayment = async () => {
@@ -42,7 +68,6 @@ const GiyaPayButton = ({
 		}
 
 		try {
-			// Get the GiyaPay payment session data
 			const activeSession =
 				cart.payment_collection?.payment_sessions?.find(
 					(session: any) =>
@@ -57,26 +82,48 @@ const GiyaPayButton = ({
 			const sessionData = activeSession.data as any;
 			const formData = sessionData?.form_data || sessionData;
 
-			// Get selected payment method from localStorage (set by GiyaPayGatewayDirect)
-			const selectedMethod = typeof window !== 'undefined' 
-				? localStorage.getItem('giyapay_selected_method') 
-				: null;
+			const selectedMethod =
+				typeof window !== 'undefined'
+					? localStorage.getItem('giyapay_selected_method')
+					: null;
 
 			if (!selectedMethod) {
-				throw new Error('Please select a payment method (VISA, GCash, InstaPay, etc.)');
+				throw new Error('Please select a payment method (VISA, GCash, etc.)');
 			}
 
-			// Get checkout URL from session data
-			const checkoutUrl = sessionData?.checkout_url || 
-				(sessionData?.sandbox_mode ? 'https://sandbox.giyapay.com/checkout' : 'https://pay.giyapay.com/checkout');
+			const checkoutUrl =
+				sessionData?.checkout_url ||
+				(sessionData?.sandbox_mode
+					? 'https://sandbox.giyapay.com/checkout'
+					: 'https://pay.giyapay.com/checkout');
 
-			// Create the form for GiyaPay checkout
+			// Calculate centered popup position
+			const width = 520;
+			const height = 700;
+			const left = Math.round(window.screenX + (window.outerWidth - width) / 2);
+			const top = Math.round(window.screenY + (window.outerHeight - height) / 2);
+
+			// Open blank popup first (must be synchronous to avoid popup blocker)
+			const popup = window.open(
+				'about:blank',
+				'giyapay-checkout',
+				`width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`,
+			);
+
+			if (!popup) {
+				throw new Error('Popup was blocked. Please allow popups for this site and try again.');
+			}
+
+			popupRef.current = popup;
+			setWaitingForPayment(true);
+
+			// Build and submit the form targeting the popup
 			const form = document.createElement('form');
 			form.method = 'POST';
 			form.action = checkoutUrl;
+			form.target = 'giyapay-checkout';
 
-			// Add all required fields as hidden inputs
-			const fields = {
+			const fields: Record<string, any> = {
 				success_callback: formData.success_callback,
 				error_callback: formData.error_callback,
 				cancel_callback: formData.cancel_callback,
@@ -87,7 +134,7 @@ const GiyaPayButton = ({
 				timestamp: formData.timestamp,
 				description: formData.description,
 				signature: formData.signature,
-				payment_method: selectedMethod, // Include the selected payment method
+				payment_method: selectedMethod,
 				order_id: formData.order_id,
 				...(formData.customer_email && { customer_email: formData.customer_email }),
 			};
@@ -102,15 +149,22 @@ const GiyaPayButton = ({
 				}
 			});
 
-			// Add form to page and submit
 			document.body.appendChild(form);
 			form.submit();
-
-			// Clean up
 			document.body.removeChild(form);
+
+			// Poll to detect if user manually closed the popup
+			pollRef.current = setInterval(() => {
+				if (popup.closed) {
+					cleanup();
+					setSubmitting(false);
+					setWaitingForPayment(false);
+				}
+			}, 800);
 		} catch (error) {
 			setErrorMessage((error as Error).message);
 			setSubmitting(false);
+			setWaitingForPayment(false);
 		}
 	};
 
@@ -120,11 +174,18 @@ const GiyaPayButton = ({
 				className="w-full"
 				data-testid={dataTestId}
 				disabled={submitting}
-				loading={submitting}
+				loading={submitting && !waitingForPayment}
 				onClick={handlePayment}
 			>
-				Pay with GiyaPay
+				{waitingForPayment ? 'Waiting for payment...' : 'Pay with GiyaPay'}
 			</Button>
+
+			{waitingForPayment && (
+				<p className="text-sm text-gray-500 mt-2 text-center">
+					Complete your payment in the GiyaPay window. This page will update automatically.
+				</p>
+			)}
+
 			<ErrorMessage
 				data-testid="giyapay-payment-error-message"
 				error={errorMessage}

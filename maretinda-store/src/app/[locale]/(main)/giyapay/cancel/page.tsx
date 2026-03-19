@@ -23,9 +23,15 @@ function CancelContent() {
         }
         
         setStatus('cancelled');
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'giyapay_cancel' }, window.location.origin);
+        }
       } catch (error) {
         console.error('Error cancelling order:', error);
         setStatus('cancelled');
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'giyapay_cancel' }, window.location.origin);
+        }
       }
     };
 

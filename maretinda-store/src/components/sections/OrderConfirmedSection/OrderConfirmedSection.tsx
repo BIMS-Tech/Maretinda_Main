@@ -22,32 +22,15 @@ export const OrderConfirmedSection = ({
 	useEffect(() => {
 		const run = async () => {
 			try {
-				const backendUrl =
-					process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
-					process.env.NEXT_PUBLIC_BACKEND_URL ||
-					process.env.BACKEND_URL ||
-					'http://localhost:9000';
-				const publishable =
-					process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
-					process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_API_KEY ||
-					'pk_3ad019daf80f5cf6368abbb8bcae8f5694b15a8480728313ba87fd2e6eb02036';
-				
 				// For marketplace orders, use the order_set ID to lookup transaction
 				// Individual orders share the same GiyaPay transaction via the order set
 				const orderIdForLookup = (order as any).order_set?.id || order.id;
-				
+
 				console.log('[Order Confirmed] Fetching transaction for:', orderIdForLookup);
-				
+
 				const res = await fetch(
-					`${backendUrl}/store/giyapay/transaction?order_id=${orderIdForLookup}`,
-					{
-						headers: {
-							accept: 'application/json',
-							...(publishable
-								? { 'x-publishable-api-key': publishable }
-								: {}),
-						},
-					},
+					`/api/giyapay/transaction?order_id=${orderIdForLookup}`,
+					{ headers: { accept: 'application/json' } },
 				);
 				if (res.ok) {
 					const data = await res.json();

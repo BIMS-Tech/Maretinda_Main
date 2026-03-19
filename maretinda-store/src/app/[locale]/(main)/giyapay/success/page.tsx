@@ -59,15 +59,29 @@ function SuccessContent() {
           setStatus('success');
           setOrderId(data.order_id);
           setMessage('Payment verified! Redirecting to your order...');
-          
-          // Redirect to order confirmation page
-          // Format: /order/{orderId}/confirmed (mercur format)
-          setTimeout(() => {
-            router.push(`/order/${data.order_id}/confirmed`);
-          }, 2000);
+
+          // If opened as a popup, notify opener window to navigate to confirmation
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+              { type: 'giyapay_success', orderId: data.order_id },
+              window.location.origin,
+            );
+          } else {
+            // Standalone page fallback
+            setTimeout(() => {
+              router.push(`/order/${data.order_id}/confirmed`);
+            }, 2000);
+          }
         } else {
           setStatus('error');
-          setMessage(data.message || 'Payment verification failed. Please contact support with reference: ' + refno);
+          const errMsg = data.message || 'Payment verification failed. Please contact support with reference: ' + refno;
+          setMessage(errMsg);
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+              { type: 'giyapay_error', message: errMsg },
+              window.location.origin,
+            );
+          }
         }
       } catch (error) {
         console.error('Payment verification error:', error);

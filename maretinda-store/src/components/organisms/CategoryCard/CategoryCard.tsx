@@ -57,7 +57,7 @@ export function CategoryCard({
 							const target = e.target as HTMLImageElement;
 							target.src = '/images/categories/shopping.png';
 						}}
-						src={`/images/categories/${category.handle}.png`}
+						src={`/images/categories/${category.handle.trim()}.png`}
 						unoptimized
 						width={150}
 					/>
@@ -74,7 +74,7 @@ export function CategoryCard({
 						const target = e.target as HTMLImageElement;
 						target.style.display = 'none';
 					}}
-					src={`/images/categories/${category.handle}.png`}
+					src={`/images/categories/${category.handle.trim()}.png`}
 					width={120}
 				/>
 				</div> */}
