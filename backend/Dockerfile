@@ -1,18 +1,20 @@
 # ========================================
 # Maretinda Backend - Dockerfile
 # ========================================
-# Multi-stage build for production deployment
+# Uses node:20-slim (Debian/glibc) so sharp uses prebuilt binaries
+# instead of compiling from source on Alpine (which takes 30-60+ min)
 
 # Stage 1: Base image with dependencies
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 WORKDIR /app
 
 # Install required system dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
     g++ \
-    bash
+    bash \
+    && rm -rf /var/lib/apt/lists/*
 
 # Stage 2: Dependencies installation
 FROM base AS deps
@@ -50,19 +52,20 @@ WORKDIR /app
 RUN yarn build
 
 # Stage 4: Production runner
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /final
 
 # Install production dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
-    tini && \
-    corepack enable
+    tini \
+    && rm -rf /var/lib/apt/lists/* \
+    && corepack enable
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S medusa -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs medusa
 
 # Copy necessary files from builder
 COPY --from=builder --chown=medusa:nodejs /app/package*.json ./
@@ -98,8 +101,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:9000/health || exit 1
 
 # Use tini to handle signals properly
-ENTRYPOINT ["/sbin/tini", "--"]
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Start the server
 CMD ["node_modules/.bin/medusa", "start"]
-

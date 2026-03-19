@@ -24,3 +24,5 @@ steps:
 
 images:
   - 'us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'
+
+timeout: '7200s'
