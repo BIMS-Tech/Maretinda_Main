@@ -33,7 +33,7 @@ export const retrieveCustomer =
 			.fetch<{ customer: HttpTypes.StoreCustomer }>(
 				`/store/customers/me`,
 				{
-					cache: 'force-cache',
+					cache: 'no-store',
 					headers,
 					method: 'GET',
 					next,
