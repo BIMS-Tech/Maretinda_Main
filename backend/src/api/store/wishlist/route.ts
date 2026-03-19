@@ -181,7 +181,7 @@ export const GET = async (
 
     const formattedWithPrices = await calculateWishlistProductsPrice(
       req.scope,
-      validWishlists.map((wl: any) => ({ wishlist: wl }))
+      validWishlists.map((wl: any) => ({ wishlist_id: wl.id, wishlist: wl }))
     )
 
     res.json({
