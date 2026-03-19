@@ -60,6 +60,27 @@ module.exports = defineConfig({
   ],
   modules: [
     {
+      resolve: '@medusajs/medusa/auth',
+      options: {
+        providers: [
+          {
+            resolve: '@medusajs/auth-emailpass',
+            id: 'emailpass',
+            options: {}
+          },
+          {
+            resolve: '@medusajs/auth-google',
+            id: 'google',
+            options: {
+              clientId: process.env.GOOGLE_CLIENT_ID,
+              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+              callbackUrl: process.env.GOOGLE_CALLBACK_URL
+            }
+          }
+        ]
+      }
+    },
+    {
       resolve: '@mercurjs/b2c-core/modules/wishlist'
     },
     {

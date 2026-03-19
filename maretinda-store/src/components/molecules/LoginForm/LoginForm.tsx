@@ -53,6 +53,29 @@ const Form = () => {
 	const [googleButton, setGoogleButton] = useState(false);
 	const [facebookButton, setFacebookButton] = useState(false);
 
+	const handleGoogleLogin = async () => {
+		setGoogleButton(true);
+		setIsRedirecting(true);
+		try {
+			const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+			const res = await fetch(`${backendUrl}/auth/customer/google`, {
+				headers: {
+					'Content-Type': 'application/json',
+					'x-publishable-api-key':
+						process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '',
+				},
+				method: 'GET',
+			});
+			const { location } = await res.json();
+			if (location) {
+				window.location.href = location;
+			}
+		} catch {
+			setIsRedirecting(false);
+			setGoogleButton(false);
+		}
+	};
+
 	const submit = async (data: FieldValues) => {
 		setIsRedirecting(true);
 		const formData = new FormData();
@@ -171,11 +194,9 @@ const Form = () => {
 							<Button
 								className="w-full flex items-center justify-center mt-0 md:mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
 								disabled={googleButton && isRedirecting}
-								loading={!googleButton && isRedirecting}
-								onClick={() => {
-									setLoginButton(true);
-									setFacebookButton(true);
-								}}
+								loading={googleButton && isRedirecting}
+								onClick={handleGoogleLogin}
+								type="button"
 								variant="text"
 							>
 								<span>
@@ -186,12 +207,8 @@ const Form = () => {
 
 							<Button
 								className="w-full flex items-center justify-center mt-4 py-2 px-1 md:py-4 md:px-2 hover:bg-white/0 border-black border text-base md:text-lg font-light md:font-normal text-black"
-								disabled={facebookButton && isRedirecting}
-								loading={!facebookButton && isRedirecting}
-								onClick={() => {
-									setLoginButton(true);
-									setGoogleButton(true);
-								}}
+								disabled={false}
+								type="button"
 								variant="text"
 							>
 								<span>

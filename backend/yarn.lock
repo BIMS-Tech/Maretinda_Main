@@ -1675,8 +1675,10 @@
 "@medusajs/auth-github@2.11.2":
   version "2.11.2"
 
-"@medusajs/auth-google@2.11.2":
+"@medusajs/auth-google@^2.11.2", "@medusajs/auth-google@2.11.2":
   version "2.11.2"
+  resolved "https://registry.npmjs.org/@medusajs/auth-google/-/auth-google-2.11.2.tgz"
+  integrity sha512-X3s/6uiNI6b4YwZSh4DoNvyNdGCaVTIxrSG0wvBpvXHpmeAR/i8gq6PBNLx1PneEhOMFcHnDoR0TmwmMlsmRMQ==
   dependencies:
     jsonwebtoken "^9.0.2"
 
