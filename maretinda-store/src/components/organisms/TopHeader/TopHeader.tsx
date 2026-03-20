@@ -77,7 +77,7 @@ const TopHeaderBanner: React.FC = () => {
 						- OFF 50% |{' '}
 						<LocalizedClientLink
 							className="ml-2 font-semibold underline underline-offset-4 hover:opacity-80 transition-opacity"
-							href="/products"
+							href="/categories"
 						>
 							Shop Now
 						</LocalizedClientLink>
