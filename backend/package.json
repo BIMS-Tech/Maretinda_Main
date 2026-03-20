@@ -36,6 +36,7 @@
   "dependencies": {
     "@google-cloud/storage": "^7.18.0",
     "@medusajs/admin-sdk": "2.11.2",
+    "@medusajs/auth-emailpass": "^2.13.4",
     "@medusajs/auth-google": "^2.11.2",
     "@medusajs/cli": "2.11.2",
     "@medusajs/file-s3": "^2.11.2",

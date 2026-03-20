@@ -2772,6 +2772,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@medusajs/auth-emailpass@npm:^2.13.4":
+  version: 2.13.4
+  resolution: "@medusajs/auth-emailpass@npm:2.13.4"
+  dependencies:
+    scrypt-kdf: ^2.0.1
+  peerDependencies:
+    "@medusajs/framework": 2.13.4
+  checksum: 3d393d4275e5759a13c7d6991ecb5e5cea90f369d574ebb765f1da6437050a3f6a159028c44ee0d8f1b212be3b300db449c7d3374761f2cf4922be761557c4c1
+  languageName: node
+  linkType: hard
+
 "@medusajs/auth-github@npm:2.11.2":
   version: 2.11.2
   resolution: "@medusajs/auth-github@npm:2.11.2"
@@ -13886,6 +13897,7 @@ __metadata:
   dependencies:
     "@google-cloud/storage": ^7.18.0
     "@medusajs/admin-sdk": 2.11.2
+    "@medusajs/auth-emailpass": ^2.13.4
     "@medusajs/auth-google": ^2.11.2
     "@medusajs/cli": 2.11.2
     "@medusajs/file-s3": ^2.11.2
