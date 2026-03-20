@@ -63,9 +63,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable
 
-# Create non-root user
+# Create non-root user with home directory (Medusa writes config to ~/.config/medusa)
 RUN groupadd -g 1001 nodejs && \
-    useradd -r -u 1001 -g nodejs medusa
+    useradd -u 1001 -g nodejs -m -d /home/medusa -s /bin/bash medusa && \
+    mkdir -p /home/medusa/.config && \
+    chown -R medusa:nodejs /home/medusa
 
 # Copy necessary files from builder
 COPY --from=builder --chown=medusa:nodejs /app/package*.json ./
@@ -88,7 +90,9 @@ COPY --from=builder --chown=medusa:nodejs /app/config ./config
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=9000 \
-    LOG_LEVEL=info
+    LOG_LEVEL=info \
+    MEDUSA_DISABLE_TELEMETRY=1 \
+    HOME=/home/medusa
 
 # Switch to non-root user
 USER medusa
