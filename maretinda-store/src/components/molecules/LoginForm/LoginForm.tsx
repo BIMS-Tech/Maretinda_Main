@@ -57,13 +57,7 @@ const Form = () => {
 		setGoogleButton(true);
 		setIsRedirecting(true);
 		try {
-			const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
-			const res = await fetch(`${backendUrl}/auth/customer/google`, {
-				headers: {
-					'Content-Type': 'application/json',
-					'x-publishable-api-key':
-						process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? '',
-				},
+			const res = await fetch(`/api/auth/google`, {
 				method: 'GET',
 			});
 			const { location } = await res.json();
