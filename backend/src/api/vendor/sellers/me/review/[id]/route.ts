@@ -4,9 +4,15 @@ import {
 } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 // Note: using pgConnection directly since query.graph requires admin actor for 'review' entity
+// Note: using /vendor/sellers/me/review/:id (singular) to avoid Mercur's checkResourceOwnershipByResourceId
+// middleware on /vendor/sellers/me/reviews/:id which only checks seller_review links (not product_review links)
+//
+// Link tables discovered from DB schema:
+//   customer_customer_review_review: customer_id, review_id
+//   product_product_review_review:   product_id,  review_id
 
 /**
- * Get a single review by ID
+ * Get a single review by ID (works for both seller reviews and product reviews)
  */
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -27,17 +33,31 @@ export const GET = async (
       return res.status(500).json({ message: 'Database connection not available' })
     }
 
-    // Get seller_id from member
+    // Verify member belongs to a seller
     const member = await pgConnection('member').where('id', memberId).first()
     if (!member?.seller_id) {
       return res.status(404).json({ message: 'Seller not found' })
     }
 
-    // Fetch review with customer info via join
+    // Fetch review + customer (via link table) + product (via link table)
     const review = await pgConnection('review')
-      .leftJoin('customer', 'review.customer_id', 'customer.id')
-      .leftJoin('product', 'review.product_id', 'product.id')
+      .leftJoin(
+        'customer_customer_review_review as cr_link',
+        'cr_link.review_id', 'review.id'
+      )
+      .leftJoin('customer', 'customer.id', 'cr_link.customer_id')
+      .leftJoin(
+        'product_product_review_review as pr_link',
+        'pr_link.review_id', 'review.id'
+      )
+      .leftJoin('product', 'product.id', 'pr_link.product_id')
       .where('review.id', id)
+      .where(function () {
+        this.whereNull('cr_link.deleted_at').orWhereNull('cr_link.review_id')
+      })
+      .where(function () {
+        this.whereNull('pr_link.deleted_at').orWhereNull('pr_link.review_id')
+      })
       .select(
         'review.id',
         'review.reference',
@@ -46,11 +66,11 @@ export const GET = async (
         'review.seller_note',
         'review.created_at',
         'review.updated_at',
-        'review.customer_id',
-        'review.product_id',
+        'cr_link.customer_id',
         'customer.first_name as customer_first_name',
         'customer.last_name as customer_last_name',
         'customer.email as customer_email',
+        'pr_link.product_id',
         'product.title as product_title',
         'product.thumbnail as product_thumbnail'
       )
@@ -92,7 +112,7 @@ export const GET = async (
 }
 
 /**
- * Update review (add seller response)
+ * Update review (add/edit/delete seller reply)
  */
 export const POST = async (
   req: AuthenticatedMedusaRequest,
@@ -143,4 +163,3 @@ export const POST = async (
     })
   }
 }
-

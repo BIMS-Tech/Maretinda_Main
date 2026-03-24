@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     resolve: {
+      dedupe: ["react", "react-dom"],
       alias: {
         "@custom-types": path.resolve(__dirname, "./src/types"),
         "@hooks": path.resolve(__dirname, "./src/hooks"),

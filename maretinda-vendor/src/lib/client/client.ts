@@ -86,7 +86,7 @@ export const fetchQuery = async (
     headers?: { [key: string]: string }
   }
 ) => {
-  const bearer = (await window.localStorage.getItem("medusa_auth_token")) || ""
+  const bearer = window.localStorage.getItem("medusa_auth_token") || ""
   const params = Object.entries(query || {}).reduce(
     (acc, [key, value], index) => {
       if (value && value !== undefined) {
@@ -112,17 +112,16 @@ export const fetchQuery = async (
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ message: "Unknown error" }))
-    
-    // Handle authentication errors gracefully
-    if (response.status === 401 || response.status === 403) {
-      console.warn("Authentication error, redirecting to login")
-      // Clear invalid token
+
+    // Only redirect to login for authentication failures on the auth/session endpoint
+    // Other 401s (e.g., permission denied on a specific resource) should not log the user out
+    if (response.status === 401 && (url.includes("/auth") || url.includes("/session"))) {
+      console.warn("Session expired, redirecting to login")
       window.localStorage.removeItem("medusa_auth_token")
-      // Redirect to login
       window.location.href = "/login"
       throw new Error("Authentication failed. Please log in again.")
     }
-    
+
     throw new Error(errorData.message || "Nieznany błąd serwera")
   }
 

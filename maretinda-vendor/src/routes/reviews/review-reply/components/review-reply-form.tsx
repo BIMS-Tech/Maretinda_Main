@@ -15,16 +15,16 @@ export const ReviewReplyForm = () => {
   const { handleSuccess } = useRouteModal()
   const { id } = useParams()
 
-  const { review } = useReview(id!)
+  const { review, isLoading } = useReview(id!)
+  const { mutateAsync, isPending } = useUpdateReview(id!)
 
   const form = useForm<z.infer<typeof ReviewReplySchema>>({
     defaultValues: {
-      seller_note: review.seller_note || "",
+      seller_note: review?.seller_note || "",
     },
     resolver: zodResolver(ReviewReplySchema),
   })
 
-  const { mutateAsync, isPending } = useUpdateReview(id!)
   //@ts-ignore
   const handleSubmit = form.handleSubmit(async (data, { deleting }) => {
     if (deleting) {
@@ -59,6 +59,10 @@ export const ReviewReplyForm = () => {
       )
     }
   })
+
+  if (isLoading || !review) {
+    return null
+  }
 
   return (
     <RouteDrawer>
