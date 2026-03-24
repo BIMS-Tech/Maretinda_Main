@@ -116,6 +116,8 @@ export async function POST(
     const updateData: any = {}
     const allowedFields = [
       'name', 'email', 'phone', 'description', 'photo',
+      // Company/address fields
+      'address_line', 'postal_code', 'city', 'country_code', 'tax_id',
       // New settlement fields
       'bank_name', 'account_number', 'account_name', 'branch_name',
       'swift_code', 'beneficiary_address', 'beneficiary_bank_address',

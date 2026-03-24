@@ -62,6 +62,8 @@ export const useUpdateMe = (
         body,
       }),
     onSuccess: (data, variables, context) => {
+      queryClient.setQueryData(usersQueryKeys.me(), data)
+
       queryClient.invalidateQueries({
         queryKey: usersQueryKeys.lists(),
       })

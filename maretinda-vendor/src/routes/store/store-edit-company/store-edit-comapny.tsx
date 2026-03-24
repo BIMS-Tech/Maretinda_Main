@@ -1,4 +1,3 @@
-import { Heading } from "@medusajs/ui"
 import { RouteDrawer } from "../../../components/modals"
 import { useMe } from "../../../hooks/api"
 import { EditStoreCompanyForm } from "./components/edit-store-company-form"
@@ -14,7 +13,7 @@ export const StoreEditCompany = () => {
   return (
     <RouteDrawer>
       <RouteDrawer.Header>
-        <Heading>Edit Comapny</Heading>
+        <RouteDrawer.Title>Edit Company</RouteDrawer.Title>
       </RouteDrawer.Header>
       {ready && <EditStoreCompanyForm seller={seller} />}
     </RouteDrawer>

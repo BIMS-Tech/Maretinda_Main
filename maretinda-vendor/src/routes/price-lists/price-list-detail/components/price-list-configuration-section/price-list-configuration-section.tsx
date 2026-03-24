@@ -80,7 +80,7 @@ const CustomerGroupDisplay = ({
 
   const customerGroups = customer_groups
     .map(({ customer_group }) => customer_group)
-    .filter((group) => customerGroupIds.includes(group.id))
+    .filter((group) => group && customerGroupIds.includes(group.id))
 
   return (
     <div className="txt-small-plus text-ui-fg-muted flex items-center gap-x-1.5">
@@ -89,7 +89,7 @@ const CustomerGroupDisplay = ({
       </span>
       <span>·</span>
       <ListSummary
-        list={customerGroups.map((group) => group.name!)}
+        list={customerGroups.map((group) => group.name ?? "")}
         n={1}
         className="txt-small-plus text-ui-fg-muted"
       />

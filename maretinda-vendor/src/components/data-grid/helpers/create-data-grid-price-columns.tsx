@@ -81,7 +81,7 @@ export const createDataGridPriceColumns = <
         },
       })
     }) ?? []),
-    ...(regions?.map((region) => {
+    ...(regions?.filter(Boolean).map((region) => {
       const preference = pricePreferences?.find(
         (p) => p.attribute === "region_id" && p.value === region.id
       )

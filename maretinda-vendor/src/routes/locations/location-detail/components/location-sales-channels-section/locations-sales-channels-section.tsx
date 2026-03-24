@@ -49,7 +49,7 @@ function LocationsSalesChannelsSection({
               n={3}
               className="text-ui-fg-base"
               inline
-              list={location.sales_channels?.map((sc) => sc.name) ?? []}
+              list={location.sales_channels?.filter(Boolean).map((sc) => sc.name ?? "") ?? []}
             />
           </div>
           <Text className="text-ui-fg-subtle" size="small" leading="compact">

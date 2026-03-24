@@ -17,9 +17,9 @@ export const ProductSalesChannelSection = ({
   const { t } = useTranslation()
 
   const availableInSalesChannels =
-    product.sales_channels?.map((sc) => ({
+    product.sales_channels?.filter(Boolean).map((sc) => ({
       id: sc.id,
-      name: sc.name,
+      name: sc.name ?? "",
     })) ?? []
 
   const firstChannels = availableInSalesChannels.slice(0, 3)

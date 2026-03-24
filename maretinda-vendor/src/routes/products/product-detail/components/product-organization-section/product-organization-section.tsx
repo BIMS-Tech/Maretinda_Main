@@ -78,10 +78,10 @@ export const ProductOrganizationSection = ({
         title={t("fields.categories")}
         value={
           product.categories?.length
-            ? product.categories.map((pcat) => (
+            ? product.categories.filter(Boolean).map((pcat) => (
                 <OrganizationTag
                   key={pcat.id}
-                  label={pcat.name}
+                  label={pcat.name ?? ""}
                   to={`/categories/${pcat.id}`}
                 />
               ))
