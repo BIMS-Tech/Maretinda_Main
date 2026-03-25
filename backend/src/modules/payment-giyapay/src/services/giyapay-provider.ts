@@ -200,7 +200,7 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
         merchantSecret: this.options_.merchantSecret || process.env.GIYAPAY_MERCHANT_SECRET || "",
         sandboxMode: this.options_.sandboxMode ?? (process.env.GIYAPAY_SANDBOX_MODE === 'true'),
         isEnabled: !!(this.options_.merchantId || process.env.GIYAPAY_MERCHANT_ID),
-        enabledMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA'],
+        enabledMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
       }
 
       console.log('[GiyaPay Provider] Environment config:', {
@@ -368,8 +368,8 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       contextKeys: context ? Object.keys(context) : [],
     })
     
-    // Gateway Direct uses amount in cents
-    const amountInCents = Math.round(Number(amount) * 100).toString()
+    // MedusaJS passes amount already in the smallest currency unit (centavos for PHP)
+    const amountInCents = Math.round(Number(amount)).toString()
 
     // Use storefront URL for callbacks
     const storefrontUrl = process.env.STOREFRONT_URL || process.env.STORE_CORS?.split(",")[0] || "http://localhost:3000"

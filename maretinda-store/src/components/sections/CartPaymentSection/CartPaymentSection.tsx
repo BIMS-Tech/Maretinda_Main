@@ -20,6 +20,17 @@ import PaymentContainer, {
 } from '../../organisms/PaymentContainer/PaymentContainer';
 
 const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
+	'INSTAPAY': {
+		title: 'InstaPay',
+		icon: (
+			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
+				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<rect width="48" height="32" rx="4" fill="#0033A0"/>
+					<text x="24" y="21" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">InstaPay</text>
+				</svg>
+			</div>
+		),
+	},
 	'MASTERCARD/VISA': {
 		title: 'Visa / Mastercard',
 		icon: (
@@ -78,7 +89,7 @@ const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNo
 	},
 };
 
-const DEFAULT_GIYAPAY_METHODS = ['MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY'];
+const DEFAULT_GIYAPAY_METHODS = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY'];
 
 type StoreCardPaymentMethod = any & {
 	service_zone?: {

@@ -234,6 +234,27 @@ export const GiyaPay = () => {
             <div>Loading payment methods...</div>
           ) : (
             <div className="space-y-4">
+              {/* InstaPay */}
+              <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                <Switch
+                  id="instapay"
+                  checked={enabledMethods.includes('INSTAPAY')}
+                  onCheckedChange={() => toggleMethod('INSTAPAY')}
+                  disabled={!isEditingMethods}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="instapay" className="font-medium">
+                    InstaPay
+                  </Label>
+                  <Text className="text-ui-fg-subtle" size="small">
+                    Accept payments via InstaPay interbank fund transfer
+                  </Text>
+                </div>
+                <div className="w-12 h-8 flex items-center justify-center bg-blue-800 rounded text-white text-xs font-bold">
+                  IP
+                </div>
+              </div>
+
               {/* Visa/Mastercard */}
               <div className="flex items-center space-x-3 p-4 border rounded-lg">
                 <Switch

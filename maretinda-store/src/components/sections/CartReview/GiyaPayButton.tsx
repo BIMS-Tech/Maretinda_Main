@@ -1,8 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/atoms';
 import { ErrorMessage } from '@/components/molecules';
@@ -17,46 +16,7 @@ const GiyaPayButton = ({
 	'data-testid': dataTestId,
 }: GiyaPayButtonProps) => {
 	const [submitting, setSubmitting] = useState(false);
-	const [waitingForPayment, setWaitingForPayment] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const router = useRouter();
-	const popupRef = useRef<Window | null>(null);
-	const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-	// Listen for postMessage from giyapay success/cancel pages in the popup
-	useEffect(() => {
-		const handleMessage = (event: MessageEvent) => {
-			if (event.origin !== window.location.origin) return;
-
-			if (event.data?.type === 'giyapay_success' && event.data?.orderId) {
-				cleanup();
-				router.push(`/order/${event.data.orderId}/confirmed`);
-			} else if (event.data?.type === 'giyapay_cancel') {
-				cleanup();
-				setSubmitting(false);
-				setWaitingForPayment(false);
-			} else if (event.data?.type === 'giyapay_error') {
-				cleanup();
-				setSubmitting(false);
-				setWaitingForPayment(false);
-				setErrorMessage(event.data?.message || 'Payment failed. Please try again.');
-			}
-		};
-
-		window.addEventListener('message', handleMessage);
-		return () => window.removeEventListener('message', handleMessage);
-	}, [router]);
-
-	const cleanup = () => {
-		if (pollRef.current) {
-			clearInterval(pollRef.current);
-			pollRef.current = null;
-		}
-		if (popupRef.current && !popupRef.current.closed) {
-			popupRef.current.close();
-		}
-		popupRef.current = null;
-	};
 
 	const handlePayment = async () => {
 		setSubmitting(true);
@@ -97,31 +57,13 @@ const GiyaPayButton = ({
 					? 'https://sandbox.giyapay.com/checkout'
 					: 'https://pay.giyapay.com/checkout');
 
-			// Calculate centered popup position
-			const width = 520;
-			const height = 700;
-			const left = Math.round(window.screenX + (window.outerWidth - width) / 2);
-			const top = Math.round(window.screenY + (window.outerHeight - height) / 2);
-
-			// Open blank popup first (must be synchronous to avoid popup blocker)
-			const popup = window.open(
-				'about:blank',
-				'giyapay-checkout',
-				`width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`,
-			);
-
-			if (!popup) {
-				throw new Error('Popup was blocked. Please allow popups for this site and try again.');
-			}
-
-			popupRef.current = popup;
-			setWaitingForPayment(true);
-
-			// Build and submit the form targeting the popup
+			// Build a hidden form and submit it directly in this window.
+			// GiyaPay docs: "Request should be done on html form element. Do not use Ajax."
+			// GiyaPay will redirect back to success_callback / error_callback / cancel_callback.
 			const form = document.createElement('form');
 			form.method = 'POST';
 			form.action = checkoutUrl;
-			form.target = 'giyapay-checkout';
+			// No target — submits in the current tab so GiyaPay's redirect lands here.
 
 			const fields: Record<string, any> = {
 				success_callback: formData.success_callback,
@@ -151,20 +93,10 @@ const GiyaPayButton = ({
 
 			document.body.appendChild(form);
 			form.submit();
-			document.body.removeChild(form);
-
-			// Poll to detect if user manually closed the popup
-			pollRef.current = setInterval(() => {
-				if (popup.closed) {
-					cleanup();
-					setSubmitting(false);
-					setWaitingForPayment(false);
-				}
-			}, 800);
+			// Page navigates away — no cleanup needed.
 		} catch (error) {
 			setErrorMessage((error as Error).message);
 			setSubmitting(false);
-			setWaitingForPayment(false);
 		}
 	};
 
@@ -174,17 +106,11 @@ const GiyaPayButton = ({
 				className="w-full"
 				data-testid={dataTestId}
 				disabled={submitting}
-				loading={submitting && !waitingForPayment}
+				loading={submitting}
 				onClick={handlePayment}
 			>
-				{waitingForPayment ? 'Waiting for payment...' : 'Pay with GiyaPay'}
+				Pay with GiyaPay
 			</Button>
-
-			{waitingForPayment && (
-				<p className="text-sm text-gray-500 mt-2 text-center">
-					Complete your payment in the GiyaPay window. This page will update automatically.
-				</p>
-			)}
 
 			<ErrorMessage
 				data-testid="giyapay-payment-error-message"

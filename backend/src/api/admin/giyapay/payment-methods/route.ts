@@ -3,7 +3,7 @@ import { z } from "zod"
 
 // Validation schema for GiyaPay Gateway Direct payment methods
 const GiyaPayMethodsConfigSchema = z.object({
-  enabledMethods: z.array(z.enum(['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'])),
+  enabledMethods: z.array(z.enum(['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'])),
 })
 
 type AuthenticatedMedusaRequest = MedusaRequest & {
@@ -37,21 +37,21 @@ export async function GET(
 
       const config = await giyaPayService.getConfig()
 
-      const validMethods = ['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
-      const defaultMethods = ['MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY']
+      const validMethods = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
+      const defaultMethods = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY']
       // Filter out any deprecated methods that may be stored in DB
       const rawMethods = config?.enabledMethods || defaultMethods
       const enabledMethods = rawMethods.filter((m: string) => validMethods.includes(m))
 
       return res.status(200).json({
         enabledMethods,
-        availableMethods: validMethods
+        availableMethods: validMethods,
       })
     } catch (serviceError) {
       console.log('[GiyaPay Methods] Service not available, returning defaults')
       return res.status(200).json({
-        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
-        availableMethods: ['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
+        enabledMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
+        availableMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
       })
     }
   } catch (error) {

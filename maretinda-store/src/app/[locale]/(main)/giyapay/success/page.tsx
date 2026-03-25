@@ -8,7 +8,6 @@ function SuccessContent() {
   const router = useRouter();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [message, setMessage] = useState('Verifying your payment...');
-  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     const verifyAndCompleteOrder = async () => {
@@ -57,31 +56,13 @@ function SuccessContent() {
 
         if (data.success && data.order_id) {
           setStatus('success');
-          setOrderId(data.order_id);
           setMessage('Payment verified! Redirecting to your order...');
-
-          // If opened as a popup, notify opener window to navigate to confirmation
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-              { type: 'giyapay_success', orderId: data.order_id },
-              window.location.origin,
-            );
-          } else {
-            // Standalone page fallback
-            setTimeout(() => {
-              router.push(`/order/${data.order_id}/confirmed`);
-            }, 2000);
-          }
+          setTimeout(() => {
+            router.push(`/order/${data.order_id}/confirmed`);
+          }, 1500);
         } else {
           setStatus('error');
-          const errMsg = data.message || 'Payment verification failed. Please contact support with reference: ' + refno;
-          setMessage(errMsg);
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage(
-              { type: 'giyapay_error', message: errMsg },
-              window.location.origin,
-            );
-          }
+          setMessage(data.message || 'Payment verification failed. Please contact support with reference: ' + refno);
         }
       } catch (error) {
         console.error('Payment verification error:', error);
