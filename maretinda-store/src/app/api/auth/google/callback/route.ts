@@ -59,26 +59,27 @@ export async function GET(request: NextRequest) {
 
 		if (!callbackRes.ok) return failRedirect('auth_failed');
 
-		const { token } = await callbackRes.json();
+		let { token } = await callbackRes.json();
 		if (!token) return failRedirect('no_token');
 
-		const authHeaders = {
+		const authHeaders: Record<string, string> = {
 			Authorization: `Bearer ${token}`,
 			'Content-Type': 'application/json',
 			'x-publishable-api-key': publishableKey,
 		};
 
-		// Check if customer record exists; create it if this is a first-time login
+		// Check if customer record is already linked (token has actor_id)
 		const customerCheckRes = await fetch(
 			`${backendUrl}/store/customers/me`,
 			{ headers: authHeaders, method: 'GET' },
 		);
 
 		if (!customerCheckRes.ok) {
+			// No linked customer — try to create one (first-time Google login)
 			const payload = decodeJwtPayload(token);
 			const meta = payload?.user_metadata ?? {};
 
-			await fetch(`${backendUrl}/store/customers`, {
+			const createRes = await fetch(`${backendUrl}/store/customers`, {
 				body: JSON.stringify({
 					email: meta.email ?? '',
 					first_name: meta.given_name ?? meta.name?.split(' ')[0] ?? '',
@@ -90,9 +91,47 @@ export async function GET(request: NextRequest) {
 				headers: authHeaders,
 				method: 'POST',
 			});
+
+			if (createRes.status === 422) {
+				// Customer with this email already exists (registered via email/password).
+				// Link the Google auth identity to that existing customer.
+				const linkRes = await fetch(
+					`${backendUrl}/store/auth/link-google`,
+					{
+						headers: { Authorization: `Bearer ${token}` },
+						method: 'POST',
+					},
+				);
+
+				if (!linkRes.ok) {
+					return failRedirect('link_failed');
+				}
+
+				const linkData = await linkRes.json();
+				if (linkData.token) {
+					token = linkData.token;
+				} else {
+					return failRedirect('link_no_token');
+				}
+			} else if (!createRes.ok) {
+				return failRedirect('customer_create_failed');
+			} else {
+				// New customer created — refresh token to get one with actor_id
+				const refreshRes = await fetch(`${backendUrl}/auth/token/refresh`, {
+					headers: { Authorization: `Bearer ${token}` },
+					method: 'POST',
+				});
+
+				if (refreshRes.ok) {
+					const refreshData = await refreshRes.json();
+					if (refreshData.token) {
+						token = refreshData.token;
+					}
+				}
+			}
 		}
 
-		// Use a plain Response with Set-Cookie header so the cookie is reliably sent
+		// Set cookie and redirect to the user dashboard
 		return new Response(null, {
 			headers: {
 				'Location': `${baseUrl}/user`,

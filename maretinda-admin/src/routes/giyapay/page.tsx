@@ -11,6 +11,28 @@ import {
   toast,
 } from "@medusajs/ui";
 import { useState, useEffect } from "react";
+
+const GATEWAY_LOGOS: Record<string, string> = {
+  'MASTERCARD/VISA': 'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'VISA':            'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'MASTERCARD':      'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'GCASH':           'https://pay.giyapay.com/images/select-gcash.png',
+  'QRPH':            'https://pay.giyapay.com/images/select-qrph.png',
+  'UNIONPAY':        'https://pay.giyapay.com/images/select-unionpay.png',
+  'WECHATPAY':       'https://pay.giyapay.com/images/select-wechatpay.png',
+  'GRAB':            'https://pay.giyapay.com/images/select-grabpay.png',
+  'GRABPAY':         'https://pay.giyapay.com/images/select-grabpay.png',
+};
+
+const GatewayLogo = ({ gateway }: { gateway: string }) => {
+  const src = GATEWAY_LOGOS[(gateway || '').toUpperCase()];
+  if (src) return (
+    <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', display: 'inline-flex', alignItems: 'center', border: '1px solid #e5e7eb' }}>
+      <img src={src} alt={gateway} style={{ height: 18, width: 'auto', objectFit: 'contain' }} />
+    </div>
+  );
+  return <span className="text-sm text-ui-fg-base">{gateway || '-'}</span>;
+};
 import { useGiyaPayConfig, useUpdateGiyaPayConfig, useGiyaPayTransactions, useGiyaPayMethods, useUpdateGiyaPayMethods } from "../../hooks/api/giyapay";
 
 export const GiyaPay = () => {
@@ -250,9 +272,7 @@ export const GiyaPay = () => {
                     Accept payments via InstaPay interbank fund transfer
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-blue-800 rounded text-white text-xs font-bold">
-                  IP
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {/* Visa/Mastercard */}
@@ -271,14 +291,7 @@ export const GiyaPay = () => {
                     Accept payments via credit and debit cards
                   </Text>
                 </div>
-                <div className="flex gap-2">
-                  <div className="w-12 h-8 flex items-center justify-center bg-blue-600 rounded text-white text-xs font-bold">
-                    VISA
-                  </div>
-                  <div className="w-12 h-8 flex items-center justify-center bg-red-600 rounded text-white text-xs font-bold">
-                    MC
-                  </div>
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {/* GCash */}
@@ -297,9 +310,7 @@ export const GiyaPay = () => {
                     Accept payments via GCash e-wallet
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-blue-500 rounded text-white text-xs font-bold">
-                  G
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {/* WeChat Pay */}
@@ -318,9 +329,7 @@ export const GiyaPay = () => {
                     Accept payments via WeChat Pay
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-green-500 rounded text-white text-xs font-bold">
-                  WC
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {/* UnionPay */}
@@ -339,9 +348,7 @@ export const GiyaPay = () => {
                     Accept payments via UnionPay
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center bg-red-700 rounded text-white text-xs font-bold">
-                  UP
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {/* QR Ph */}
@@ -360,10 +367,7 @@ export const GiyaPay = () => {
                     Accept payments via QR Ph
                   </Text>
                 </div>
-                <div className="w-12 h-8 flex items-center justify-center rounded text-xs font-bold border border-gray-200" style={{ background: 'white' }}>
-                  <span style={{ color: '#EF4444' }}>QR</span>
-                  <span style={{ color: '#F59E0B' }}>Ph</span>
-                </div>
+                <div style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" style={{ height: 18, width: 'auto', objectFit: 'contain' }} /></div>
               </div>
 
               {isEditingMethods && (
@@ -422,7 +426,7 @@ export const GiyaPay = () => {
                     <Table.Cell>{transaction.order_id || '-'}</Table.Cell>
                     <Table.Cell>{formatAmount(transaction.amount, transaction.currency)}</Table.Cell>
                     <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
-                    <Table.Cell>{transaction.gateway}</Table.Cell>
+                    <Table.Cell><GatewayLogo gateway={transaction.gateway} /></Table.Cell>
                     <Table.Cell>{formatDate(transaction.created_at)}</Table.Cell>
                   </Table.Row>
                 ))}

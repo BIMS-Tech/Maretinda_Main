@@ -9,6 +9,7 @@ import {
   Table,
   Text,
   Switch,
+  Select,
   toast,
 } from "@medusajs/ui";
 import { useState, useEffect } from "react";
@@ -100,15 +101,47 @@ const useUpdateGiyaPayMethods = () => {
   return { mutateAsync, isPending };
 };
 
-const useGiyaPayTransactions = () => {
-  const [transactions, setTransactions] = useState([]);
+const STATUSES = ['SUCCESS', 'PENDING', 'FAILED', 'CANCELLED'];
+const GATEWAYS = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'PAYMAYA', 'UNIONPAY', 'GRAB', 'GRABPAY', 'QRPH', 'WECHATPAY'];
+
+const GATEWAY_LOGOS: Record<string, string> = {
+  'MASTERCARD/VISA': 'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'VISA':            'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'MASTERCARD':      'https://pay.giyapay.com/images/select-mastercard-visa.png',
+  'GCASH':           'https://pay.giyapay.com/images/select-gcash.png',
+  'QRPH':            'https://pay.giyapay.com/images/select-qrph.png',
+  'UNIONPAY':        'https://pay.giyapay.com/images/select-unionpay.png',
+  'WECHATPAY':       'https://pay.giyapay.com/images/select-wechatpay.png',
+  'GRAB':            'https://pay.giyapay.com/images/select-grabpay.png',
+  'GRABPAY':         'https://pay.giyapay.com/images/select-grabpay.png',
+};
+
+const GatewayLogo = ({ gateway }: { gateway: string }) => {
+  const key = (gateway || '').toUpperCase();
+  const src = GATEWAY_LOGOS[key];
+  if (src) {
+    return <img src={src} alt={gateway} style={{ height: 24, width: 'auto', objectFit: 'contain' }} />;
+  }
+  return <span>{gateway || '-'}</span>;
+};
+
+const useGiyaPayTransactions = (filters: Record<string, string> = {}) => {
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const refetch = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch('/admin/giyapay/transactions');
+      const params = new URLSearchParams(
+        Object.fromEntries(Object.entries(filters).filter(([, v]) => v))
+      );
+      const response = await fetch(`/admin/giyapay/transactions?${params.toString()}`);
       const data = await response.json();
       setTransactions(data.transactions || []);
+      setSummary(data.summary || null);
+      setCount(data.count || 0);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -116,11 +149,9 @@ const useGiyaPayTransactions = () => {
     }
   };
 
-  useEffect(() => {
-    refetch();
-  }, []);
+  useEffect(() => { refetch(); }, [JSON.stringify(filters)]);
 
-  return { transactions, isLoading, refetch };
+  return { transactions, summary, count, isLoading, refetch };
 };
 
 const GiyaPayConfigPage = () => {
@@ -132,8 +163,34 @@ const GiyaPayConfigPage = () => {
   const [isEditingMethods, setIsEditingMethods] = useState(false);
   const [enabledMethods, setEnabledMethods] = useState<string[]>([]);
 
+  // Transaction filters
+  const [txSearch, setTxSearch] = useState("");
+  const [txStatus, setTxStatus] = useState("");
+  const [txGateway, setTxGateway] = useState("");
+  const [txDateFrom, setTxDateFrom] = useState("");
+  const [txDateTo, setTxDateTo] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState<Record<string, string>>({});
+
+  const applyTxFilters = () => {
+    const f: Record<string, string> = {};
+    if (txSearch.trim()) f.search = txSearch.trim();
+    if (txStatus) f.status = txStatus;
+    if (txGateway) f.gateway = txGateway;
+    if (txDateFrom) f.date_from = txDateFrom;
+    if (txDateTo) f.date_to = txDateTo;
+    setAppliedFilters(f);
+  };
+
+  const clearTxFilters = () => {
+    setTxSearch(""); setTxStatus(""); setTxGateway("");
+    setTxDateFrom(""); setTxDateTo("");
+    setAppliedFilters({});
+  };
+
+  const activeFilterCount = Object.keys(appliedFilters).length;
+
   const { config, isLoading: configLoading, refetch: refetchConfig } = useGiyaPayConfig();
-  const { transactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useGiyaPayTransactions();
+  const { transactions, summary: txSummary, count: txCount, isLoading: transactionsLoading, refetch: refetchTransactions } = useGiyaPayTransactions(appliedFilters);
   const { methods, isLoading: methodsLoading, refetch: refetchMethods } = useGiyaPayMethods();
   const { mutateAsync: updateConfig, isPending: isUpdating } = useUpdateGiyaPayConfig();
   const { mutateAsync: updateMethods, isPending: isUpdatingMethods } = useUpdateGiyaPayMethods();
@@ -200,31 +257,6 @@ const GiyaPayConfigPage = () => {
         return <StatusBadge color="grey">Cancelled</StatusBadge>;
       default:
         return <StatusBadge color="grey">Unknown</StatusBadge>;
-    }
-  };
-
-  const getPaymentMethodBadge = (method: string) => {
-    const methodUpper = (method || 'GIYAPAY').toUpperCase();
-    
-    switch (methodUpper) {
-      case 'MASTERCARD/VISA':
-      case 'VISA':
-      case 'MASTERCARD':
-        return <StatusBadge color="blue">💳 Visa/MC</StatusBadge>;
-      case 'GCASH':
-        return <StatusBadge color="blue">🔵 GCash</StatusBadge>;
-      case 'INSTAPAY':
-        return <StatusBadge color="green">🏦 InstaPay</StatusBadge>;
-      case 'PAYMAYA':
-        return <StatusBadge color="green">💚 PayMaya</StatusBadge>;
-      case 'UNIONPAY':
-        return <StatusBadge color="red">🔴 UnionPay</StatusBadge>;
-      case 'GRAB':
-        return <StatusBadge color="green">🚗 Grab</StatusBadge>;
-      case 'QRPH':
-        return <StatusBadge color="orange">📱 QR Ph</StatusBadge>;
-      default:
-        return <StatusBadge color="grey">{method || 'GiyaPay'}</StatusBadge>;
     }
   };
 
@@ -455,49 +487,141 @@ const GiyaPayConfigPage = () => {
             <div>
               <Heading level="h2">Transaction History</Heading>
               <Text className="text-ui-fg-subtle" size="small">
-                All GiyaPay transactions across the marketplace. Each transaction may include orders from multiple vendors.
+                All GiyaPay transactions across the marketplace.
               </Text>
             </div>
-            <Button
-              variant="secondary"
-              onClick={() => refetchTransactions()}
-              isLoading={transactionsLoading}
-            >
+            <Button variant="secondary" onClick={() => refetchTransactions()} isLoading={transactionsLoading}>
               Refresh
             </Button>
           </div>
 
-          {transactionsLoading ? (
-            <div>Loading transactions...</div>
-          ) : transactions && transactions.length > 0 ? (
-            <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Transaction Ref</Table.HeaderCell>
-                  <Table.HeaderCell>Order ID</Table.HeaderCell>
-                  <Table.HeaderCell>Amount</Table.HeaderCell>
-                  <Table.HeaderCell>Status</Table.HeaderCell>
-                  <Table.HeaderCell>Payment Method</Table.HeaderCell>
-                  <Table.HeaderCell>Date</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {transactions.map((transaction: any) => (
-                  <Table.Row key={transaction.id}>
-                    <Table.Cell>{transaction.reference_number || '-'}</Table.Cell>
-                    <Table.Cell>{transaction.order_id || '-'}</Table.Cell>
-                    <Table.Cell>{formatAmount(transaction.amount, transaction.currency)}</Table.Cell>
-                    <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
-                    <Table.Cell>{getPaymentMethodBadge(transaction.gateway)}</Table.Cell>
-                    <Table.Cell>{formatDate(transaction.created_at)}</Table.Cell>
-                  </Table.Row>
+          {/* Summary */}
+          {txSummary && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div className="rounded-lg border px-4 py-2 bg-ui-bg-subtle">
+                <Text className="text-xs text-ui-fg-muted">Total</Text>
+                <Text className="font-semibold">{formatAmount(txSummary.total_amount)}</Text>
+                <Text className="text-xs text-ui-fg-muted">{txSummary.total_count} transactions</Text>
+              </div>
+              <div className="rounded-lg border px-4 py-2 bg-green-50">
+                <Text className="text-xs text-green-700">Success</Text>
+                <Text className="font-semibold">{txSummary.success_count}</Text>
+              </div>
+              <div className="rounded-lg border px-4 py-2 bg-orange-50">
+                <Text className="text-xs text-orange-700">Pending</Text>
+                <Text className="font-semibold">{txSummary.pending_count}</Text>
+              </div>
+              <div className="rounded-lg border px-4 py-2 bg-red-50">
+                <Text className="text-xs text-red-700">Failed</Text>
+                <Text className="font-semibold">{txSummary.failed_count}</Text>
+              </div>
+            </div>
+          )}
+
+          {/* Filter bar */}
+          <div className="flex flex-wrap gap-2 items-end mb-4">
+            <Input
+              placeholder="Search ref # / order ID / vendor"
+              value={txSearch}
+              onChange={(e) => setTxSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && applyTxFilters()}
+              className="flex-1 min-w-[200px]"
+            />
+
+            <Select value={txStatus || '_all'} onValueChange={(v) => setTxStatus(v === '_all' ? '' : v)}>
+              <Select.Trigger className="w-36">
+                <Select.Value placeholder="All statuses" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="_all">All statuses</Select.Item>
+                {STATUSES.map((s) => (
+                  <Select.Item key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</Select.Item>
                 ))}
-              </Table.Body>
-            </Table>
+              </Select.Content>
+            </Select>
+
+            <Select value={txGateway || '_all'} onValueChange={(v) => setTxGateway(v === '_all' ? '' : v)}>
+              <Select.Trigger className="w-40">
+                <Select.Value placeholder="All methods" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="_all">All methods</Select.Item>
+                {GATEWAYS.map((g) => (
+                  <Select.Item key={g} value={g}>{g}</Select.Item>
+                ))}
+              </Select.Content>
+            </Select>
+
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm focus:outline-none"
+                value={txDateFrom}
+                onChange={(e) => setTxDateFrom(e.target.value)}
+              />
+              <Text className="text-ui-fg-muted text-xs">to</Text>
+              <input
+                type="date"
+                className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm focus:outline-none"
+                value={txDateTo}
+                onChange={(e) => setTxDateTo(e.target.value)}
+              />
+            </div>
+
+            <Button size="small" onClick={applyTxFilters}>
+              Filter {activeFilterCount > 0 && `(${activeFilterCount})`}
+            </Button>
+            {activeFilterCount > 0 && (
+              <Button size="small" variant="secondary" onClick={clearTxFilters}>
+                Clear
+              </Button>
+            )}
+          </div>
+
+          {transactionsLoading ? (
+            <div className="space-y-2">
+              {[1,2,3].map(i => <div key={i} className="h-10 rounded bg-ui-bg-subtle animate-pulse" />)}
+            </div>
+          ) : transactions && transactions.length > 0 ? (
+            <>
+              <Table>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.HeaderCell>Transaction Ref</Table.HeaderCell>
+                    <Table.HeaderCell>Order ID</Table.HeaderCell>
+                    <Table.HeaderCell>Vendor</Table.HeaderCell>
+                    <Table.HeaderCell>Amount</Table.HeaderCell>
+                    <Table.HeaderCell>Status</Table.HeaderCell>
+                    <Table.HeaderCell>Payment Method</Table.HeaderCell>
+                    <Table.HeaderCell>Date</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {transactions.map((transaction: any) => (
+                    <Table.Row key={transaction.id}>
+                      <Table.Cell>{transaction.reference_number || '-'}</Table.Cell>
+                      <Table.Cell>{transaction.order_id || '-'}</Table.Cell>
+                      <Table.Cell>{transaction.vendor_name || '-'}</Table.Cell>
+                      <Table.Cell>{formatAmount(transaction.amount, transaction.currency)}</Table.Cell>
+                      <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
+                      <Table.Cell><GatewayLogo gateway={transaction.gateway} /></Table.Cell>
+                      <Table.Cell>{formatDate(transaction.created_at)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table>
+              {txCount > 20 && (
+                <Text className="text-xs text-ui-fg-muted mt-2">
+                  Showing {transactions.length} of {txCount} transactions
+                </Text>
+              )}
+            </>
           ) : (
             <div className="text-center py-8">
               <Text className="text-ui-fg-subtle">
-                No transactions found. Configure GiyaPay and start processing payments.
+                {activeFilterCount > 0
+                  ? 'No transactions match the current filters.'
+                  : 'No transactions found.'}
               </Text>
             </div>
           )}

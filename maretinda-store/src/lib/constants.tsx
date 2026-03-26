@@ -1,6 +1,5 @@
 import React from "react"
 import { Cash, CreditCard } from "@medusajs/icons"
-import Image from "next/image"
 
 // GiyaPay icon component with proper branding
 const GiyaPayIcon = () => (
@@ -36,34 +35,10 @@ const DeliveryTruckIcon = () => (
   </div>
 )
 
-// Visa icon with blue logo
-const VisaIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#1434CB"/>
-      <text x="24" y="20" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold" fontFamily="Arial">VISA</text>
-    </svg>
-  </div>
-)
-
-// GCash icon with blue circle
-const GCashIcon = () => (
-  <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-      <text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold">G</text>
-    </svg>
-  </div>
-)
-
-// InstaPay icon
-const InstaPayIcon = () => (
-  <div className="flex items-center justify-center w-12 h-10">
-    <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="32" rx="4" fill="#10B981"/>
-      <text x="24" y="14" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial">Insta</text>
-      <text x="24" y="22" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial">Pay</text>
-    </svg>
-  </div>
+const GiyaPayMethodIcon = ({ src, alt }: { src: string; alt: string }) => (
+  <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}>
+    <img src={src} alt={alt} style={{ height: 24, width: 'auto', objectFit: 'contain' }} />
+  </span>
 )
 
 
@@ -104,17 +79,37 @@ export const paymentInfoMap: Record<
     title: "GiyaPay",
     icon: <GiyaPayIcon />,
   },
+  "pp_giyapay_mastercard_visa": {
+    title: "Visa / Mastercard",
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" />,
+  },
   "pp_giyapay_visa": {
     title: "VISA",
-    icon: <VisaIcon />,
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="VISA" />,
   },
   "pp_giyapay_gcash": {
     title: "GCash",
-    icon: <GCashIcon />,
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" />,
   },
   "pp_giyapay_instapay": {
     title: "InstaPay",
-    icon: <InstaPayIcon />,
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" />,
+  },
+  "pp_giyapay_qrph": {
+    title: "QR Ph",
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" />,
+  },
+  "pp_giyapay_unionpay": {
+    title: "UnionPay",
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" />,
+  },
+  "pp_giyapay_wechatpay": {
+    title: "WeChat Pay",
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" />,
+  },
+  "pp_giyapay_grabpay": {
+    title: "GrabPay",
+    icon: <GiyaPayMethodIcon src="https://pay.giyapay.com/images/select-grabpay.png" alt="GrabPay" />,
   },
   // Add more payment providers here
 }

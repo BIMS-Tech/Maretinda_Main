@@ -22,70 +22,27 @@ import PaymentContainer, {
 const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
 	'INSTAPAY': {
 		title: 'InstaPay',
-		icon: (
-			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="48" height="32" rx="4" fill="#0033A0"/>
-					<text x="24" y="21" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">InstaPay</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'MASTERCARD/VISA': {
 		title: 'Visa / Mastercard',
-		icon: (
-			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="48" height="32" rx="4" fill="#1434CB"/>
-					<text x="24" y="20" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">VISA</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'GCASH': {
 		title: 'GCash',
-		icon: (
-			<div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-full">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-					<circle cx="12" cy="12" r="9" stroke="white" strokeWidth="1.5" fill="none"/>
-					<text x="12" y="16" textAnchor="middle" fontSize="10" fontWeight="bold" fontFamily="Arial, sans-serif">G</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'QRPH': {
 		title: 'QR Ph',
-		icon: (
-			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="48" height="32" rx="4" fill="white" stroke="#E5E7EB" strokeWidth="1"/>
-					<text x="16" y="20" textAnchor="middle" fontSize="9" fill="#EF4444" fontWeight="bold" fontFamily="Arial, sans-serif">QR</text>
-					<text x="32" y="20" textAnchor="middle" fontSize="9" fill="#F59E0B" fontWeight="bold" fontFamily="Arial, sans-serif">Ph</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'WECHATPAY': {
 		title: 'WeChat Pay',
-		icon: (
-			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="48" height="32" rx="4" fill="#07C160"/>
-					<text x="24" y="21" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">WeChat</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'UNIONPAY': {
 		title: 'UnionPay',
-		icon: (
-			<div className="flex items-center justify-center" style={{ width: '48px', height: '32px' }}>
-				<svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<rect width="48" height="32" rx="4" fill="#C0153E"/>
-					<text x="24" y="21" textAnchor="middle" fontSize="7" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">UnionPay</text>
-				</svg>
-			</div>
-		),
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 };
 
