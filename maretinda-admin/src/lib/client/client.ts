@@ -5,7 +5,9 @@ export const backendUrl = __BACKEND_URL__ ?? "/";
 export const sdk = new Medusa({
   baseUrl: backendUrl,
   auth: {
-    type: "session",
+    type: "jwt",
+    jwtTokenStorageKey: "medusa_admin_jwt",
+    jwtTokenStorageMethod: "local",
   },
 });
 
