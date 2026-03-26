@@ -28,7 +28,7 @@ export const ShippingProfileListTable = () => {
   const filters = useShippingProfileTableFilters()
 
   const { table } = useDataTable({
-    data: (shipping_profiles ?? []).map((profile) => profile.shipping_profile),
+    data: shipping_profiles ?? [],
     columns,
     count,
     enablePagination: true,

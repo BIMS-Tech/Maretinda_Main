@@ -1,19 +1,38 @@
-import { Container, Heading, Text, Button, Select, Badge } from "@medusajs/ui"
-import { ChartPie, ArrowUpRightOnBox, CalendarMini, TriangleRightMini } from "@medusajs/icons"
+import { Container, Heading, Text, Select } from "@medusajs/ui"
+import { ChartPie, TriangleRightMini } from "@medusajs/icons"
 import { useState } from "react"
-import { useShippingAnalytics, useExportAnalytics } from "../../../hooks/api/shipping"
+import { useShippingAnalytics } from "../../../hooks/api/shipping"
+
+const PERIOD_LABELS: Record<string, string> = {
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  "90d": "Last 90 days",
+  "1y": "Last year",
+}
+
+const PROVIDER_NAMES: Record<string, string> = {
+  ninjavan: "Ninja Van",
+  jnt: "J&T Express",
+  lalamove: "Lalamove",
+}
 
 export const ShippingAnalytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("30d")
-  const [selectedProvider, setSelectedProvider] = useState<string>("")
-  
-  const { data: analytics, isLoading, isError } = useShippingAnalytics(selectedPeriod, selectedProvider)
-  const { mutateAsync: exportAnalytics, isPending: isExporting } = useExportAnalytics()
+
+  const { data: analytics, isLoading, isError } = useShippingAnalytics(selectedPeriod)
 
   if (isLoading) {
     return (
       <Container className="p-6">
-        <Text>Loading shipping analytics...</Text>
+        <div className="flex items-center gap-3">
+          <ChartPie className="h-5 w-5 text-ui-fg-subtle" />
+          <Heading level="h2">Shipping Analytics</Heading>
+        </div>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-lg border bg-ui-bg-subtle animate-pulse h-24" />
+          ))}
+        </div>
       </Container>
     )
   }
@@ -26,173 +45,239 @@ export const ShippingAnalytics = () => {
     )
   }
 
-  const handleExport = async (format: string) => {
-    try {
-      await exportAnalytics({
-        action: 'export-analytics',
-        format,
-        filters: { period: selectedPeriod, provider_id: selectedProvider }
-      })
-    } catch (error) {
-      console.error('Export failed:', error)
-    }
-  }
+  const {
+    totalOrders,
+    successfulDeliveries,
+    failedDeliveries,
+    cancelledOrders,
+    successRate,
+    totalCost,
+    averageCostPerOrder,
+  } = analytics.analytics
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-    }).format(amount)
-  }
+  const inTransitOrders = Math.max(
+    0,
+    totalOrders - successfulDeliveries - failedDeliveries - cancelledOrders
+  )
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount)
 
   const getSuccessRateColor = (rate: number) => {
-    if (rate >= 95) return "text-green-600 bg-green-100"
-    if (rate >= 90) return "text-yellow-600 bg-yellow-100"
-    return "text-red-600 bg-red-100"
+    if (rate >= 95) return "text-ui-tag-green-text bg-ui-tag-green-bg"
+    if (rate >= 80) return "text-ui-tag-orange-text bg-ui-tag-orange-bg"
+    return "text-ui-tag-red-text bg-ui-tag-red-bg"
   }
+
+  const getProviderRateColor = (rate: number) => {
+    if (rate >= 95) return "text-ui-tag-green-text"
+    if (rate >= 80) return "text-ui-tag-orange-text"
+    return "text-ui-tag-red-text"
+  }
+
+  const hasOrders = totalOrders > 0
+  const hasProviders = analytics.providerComparison.providers.length > 0
 
   return (
     <Container className="p-0">
-      <div className="flex items-center justify-between p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-5">
         <div className="flex items-center gap-3">
           <ChartPie className="h-5 w-5 text-ui-fg-subtle" />
-          <Heading level="h2">Shipping Analytics</Heading>
+          <div>
+            <Heading level="h2">Shipping Analytics</Heading>
+            <Text className="text-xs text-ui-fg-muted mt-0.5">{PERIOD_LABELS[selectedPeriod]}</Text>
+          </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <Select.Trigger className="w-32">
-              <Select.Value />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Item value="7d">Last 7 days</Select.Item>
-              <Select.Item value="30d">Last 30 days</Select.Item>
-              <Select.Item value="90d">Last 90 days</Select.Item>
-              <Select.Item value="1y">Last year</Select.Item>
-            </Select.Content>
-          </Select>
 
-          <Button 
-            size="small" 
-            variant="secondary"
-            onClick={() => handleExport('csv')}
-            isLoading={isExporting}
-          >
-            <ArrowUpRightOnBox className="h-4 w-4" />
-            Export
-          </Button>
-        </div>
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <Select.Trigger className="w-36">
+            <Select.Value />
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="7d">Last 7 days</Select.Item>
+            <Select.Item value="30d">Last 30 days</Select.Item>
+            <Select.Item value="90d">Last 90 days</Select.Item>
+            <Select.Item value="1y">Last year</Select.Item>
+          </Select.Content>
+        </Select>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="border-t border-ui-border-base p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="p-4 rounded-lg border bg-ui-bg-base">
-            <div className="flex items-center justify-between mb-2">
-              <Text className="font-semibold text-sm">Total Orders</Text>
-              <TriangleRightMini className="h-4 w-4 text-green-600" />
-            </div>
-            <Text className="text-2xl font-bold text-ui-fg-base">
-              {analytics.analytics.totalOrders}
-            </Text>
-            <Text className="text-xs text-ui-fg-muted">
-              {analytics.period} period
+      <div className="border-t border-ui-border-base px-6 pb-6 pt-5 flex flex-col gap-6">
+
+        {/* Empty state */}
+        {!hasOrders && (
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+            <ChartPie className="h-10 w-10 text-ui-fg-muted" />
+            <Text className="font-medium text-ui-fg-base">No shipping data yet</Text>
+            <Text className="text-sm text-ui-fg-muted max-w-xs">
+              Create your first shipment to start seeing analytics for the {PERIOD_LABELS[selectedPeriod].toLowerCase()} period.
             </Text>
           </div>
+        )}
 
-          <div className="p-4 rounded-lg border bg-ui-bg-base">
-            <div className="flex items-center justify-between mb-2">
-              <Text className="font-semibold text-sm">Success Rate</Text>
-              <div className={`px-2 py-1 rounded text-xs font-medium ${getSuccessRateColor(analytics.analytics.successRate)}`}>
-                {analytics.analytics.successRate}%
+        {/* Metric cards — only when there are orders */}
+        {hasOrders && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Orders */}
+            <div className="p-4 rounded-lg border border-ui-border-base bg-ui-bg-base flex flex-col gap-1">
+              <Text className="text-xs font-medium text-ui-fg-subtle uppercase tracking-wide">Total Orders</Text>
+              <Text className="text-2xl font-bold text-ui-fg-base">{totalOrders}</Text>
+              <Text className="text-xs text-ui-fg-muted">
+                {inTransitOrders > 0 ? `${inTransitOrders} in transit` : "All resolved"}
+              </Text>
+            </div>
+
+            {/* Delivered */}
+            <div className="p-4 rounded-lg border border-ui-border-base bg-ui-bg-base flex flex-col gap-1">
+              <div className="flex items-center justify-between">
+                <Text className="text-xs font-medium text-ui-fg-subtle uppercase tracking-wide">Delivered</Text>
+                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getSuccessRateColor(successRate)}`}>
+                  {successRate}%
+                </span>
               </div>
+              <Text className="text-2xl font-bold text-ui-fg-base">{successfulDeliveries}</Text>
+              <Text className="text-xs text-ui-fg-muted">of {totalOrders} orders</Text>
             </div>
-            <Text className="text-lg font-bold text-ui-fg-base">
-              {analytics.analytics.successfulDeliveries}/{analytics.analytics.totalOrders}
-            </Text>
-            <Text className="text-xs text-ui-fg-muted">
-              Successful deliveries
-            </Text>
-          </div>
 
-          <div className="p-4 rounded-lg border bg-ui-bg-base">
-            <div className="flex items-center justify-between mb-2">
-              <Text className="font-semibold text-sm">Total Shipping Cost</Text>
+            {/* Failed / Cancelled */}
+            <div className="p-4 rounded-lg border border-ui-border-base bg-ui-bg-base flex flex-col gap-1">
+              <Text className="text-xs font-medium text-ui-fg-subtle uppercase tracking-wide">Issues</Text>
+              <Text className="text-2xl font-bold text-ui-fg-base">{failedDeliveries + cancelledOrders}</Text>
+              <Text className="text-xs text-ui-fg-muted">
+                {failedDeliveries} failed · {cancelledOrders} cancelled
+              </Text>
             </div>
-            <Text className="text-2xl font-bold text-ui-fg-base">
-              {formatCurrency(analytics.analytics.totalCost)}
-            </Text>
-            <Text className="text-xs text-ui-fg-muted">
-              Avg: {formatCurrency(analytics.analytics.averageCostPerOrder)}
-            </Text>
-          </div>
 
-          <div className="p-4 rounded-lg border bg-ui-bg-base">
-            <div className="flex items-center justify-between mb-2">
-              <Text className="font-semibold text-sm">Avg Delivery Time</Text>
+            {/* Cost */}
+            <div className="p-4 rounded-lg border border-ui-border-base bg-ui-bg-base flex flex-col gap-1">
+              <Text className="text-xs font-medium text-ui-fg-subtle uppercase tracking-wide">Shipping Cost</Text>
+              <Text className="text-2xl font-bold text-ui-fg-base">{formatCurrency(totalCost)}</Text>
+              <Text className="text-xs text-ui-fg-muted">
+                avg {formatCurrency(averageCostPerOrder)} / order
+              </Text>
             </div>
-            <Text className="text-2xl font-bold text-ui-fg-base">
-              {Math.floor(analytics.analytics.averageDeliveryTime / 60)}h {analytics.analytics.averageDeliveryTime % 60}m
-            </Text>
-            <Text className="text-xs text-ui-fg-muted">
-              On-time rate: {analytics.analytics.onTimeDeliveryRate}%
-            </Text>
           </div>
-        </div>
+        )}
 
-        {/* Provider Comparison */}
-        <div className="mb-6">
-          <Heading level="h3" className="mb-4">Provider Performance</Heading>
-          <div className="space-y-3">
-            {analytics.providerComparison.providers.map((provider: any) => (
-              <div key={provider.providerId} className="flex items-center justify-between p-3 rounded border">
-                <div className="flex items-center gap-3">
-                  <Text className="font-medium">{provider.providerId.toUpperCase()}</Text>
-                  <Badge size="small" variant="neutral">
-                    {provider.orders} orders
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="text-right">
-                    <Text className="font-medium">{formatCurrency(provider.cost)}</Text>
-                    <Text className="text-xs text-ui-fg-muted">Total cost</Text>
-                  </div>
-                  
-                  <div className="text-right">
-                    <Text className={`font-medium ${getSuccessRateColor(provider.successRate).includes('green') ? 'text-green-600' : provider.successRate >= 90 ? 'text-yellow-600' : 'text-red-600'}`}>
-                      {provider.successRate}%
-                    </Text>
-                    <Text className="text-xs text-ui-fg-muted">Success rate</Text>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {/* Status breakdown bar — only when there are orders */}
+        {hasOrders && (
+          <div>
+            <Text className="text-sm font-medium text-ui-fg-base mb-2">Order Status Breakdown</Text>
+            <div className="flex rounded-full overflow-hidden h-3 gap-px bg-ui-bg-subtle">
+              {successfulDeliveries > 0 && (
+                <div
+                  className="bg-ui-tag-green-bg h-full"
+                  style={{ width: `${(successfulDeliveries / totalOrders) * 100}%` }}
+                  title={`Delivered: ${successfulDeliveries}`}
+                />
+              )}
+              {inTransitOrders > 0 && (
+                <div
+                  className="bg-ui-tag-blue-bg h-full"
+                  style={{ width: `${(inTransitOrders / totalOrders) * 100}%` }}
+                  title={`In transit: ${inTransitOrders}`}
+                />
+              )}
+              {failedDeliveries > 0 && (
+                <div
+                  className="bg-ui-tag-red-bg h-full"
+                  style={{ width: `${(failedDeliveries / totalOrders) * 100}%` }}
+                  title={`Failed: ${failedDeliveries}`}
+                />
+              )}
+              {cancelledOrders > 0 && (
+                <div
+                  className="bg-ui-tag-orange-bg h-full"
+                  style={{ width: `${(cancelledOrders / totalOrders) * 100}%` }}
+                  title={`Cancelled: ${cancelledOrders}`}
+                />
+              )}
+            </div>
+            <div className="flex flex-wrap gap-4 mt-2">
+              <span className="flex items-center gap-1.5 text-xs text-ui-fg-muted">
+                <span className="w-2 h-2 rounded-full bg-ui-tag-green-bg border border-ui-tag-green-border" />
+                Delivered ({successfulDeliveries})
+              </span>
+              {inTransitOrders > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-ui-fg-muted">
+                  <span className="w-2 h-2 rounded-full bg-ui-tag-blue-bg border border-ui-tag-blue-border" />
+                  In transit ({inTransitOrders})
+                </span>
+              )}
+              {failedDeliveries > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-ui-fg-muted">
+                  <span className="w-2 h-2 rounded-full bg-ui-tag-red-bg border border-ui-tag-red-border" />
+                  Failed ({failedDeliveries})
+                </span>
+              )}
+              {cancelledOrders > 0 && (
+                <span className="flex items-center gap-1.5 text-xs text-ui-fg-muted">
+                  <span className="w-2 h-2 rounded-full bg-ui-tag-orange-bg border border-ui-tag-orange-border" />
+                  Cancelled ({cancelledOrders})
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Optimization Tips */}
+        {/* Provider comparison */}
         <div>
-          <Heading level="h3" className="mb-4">Cost Optimization</Heading>
-          <div className="p-4 rounded-lg border bg-blue-50 border-blue-200">
-            <div className="flex items-start gap-3">
-              <TriangleRightMini className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <Text className="font-medium text-blue-900 mb-2">Potential Savings Available</Text>
-                <Text className="text-sm text-blue-800 mb-3">
-                  You could save up to {formatCurrency(analytics.optimization.potentialSavings)} per month by optimizing your shipping strategy.
-                </Text>
-                <div className="space-y-1">
+          <Heading level="h3" className="mb-3">Provider Performance</Heading>
+          {!hasProviders ? (
+            <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-5 text-center">
+              <Text className="text-sm text-ui-fg-muted">No provider data for this period</Text>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {analytics.providerComparison.providers.map((provider: any) => (
+                <div
+                  key={provider.providerId}
+                  className="flex items-center justify-between p-3 rounded-lg border border-ui-border-base bg-ui-bg-base"
+                >
+                  <div>
+                    <Text className="font-medium text-ui-fg-base text-sm">
+                      {PROVIDER_NAMES[provider.providerId] ?? provider.providerId}
+                    </Text>
+                    <Text className="text-xs text-ui-fg-muted">{provider.orders} orders</Text>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <Text className="text-sm font-medium text-ui-fg-base">{formatCurrency(provider.cost)}</Text>
+                      <Text className="text-xs text-ui-fg-muted">Total cost</Text>
+                    </div>
+                    <div className="text-right min-w-[60px]">
+                      <Text className={`text-sm font-semibold ${getProviderRateColor(provider.successRate)}`}>
+                        {provider.successRate}%
+                      </Text>
+                      <Text className="text-xs text-ui-fg-muted">Success</Text>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Optimization tips */}
+        {analytics.optimization.tips.length > 0 && (
+          <div>
+            <Heading level="h3" className="mb-3">Tips</Heading>
+            <div className="p-4 rounded-lg border border-ui-tag-blue-border bg-ui-tag-blue-bg">
+              <div className="flex items-start gap-3">
+                <TriangleRightMini className="h-4 w-4 text-ui-tag-blue-text flex-shrink-0 mt-0.5" />
+                <div className="flex flex-col gap-1">
                   {analytics.optimization.tips.map((tip: string, index: number) => (
-                    <Text key={index} className="text-xs text-blue-700">
-                      • {tip}
+                    <Text key={index} className="text-sm text-ui-fg-subtle">
+                      {tip}
                     </Text>
                   ))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </Container>
   )
