@@ -8,9 +8,13 @@ import {
   Table,
   Text,
   Switch,
+  Select,
   toast,
 } from "@medusajs/ui";
 import { useState, useEffect } from "react";
+
+const STATUSES = ['SUCCESS', 'PENDING', 'FAILED', 'CANCELLED'];
+const GATEWAYS = ['MASTERCARD/VISA', 'GCASH', 'INSTAPAY', 'UNIONPAY', 'GRAB', 'GRABPAY', 'QRPH', 'WECHATPAY'];
 
 const GATEWAY_LOGOS: Record<string, string> = {
   'MASTERCARD/VISA': 'https://pay.giyapay.com/images/select-mastercard-visa.png',
@@ -38,15 +42,50 @@ import { useGiyaPayConfig, useUpdateGiyaPayConfig, useGiyaPayTransactions, useGi
 export const GiyaPay = () => {
   const [merchantId, setMerchantId] = useState("");
   const [merchantSecret, setMerchantSecret] = useState("");
-  const [sandboxMode, setSandboxMode] = useState(false); // Default to live mode
-  const [isEnabled, setIsEnabled] = useState(true); // Always enabled
+  const [sandboxMode, setSandboxMode] = useState(false);
+  const [isEnabled, setIsEnabled] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMethods, setIsEditingMethods] = useState(false);
   const [enabledMethods, setEnabledMethods] = useState<string[]>([]);
 
+  // Filter state (pending / committed)
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [gatewayFilter, setGatewayFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [page, setPage] = useState(1);
+  const [appliedQuery, setAppliedQuery] = useState<Record<string, string | number>>({ page: 1, limit: 20 });
+
   const { config, isLoading: configLoading, refetch: refetchConfig } = useGiyaPayConfig();
-  const { transactions, isLoading: transactionsLoading, refetch: refetchTransactions } = useGiyaPayTransactions();
+  const { transactions, summary, count, isLoading: transactionsLoading, refetch: refetchTransactions } = useGiyaPayTransactions(appliedQuery) as any;
   const { enabledMethods: methods, isLoading: methodsLoading, refetch: refetchMethods } = useGiyaPayMethods();
+
+  const totalPages = Math.ceil(((count as number) || 0) / 20);
+
+  const applyFilters = () => {
+    const q: Record<string, string | number> = { page: 1, limit: 20 };
+    if (search.trim()) q.search = search.trim();
+    if (statusFilter) q.status = statusFilter;
+    if (gatewayFilter) q.gateway = gatewayFilter;
+    if (dateFrom) q.date_from = dateFrom;
+    if (dateTo) q.date_to = dateTo;
+    setPage(1);
+    setAppliedQuery(q);
+  };
+
+  const clearFilters = () => {
+    setSearch(""); setStatusFilter(""); setGatewayFilter(""); setDateFrom(""); setDateTo("");
+    setPage(1);
+    setAppliedQuery({ page: 1, limit: 20 });
+  };
+
+  const goToPage = (p: number) => {
+    setPage(p);
+    setAppliedQuery(prev => ({ ...prev, page: p }));
+  };
+
+  const activeFilterCount = [appliedQuery.search, appliedQuery.status, appliedQuery.gateway, appliedQuery.date_from, appliedQuery.date_to].filter(Boolean).length;
   const { mutateAsync: updateConfig, isPending: isUpdating } = useUpdateGiyaPayConfig();
   const { mutateAsync: updateMethods, isPending: isUpdatingMethods } = useUpdateGiyaPayMethods();
 
@@ -393,52 +432,159 @@ export const GiyaPay = () => {
 
       {/* Transactions Section */}
       <div>
-        <Container className="p-6">
-          <div className="flex items-center justify-between mb-4">
+        <Container className="p-0 divide-y">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4">
             <Heading level="h2">Transaction History</Heading>
-            <Button
-              variant="secondary"
-              onClick={() => refetchTransactions()}
-              isLoading={transactionsLoading}
-            >
+            <Button variant="secondary" size="small" onClick={() => refetchTransactions()} isLoading={transactionsLoading}>
               Refresh
             </Button>
           </div>
 
-          {transactionsLoading ? (
-            <div>Loading transactions...</div>
-          ) : transactions && transactions.length > 0 ? (
-            <Table>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Transaction Ref</Table.HeaderCell>
-                  <Table.HeaderCell>Order ID</Table.HeaderCell>
-                  <Table.HeaderCell>Amount</Table.HeaderCell>
-                  <Table.HeaderCell>Status</Table.HeaderCell>
-                  <Table.HeaderCell>Payment Method</Table.HeaderCell>
-                  <Table.HeaderCell>Date</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {transactions.map((transaction: any) => (
-                  <Table.Row key={transaction.id}>
-                    <Table.Cell>{transaction.reference_number || '-'}</Table.Cell>
-                    <Table.Cell>{transaction.order_id || '-'}</Table.Cell>
-                    <Table.Cell>{formatAmount(transaction.amount, transaction.currency)}</Table.Cell>
-                    <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
-                    <Table.Cell><GatewayLogo gateway={transaction.gateway} /></Table.Cell>
-                    <Table.Cell>{formatDate(transaction.created_at)}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          ) : (
-            <div className="text-center py-8">
-              <Text className="text-ui-fg-subtle">
-                No transactions found. Configure GiyaPay and start processing payments.
-              </Text>
+          {/* Summary bar */}
+          {summary && (
+            <div className="px-6 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle px-4 py-2">
+                <Text className="text-xs text-ui-fg-muted">Total</Text>
+                <Text className="font-semibold text-ui-fg-base">{formatAmount(summary.total_amount)}</Text>
+                <Text className="text-xs text-ui-fg-muted">{summary.total_count} transactions</Text>
+              </div>
+              <div className="rounded-lg border border-ui-tag-green-border bg-ui-tag-green-bg px-4 py-2">
+                <Text className="text-xs text-ui-tag-green-text">Success</Text>
+                <Text className="font-semibold text-ui-fg-base">{summary.success_count}</Text>
+              </div>
+              <div className="rounded-lg border border-ui-tag-orange-border bg-ui-tag-orange-bg px-4 py-2">
+                <Text className="text-xs text-ui-tag-orange-text">Pending</Text>
+                <Text className="font-semibold text-ui-fg-base">{summary.pending_count}</Text>
+              </div>
+              <div className="rounded-lg border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-2">
+                <Text className="text-xs text-ui-tag-red-text">Failed</Text>
+                <Text className="font-semibold text-ui-fg-base">{summary.failed_count}</Text>
+              </div>
             </div>
           )}
+
+          {/* Filter bar */}
+          <div className="px-6 py-4 flex flex-wrap gap-2 items-end">
+            <div className="flex-1 min-w-[180px]">
+              <Input
+                placeholder="Search ref # or order ID"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
+              />
+            </div>
+
+            <Select value={statusFilter || '_all'} onValueChange={(v) => setStatusFilter(v === '_all' ? '' : v)}>
+              <Select.Trigger className="w-36">
+                <Select.Value placeholder="All statuses" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="_all">All statuses</Select.Item>
+                {STATUSES.map(s => (
+                  <Select.Item key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</Select.Item>
+                ))}
+              </Select.Content>
+            </Select>
+
+            <Select value={gatewayFilter || '_all'} onValueChange={(v) => setGatewayFilter(v === '_all' ? '' : v)}>
+              <Select.Trigger className="w-40">
+                <Select.Value placeholder="All methods" />
+              </Select.Trigger>
+              <Select.Content>
+                <Select.Item value="_all">All methods</Select.Item>
+                {GATEWAYS.map(g => (
+                  <Select.Item key={g} value={g}>{g}</Select.Item>
+                ))}
+              </Select.Content>
+            </Select>
+
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-ui-border-interactive"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+              />
+              <Text className="text-ui-fg-muted text-xs">to</Text>
+              <input
+                type="date"
+                className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-ui-border-interactive"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <Button size="small" onClick={applyFilters}>
+                Filter{activeFilterCount > 0 && ` (${activeFilterCount})`}
+              </Button>
+              {activeFilterCount > 0 && (
+                <Button size="small" variant="secondary" onClick={clearFilters}>
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="px-6 py-4">
+            {transactionsLoading ? (
+              <div className="space-y-2">
+                {[1,2,3,4,5].map(i => <div key={i} className="h-10 rounded bg-ui-bg-subtle animate-pulse" />)}
+              </div>
+            ) : transactions && transactions.length > 0 ? (
+              <>
+                <Table>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell>Transaction Ref</Table.HeaderCell>
+                      <Table.HeaderCell>Order ID</Table.HeaderCell>
+                      <Table.HeaderCell>Amount</Table.HeaderCell>
+                      <Table.HeaderCell>Status</Table.HeaderCell>
+                      <Table.HeaderCell>Payment Method</Table.HeaderCell>
+                      <Table.HeaderCell>Date</Table.HeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {transactions.map((transaction: any) => (
+                      <Table.Row key={transaction.id}>
+                        <Table.Cell><span className="font-mono text-sm">{transaction.reference_number || '-'}</span></Table.Cell>
+                        <Table.Cell><span className="font-mono text-sm">{transaction.order_id || '-'}</span></Table.Cell>
+                        <Table.Cell><span className="font-semibold">{formatAmount(transaction.amount, transaction.currency)}</span></Table.Cell>
+                        <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
+                        <Table.Cell><GatewayLogo gateway={transaction.gateway} /></Table.Cell>
+                        <Table.Cell>{formatDate(transaction.created_at)}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-4">
+                    <Text className="text-xs text-ui-fg-muted">
+                      Page {page} of {totalPages} · {count} total
+                    </Text>
+                    <div className="flex gap-2">
+                      <Button size="small" variant="secondary" onClick={() => goToPage(page - 1)} disabled={page <= 1}>Previous</Button>
+                      <Button size="small" variant="secondary" onClick={() => goToPage(page + 1)} disabled={page >= totalPages}>Next</Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <Text className="text-ui-fg-subtle">
+                  {activeFilterCount > 0
+                    ? 'No transactions match your filters. Try adjusting or clearing them.'
+                    : 'No transactions found. Configure GiyaPay and start processing payments.'}
+                </Text>
+                {activeFilterCount > 0 && (
+                  <Button size="small" variant="secondary" className="mt-3" onClick={clearFilters}>Clear filters</Button>
+                )}
+              </div>
+            )}
+          </div>
         </Container>
       </div>
     </Container>
