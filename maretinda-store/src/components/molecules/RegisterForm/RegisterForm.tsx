@@ -12,7 +12,6 @@ import {
 	useFormContext,
 } from 'react-hook-form';
 
-import { Checkbox } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { validatePassword } from '@/components/cells/PasswordValidator/PasswordValidator';
 import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
@@ -114,6 +113,7 @@ const Form = () => {
 	const password = watch('password') ?? '';
 	const passwordStrength = validatePassword(password);
 	const showStrength = password.length > 0;
+	const termsChecked = watch('terms');
 
 	const isLoading = isSubmitting || isGoogleLoading;
 
@@ -315,12 +315,24 @@ const Form = () => {
 
 							{/* Terms */}
 							<div className="flex flex-col gap-1">
-								<Checkbox
-									checked={watch('terms')}
-									label=""
-									labelClassName="flex items-start gap-2 text-sm text-gray-600 cursor-pointer w-fit"
-									{...register('terms')}
-								>
+								<label className="flex items-start gap-2 text-sm text-gray-600 cursor-pointer w-fit">
+									<span className="relative flex-shrink-0 mt-0.5">
+										<span
+											className={`flex items-center justify-center w-5 h-5 rounded border transition-colors ${termsChecked ? 'bg-gray-900 border-gray-900' : 'bg-white border-gray-300'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+										>
+											{termsChecked && (
+												<svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+													<path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+												</svg>
+											)}
+										</span>
+										<input
+											className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+											disabled={isLoading}
+											type="checkbox"
+											{...register('terms')}
+										/>
+									</span>
 									<span>
 										I agree to the{' '}
 										<Link
@@ -337,9 +349,9 @@ const Form = () => {
 											Privacy Policy
 										</Link>
 									</span>
-								</Checkbox>
+								</label>
 								{errors.terms && (
-									<p className="text-xs text-red-500 ml-6">
+									<p className="text-xs text-red-500 ml-7">
 										{errors.terms.message as string}
 									</p>
 								)}
