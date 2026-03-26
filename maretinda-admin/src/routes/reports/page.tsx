@@ -35,6 +35,14 @@ interface Report {
   created_at: string
 }
 
+const authHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('medusa_admin_jwt')
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 const ReportsPage = () => {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,10 +54,7 @@ const ReportsPage = () => {
     try {
       setLoading(true)
       const response = await fetch(`${__BACKEND_URL__}/admin/reports`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: authHeaders(),
       })
       
       if (!response.ok) {
@@ -85,7 +90,7 @@ const ReportsPage = () => {
   const handleDownload = async (report: Report) => {
     try {
       const response = await fetch(`${__BACKEND_URL__}${report.download_url}`, {
-        credentials: 'include'
+        headers: authHeaders(),
       })
       
       if (!response.ok) {
@@ -119,10 +124,7 @@ const ReportsPage = () => {
         : `${__BACKEND_URL__}/admin/dft/${report.id}`
 
       const response = await fetch(endpoint, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: authHeaders(),
       })
 
       if (!response.ok) {
@@ -135,7 +137,7 @@ const ReportsPage = () => {
       // If file preview is not available on disk, fetch from download endpoint
       if (!preview) {
         const downloadResponse = await fetch(`${__BACKEND_URL__}${report.download_url}`, {
-          credentials: 'include'
+          headers: authHeaders(),
         })
         if (downloadResponse.ok) {
           const text = await downloadResponse.text()
@@ -161,10 +163,7 @@ const ReportsPage = () => {
 
       const response = await fetch(endpoint, {
         method: 'DELETE',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: authHeaders(),
       })
 
       if (!response.ok) {
@@ -203,10 +202,7 @@ const ReportsPage = () => {
         
         return fetch(endpoint, {
           method: 'DELETE',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: authHeaders(),
         })
       })
 
@@ -277,11 +273,8 @@ const ReportsPage = () => {
       setGenerating(true)
       const response = await fetch(`${__BACKEND_URL__}/admin/settlement/generate`, {
         method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
+        headers: authHeaders(),
+        body: JSON.stringify({}),
       })
       
       const data = await response.json()
