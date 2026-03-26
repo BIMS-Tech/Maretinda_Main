@@ -11,12 +11,29 @@ type GiyaPayButtonProps = {
 	'data-testid'?: string;
 };
 
+const METHOD_LABELS: Record<string, string> = {
+	GCASH: 'GCash',
+	'MASTERCARD/VISA': 'Visa / Mastercard',
+	INSTAPAY: 'InstaPay',
+	PAYMAYA: 'PayMaya',
+	QRPH: 'QR Ph',
+	WECHATPAY: 'WeChat Pay',
+	UNIONPAY: 'UnionPay',
+};
+
 const GiyaPayButton = ({
 	cart,
 	'data-testid': dataTestId,
 }: GiyaPayButtonProps) => {
 	const [submitting, setSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const selectedMethod =
+		typeof window !== 'undefined'
+			? localStorage.getItem('giyapay_selected_method')
+			: null;
+	const buttonLabel = selectedMethod
+		? `Pay with ${METHOD_LABELS[selectedMethod] || selectedMethod}`
+		: 'Pay with GiyaPay';
 
 	const handlePayment = async () => {
 		setSubmitting(true);
@@ -109,7 +126,7 @@ const GiyaPayButton = ({
 				loading={submitting}
 				onClick={handlePayment}
 			>
-				Pay with GiyaPay
+				{buttonLabel}
 			</Button>
 
 			<ErrorMessage
