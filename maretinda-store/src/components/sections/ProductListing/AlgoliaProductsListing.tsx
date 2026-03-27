@@ -57,7 +57,7 @@ export const AlgoliaProductsListing = ({
 		? `seller.handle:${seller_handle} AND `
 		: '';
 
-	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${currencyFilter}${
+	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED${currencyFilter}${
 		category_id
 			? ` AND categories.id:${category_id}${
 					collection_id !== undefined
@@ -97,8 +97,6 @@ const ProductsListing = ({
 		items: [
 			{ label: 'Default', value: 'products' },
 			{ label: 'Average rating', value: 'products_rating_desc' },
-			{ label: 'Price: low to high', value: 'products_price_asc' },
-			{ label: 'Price: high to low', value: 'products_price_desc' },
 		],
 	});
 	const { items, results } = useHits();

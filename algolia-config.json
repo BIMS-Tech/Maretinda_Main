@@ -13,8 +13,7 @@
       "type.value"
     ],
     "attributesForFaceting": [
-      "filterOnly(seller)",
-      "filterOnly(seller.handle)",
+      "seller.handle",
       "filterOnly(seller.store_status)",
       "filterOnly(supported_countries)",
       "filterOnly(categories.id)",
@@ -22,7 +21,6 @@
       "filterOnly(variants.prices.currency_code)",
       "searchable(categories.name)",
       "searchable(brand.name)",
-      "searchable(seller.handle)",
       "searchable(type.value)",
       "variants.color",
       "variants.condition",
