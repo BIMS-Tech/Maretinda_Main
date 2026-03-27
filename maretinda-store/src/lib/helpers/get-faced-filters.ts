@@ -1,4 +1,3 @@
-import { FacetFilters } from 'algoliasearch/lite';
 import type { ReadonlyURLSearchParams } from 'next/navigation';
 
 const getOption = (label: string) => {
@@ -11,6 +10,14 @@ const getOption = (label: string) => {
 			return 'variants.condition';
 		case 'rating':
 			return 'average_rating';
+		case 'brand':
+			return 'brand.name';
+		case 'store':
+			return 'seller.handle';
+		case 'type':
+			return 'type.value';
+		case 'category_name':
+			return 'categories.name';
 		default:
 			return '';
 	}
@@ -22,7 +29,6 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
 	let minPrice = null;
 	let maxPrice = null;
 
-	let query = '';
 	let rating = '';
 
 	for (const [key, value] of filters.entries()) {
@@ -36,24 +42,24 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
 			key !== 'sortBy' &&
 			key !== 'rating'
 		) {
+			const attribute = getOption(key);
+			if (!attribute) continue;
 			let values = '';
 			const splittedSize = value.split(',');
 			if (splittedSize.length > 1) {
 				splittedSize.map(
 					(value, index) =>
-						(values += `${getOption(key)}:"${value}" ${
+						(values += `${attribute}:"${value}" ${
 							index + 1 < splittedSize.length ? 'OR ' : ''
 						}`),
 				);
 			} else {
-				values += `${getOption(key)}:"${splittedSize[0]}"`;
+				values += `${attribute}:"${splittedSize[0]}"`;
 			}
 			facet += ` AND ${values}`;
 		} else {
 			if (key === 'min_price') minPrice = value;
 			if (key === 'max_price') maxPrice = value;
-
-			if (key === 'query') query = ` AND products.title:"${value}"`;
 
 			if (key === 'rating') {
 				let values = '';
@@ -73,13 +79,16 @@ export const getFacedFilters = (filters: ReadonlyURLSearchParams): string => {
 		}
 	}
 
+	// Prices in Algolia are stored in smallest currency unit (centavos for PHP).
+	// UI inputs are in major units (₱), so multiply by 100 before filtering.
+	const toSmallestUnit = (v: string) => Math.round(Number(v) * 100);
 	const priceFilter =
 		minPrice && maxPrice
-			? ` AND variants.prices.amount:${minPrice} TO ${maxPrice}`
+			? ` AND variants.prices.amount:${toSmallestUnit(minPrice)} TO ${toSmallestUnit(maxPrice)}`
 			: minPrice
-				? ` AND variants.prices.amount >= ${minPrice}`
+				? ` AND variants.prices.amount >= ${toSmallestUnit(minPrice)}`
 				: maxPrice
-					? ` AND variants.prices.amount <= ${maxPrice}`
+					? ` AND variants.prices.amount <= ${toSmallestUnit(maxPrice)}`
 					: '';
 
 	return facet + priceFilter + rating;

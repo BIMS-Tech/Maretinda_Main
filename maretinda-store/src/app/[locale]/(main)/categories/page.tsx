@@ -57,7 +57,7 @@ async function AllCategories({
 		},
 	];
 
-	const currency_code = (await getRegion(locale))?.currency_code || 'usd';
+	const currency_code = (await getRegion(locale))?.currency_code || 'php';
 
 	const { categories } = (await listCategories()) as {
 		categories: HttpTypes.StoreProductCategory[];

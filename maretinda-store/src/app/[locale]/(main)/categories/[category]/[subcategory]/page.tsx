@@ -6,17 +6,11 @@ import { Suspense } from 'react';
 import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
-import { categoryThemes } from '@/data/categories';
 import { getCategoryByHandle } from '@/lib/data/categories';
-
-const DEFAULT_THEME = {
-	accent: '#00BCD4',
-	bgClass: 'bg-gray-50',
-	icon: '🏷️',
-	primary: '#6B7280',
-	secondary: '#9CA3AF',
-	textClass: 'text-gray-800',
-};
+import { retrieveCustomer } from '@/lib/data/customer';
+import { getRegion } from '@/lib/data/regions';
+import { getUserWishlists } from '@/lib/data/wishlist';
+import type { Wishlist } from '@/types/wishlist';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
@@ -79,13 +73,24 @@ async function SubCategory({
 		locale,
 	} = await params;
 	const resolvedSearchParams = searchParams ? await searchParams : {};
-	const theme = categoryThemes[categoryHandle as keyof typeof categoryThemes] ?? DEFAULT_THEME;
 	const category = await getCategoryByHandle([categoryHandle]);
 	const subcategory = await getCategoryByHandle([subcategoryHandle]);
 
 	if (!subcategory || !category) {
 		return notFound();
 	}
+
+	const user = await retrieveCustomer();
+	let wishlist: Wishlist[] = [];
+	if (user) {
+		try {
+			const response = await getUserWishlists();
+			wishlist = response.wishlists;
+		} catch {
+			wishlist = [];
+		}
+	}
+	const currency_code = (await getRegion(locale))?.currency_code || 'php';
 
 	const breadcrumbsItems = [
 		{
@@ -128,7 +133,11 @@ async function SubCategory({
 						/>
 					) : (
 						<AlgoliaProductsListing
+							category_id={subcategory.id}
+							currency_code={currency_code}
 							locale={locale}
+							user={user}
+							wishlist={wishlist}
 						/>
 					)}
 				</Suspense>

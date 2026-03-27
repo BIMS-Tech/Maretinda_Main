@@ -9,8 +9,12 @@ import { ProductListingSkeleton } from '@/components/organisms/ProductListingSke
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
 import { getCategoryByHandle } from '@/lib/data/categories';
+import { retrieveCustomer } from '@/lib/data/customer';
+import { getRegion } from '@/lib/data/regions';
+import { getUserWishlists } from '@/lib/data/wishlist';
 import { generateCategoryMetadata } from '@/lib/helpers/seo';
 import { sortCategories } from '@/lib/utils';
+import type { Wishlist } from '@/types/wishlist';
 
 const CATEGORY_BANNERS: Record<string, string> = {
 	'accessories': '/images/categories/accessories-banner.png',
@@ -67,6 +71,18 @@ async function Category({
 	if (!category) {
 		return notFound();
 	}
+
+	const user = await retrieveCustomer();
+	let wishlist: Wishlist[] = [];
+	if (user) {
+		try {
+			const response = await getUserWishlists();
+			wishlist = response.wishlists;
+		} catch {
+			wishlist = [];
+		}
+	}
+	const currency_code = (await getRegion(locale))?.currency_code || 'php';
 
 	const breadcrumbsItems = [
 		{
@@ -136,7 +152,11 @@ async function Category({
 						/>
 					) : (
 						<AlgoliaProductsListing
+							category_id={category.id}
+							currency_code={currency_code}
 							locale={locale}
+							user={user}
+							wishlist={wishlist}
 						/>
 					)}
 				</Suspense>

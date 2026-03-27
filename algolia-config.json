@@ -1,0 +1,136 @@
+{
+  "settings": {
+    "searchableAttributes": [
+      "title",
+      "subtitle",
+      "description",
+      "brand.name",
+      "seller.name",
+      "categories.name",
+      "collection.title",
+      "variants.title",
+      "tags.value",
+      "type.value"
+    ],
+    "attributesForFaceting": [
+      "filterOnly(seller)",
+      "filterOnly(seller.handle)",
+      "filterOnly(seller.store_status)",
+      "filterOnly(supported_countries)",
+      "filterOnly(categories.id)",
+      "filterOnly(collections.id)",
+      "filterOnly(variants.prices.currency_code)",
+      "searchable(categories.name)",
+      "searchable(brand.name)",
+      "searchable(seller.handle)",
+      "searchable(type.value)",
+      "variants.color",
+      "variants.condition",
+      "variants.size",
+      "average_rating",
+      "tags.value"
+    ],
+    "numericAttributesForFiltering": [
+      "variants.prices.amount",
+      "average_rating"
+    ],
+    "hitsPerPage": 20,
+    "maxValuesPerFacet": 200,
+    "paginationLimitedTo": 1000,
+    "minWordSizefor1Typo": 4,
+    "minWordSizefor2Typos": 8,
+    "typoTolerance": true,
+    "allowTyposOnNumericTokens": false,
+    "ranking": [
+      "typo",
+      "geo",
+      "words",
+      "filters",
+      "proximity",
+      "attribute",
+      "exact",
+      "custom"
+    ],
+    "customRanking": [
+      "desc(average_rating)",
+      "desc(variants.prices.amount)"
+    ],
+    "replicas": [
+      "products_price_asc",
+      "products_price_desc",
+      "products_rating_desc"
+    ],
+    "queryType": "prefixLast",
+    "removeWordsIfNoResults": "allOptional",
+    "exactOnSingleWordQuery": "attribute",
+    "alternativesAsExact": ["ignorePlurals", "singleWordSynonym"],
+    "highlightPreTag": "<em>",
+    "highlightPostTag": "</em>",
+    "snippetEllipsisText": "…",
+    "separatorsToIndex": "",
+    "attributeForDistinct": "id",
+    "renderingContent": {
+      "facetOrdering": {
+        "facets": {
+          "order": [
+            "variants.color",
+            "variants.size",
+            "variants.condition",
+            "brand.name",
+            "average_rating"
+          ]
+        },
+        "values": {
+          "variants.color": { "sortRemainingBy": "count" },
+          "variants.condition": { "sortRemainingBy": "count" },
+          "variants.size": { "sortRemainingBy": "count" },
+          "brand.name": { "sortRemainingBy": "count" },
+          "average_rating": { "sortRemainingBy": "count" }
+        }
+      }
+    }
+  },
+  "replicaSettings": {
+    "products_price_asc": {
+      "ranking": [
+        "asc(variants.prices.amount)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    },
+    "products_price_desc": {
+      "ranking": [
+        "desc(variants.prices.amount)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    },
+    "products_rating_desc": {
+      "ranking": [
+        "desc(average_rating)",
+        "typo",
+        "geo",
+        "words",
+        "filters",
+        "proximity",
+        "attribute",
+        "exact",
+        "custom"
+      ]
+    }
+  },
+  "rules": [],
+  "synonyms": []
+}

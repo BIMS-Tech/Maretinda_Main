@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BsSliders } from 'react-icons/bs';
 import { MdOutlineClose } from 'react-icons/md';
-import { Configure, useHits } from 'react-instantsearch';
+import { Configure, useHits, useSortBy } from 'react-instantsearch';
 import { InstantSearchNext } from 'react-instantsearch-nextjs';
 
 import { Button } from '@/components/atoms';
@@ -49,11 +49,15 @@ export const AlgoliaProductsListing = ({
 	const facetFilters: string = getFacedFilters(searchParamas);
 	const query: string = searchParamas.get('query') || '';
 
+	const currencyFilter = currency_code
+		? ` AND variants.prices.currency_code:${currency_code}`
+		: '';
+
 	const filters = `${
 		seller_handle
 			? `NOT seller:null AND seller.handle:${seller_handle} AND `
 			: 'NOT seller:null AND '
-	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${
+	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${currencyFilter}${
 		category_id
 			? ` AND categories.id:${category_id}${
 					collection_id !== undefined
@@ -66,25 +70,37 @@ export const AlgoliaProductsListing = ({
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>
 			<Configure filters={filters} query={query} />
-			<ProductsListing locale={locale} user={user} wishlist={wishlist} />
+			<ProductsListing
+				currency_code={currency_code}
+				locale={locale}
+				user={user}
+				wishlist={wishlist}
+			/>
 		</InstantSearchNext>
 	);
 };
 
 const ProductsListing = ({
-	// TODO: remove this in favor of layout toggle in product listing
-	// once the layout toggle is implemented.
 	locale,
+	currency_code,
 	user,
 	wishlist,
 }: {
 	locale?: string;
+	currency_code?: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[] | [];
 }) => {
 	const [prod, setProd] = useState<HttpTypes.StoreProduct[] | null>(null);
-	const [selectedSort, setSelectedSort] = useState('Default');
 	const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+	const { currentRefinement: currentSort, refine: refineSort } = useSortBy({
+		items: [
+			{ label: 'Default', value: 'products' },
+			{ label: 'Average rating', value: 'products_rating_desc' },
+			{ label: 'Price: low to high', value: 'products_price_asc' },
+			{ label: 'Price: high to low', value: 'products_price_desc' },
+		],
+	});
 	const { items, results } = useHits();
 	const [isToggleActive, setIsToggleActive] = useState(true);
 	const layoutLimit = isToggleActive ? PRODUCT_LIMIT_BIG_CARD : PRODUCT_LIMIT;
@@ -144,15 +160,14 @@ const ProductsListing = ({
 		page * pageLimit,
 	);
 
-	const count = prod?.length || 0;
+	const count = results?.nbHits ?? filteredProducts.length;
 	// const pages = Math.ceil(count / pageLimit) || 1;
 
 	const sortByDropdownOptions = [
-		{ label: 'Default', value: 'Default' },
-		{ label: 'Popularity', value: 'Popularity' },
-		{ label: 'Average rating', value: 'Average rating' },
-		{ label: 'Price: low to high', value: 'Price: low to high' },
-		{ label: 'Price: high to low', value: 'Price: high to low' },
+		{ label: 'Default', value: 'products' },
+		{ label: 'Average rating', value: 'products_rating_desc' },
+		{ label: 'Price: low to high', value: 'products_price_asc' },
+		{ label: 'Price: high to low', value: 'products_price_desc' },
 	];
 
 	return (
@@ -177,6 +192,8 @@ const ProductsListing = ({
 						className="ml-2 text-black bg-transparent border-none !font-medium !text-[16px] md:!text-[20px] !p-0 !h-auto md:min-w-[192px]"
 						full
 						options={sortByDropdownOptions}
+						selectOption={refineSort}
+						selected={currentSort}
 					/>
 				</div>
 				<div className="order-4 h-full flex justify-end">
@@ -202,7 +219,7 @@ const ProductsListing = ({
 			<div className="md:flex gap-4">
 				<div className="w-[280px] shrink-0">
 					<div className="hidden md:block">
-						<AlgoliaProductSidebar />
+						<AlgoliaProductSidebar currency_code={currency_code} />
 					</div>
 					<div className="md:hidden">
 						{/** biome-ignore lint/a11y/noStaticElementInteractions: Not necessary for modal background */}
@@ -232,7 +249,10 @@ const ProductsListing = ({
 									size={27}
 								/>
 							</div>
-							<AlgoliaProductSidebar isModal />
+							<AlgoliaProductSidebar
+								currency_code={currency_code}
+								isModal
+							/>
 						</div>
 					</div>
 				</div>
