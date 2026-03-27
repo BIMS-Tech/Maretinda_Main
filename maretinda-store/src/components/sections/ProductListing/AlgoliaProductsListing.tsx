@@ -53,11 +53,11 @@ export const AlgoliaProductsListing = ({
 		? ` AND variants.prices.currency_code:${currency_code}`
 		: '';
 
-	const filters = `${
-		seller_handle
-			? `NOT seller:null AND seller.handle:${seller_handle} AND `
-			: 'NOT seller:null AND '
-	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${currencyFilter}${
+	const sellerFilter = seller_handle
+		? `seller.handle:${seller_handle} AND `
+		: '';
+
+	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED AND supported_countries:${locale}${currencyFilter}${
 		category_id
 			? ` AND categories.id:${category_id}${
 					collection_id !== undefined
