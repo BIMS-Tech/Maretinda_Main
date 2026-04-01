@@ -49,9 +49,7 @@ export const EditCategoryForm = ({ category }: EditCategoryFormProps) => {
       const { files: uploaded } = await sdk.admin.upload.create({
         files: [file.file],
       })
-      const gcsUrl = uploaded[0]?.url ?? ""
-      console.log("[upload] GCS URL:", gcsUrl)
-      setUploadedUrl(gcsUrl)
+      setUploadedUrl(uploaded[0]?.url ?? "")
     } catch {
       toast.error("Image upload failed. Please try again.")
       setImagePreview(existingUrl)

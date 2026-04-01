@@ -21,7 +21,6 @@ export const CategoryGeneralSection = ({
   const handleDelete = useDeleteProductCategoryAction(category)
 
   const rawUrl = category.metadata?.image_url as string | undefined
-  console.log("[category-detail] metadata:", category.metadata, "rawUrl:", rawUrl)
   const imageUrl = rawUrl && rawUrl.startsWith("https://") ? rawUrl : undefined
 
   return (

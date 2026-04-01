@@ -38,7 +38,7 @@ class GCSFileProvider extends utils_1.AbstractFileProviderService {
         if (Buffer.isBuffer(content))
             return content;
         if (typeof content === "string")
-            return Buffer.from(content, "binary");
+            return Buffer.from(content, "base64");
         return new Promise((resolve, reject) => {
             const chunks = [];
             const stream = content;

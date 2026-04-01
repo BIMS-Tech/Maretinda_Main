@@ -48,7 +48,7 @@ export class GCSFileProvider extends AbstractFileProviderService {
 
   private async toBuffer(content: Buffer | NodeJS.ReadableStream | string): Promise<Buffer> {
     if (Buffer.isBuffer(content)) return content
-    if (typeof content === "string") return Buffer.from(content, "binary")
+    if (typeof content === "string") return Buffer.from(content, "base64")
     return new Promise((resolve, reject) => {
       const chunks: Buffer[] = []
       const stream = content as Readable
