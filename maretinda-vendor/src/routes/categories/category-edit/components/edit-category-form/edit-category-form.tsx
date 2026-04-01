@@ -1,23 +1,27 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button, Input, Textarea, toast } from "@medusajs/ui"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { z } from "zod"
+'use client'
 
-import { HttpTypes } from "@medusajs/types"
-import { Form } from "../../../../../components/common/form"
-import { HandleInput } from "../../../../../components/inputs/handle-input"
-import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
-import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useUpdateProductCategory } from "../../../../../hooks/api/categories"
-import { useUpdateRequest } from "../../../../../hooks/api"
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button, Input, Textarea, Text, toast } from '@medusajs/ui'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { z } from 'zod'
+
+import { HttpTypes } from '@medusajs/types'
+import { Form } from '../../../../../components/common/form'
+import { HandleInput } from '../../../../../components/inputs/handle-input'
+import { RouteDrawer, useRouteModal } from '../../../../../components/modals'
+import { KeyboundForm } from '../../../../../components/utilities/keybound-form'
+import { FileType, FileUpload } from '../../../../../components/common/file-upload'
+import { uploadFilesQuery } from '../../../../../lib/client/client'
+import { useUpdateRequest } from '../../../../../hooks/api'
 
 const EditCategorySchema = z.object({
   name: z.string().min(1),
   handle: z.string().min(1),
   description: z.string().optional(),
-  status: z.enum(["active", "inactive"]),
-  visibility: z.enum(["public", "internal"]),
+  status: z.enum(['active', 'inactive']),
+  visibility: z.enum(['public', 'internal']),
 })
 
 type EditCategoryFormProps = {
@@ -32,32 +36,69 @@ export const EditCategoryForm = ({
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
 
+  const raw = category.metadata?.image_url as string | undefined
+  const existingUrl = raw && raw.startsWith('https://') ? raw : ''
+
+  // Image starts from the saved GCS URL; uploading replaces it immediately
+  const [imagePreview, setImagePreview] = useState(existingUrl)
+  const [uploadedUrl, setUploadedUrl] = useState(existingUrl)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleImageSelected = async (files: FileType[]) => {
+    const file = files[0]
+    if (!file) return
+    setImagePreview(file.url) // instant blob preview
+    setIsUploading(true)
+    try {
+      const result = await uploadFilesQuery([file])
+      setUploadedUrl(result?.files?.[0]?.url ?? '')
+    } catch {
+      toast.error('Image upload failed. Please try again.')
+      setImagePreview(existingUrl)
+      setUploadedUrl(existingUrl)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const form = useForm<z.infer<typeof EditCategorySchema>>({
     defaultValues: {
       name: category.name,
       handle: category.handle,
-      description: category.description || "",
-      status: category.is_active ? "active" : "inactive",
-      visibility: category.is_internal ? "internal" : "public",
+      description: category.description || '',
+      status: category.is_active ? 'active' : 'inactive',
+      visibility: category.is_internal ? 'internal' : 'public',
     },
     resolver: zodResolver(EditCategorySchema),
   })
 
   const { mutateAsync, isPending } = useUpdateRequest(requestId)
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (isUploading) {
+      toast.error('Please wait for the image to finish uploading.')
+      return
+    }
+
     await mutateAsync(
       {
         request: {
-          type: "product_category",
+          type: 'product_category',
           data: {
             name: data.name,
             handle: data.handle,
+            metadata: {
+              ...(category.metadata ?? {}),
+              ...(uploadedUrl && !uploadedUrl.startsWith('blob:')
+                ? { image_url: uploadedUrl }
+                : {}),
+            },
           },
         },
       },
       {
         onSuccess: () => {
-          toast.success(t("categories.edit.successToast"))
+          toast.success(t('categories.edit.successToast'))
           handleSuccess()
         },
         onError: (error) => {
@@ -75,64 +116,91 @@ export const EditCategoryForm = ({
             <Form.Field
               control={form.control}
               name="name"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label>{t("fields.title")}</Form.Label>
-                    <Form.Control>
-                      <Input autoComplete="off" {...field} />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
+              render={({ field }) => (
+                <Form.Item>
+                  <Form.Label>{t('fields.title')}</Form.Label>
+                  <Form.Control>
+                    <Input autoComplete="off" {...field} />
+                  </Form.Control>
+                  <Form.ErrorMessage />
+                </Form.Item>
+              )}
             />
             <Form.Field
               control={form.control}
               name="handle"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label
-                      optional
-                      tooltip={t("collections.handleTooltip")}
-                    >
-                      {t("fields.handle")}
-                    </Form.Label>
-                    <Form.Control>
-                      <HandleInput {...field} />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
+              render={({ field }) => (
+                <Form.Item>
+                  <Form.Label optional tooltip={t('collections.handleTooltip')}>
+                    {t('fields.handle')}
+                  </Form.Label>
+                  <Form.Control>
+                    <HandleInput {...field} />
+                  </Form.Control>
+                  <Form.ErrorMessage />
+                </Form.Item>
+              )}
             />
             <Form.Field
               control={form.control}
               name="description"
-              render={({ field }) => {
-                return (
-                  <Form.Item>
-                    <Form.Label optional>{t("fields.description")}</Form.Label>
-                    <Form.Control>
-                      <Textarea {...field} />
-                    </Form.Control>
-                    <Form.ErrorMessage />
-                  </Form.Item>
-                )
-              }}
+              render={({ field }) => (
+                <Form.Item>
+                  <Form.Label optional>{t('fields.description')}</Form.Label>
+                  <Form.Control>
+                    <Textarea {...field} />
+                  </Form.Control>
+                  <Form.ErrorMessage />
+                </Form.Item>
+              )}
             />
+
+            {/* Category Image — uploads immediately on selection */}
+            <div className="flex flex-col gap-y-2">
+              <Text size="small" weight="plus">Category Image</Text>
+              {imagePreview && (
+                <div className="relative w-fit">
+                  <img
+                    alt="Category preview"
+                    className="h-32 w-32 rounded-lg object-contain border border-ui-border-base"
+                    src={imagePreview}
+                  />
+                  {isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    </div>
+                  )}
+                </div>
+              )}
+              <FileUpload
+                label={isUploading ? 'Uploading…' : imagePreview ? 'Replace image' : 'Upload category image'}
+                hint="PNG, JPG, WebP — max 10 MB"
+                multiple={false}
+                formats={['image/jpeg', 'image/png', 'image/webp', 'image/gif']}
+                uploadedImage=""
+                onUploaded={handleImageSelected}
+              />
+              {imagePreview && !isUploading && (
+                <button
+                  type="button"
+                  className="text-ui-fg-subtle text-xs underline self-start"
+                  onClick={() => { setImagePreview(''); setUploadedUrl('') }}
+                >
+                  Remove image
+                </button>
+              )}
+            </div>
           </div>
         </RouteDrawer.Body>
         <RouteDrawer.Footer>
           <div className="flex items-center gap-x-2">
             <RouteDrawer.Close asChild>
               <Button size="small" variant="secondary">
-                {t("actions.cancel")}
+                {t('actions.cancel')}
               </Button>
             </RouteDrawer.Close>
             <Button size="small" type="submit" isLoading={isPending}>
-              {t("actions.save")}
+              {t('actions.save')}
             </Button>
           </div>
         </RouteDrawer.Footer>

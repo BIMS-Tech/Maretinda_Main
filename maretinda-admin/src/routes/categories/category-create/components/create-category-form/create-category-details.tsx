@@ -4,16 +4,28 @@ import { useTranslation } from "react-i18next"
 
 import { Form } from "../../../../../components/common/form"
 import { HandleInput } from "../../../../../components/inputs/handle-input"
+import { FileType, FileUpload } from "../../../../../components/common/file-upload"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
 import { CreateCategorySchema } from "./schema"
 
 type CreateCategoryDetailsProps = {
   form: UseFormReturn<CreateCategorySchema>
+  imagePreview: string
+  isUploading: boolean
+  onImageSelected: (files: FileType[]) => void
+  onRemoveImage: () => void
 }
 
-export const CreateCategoryDetails = ({ form }: CreateCategoryDetailsProps) => {
+export const CreateCategoryDetails = ({
+  form,
+  imagePreview,
+  isUploading,
+  onImageSelected,
+  onRemoveImage,
+}: CreateCategoryDetailsProps) => {
   const { t } = useTranslation()
   const direction = useDocumentDirection()
+
   return (
     <div className="flex flex-col items-center p-16">
       <div className="flex w-full max-w-[720px] flex-col gap-y-8">
@@ -23,6 +35,50 @@ export const CreateCategoryDetails = ({ form }: CreateCategoryDetailsProps) => {
             {t("categories.create.hint")}
           </Text>
         </div>
+
+        {/* Category Image */}
+        <div className="flex flex-col gap-y-2">
+          <Text size="small" weight="plus">
+            Category Image
+          </Text>
+          {imagePreview ? (
+            <div className="relative w-fit">
+              <img
+                alt="Category preview"
+                className="h-32 w-32 rounded-lg object-contain border border-ui-border-base"
+                src={imagePreview}
+              />
+              {isUploading && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                </div>
+              )}
+            </div>
+          ) : null}
+          <FileUpload
+            label={
+              isUploading
+                ? "Uploading…"
+                : imagePreview
+                ? "Replace image"
+                : "Upload category image"
+            }
+            hint="PNG, JPG, WebP — max 10 MB • Uploads instantly to Google Cloud Storage"
+            multiple={false}
+            formats={["image/jpeg", "image/png", "image/webp", "image/gif"]}
+            onUploaded={onImageSelected}
+          />
+          {imagePreview && !isUploading && (
+            <button
+              type="button"
+              className="text-ui-fg-subtle text-xs underline self-start"
+              onClick={onRemoveImage}
+            >
+              Remove image
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Form.Field
             control={form.control}
@@ -81,11 +137,7 @@ export const CreateCategoryDetails = ({ form }: CreateCategoryDetailsProps) => {
                 <Form.Item>
                   <Form.Label>{t("categories.fields.status.label")}</Form.Label>
                   <Form.Control>
-                    <Select
-                      dir={direction}
-                      {...field}
-                      onValueChange={onChange}
-                    >
+                    <Select dir={direction} {...field} onValueChange={onChange}>
                       <Select.Trigger ref={ref}>
                         <Select.Value />
                       </Select.Trigger>
@@ -114,11 +166,7 @@ export const CreateCategoryDetails = ({ form }: CreateCategoryDetailsProps) => {
                     {t("categories.fields.visibility.label")}
                   </Form.Label>
                   <Form.Control>
-                    <Select
-                      dir={direction}
-                      {...field}
-                      onValueChange={onChange}
-                    >
+                    <Select dir={direction} {...field} onValueChange={onChange}>
                       <Select.Trigger ref={ref}>
                         <Select.Value />
                       </Select.Trigger>

@@ -6,7 +6,7 @@ import { CategoryCard } from '@/components/organisms';
 import { categoryThemes } from '@/data/categories';
 import { listCategories } from '@/lib/data/categories';
 
-export const HomeCategories = async ({ heading }: { heading: string }) => {
+export const HomeCategories = async (_: { heading: string }) => {
 	const { categories } = (await listCategories()) as {
 		categories: HttpTypes.StoreProductCategory[];
 	};
@@ -38,6 +38,10 @@ export const HomeCategories = async ({ heading }: { heading: string }) => {
 							description: category.description || category.name,
 							handle: category.handle,
 							id: index + 1,
+							image_url: (() => {
+								const url = category.metadata?.image_url as string | undefined;
+								return url && url.startsWith('http') ? url : '';
+							})(),
 							name: category.name,
 							theme: categoryThemes[
 								category.handle as keyof typeof categoryThemes

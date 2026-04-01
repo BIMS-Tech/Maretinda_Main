@@ -20,10 +20,23 @@ export const CategoryGeneralSection = ({
 
   const handleDelete = useDeleteProductCategoryAction(category)
 
+  const rawUrl = category.metadata?.image_url as string | undefined
+  console.log("[category-detail] metadata:", category.metadata, "rawUrl:", rawUrl)
+  const imageUrl = rawUrl && rawUrl.startsWith("https://") ? rawUrl : undefined
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading>{category.name}</Heading>
+        <div className="flex items-center gap-x-4">
+          {imageUrl && (
+            <img
+              alt={category.name}
+              className="h-12 w-12 rounded-lg object-contain border border-ui-border-base flex-shrink-0"
+              src={imageUrl}
+            />
+          )}
+          <Heading>{category.name}</Heading>
+        </div>
         <div className="flex items-center gap-x-4">
           <div className="flex items-center gap-x-2">
             <StatusBadge color={activeProps.color}>

@@ -11,7 +11,11 @@ export const CategoryEdit = () => {
   const { t } = useTranslation()
 
   const { product_category, isPending, isError, error } = useProductCategory(
-    id!
+    id!,
+    {
+      fields:
+        "id,name,handle,description,is_active,is_internal,rank,metadata,parent_category_id",
+    }
   )
 
   const ready = !isPending && !!product_category

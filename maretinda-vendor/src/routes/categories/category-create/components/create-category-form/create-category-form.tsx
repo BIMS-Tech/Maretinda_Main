@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, ProgressTabs, toast } from "@medusajs/ui"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -8,7 +9,9 @@ import {
   useRouteModal,
 } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
+import { FileType } from "../../../../../components/common/file-upload"
 import { transformNullableFormData } from "../../../../../lib/form-helpers"
+import { uploadFilesQuery } from "../../../../../lib/client/client"
 import { CreateCategoryDetails } from "./create-category-details"
 import { CreateCategorySchema } from "./schema"
 import { useCreateVendorRequest } from "../../../../../hooks/api"
@@ -19,7 +22,6 @@ type CreateCategoryFormProps = {
 
 enum Tab {
   DETAILS = "details",
-  ORGANIZE = "organize",
 }
 
 export const CreateCategoryForm = ({
@@ -27,6 +29,33 @@ export const CreateCategoryForm = ({
 }: CreateCategoryFormProps) => {
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
+
+  // Image upload — fires immediately on file selection
+  const [imagePreview, setImagePreview] = useState("")
+  const [uploadedUrl, setUploadedUrl] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleImageSelected = async (files: FileType[]) => {
+    const file = files[0]
+    if (!file) return
+    setImagePreview(file.url) // instant preview
+    setIsUploading(true)
+    try {
+      const result = await uploadFilesQuery([file])
+      setUploadedUrl(result?.files?.[0]?.url ?? "")
+    } catch {
+      toast.error("Image upload failed. Please try again.")
+      setImagePreview("")
+      setUploadedUrl("")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setImagePreview("")
+    setUploadedUrl("")
+  }
 
   const form = useForm<CreateCategorySchema>({
     defaultValues: {
@@ -44,6 +73,11 @@ export const CreateCategoryForm = ({
   const { mutateAsync, isPending } = useCreateVendorRequest()
 
   const handleSubmit = form.handleSubmit((data) => {
+    if (isUploading) {
+      toast.error("Please wait for the image to finish uploading.")
+      return
+    }
+
     const {
       visibility,
       status,
@@ -60,20 +94,20 @@ export const CreateCategoryForm = ({
         request: {
           type: "product_category",
           data: {
-            name: name,
+            name,
             handle,
             ...parsedData,
             is_active: "active",
             is_internal: true,
             rank: rank ?? undefined,
             parent_category_id: null,
+            ...(uploadedUrl ? { metadata: { image_url: uploadedUrl } } : {}),
           },
         },
       },
       {
         onSuccess: () => {
           toast.success("Request has been sent")
-
           handleSuccess("/requests")
         },
         onError: (error) => {
@@ -96,7 +130,7 @@ export const CreateCategoryForm = ({
                 <ProgressTabs.List className="grid w-full grid-cols-2">
                   <ProgressTabs.Trigger
                     value={Tab.DETAILS}
-                    status={"in-progress"}
+                    status="in-progress"
                     className="w-full min-w-0 overflow-hidden"
                   >
                     <span className="truncate">
@@ -109,7 +143,13 @@ export const CreateCategoryForm = ({
           </RouteFocusModal.Header>
           <RouteFocusModal.Body className="flex size-full flex-col overflow-auto">
             <ProgressTabs.Content value={Tab.DETAILS}>
-              <CreateCategoryDetails form={form} />
+              <CreateCategoryDetails
+                form={form}
+                imagePreview={imagePreview}
+                isUploading={isUploading}
+                onImageSelected={handleImageSelected}
+                onRemoveImage={handleRemoveImage}
+              />
             </ProgressTabs.Content>
           </RouteFocusModal.Body>
           <RouteFocusModal.Footer>

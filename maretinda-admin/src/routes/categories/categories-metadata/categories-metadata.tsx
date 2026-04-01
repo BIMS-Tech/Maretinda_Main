@@ -10,19 +10,27 @@ import { RouteDrawer } from "../../../components/modals"
 export const CategoriesMetadata = () => {
   const { id } = useParams()
 
-  const { product_category, isPending, isError, error } = useProductCategory(id)
-  const { mutateAsync, isPending: isMutating } = useUpdateProductCategory(id)
+  const { product_category, isPending, isError, error } = useProductCategory(
+    id!,
+    { fields: "id,metadata" }
+  )
+  const { mutateAsync, isPending: isMutating } = useUpdateProductCategory(id!)
 
   if (isError) {
     throw error
   }
+
+  const hook = (
+    params: { metadata?: Record<string, any> | null },
+    callbacks: { onSuccess: () => void; onError: (error: any) => void }
+  ) => mutateAsync({ metadata: params.metadata ?? undefined }, callbacks)
 
   return (
     <RouteDrawer>
       <MetadataForm
         isPending={isPending}
         isMutating={isMutating}
-        hook={mutateAsync}
+        hook={hook}
         metadata={product_category?.metadata}
       />
     </RouteDrawer>

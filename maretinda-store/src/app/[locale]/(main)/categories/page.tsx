@@ -86,6 +86,10 @@ async function AllCategories({
 							description: category.description,
 							handle: category.handle,
 							id: index + 1,
+							image_url: (() => {
+								const url = category.metadata?.image_url as string | undefined;
+								return url && url.startsWith('http') ? url : '';
+							})(),
 							name: category.name,
 							theme: categoryThemes[
 								category.handle as keyof typeof categoryThemes

@@ -12,6 +12,7 @@ export function CategoryCard({
 		name: string;
 		description: string;
 		handle: string;
+		image_url?: string;
 		theme?: {
 			primary: string;
 			secondary: string;
@@ -29,6 +30,14 @@ export function CategoryCard({
 		primary: '#000000',
 		textClass: 'text-gray-800',
 	};
+
+	// Only use URLs that are real remote/absolute URLs (not blob: previews)
+	const safeImageUrl =
+		category.image_url &&
+		!category.image_url.startsWith('blob:') &&
+		category.image_url.startsWith('http')
+			? category.image_url
+			: null;
 
 	return (
 		<div className="px-2">
@@ -57,7 +66,7 @@ export function CategoryCard({
 							const target = e.target as HTMLImageElement;
 							target.src = '/images/categories/shopping.png';
 						}}
-						src={`/images/categories/${category.handle.trim()}.png`}
+						src={safeImageUrl || `/images/categories/${category.handle.trim()}.png`}
 						unoptimized
 						width={150}
 					/>

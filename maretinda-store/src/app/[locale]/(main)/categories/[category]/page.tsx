@@ -103,9 +103,13 @@ async function Category({
 
 			<Image
 				alt={category.name}
-				className="w-full h-auto rounded-md"
+				className="w-full h-auto rounded-md object-cover"
 				height={335}
-				src={getCategoryBanner(category.handle)}
+				src={(() => {
+					const url = category.metadata?.image_url as string | undefined;
+					return url && url.startsWith('http') ? url : getCategoryBanner(category.handle);
+				})()}
+				unoptimized
 				width={1248}
 			/>
 

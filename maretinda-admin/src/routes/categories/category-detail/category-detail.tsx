@@ -20,7 +20,10 @@ export const CategoryDetail = () => {
 
   const { product_category, isLoading, isError, error } = useProductCategory(
     id!,
-    undefined,
+    {
+      fields:
+        "id,name,handle,description,is_active,is_internal,rank,metadata,parent_category_id",
+    },
     {
       initialData,
     }
