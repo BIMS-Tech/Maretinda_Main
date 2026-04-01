@@ -36,10 +36,22 @@ export const CollectionGeneralSection = ({
     navigate("../", { replace: true })
   }
 
+  const rawUrl = collection.metadata?.image_url as string | undefined
+  const imageUrl = rawUrl && rawUrl.startsWith("https://") ? rawUrl : undefined
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading>{collection.title}</Heading>
+        <div className="flex items-center gap-x-4">
+          {imageUrl && (
+            <img
+              alt={collection.title}
+              className="h-12 w-12 rounded-lg object-contain border border-ui-border-base flex-shrink-0"
+              src={imageUrl}
+            />
+          )}
+          <Heading>{collection.title}</Heading>
+        </div>
         <ActionMenu
           groups={[
             {

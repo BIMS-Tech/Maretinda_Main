@@ -15,6 +15,8 @@ import { productsQueryKeys } from "./products"
 const COLLECTION_QUERY_KEY = "collections" as const
 export const collectionsQueryKeys = queryKeysFactory(COLLECTION_QUERY_KEY)
 
+const COLLECTION_FIELDS = "id,title,handle,metadata"
+
 export const useCollection = (
   id: string,
   options?: Omit<
@@ -28,8 +30,8 @@ export const useCollection = (
   >
 ) => {
   const { data, ...rest } = useQuery({
-    queryKey: collectionsQueryKeys.detail(id),
-    queryFn: async () => sdk.admin.productCollection.retrieve(id),
+    queryKey: collectionsQueryKeys.detail(id, { fields: COLLECTION_FIELDS }),
+    queryFn: async () => sdk.admin.productCollection.retrieve(id, { fields: COLLECTION_FIELDS }),
     ...options,
   })
 
@@ -70,7 +72,7 @@ export const useUpdateCollection = (
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: collectionsQueryKeys.lists() })
       queryClient.invalidateQueries({
-        queryKey: collectionsQueryKeys.detail(id),
+        queryKey: collectionsQueryKeys.details(),
       })
 
       options?.onSuccess?.(data, variables, context)

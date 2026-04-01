@@ -5,6 +5,7 @@ import { Cart } from './Cart/Cart';
 import FeaturedProductsSection from './FeaturedProductsSection/FeaturedProductsSection';
 import { Hero } from './Hero/Hero';
 import { HomeCategories } from './HomeCategories/HomeCategories';
+import { HomeCollections } from './HomeCollections/HomeCollections';
 import { HomePopularBrandsSection } from './HomePopularBrandsSection/HomePopularBrandsSection';
 import { AlgoliaTrendingListings } from './HomeProductSection/AlgoliaTrendingListings';
 import { HomeProductSection } from './HomeProductSection/HomeProductSection';
@@ -26,6 +27,7 @@ export {
 	FeaturedProductsSection,
 	Hero,
 	HomeCategories,
+	HomeCollections,
 	HomePopularBrandsSection,
 	HomeProductSection,
 	OrdersPagination,

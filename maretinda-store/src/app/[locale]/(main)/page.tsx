@@ -7,6 +7,7 @@ import {
 	FeaturedProductsSection,
 	Hero,
 	HomeCategories,
+	HomeCollections,
 	ShopByStyleSection,
 	SpecialOffer,
 	TrendingProducts,
@@ -69,8 +70,15 @@ export default async function Home({
 			</div>
 
 			{/* Quick Category Access */}
-			<div className="container w-full mb-5">
+			<div className="container w-full mb-10">
+				<h2 className="text-2xl font-bold uppercase tracking-wide mb-8">Categories</h2>
 				<HomeCategories heading="Categories" />
+			</div>
+
+			{/* Collections */}
+			<div className="container w-full mb-10">
+				<h2 className="text-2xl font-bold uppercase tracking-wide mb-8">Collections</h2>
+				<HomeCollections />
 			</div>
 
 			{/* Featured Products Section */}
