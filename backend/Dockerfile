@@ -47,6 +47,11 @@ WORKDIR /app/src/modules/payment-giyapay
 RUN npm install
 RUN npm run build
 
+# Build file-gcs module
+WORKDIR /app/src/modules/file-gcs
+RUN npm install
+RUN npm run build
+
 # Build main application
 WORKDIR /app
 RUN yarn build
@@ -80,6 +85,10 @@ COPY --from=builder --chown=medusa:nodejs /app/tsconfig.json ./tsconfig.json
 # Copy built payment-giyapay module
 COPY --from=builder --chown=medusa:nodejs /app/src/modules/payment-giyapay/dist ./src/modules/payment-giyapay/dist
 COPY --from=builder --chown=medusa:nodejs /app/src/modules/payment-giyapay/package.json ./src/modules/payment-giyapay/package.json
+
+# Copy built file-gcs module
+COPY --from=builder --chown=medusa:nodejs /app/src/modules/file-gcs/dist ./src/modules/file-gcs/dist
+COPY --from=builder --chown=medusa:nodejs /app/src/modules/file-gcs/package.json ./src/modules/file-gcs/package.json
 
 # Copy source files (for scripts and loaders)
 COPY --from=builder --chown=medusa:nodejs /app/src ./src
