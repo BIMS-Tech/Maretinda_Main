@@ -52,39 +52,56 @@ export const CustomCarousel = ({
 	};
 
 	return (
-		<div className="embla relative w-full flex justify-center -mt-5">
+		<div className="embla relative w-full">
+			{/* Prev arrow */}
+			<button
+				aria-label="Previous"
+				className="hidden sm:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md items-center justify-center hover:bg-gray-50 transition"
+				onClick={() => changeSlideHandler(selectedIndex - 1)}
+				type="button"
+			>
+				<ArrowLeftIcon color={arrowColor[variant]} />
+			</button>
+
 			<div
-				className="embla__viewport overflow-hidden rounded-xs w-full xl:flex xl:justify-start"
+				className="embla__viewport overflow-hidden w-full"
 				ref={emblaRef}
 			>
-				<div className="embla__container flex justify-start space-x-0">
+				<div className="embla__container flex">
 					{items.map((slide) => slide)}
 				</div>
+			</div>
 
-				<div className="flex justify-between items-center mt-4 sm:hidden">
-					<div className="w-1/2">
-						<Indicator
-							maxStep={maxStep}
-							step={selectedIndex + 1}
-							variant={variant}
-						/>
-					</div>
-					<div>
-						<button
-							onClick={() =>
-								changeSlideHandler(selectedIndex - 1)
-							}
-						>
-							<ArrowLeftIcon color={arrowColor[variant]} />
-						</button>
-						<button
-							onClick={() =>
-								changeSlideHandler(selectedIndex + 1)
-							}
-						>
-							<ArrowRightIcon color={arrowColor[variant]} />
-						</button>
-					</div>
+			{/* Next arrow */}
+			<button
+				aria-label="Next"
+				className="hidden sm:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-md items-center justify-center hover:bg-gray-50 transition"
+				onClick={() => changeSlideHandler(selectedIndex + 1)}
+				type="button"
+			>
+				<ArrowRightIcon color={arrowColor[variant]} />
+			</button>
+
+			{/* Mobile indicators */}
+			<div className="flex justify-between items-center mt-4 sm:hidden">
+				<div className="w-1/2">
+					<Indicator
+						maxStep={maxStep}
+						step={selectedIndex + 1}
+						variant={variant}
+					/>
+				</div>
+				<div>
+					<button
+						onClick={() => changeSlideHandler(selectedIndex - 1)}
+					>
+						<ArrowLeftIcon color={arrowColor[variant]} />
+					</button>
+					<button
+						onClick={() => changeSlideHandler(selectedIndex + 1)}
+					>
+						<ArrowRightIcon color={arrowColor[variant]} />
+					</button>
 				</div>
 			</div>
 		</div>

@@ -32,11 +32,11 @@ export const BrandFilter = ({ brands }: { brands: BrandOption[] }) => {
 	if (!brands.length) return null;
 
 	return (
-		<Accordion heading="Brand">
+		<Accordion heading="Collections">
 			<Input
 				icon={<SearchIcon size={20} />}
 				onChange={(e) => setBrandSearch(e.target.value)}
-				placeholder="Search brands"
+				placeholder="Search collections"
 				value={brandsSearch}
 			/>
 			<ul className="px-4 mt-4">

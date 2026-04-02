@@ -98,9 +98,11 @@ export const NavbarSearch = ({
 		}
 	};
 
-	const handleProductClick = () => {
+	const handleProductClick = (e: React.MouseEvent, href: string) => {
+		e.preventDefault();
 		setOpen(false);
 		setSearch('');
+		router.push(href);
 	};
 
 	const getLowestPrice = (hit: AlgoliaHit): string => {
@@ -207,7 +209,7 @@ export const NavbarSearch = ({
 										className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-gray-50 transition-colors group"
 										href={`/products/${hit.handle ?? hit.objectID}`}
 										key={hit.objectID}
-										onMouseDown={handleProductClick}
+										onMouseDown={(e: React.MouseEvent) => handleProductClick(e, `/products/${hit.handle ?? hit.objectID}`)}
 									>
 										<div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0">
 											{hit.thumbnail ? (
@@ -298,7 +300,7 @@ export const NavbarSearch = ({
 										className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-[#372248] transition-colors"
 										href={`/categories/${cat.handle.trim()}`}
 										key={cat.id}
-										onMouseDown={() => setOpen(false)}
+										onMouseDown={(e: React.MouseEvent) => handleProductClick(e, `/categories/${cat.handle.trim()}`)}
 									>
 										<svg
 											className="w-3.5 h-3.5 text-gray-400 shrink-0"
