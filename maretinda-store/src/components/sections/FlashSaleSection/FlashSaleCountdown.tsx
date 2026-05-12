@@ -26,15 +26,12 @@ export const FlashSaleCountdown = () => {
 		<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
 			<span className="text-[12px] text-[#404040] mr-1">Ends in</span>
 			{[hh, mm, ss].map((unit, i) => (
-				<>
-					<span
-						key={unit + i}
-						className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums"
-					>
+				<span key={i} className="contents">
+					<span className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums">
 						{unit}
 					</span>
 					{i < 2 && <span className="text-[#1B1B1B]/40">:</span>}
-				</>
+				</span>
 			))}
 		</div>
 	);

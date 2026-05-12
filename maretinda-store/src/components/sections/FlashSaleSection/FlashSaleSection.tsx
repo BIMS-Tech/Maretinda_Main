@@ -74,7 +74,7 @@ export const FlashSaleSection = async ({
 						return (
 							<Link
 								key={product.id}
-								href={`/products/${product.id}`}
+								href={`/products/${product.handle}`}
 								className="group bg-white rounded-2xl border overflow-hidden block transition-all duration-200 hover:-translate-y-0.5"
 								style={{ borderColor: '#EDEAE3', boxShadow: '0 1px 2px rgba(20,20,20,0.04)' }}
 							>

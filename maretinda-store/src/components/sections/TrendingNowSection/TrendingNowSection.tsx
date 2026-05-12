@@ -67,7 +67,7 @@ export const TrendingNowSection = async ({
 						return (
 							<Link
 								key={product.id}
-								href={`/products/${product.id}`}
+								href={`/products/${product.handle}`}
 								className="group bg-white rounded-2xl border overflow-hidden block transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
 								style={{ borderColor: '#EDEAE3' }}
 							>
