@@ -2,16 +2,13 @@ import type { Metadata } from 'next';
 
 import {
 	BecomeSellerBand,
-	BlogSection,
 	FeaturedCollectionsSection,
-	FeaturedProductsSection,
 	FlashSaleSection,
 	Hero,
 	HomeCategories,
 	NewsletterSection,
 	TopVendorsSection,
 	TrendingNowSection,
-	TrendingProducts,
 	TrustSection,
 } from '@/components/sections';
 
@@ -83,22 +80,7 @@ export default async function Home({
 			{/* 8. Trust pillars — buyer protection / delivery / payments */}
 			<TrustSection />
 
-			{/* 9. Trending Products (existing component) */}
-			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 py-10 lg:py-12">
-				<TrendingProducts locale={locale} />
-			</div>
-
-			{/* 10. Featured Products */}
-			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
-				<FeaturedProductsSection />
-			</div>
-
-			{/* 11. Blog */}
-			<div className="mb-10">
-				<BlogSection />
-			</div>
-
-			{/* 12. Newsletter — email subscription band */}
+			{/* 9. Newsletter — email subscription band */}
 			<NewsletterSection />
 		</main>
 	);
