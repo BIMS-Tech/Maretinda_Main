@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Lora, Poppins } from 'next/font/google';
+import { Inter, Lora, Plus_Jakarta_Sans, Poppins } from 'next/font/google';
 import type { ReactNode } from 'react';
 import './globals.css';
 
@@ -21,6 +21,12 @@ const poppins = Poppins({
 	subsets: ['latin'],
 	variable: '--font-poppins',
 	weight: ['400', '500', '600', '700'],
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+	subsets: ['latin'],
+	variable: '--font-jakarta',
+	weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -54,7 +60,7 @@ export default function RootLayout({
 	return (
 		<html className="" lang={defaultLocale}>
 			<body
-				className={`${funnelDisplay.className} ${lora.variable} ${poppins.variable} antialiased bg-primary text-secondary relative`}
+				className={`${funnelDisplay.className} ${lora.variable} ${poppins.variable} ${plusJakarta.variable} antialiased bg-primary text-secondary relative`}
 			>
 				{children}
 				<Toaster position="top-right" />

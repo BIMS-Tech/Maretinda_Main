@@ -17,6 +17,7 @@ import { ShopByStyleSection } from './ShopByStyle/ShopByStyleSection';
 import SpecialOffer from './SpecialOffer/SpecialOffer';
 import { TrendingProducts } from './TrendingProducts/TrendingProducts';
 import { WishlistPage } from './WishlistPage/WishlistPage';
+import { FlashSaleSection } from './FlashSaleSection/FlashSaleSection';
 
 export {
 	AlgoliaProductsListing,
@@ -25,6 +26,7 @@ export {
 	BlogSection,
 	Cart,
 	FeaturedProductsSection,
+	FlashSaleSection,
 	Hero,
 	HomeCategories,
 	HomeCollections,
@@ -35,6 +37,8 @@ export {
 	ProductListing,
 	SellerPageHeader,
 	ShopByStyleSection,
-	SpecialOffer, TrendingProducts, WishlistPage
+	SpecialOffer,
+	TrendingProducts,
+	WishlistPage,
 };
 

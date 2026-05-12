@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 
 import {
-	// AlgoliaTrendingListings,
-	// BannerSection,
 	BlogSection,
 	FeaturedProductsSection,
+	FlashSaleSection,
 	Hero,
 	HomeCategories,
 	HomeCollections,
@@ -43,7 +42,8 @@ export default async function Home({
 	const { locale } = await params;
 
 	return (
-		<main className="max-w-7xl w-full mx-auto flex flex-col row-start-2 items-center sm:items-start text-primary">
+		<main className="w-full flex flex-col">
+			{/* Hero — purple gradient with main card, promo sidebar, service strip */}
 			<Hero
 				buttons={[
 					{ label: 'Start Shopping', path: '/categories' },
@@ -55,180 +55,44 @@ export default async function Home({
 								: 'https://vendor.mercurjs.com',
 					},
 				]}
-				heading="Find clothes that matches your style"
-				paragraph="Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book."
+				heading="Shop the Philippines. All in one place."
+				paragraph="From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available."
 			/>
 
+			{/* Shop by Category — 10-tile grid */}
+			<HomeCategories heading="Shop by category" />
+
+			{/* Flash Sale — live countdown + product cards */}
+			<FlashSaleSection locale={locale} />
+
 			{/* Trending Products */}
-			<div className="container w-full">
-				{/* <HomeProductSection
-					heading="Trending Products"
-					home
-					locale={locale}
-				/> */}
+			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 py-10 lg:py-12">
 				<TrendingProducts locale={locale} />
 			</div>
 
-			{/* Quick Category Access */}
-			<div className="container w-full mb-10">
-				<h2 className="text-2xl font-bold uppercase tracking-wide mb-8">Categories</h2>
-				<HomeCategories heading="Categories" />
-			</div>
-
 			{/* Collections */}
-			<div className="container w-full mb-10">
-				<h2 className="text-2xl font-bold uppercase tracking-wide mb-8">Collections</h2>
+			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
+				<h2 className="text-[28px] font-extrabold tracking-tight text-[#1B1B1B] mb-6">Collections</h2>
 				<HomeCollections />
 			</div>
 
-			{/* Featured Products Section */}
-			<div className="container w-full">
+			{/* Featured Products */}
+			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
 				<FeaturedProductsSection />
 			</div>
 
-			{/* Special Offer Section */}
-			<div className="container w-full">
+			{/* Special Offer */}
+			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
 				<SpecialOffer />
 			</div>
 
 			{/* Shop by Style */}
 			<ShopByStyleSection />
 
-			{/* Blog Section */}
+			{/* Blog */}
 			<div className="mb-10">
 				<BlogSection />
 			</div>
-
-			{/* Category-Specific Sections */}
-			{/* <div className="px-4 lg:px-8 w-full">
-				<section className="py-8">
-					<h2 className="heading-lg text-primary uppercase mb-8">
-						Fresh Groceries
-					</h2>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div className="bg-green-50 p-6 rounded-lg border border-green-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🍎</span>
-								<h3 className="text-xl font-bold text-green-800">
-									Fresh Produce
-								</h3>
-							</div>
-							<p className="text-green-700">
-								Farm-fresh fruits and vegetables delivered daily
-							</p>
-							<a
-								className="text-green-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/groceries/fresh-produce"
-							>
-								Shop Now →
-							</a>
-						</div>
-						<div className="bg-green-50 p-6 rounded-lg border border-green-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🥛</span>
-								<h3 className="text-xl font-bold text-green-800">
-									Dairy & Eggs
-								</h3>
-							</div>
-							<p className="text-green-700">
-								Fresh dairy products from local farms
-							</p>
-							<a
-								className="text-green-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/groceries/dairy-eggs"
-							>
-								Shop Now →
-							</a>
-						</div>
-						<div className="bg-green-50 p-6 rounded-lg border border-green-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🥗</span>
-								<h3 className="text-xl font-bold text-green-800">
-									Organic Foods
-								</h3>
-							</div>
-							<p className="text-green-700">
-								Certified organic and health-conscious options
-							</p>
-							<a
-								className="text-green-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/groceries/organic-health"
-							>
-								Shop Now →
-							</a>
-						</div>
-					</div>
-				</section>
-			</div>
-
-			<div className="px-4 lg:px-8 w-full">
-				<section className="py-8">
-					<h2 className="heading-lg text-primary uppercase mb-8">
-						Delicious Food
-					</h2>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🍱</span>
-								<h3 className="text-xl font-bold text-orange-800">
-									Ready Meals
-								</h3>
-							</div>
-							<p className="text-orange-700">
-								Quick and delicious ready-to-eat options
-							</p>
-							<a
-								className="text-orange-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/food/ready-meals"
-							>
-								Order Now →
-							</a>
-						</div>
-						<div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🌍</span>
-								<h3 className="text-xl font-bold text-orange-800">
-									International
-								</h3>
-							</div>
-							<p className="text-orange-700">
-								Authentic flavors from around the world
-							</p>
-							<a
-								className="text-orange-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/food/international"
-							>
-								Explore →
-							</a>
-						</div>
-						<div className="bg-orange-50 p-6 rounded-lg border border-orange-200">
-							<div className="flex items-center mb-4">
-								<span className="text-3xl mr-3">🇵🇭</span>
-								<h3 className="text-xl font-bold text-orange-800">
-									Local Delicacies
-								</h3>
-							</div>
-							<p className="text-orange-700">
-								Traditional Filipino favorites and specialties
-							</p>
-							<a
-								className="text-orange-600 font-medium mt-2 inline-block hover:underline"
-								href="/categories/food/local-delicacies"
-							>
-								Taste →
-							</a>
-						</div>
-					</div>
-				</section>
-			</div> */}
-
-			{/* Featured Banner Section */}
-			{/* <BannerSection /> */}
-
-			{/* <AlgoliaTrendingListings /> */}
-
-			{/* Popular Brands */}
-			{/* <HomePopularBrandsSection /> */}
 		</main>
 	);
 }

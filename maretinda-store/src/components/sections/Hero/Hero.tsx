@@ -1,159 +1,213 @@
-'use client';
-
-import { ChevronLeft, ChevronRight } from '@medusajs/icons';
-import Image from 'next/image';
 import Link from 'next/link';
-import Slider, { type CustomArrowProps } from 'react-slick';
-import { v4 as uuidv4 } from 'uuid';
-
-import 'slick-carousel/slick/slick-theme.css';
-import 'slick-carousel/slick/slick.css';
 
 type HeroProps = {
-	image?: string; // Make image optional since we're not using it
-	heading: string;
-	paragraph: string;
 	buttons: { label: string; path: string }[];
+	heading?: string;
+	paragraph?: string;
 };
 
-const PrevArrow = ({ onClick }: CustomArrowProps) => {
+export const Hero = ({ buttons }: HeroProps) => {
+	const shopBtn = buttons.find((b) => b.label === 'Start Shopping') ?? buttons[0];
+	const sellerBtn = buttons.find((b) => b.label === 'Become a Seller') ?? buttons[1];
+
 	return (
-		<button
-			className="z-20 w-9 sm:w-[49px] h-9 sm:h-[47.28px] bg-white rounded-full absolute py-[10.84px] pl-[10.95px] pr-[15.82px] sm:px-[17px] sm:pt-[16.5px] sm:pb-[15.78px] bottom-[53px] sm:top-[291px] left-1 sm:left-[40px] shadow-[0px_4px_4px_0px_#00000040]"
-			onClick={onClick}
-			type="button"
+		<section
+			style={{
+				background: 'radial-gradient(1100px 500px at 8% 10%, rgba(255,255,255,0.06), transparent 60%), radial-gradient(800px 500px at 95% 90%, rgba(155,128,210,0.25), transparent 60%), linear-gradient(180deg, #2A1B3E 0%, #432C63 100%)',
+			}}
 		>
-			<ChevronLeft className="w-[8px] h-[14px] sm:w-[15px] sm:h-[15px] overflow-visible" />
-		</button>
-	);
-};
+			{/* Hero cards grid */}
+			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-8 grid grid-cols-12 gap-4 lg:gap-5">
 
-const NextArrow = ({ onClick }: CustomArrowProps) => {
-	return (
-		<button
-			className="z-20 w-9 sm:w-[49px] h-9 sm:h-[47.28px] bg-white rounded-full absolute py-[10.84px] pl-[10.95px] pr-[15.82px] sm:px-[17px] sm:pt-[16.5px] sm:pb-[15.78px] bottom-[53px] sm:top-[291px] right-2 sm:right-[51px] shadow-[0px_4px_4px_0px_#00000040]"
-			onClick={onClick}
-			type="button"
-		>
-			<ChevronRight className="w-[8px] h-[14px] sm:w-[15px] sm:h-[15px] overflow-visible" />
-		</button>
-	);
-};
-
-export const Hero = ({ heading, paragraph, buttons }: HeroProps) => {
-	const settings = {
-		dots: false,
-		infinite: true,
-		nextArrow: <NextArrow />,
-		prevArrow: <PrevArrow />,
-		slidesToScroll: 1,
-		slidesToShow: 1,
-		speed: 500,
-	};
-
-	return (
-		<section className="w-full container mt-5 max-w-[1242px]">
-			<div className="sm:h-[620px]">
-				<Slider {...settings}>
-					{/* Beautiful Gradient Hero Banner */}
-					<div className="relative bg-brand overflow-hidden">
-						{/* Background Images */}
-						<Image
-							alt="Gifts"
-							className="!hidden sm:!block drag-none absolute top-[310px] left-[-68px]"
-							height={316}
-							src="/images/hero/black-friday-elements-assortment.png"
-							width={562}
-						/>
-						<div className="!hidden sm:!block absolute top-[-61x] right-[91.87]">
-							<Image
-								alt="Shopping Bag"
-								className="w-[209.71] h-[229.4] drag-none -scale-y-100 rotate-[113.01deg]"
-								height={229.4}
-								src="/images/hero/shopping-bag.png"
-								width={209.71}
-							/>
-						</div>
-						{/* Stars */}
-						<Image
-							alt="Star"
-							className="!hidden sm:!block object-fill drag-none absolute top-[65px] left-[89px]"
-							height={107.83}
-							src="/images/hero/star.svg"
-							width={104}
-						/>
-						<Image
-							alt="Star"
-							className="!hidden sm:!block object-fill drag-none absolute top-[172.5px] right-[68px]"
-							height={90}
-							src="/images/hero/star.svg"
-							width={74}
-						/>
-						<Image
-							alt="Star"
-							className="!hidden sm:!block object-fill drag-none absolute top-[468px] right-[198px]"
-							height={58.06}
-							src="/images/hero/star.svg"
-							width={56}
-						/>
-
-						{/* Background Pattern */}
-						{/* <div className="absolute inset-0 bg-black/10">
+				{/* Main hero card */}
+				<div className="col-span-12 lg:col-span-8 relative rounded-2xl overflow-hidden min-h-[380px] lg:min-h-[420px] flex" style={{ backgroundColor: '#FAF8F5' }}>
+					{/* Striped background */}
 					<div
 						className="absolute inset-0"
 						style={{
-							backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+							backgroundColor: '#E6D4B7',
+							backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
 						}}
 					/>
-				</div> */}
+					{/* Fade overlay */}
+					<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, #FAF8F5 0%, rgba(250,248,245,0.88) 55%, transparent 100%)' }} />
 
-						{/* Floating Elements */}
-						<div className="absolute top-10 right-10 w-20 h-20 bg-white/10 rounded-full animate-pulse" />
-						<div
-							className="absolute bottom-10 left-10 w-16 h-16 bg-white/10 rounded-full animate-pulse"
-							style={{ animationDelay: '1s' }}
-						/>
-						<div
-							className="absolute top-1/2 left-1/4 w-12 h-12 bg-white/10 rounded-full animate-pulse"
-							style={{ animationDelay: '2s' }}
-						/>
+					{/* Copy */}
+					<div className="relative z-10 p-8 lg:p-12 max-w-[58%] flex flex-col justify-between">
+						<div>
+							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase" style={{ color: '#432C63' }}>
+								<span className="w-2 h-2 rounded-full bg-[#1B1B1B]" />
+								New season · Pampanga local
+							</div>
+							<h1 className="mt-5 font-extrabold leading-[1.02] tracking-tight text-[#1B1B1B]" style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}>
+								Shop the<br />
+								Philippines.<br />
+								<span style={{ color: '#432C63' }}>All in one place.</span>
+							</h1>
+							<p className="mt-4 text-[15px] text-[#404040] leading-relaxed max-w-[420px] hidden md:block">
+								From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available.
+							</p>
+						</div>
 
-						{/* Content */}
-						<div className="relative px-8 pt-[53px] sm:pt-[173px] pb-[43px] sm:pb-[169.5px]">
-							<div className="max-w-4xl mx-auto text-center text-brand-purple-900">
-								{/* Main Content */}
-								<h1
-									className={`font-bold mb-[27px] sm:mb-8 text-[28px] sm:text-5xl leading-[100%] font-lora max-w-[734px] mx-auto tracking-normal sm:h-[122px]`}
+						<div className="flex flex-wrap items-center gap-3 mt-6 lg:mt-8">
+							{shopBtn && (
+								<Link
+									href={shopBtn.path}
+									className="inline-flex items-center gap-2 font-bold text-[14px] px-6 h-12 rounded-full text-white transition-colors hover:opacity-90"
+									style={{ backgroundColor: '#1B1B1B' }}
 								>
-									{heading.toLocaleUpperCase()}
-								</h1>
-								<p className="text-[10px] sm:text-base mb-[39px] sm:mb-[16.5px] mx-auto leading-relaxed h-[67px] max-w-[815px]">
-									{paragraph}
-								</p>
-
-								{/* Action Buttons */}
-								{buttons.length && (
-									<div className="flex flex-col sm:flex-row gap-[11px] sm:gap-6 justify-center items-center">
-										{buttons.map(({ label, path }) => (
-											<Link
-												className={
-													'group inline-flex items-center justify-center sm:px-8 py-[15px] sm:py-[10px] rounded-[6px] transition-all duration-300 bg-brand-cta-400 text-gray-900 hover:scale-105 shadow-lg w-[220px] sm:w-auto h-[45px] sm:h-auto'
-												}
-												href={path}
-												key={uuidv4()}
-											>
-												<span className="text-xs sm:text-[14px] font-medium leading-5">
-													{label}
-												</span>
-											</Link>
-										))}
-									</div>
-								)}
+									{shopBtn.label}
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+								</Link>
+							)}
+							{sellerBtn && (
+								<Link
+									href={sellerBtn.path}
+									className="inline-flex items-center font-semibold text-[14px] px-6 h-12 rounded-full border border-black/15 text-[#1B1B1B] hover:bg-white/60 transition-colors"
+									style={{ backgroundColor: 'rgba(255,255,255,0)' }}
+								>
+									{sellerBtn.label}
+								</Link>
+							)}
+							<div className="hidden md:flex items-center gap-2 ml-2 text-[12px] text-[#404040]">
+								<div className="flex -space-x-2">
+									<div className="w-7 h-7 rounded-full border-2 border-[#FAF8F5]" style={{ backgroundColor: '#E26D5C' }} />
+									<div className="w-7 h-7 rounded-full border-2 border-[#FAF8F5]" style={{ backgroundColor: '#5FA88B' }} />
+									<div className="w-7 h-7 rounded-full border-2 border-[#FAF8F5]" style={{ backgroundColor: '#7FA8C9' }} />
+									<div className="w-7 h-7 rounded-full border-2 border-[#FAF8F5]" style={{ backgroundColor: '#D98AA1' }} />
+								</div>
+								<span><b className="text-[#1B1B1B]">12,800+</b> vendors</span>
 							</div>
 						</div>
 					</div>
-					<div>Second Slide</div>
-				</Slider>
+
+					{/* Right placeholder slot */}
+					<div className="hidden lg:flex absolute right-0 top-0 bottom-0 w-[44%] items-end justify-end p-6">
+						<div
+							className="relative w-full h-full rounded-xl overflow-hidden"
+							style={{
+								backgroundColor: '#D9C4A0',
+								backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
+							}}
+						>
+							<div className="absolute inset-0 flex items-end p-5">
+								<div className="bg-white/95 rounded-lg px-3.5 py-2.5 shadow-sm flex items-center gap-3">
+									<div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(67,44,99,0.10)' }}>
+										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#432C63" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+									</div>
+									<div>
+										<div className="text-[11px] text-[#737373] uppercase tracking-wider font-mono">Hero asset slot</div>
+										<div className="text-[12px] font-semibold text-[#1B1B1B]">1100 × 800 — product image</div>
+									</div>
+								</div>
+							</div>
+							<div className="absolute top-4 right-4 bg-[#1B1B1B] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+								Featured
+							</div>
+						</div>
+					</div>
+
+					{/* Slider dots */}
+					<div className="absolute bottom-5 left-8 lg:left-12 flex items-center gap-1.5 z-10">
+						<span className="w-7 h-1.5 rounded-full" style={{ backgroundColor: '#432C63' }} />
+						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
+						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
+						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
+					</div>
+				</div>
+
+				{/* Promo sidebar */}
+				<div className="col-span-12 lg:col-span-4 flex flex-col gap-4 lg:gap-5">
+					{/* Welcome offer — ink card */}
+					<div className="relative rounded-2xl overflow-hidden text-white p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#1B1B1B' }}>
+						<div>
+							<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70">Welcome offer</div>
+							<div className="mt-2 text-[34px] font-extrabold leading-[1] tracking-tight">₱200 off</div>
+							<div className="mt-1 text-[13px] font-medium opacity-85">first order over ₱1,500</div>
+						</div>
+						<div className="flex items-center justify-between">
+							<code className="font-mono text-[12px] font-bold bg-white text-[#1B1B1B] px-2.5 py-1 rounded-md tracking-wider">HELLOMRTD</code>
+							<Link href="/categories" className="text-[13px] font-bold underline underline-offset-4 text-white hover:opacity-80">Claim →</Link>
+						</div>
+						<div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border-2 border-white/15" />
+					</div>
+
+					{/* Sari-Sari festival card */}
+					<div className="relative rounded-2xl overflow-hidden text-white p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#2A1B3E' }}>
+						<div
+							className="absolute inset-0 opacity-30"
+							style={{
+								backgroundColor: '#5A3F7E',
+								backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 14px)',
+							}}
+						/>
+						<div className="relative">
+							<div className="text-[11px] font-bold tracking-[0.16em] uppercase text-white/70">Sari-Sari Festival</div>
+							<div className="mt-2 text-[24px] font-extrabold leading-[1.05] tracking-tight">
+								Up to 70% off<br />local brands
+							</div>
+						</div>
+						<div className="relative flex items-center justify-between">
+							<div className="text-[12px] opacity-80">Ends in 2d 14h 22m</div>
+							<Link
+								href="/categories"
+								className="text-[12px] font-bold px-3.5 py-1.5 rounded-full text-[#432C63] bg-white hover:bg-white/90 transition-colors"
+							>
+								Shop now
+							</Link>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Service strip */}
+			<div style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
+				<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+								<path d="M3 7h13v10H3zM16 10h4l1 2v5h-5" /><circle cx="7" cy="17" r="2" /><circle cx="18" cy="17" r="2" />
+							</svg>
+						</div>
+						<div>
+							<div className="text-[13.5px] font-bold">Free shipping</div>
+							<div className="text-[11.5px] text-white/65">on orders over ₱499</div>
+						</div>
+					</div>
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+								<rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" />
+							</svg>
+						</div>
+						<div>
+							<div className="text-[13.5px] font-bold">Cash on delivery</div>
+							<div className="text-[11.5px] text-white/65">pay when you receive</div>
+						</div>
+					</div>
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+								<path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 4v5h-5" />
+							</svg>
+						</div>
+						<div>
+							<div className="text-[13.5px] font-bold">7-day returns</div>
+							<div className="text-[11.5px] text-white/65">hassle-free refunds</div>
+						</div>
+					</div>
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+								<path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5A8.5 8.5 0 0 1 21 11v.5z" />
+							</svg>
+						</div>
+						<div>
+							<div className="text-[13.5px] font-bold">24/7 support</div>
+							<div className="text-[11.5px] text-white/65">English & Tagalog</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</section>
 	);
