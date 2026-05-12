@@ -17,7 +17,6 @@ export const FirstStory: Story = {
 			{ label: 'Sell now', path: '3' },
 		],
 		heading: 'Snag your style in a flash',
-		image: '/images/hero/Image.jpg',
 		paragraph:
 			'Buy, sell, and discover pre-loved from the trendiest brands.',
 	},
