@@ -25,13 +25,13 @@ export const ProductDetailsPage = async ({
 		},
 	}).then(({ response }) => response.products[0]);
 
+	if (!prod) return null;
+
 	const seller = (await getSellerByHandle(
 		prod.seller?.handle as string,
 	)) as SellerProps;
 
-	if (!prod) return null;
-
-	if (seller.store_status === 'SUSPENDED') {
+	if (seller?.store_status === 'SUSPENDED') {
 		return NotFound();
 	}
 
