@@ -73,12 +73,14 @@ export const Header = async () => {
 							/>
 						</div>
 						<LocalizedClientLink href="/" className="flex items-center gap-2">
-							<div
-								className="w-9 h-9 rounded-[8px] bg-white flex items-center justify-center font-extrabold text-[18px]"
-								style={{ color: '#432C63' }}
-							>
-								M
-							</div>
+							<Image
+								src="/logo-m.png"
+								alt="Maretinda"
+								width={36}
+								height={36}
+								className="rounded-[8px]"
+								priority
+							/>
 							<div className="leading-none hidden sm:block">
 								<div className="text-[20px] font-extrabold tracking-tight text-white">maretinda</div>
 								<div className="text-[9px] text-white/60 tracking-[0.18em] uppercase mt-0.5">Philippines</div>

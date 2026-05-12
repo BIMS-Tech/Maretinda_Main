@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 const SHOP_LINKS = [
@@ -41,12 +42,13 @@ export function Footer() {
 					{/* Brand col */}
 					<div className="lg:col-span-2">
 						<Link href="/" className="flex items-center gap-2.5 mb-4">
-							<div
-								className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-white text-[18px]"
-								style={{ backgroundColor: '#432C63' }}
-							>
-								M
-							</div>
+							<Image
+								src="/logo-m.png"
+								alt="Maretinda"
+								width={36}
+								height={36}
+								className="rounded-lg"
+							/>
 							<div>
 								<div className="text-white font-extrabold text-[17px] leading-none tracking-tight">maretinda</div>
 								<div className="text-[10px] font-semibold tracking-[0.14em] uppercase mt-0.5" style={{ color: '#9CA3AF' }}>Philippines</div>
