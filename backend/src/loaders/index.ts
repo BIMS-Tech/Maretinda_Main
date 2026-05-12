@@ -4,10 +4,11 @@ import giyaPayLoader from "./giyapay"
 import tamaLoader from "./tama"
 import dftLoader from "./dft"
 import fileBackupLoader from "./file-backup"
+import subscriptionLoader from "./subscription"
 
 export default async function customLoader(container: MedusaContainer): Promise<void> {
   console.log('[Custom Loaders] ========== STARTING ==========')
-  
+
   try {
     // Run settlement loader first to add bank fields to seller table
     await settlementLoader(container)
@@ -15,7 +16,8 @@ export default async function customLoader(container: MedusaContainer): Promise<
     await tamaLoader(container)
     await dftLoader(container)
     await fileBackupLoader(container)
-    
+    await subscriptionLoader(container)
+
     console.log('[Custom Loaders] ========== COMPLETE ==========')
   } catch (error) {
     console.error('[Custom Loaders] ========== FAILED ==========', error)
