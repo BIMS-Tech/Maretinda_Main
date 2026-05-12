@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const TARGET_HOURS = 2;
 
@@ -26,12 +26,15 @@ export const FlashSaleCountdown = () => {
 		<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
 			<span className="text-[12px] text-[#404040] mr-1">Ends in</span>
 			{[hh, mm, ss].map((unit, i) => (
-				<span key={i} className="contents">
-					<span className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums">
+				<React.Fragment key={i}>
+					<span
+						suppressHydrationWarning
+						className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums"
+					>
 						{unit}
 					</span>
 					{i < 2 && <span className="text-[#1B1B1B]/40">:</span>}
-				</span>
+				</React.Fragment>
 			))}
 		</div>
 	);
