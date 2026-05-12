@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
 
 import {
+	BecomeSellerBand,
 	BlogSection,
+	FeaturedCollectionsSection,
 	FeaturedProductsSection,
 	FlashSaleSection,
 	Hero,
 	HomeCategories,
-	HomeCollections,
-	ShopByStyleSection,
-	SpecialOffer,
+	NewsletterSection,
+	TopVendorsSection,
+	TrendingNowSection,
 	TrendingProducts,
+	TrustSection,
 } from '@/components/sections';
 
 export const metadata: Metadata = {
@@ -43,7 +46,7 @@ export default async function Home({
 
 	return (
 		<main className="w-full flex flex-col">
-			{/* Hero — purple gradient with main card, promo sidebar, service strip */}
+			{/* 1. Hero — purple gradient, main card, promo sidebar, service strip */}
 			<Hero
 				buttons={[
 					{ label: 'Start Shopping', path: '/categories' },
@@ -59,40 +62,44 @@ export default async function Home({
 				paragraph="From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available."
 			/>
 
-			{/* Shop by Category — 10-tile grid */}
+			{/* 2. Shop by Category — 10-tile grid */}
 			<HomeCategories heading="Shop by category" />
 
-			{/* Flash Sale — live countdown + product cards */}
+			{/* 3. Flash Sale — live countdown + product cards */}
 			<FlashSaleSection locale={locale} />
 
-			{/* Trending Products */}
+			{/* 4. Trending Now — 6-card product grid with filter pills */}
+			<TrendingNowSection locale={locale} />
+
+			{/* 5. Featured Collections — editorial 12-col grid */}
+			<FeaturedCollectionsSection />
+
+			{/* 6. Top Vendors — 4-card vendor grid */}
+			<TopVendorsSection />
+
+			{/* 7. Become a Seller CTA band */}
+			<BecomeSellerBand />
+
+			{/* 8. Trust pillars — buyer protection / delivery / payments */}
+			<TrustSection />
+
+			{/* 9. Trending Products (existing component) */}
 			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 py-10 lg:py-12">
 				<TrendingProducts locale={locale} />
 			</div>
 
-			{/* Collections */}
-			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
-				<h2 className="text-[28px] font-extrabold tracking-tight text-[#1B1B1B] mb-6">Collections</h2>
-				<HomeCollections />
-			</div>
-
-			{/* Featured Products */}
+			{/* 10. Featured Products */}
 			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
 				<FeaturedProductsSection />
 			</div>
 
-			{/* Special Offer */}
-			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6 pb-10">
-				<SpecialOffer />
-			</div>
-
-			{/* Shop by Style */}
-			<ShopByStyleSection />
-
-			{/* Blog */}
+			{/* 11. Blog */}
 			<div className="mb-10">
 				<BlogSection />
 			</div>
+
+			{/* 12. Newsletter — email subscription band */}
+			<NewsletterSection />
 		</main>
 	);
 }

@@ -21,7 +21,7 @@ export const FlashSaleSection = async ({
 		queryParams: { limit: 6, order: 'created_at' },
 	});
 
-	const items = (products as Product[]).slice(0, 6);
+	const items = (products as unknown as Product[]).slice(0, 6);
 	if (!items.length) return null;
 
 	return (
