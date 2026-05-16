@@ -39,8 +39,8 @@ export const FlashSaleSection = async ({
 								</span>
 								Happening now
 							</div>
-							<h2 className="mt-2 text-[28px] lg:text-[32px] font-extrabold tracking-tight flex items-center gap-3">
-								<svg width="26" height="26" viewBox="0 0 24 24" fill="#1B1B1B" stroke="none">
+							<h2 className="mt-2 font-serif tracking-[-0.01em] flex items-center gap-3" style={{ fontSize: '40px' }}>
+								<svg width="26" height="26" viewBox="0 0 24 24" fill="#FFC533" stroke="none">
 									<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
 								</svg>
 								Flash Sale
@@ -129,8 +129,8 @@ export const FlashSaleSection = async ({
 										)}
 									</div>
 									{/* Sold progress bar */}
-									<div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(27,27,27,0.10)' }}>
-										<div className="h-full rounded-full bg-[#1B1B1B]" style={{ width: `${soldPct}%` }} />
+									<div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,197,51,0.20)' }}>
+										<div className="h-full rounded-full" style={{ width: `${soldPct}%`, backgroundColor: '#FFC533' }} />
 									</div>
 									<div className="mt-1 text-[10.5px] text-[#737373] font-medium">
 										{soldPct}% sold · {remaining} left

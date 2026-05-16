@@ -108,7 +108,7 @@ export const Header = async () => {
 								{Boolean(wishlistCount) && (
 									<span
 										className="absolute top-1 right-1 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
-										style={{ backgroundColor: 'white', color: '#432C63' }}
+										style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 									>
 										{wishlistCount}
 									</span>
@@ -130,7 +130,7 @@ export const Header = async () => {
 							{cartCount > 0 && (
 								<span
 									className="absolute top-1 right-1 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center pointer-events-none"
-									style={{ backgroundColor: 'white', color: '#432C63' }}
+									style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 								>
 									{cartCount}
 								</span>
@@ -166,7 +166,7 @@ export const Header = async () => {
 							<LocalizedClientLink
 								key={cat.href}
 								href={cat.href}
-								className="px-3 py-1.5 rounded-md text-white/85 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap"
+								className="px-3 py-1.5 rounded-md text-white/85 hover:text-[#FFC533] hover:bg-white/10 transition-colors whitespace-nowrap"
 							>
 								{cat.label}
 							</LocalizedClientLink>
@@ -177,11 +177,12 @@ export const Header = async () => {
 						{/* Flash sale live indicator */}
 						<LocalizedClientLink
 							href="/categories"
-							className="px-3 py-1.5 rounded-md text-white font-bold flex items-center gap-1.5"
+							className="px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5"
+							style={{ color: '#FFC533' }}
 						>
 							<span className="relative flex w-2 h-2">
-								<span className="absolute inset-0 rounded-full bg-white animate-ping opacity-75" />
-								<span className="relative inline-block w-2 h-2 rounded-full bg-white" />
+								<span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#FFC533' }} />
+								<span className="relative inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
 							</span>
 							Flash Sale Live
 						</LocalizedClientLink>

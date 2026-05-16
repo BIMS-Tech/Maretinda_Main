@@ -183,6 +183,11 @@ export default {
 					'var(--font-lora)',
 					...require('tailwindcss/defaultTheme').fontFamily.serif,
 				],
+				serif: [
+					'var(--font-dm-serif)',
+					'Georgia',
+					...require('tailwindcss/defaultTheme').fontFamily.serif,
+				],
 			},
 		},
 	},

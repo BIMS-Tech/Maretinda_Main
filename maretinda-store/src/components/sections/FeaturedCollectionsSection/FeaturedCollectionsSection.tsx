@@ -11,7 +11,7 @@ export const FeaturedCollectionsSection = () => (
 					<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}>
 						Curated for you
 					</div>
-					<h2 className="mt-2 text-[26px] lg:text-[32px] font-extrabold tracking-tight text-[#1B1B1B]">
+					<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}>
 						Featured collections
 					</h2>
 				</div>
@@ -29,10 +29,10 @@ export const FeaturedCollectionsSection = () => (
 				>
 					<div className="absolute inset-0" style={{ backgroundColor: '#B8A6D6', backgroundImage: STRIPE }} />
 					<div className="absolute inset-0" style={{ background: 'linear-gradient(to top, #2A1B3E 0%, rgba(42,27,62,0.30) 45%, transparent 100%)' }} />
-					<div className="absolute top-5 left-5 bg-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ color: '#432C63' }}>New</div>
+					<div className="absolute top-5 left-5 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>New</div>
 					<div className="absolute bottom-0 left-0 right-0 p-7 text-white">
-						<div className="text-[11.5px] font-bold tracking-[0.16em] uppercase opacity-80">Editor&apos;s pick</div>
-						<h3 className="mt-2 text-[30px] lg:text-[34px] font-extrabold leading-[1.05] tracking-tight max-w-[420px]">
+						<div className="text-[11.5px] font-bold tracking-[0.16em] uppercase" style={{ color: '#FFC533' }}>Editor&apos;s pick</div>
+						<h3 className="mt-2 font-serif text-[30px] lg:text-[34px] leading-[1.05] tracking-tight max-w-[420px]">
 							New Filipino brands to know
 						</h3>
 						<p className="mt-3 text-[14px] text-white/85 max-w-[440px]">

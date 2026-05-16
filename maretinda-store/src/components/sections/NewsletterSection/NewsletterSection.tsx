@@ -12,18 +12,18 @@ export const NewsletterSection = () => {
 	};
 
 	return (
-		<section style={{ backgroundColor: '#2A1B3E' }}>
+		<section style={{ backgroundColor: '#fdf2ff', borderTop: '1px solid #ECE6F1', borderBottom: '1px solid #ECE6F1' }}>
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
 				<div className="flex flex-col lg:flex-row items-center justify-between gap-8">
 					{/* Left copy */}
-					<div className="text-white text-center lg:text-left">
-						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase opacity-60 mb-2">
+					<div className="text-center lg:text-left">
+						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase mb-2" style={{ color: '#432C63' }}>
 							Stay in the loop
 						</div>
-						<h2 className="text-[26px] lg:text-[32px] font-extrabold tracking-tight">
+						<h2 className="font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: 'clamp(26px, 3vw, 36px)' }}>
 							Get ₱100 off your first order
 						</h2>
-						<p className="mt-2 text-[14px] text-white/70 max-w-[400px]">
+						<p className="mt-2 text-[14px] max-w-[400px]" style={{ color: '#404040' }}>
 							Subscribe for exclusive deals, new local vendor spotlights, and flash sale early access.
 						</p>
 					</div>
@@ -57,8 +57,8 @@ export const NewsletterSection = () => {
 								</button>
 							</form>
 						)}
-						<p className="mt-3 text-[11.5px] text-white/45 text-center lg:text-left">
-							No spam. Unsubscribe anytime. Use code <span className="font-bold text-white/70">HELLOMRTD</span> at checkout.
+						<p className="mt-3 text-[11.5px] text-center lg:text-left" style={{ color: '#9B80D2' }}>
+							No spam. Unsubscribe anytime. Use code <span className="font-bold" style={{ color: '#432C63' }}>HELLOMRTD</span> at checkout.
 						</p>
 					</div>
 				</div>

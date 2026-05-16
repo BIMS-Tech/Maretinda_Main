@@ -57,7 +57,7 @@ const TopHeaderBanner: React.FC = () => {
 	const [selectedCurrency, setSelectedCurrency] = useState(CURRENCY_OPTIONS[0]);
 
 	return (
-		<div className="w-full" style={{ backgroundColor: '#2A1B3E' }}>
+		<div className="w-full" style={{ backgroundColor: '#372248' }}>
 			<div className="max-w-[1360px] mx-auto px-6 h-9 flex items-center justify-between">
 				{/* Left: location + utility links */}
 				<div className="flex items-center gap-5 text-[12.5px] text-white/85">

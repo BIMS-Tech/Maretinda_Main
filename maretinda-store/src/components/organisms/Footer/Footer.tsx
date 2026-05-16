@@ -25,17 +25,12 @@ const SUPPORT_LINKS = [
 	{ label: 'Contact us', href: '/contact' },
 ];
 
-const PAYMENT_ICONS = [
-	{ label: 'GCash', bg: '#0074D9', short: 'G' },
-	{ label: 'Maya', bg: '#0ABF80', short: 'M' },
-	{ label: 'Visa', bg: '#1A1F71', short: 'V' },
-	{ label: 'Mastercard', bg: '#EB001B', short: 'MC' },
-	{ label: 'COD', bg: '#737373', short: '$' },
-];
+const PAYMENT_CHIPS = ['VISA', 'Mastercard', 'GCash', 'Maya', 'GiyaPay', 'COD'];
+const COURIER_CHIPS = ['LBC', 'J&T', 'Ninja Van', 'Lalamove'];
 
 export function Footer() {
 	return (
-		<footer style={{ backgroundColor: '#1B1B1B' }}>
+		<footer style={{ backgroundColor: '#372248' }}>
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6">
 				{/* Main grid */}
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 py-12 lg:py-16">
@@ -51,10 +46,10 @@ export function Footer() {
 							/>
 							<div>
 								<div className="text-white font-extrabold text-[17px] leading-none tracking-tight">maretinda</div>
-								<div className="text-[10px] font-semibold tracking-[0.14em] uppercase mt-0.5" style={{ color: '#9CA3AF' }}>Philippines</div>
+								<div className="text-[10px] font-semibold tracking-[0.14em] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Philippines</div>
 							</div>
 						</Link>
-						<p className="text-[13.5px] leading-relaxed max-w-[280px]" style={{ color: '#9CA3AF' }}>
+						<p className="text-[13.5px] leading-relaxed max-w-[280px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
 							Your complete Philippine marketplace — from fresh palengke finds to fashion-forward local brands, all in one place.
 						</p>
 
@@ -69,8 +64,8 @@ export function Footer() {
 									key={label}
 									href="#"
 									aria-label={label}
-									className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-white/10"
-									style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+									className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-white/20"
+									style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
 								>
 									<svg width="15" height="15" viewBox="0 0 24 24" fill="white">
 										<path d={path} />
@@ -89,7 +84,7 @@ export function Footer() {
 									<path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
 								</svg>
 								<div>
-									<div style={{ color: '#9CA3AF', fontSize: '9px', lineHeight: '1' }}>Download on</div>
+									<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Download on</div>
 									<div className="text-white text-[12px] font-semibold leading-tight">App Store</div>
 								</div>
 							</a>
@@ -101,7 +96,7 @@ export function Footer() {
 									<path d="M3.18 23.76c.3.17.66.19.99.06l11.67-6.73-2.31-2.31-10.35 8.98zM.5 1.72A1.5 1.5 0 0 0 0 2.83v18.34a1.5 1.5 0 0 0 .5 1.11l.06.05 10.27-10.27v-.24L.56 1.67.5 1.72zM22.06 10.33l-2.9-1.67-2.59 2.59 2.59 2.59 2.93-1.69c.83-.48.83-1.26-.03-1.82zM4.17.24L15.84 6.97l-2.31 2.31L3.18.3C3.51.17 3.87.2 4.17.4V.24z" />
 								</svg>
 								<div>
-									<div style={{ color: '#9CA3AF', fontSize: '9px', lineHeight: '1' }}>Get it on</div>
+									<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Get it on</div>
 									<div className="text-white text-[12px] font-semibold leading-tight">Google Play</div>
 								</div>
 							</a>
@@ -110,14 +105,14 @@ export function Footer() {
 
 					{/* Shop links */}
 					<div>
-						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: '#9CA3AF' }}>Shop</h3>
+						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Shop</h3>
 						<nav className="space-y-2.5">
 							{SHOP_LINKS.map(({ label, href }) => (
 								<Link
 									key={label}
 									href={href}
-									className="block text-[13.5px] transition-colors hover:text-white"
-									style={{ color: '#D1D5DB' }}
+									className="block text-[13.5px] transition-colors hover:text-[#FFC533]"
+									style={{ color: 'rgba(255,255,255,0.75)' }}
 								>
 									{label}
 								</Link>
@@ -127,14 +122,14 @@ export function Footer() {
 
 					{/* Sell links */}
 					<div>
-						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: '#9CA3AF' }}>Sell</h3>
+						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Sell</h3>
 						<nav className="space-y-2.5">
 							{SELL_LINKS.map(({ label, href }) => (
 								<Link
 									key={label}
 									href={href}
-									className="block text-[13.5px] transition-colors hover:text-white"
-									style={{ color: '#D1D5DB' }}
+									className="block text-[13.5px] transition-colors hover:text-[#FFC533]"
+									style={{ color: 'rgba(255,255,255,0.75)' }}
 								>
 									{label}
 								</Link>
@@ -144,52 +139,73 @@ export function Footer() {
 
 					{/* Support links */}
 					<div>
-						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: '#9CA3AF' }}>Support</h3>
+						<h3 className="text-[12px] font-bold tracking-[0.16em] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Support</h3>
 						<nav className="space-y-2.5">
 							{SUPPORT_LINKS.map(({ label, href }) => (
 								<Link
 									key={label}
 									href={href}
-									className="block text-[13.5px] transition-colors hover:text-white"
-									style={{ color: '#D1D5DB' }}
+									className="block text-[13.5px] transition-colors hover:text-[#FFC533]"
+									style={{ color: 'rgba(255,255,255,0.75)' }}
 								>
 									{label}
 								</Link>
 							))}
 						</nav>
 						<div className="mt-5 pt-5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-							<div className="text-[12px] font-semibold mb-1" style={{ color: '#9CA3AF' }}>Address</div>
-							<p className="text-[12px] leading-relaxed" style={{ color: '#6B7280' }}>
+							<div className="text-[12px] font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.45)' }}>Address</div>
+							<p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
 								KMC | Skyrise 4A &amp; 4B, Cebu IT Park, Cebu City, 6000 Cebu
 							</p>
-							<a href="mailto:maretinda@gmail.com" className="block text-[12px] mt-2 hover:text-white transition-colors" style={{ color: '#9CA3AF' }}>
+							<a href="mailto:maretinda@gmail.com" className="block text-[12px] mt-2 hover:text-[#FFC533] transition-colors" style={{ color: 'rgba(255,255,255,0.50)' }}>
 								maretinda@gmail.com
 							</a>
 						</div>
 					</div>
 				</div>
 
-				{/* Bottom bar */}
-				<div
-					className="flex flex-col sm:flex-row items-center justify-between gap-4 py-5"
-					style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
-				>
-					<p className="text-[12px]" style={{ color: '#6B7280' }}>
-						© 2026 Maretinda. All rights reserved. Powered by BIMS Technologies.
-					</p>
+				{/* Payment & couriers row */}
+				<div className="py-5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
+						<div className="flex items-center gap-2 flex-wrap">
+							<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>We accept</span>
+							{PAYMENT_CHIPS.map((chip) => (
+								<span
+									key={chip}
+									className="h-6 px-2.5 rounded text-[10.5px] font-bold flex items-center"
+									style={{ backgroundColor: 'white', color: '#432C63' }}
+								>
+									{chip}
+								</span>
+							))}
+						</div>
+						<div className="flex items-center gap-2 flex-wrap sm:ml-4">
+							<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>Couriers</span>
+							{COURIER_CHIPS.map((chip) => (
+								<span
+									key={chip}
+									className="h-6 px-2.5 rounded text-[10.5px] font-semibold flex items-center border"
+									style={{ borderColor: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.65)' }}
+								>
+									{chip}
+								</span>
+							))}
+						</div>
+					</div>
+				</div>
 
-					{/* Payment methods */}
-					<div className="flex items-center gap-2">
-						{PAYMENT_ICONS.map(({ label, bg, short }) => (
-							<div
-								key={label}
-								className="h-7 px-2 rounded text-white text-[10px] font-extrabold flex items-center justify-center"
-								style={{ backgroundColor: bg, minWidth: '32px' }}
-								title={label}
-							>
-								{short}
-							</div>
-						))}
+				{/* Legal bottom bar */}
+				<div
+					className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4"
+					style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+				>
+					<p className="text-[11.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+						© 2026 Maretinda Inc. · DTI 123-4567-89 · BIR 001-234-567 · Powered by BIMS Technologies
+					</p>
+					<div className="flex items-center gap-4 text-[11.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
+						<Link href="/privacy" className="hover:text-[#FFC533] transition-colors">Privacy</Link>
+						<Link href="/terms" className="hover:text-[#FFC533] transition-colors">Terms</Link>
+						<Link href="/cookies" className="hover:text-[#FFC533] transition-colors">Cookies</Link>
 					</div>
 				</div>
 			</div>

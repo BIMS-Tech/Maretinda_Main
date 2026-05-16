@@ -54,7 +54,7 @@ export const TrustSection = () => (
 							{icon}
 						</div>
 						<div>
-							<h3 className="text-[18px] font-extrabold text-[#1B1B1B] tracking-tight">{title}</h3>
+							<h3 className="font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '20px' }}>{title}</h3>
 							<p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#404040' }}>{body}</p>
 							<a
 								href={href}

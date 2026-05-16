@@ -22,7 +22,7 @@ export const BecomeSellerBand = () => (
 					<div className="text-[12px] font-semibold tracking-[0.18em] uppercase opacity-70 mb-3">
 						Sell on Maretinda
 					</div>
-					<h2 className="text-[30px] lg:text-[42px] font-extrabold leading-[1.05] tracking-tight max-w-[520px]">
+					<h2 className="font-serif leading-[1.05] tracking-[-0.01em] max-w-[520px]" style={{ fontSize: 'clamp(30px, 3.5vw, 42px)' }}>
 						Open your shop on Maretinda. Reach the whole Philippines.
 					</h2>
 					<p className="mt-4 text-[15px] text-white/80 max-w-[480px] leading-relaxed">
@@ -33,7 +33,7 @@ export const BecomeSellerBand = () => (
 					<div className="mt-8 flex items-center gap-8 flex-wrap">
 						{STATS.map(({ value, label }) => (
 							<div key={label}>
-								<div className="text-[28px] font-extrabold leading-none">{value}</div>
+								<div className="text-[28px] font-extrabold leading-none" style={{ color: '#FFC533' }}>{value}</div>
 								<div className="text-[12px] text-white/65 mt-0.5 font-medium">{label}</div>
 							</div>
 						))}
@@ -46,7 +46,8 @@ export const BecomeSellerBand = () => (
 					<div className="mt-7 flex items-center gap-3 flex-wrap">
 						<Link
 							href="/seller/register"
-							className="h-12 px-7 rounded-full text-[14px] font-bold bg-white text-[#432C63] hover:bg-[#FAF8F5] transition-colors flex items-center gap-2"
+							className="h-12 px-7 rounded-full text-[14px] font-bold transition-opacity hover:opacity-90 flex items-center gap-2"
+							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 						>
 							Start selling
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
@@ -71,8 +72,8 @@ export const BecomeSellerBand = () => (
 					<div className="bg-white rounded-2xl p-6 shadow-2xl relative">
 						{/* Floating chip */}
 						<div
-							className="absolute -top-3.5 left-6 text-white text-[11px] font-bold px-3 py-1 rounded-full"
-							style={{ backgroundColor: '#1B1B1B' }}
+							className="absolute -top-3.5 left-6 text-[11px] font-bold px-3 py-1 rounded-full"
+							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 						>
 							90 days · zero fees
 						</div>

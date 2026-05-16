@@ -17,7 +17,7 @@ const VerifiedBadge = () => (
 );
 
 const StarIcon = () => (
-	<svg width="11" height="11" viewBox="0 0 24 24" fill="#1B1B1B">
+	<svg width="11" height="11" viewBox="0 0 24 24" fill="#FFC533">
 		<path d="M12 2l3 7h7l-5.5 4.5L18 22l-6-4-6 4 1.5-8.5L2 9h7z" />
 	</svg>
 );
@@ -29,7 +29,7 @@ export const TopVendorsSection = () => (
 			<div className="flex items-end justify-between mb-7 lg:mb-8 flex-wrap gap-4">
 				<div>
 					<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}>Made in the Philippines</div>
-					<h2 className="mt-2 text-[26px] lg:text-[32px] font-extrabold tracking-tight text-[#1B1B1B]">Top local vendors</h2>
+					<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}>Top local vendors</h2>
 					<p className="mt-2 text-[14px] max-w-[520px]" style={{ color: '#404040' }}>
 						Direct from the makers — these verified small businesses ship nationwide with care.
 					</p>
