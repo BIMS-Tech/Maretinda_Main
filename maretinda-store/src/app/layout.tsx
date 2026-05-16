@@ -32,7 +32,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 const dmSerif = DM_Serif_Display({
 	subsets: ['latin'],
 	variable: '--font-dm-serif',
-	weight: ['400'],
+	weight: '400',
 	style: ['normal', 'italic'],
 });
 
