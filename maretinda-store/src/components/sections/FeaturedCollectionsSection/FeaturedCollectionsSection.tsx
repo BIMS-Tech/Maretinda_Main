@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { listCollections } from '@/lib/data/collections';
@@ -6,39 +7,36 @@ import type { HttpTypes } from '@medusajs/types';
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)';
 
 const CARD_COLORS = [
-	'#B8A6D6',
-	'#D9CFB8',
-	'#C8E2D0',
-	'#E2D9F3',
-	'#F2D9DB',
-	'#D9E5F0',
-	'#F0E4CC',
-	'#FFE2D2',
+	'#B8A6D6', '#D9CFB8', '#C8E2D0', '#E2D9F3',
+	'#F2D9DB', '#D9E5F0', '#F0E4CC', '#FFE2D2',
 ];
 
-const DARK_OVERLAY_COLORS = [
-	'#2A1B3E',
-	'#2E2418',
-	'#1B3025',
-	'#221830',
-	'#3E1B1D',
-	'#1B2B3E',
-	'#3E2E12',
-	'#3E2018',
-];
+function getMeta(col: HttpTypes.StoreCollection) {
+	return (col.metadata ?? {}) as Record<string, string>;
+}
+
+function getImage(col: HttpTypes.StoreCollection): string | null {
+	const meta = getMeta(col);
+	return meta.image || meta.thumbnail || col.products?.[0]?.thumbnail || null;
+}
 
 function getDesc(col: HttpTypes.StoreCollection): string {
-	const meta = col.metadata as Record<string, string> | null;
-	return meta?.description || meta?.subtitle || '';
+	const meta = getMeta(col);
+	return meta.description || meta.subtitle || '';
 }
 
 export const FeaturedCollectionsSection = async () => {
-	const { collections } = await listCollections({ limit: '8' });
+	const { collections } = await listCollections({
+		limit: '8',
+		fields: 'id,title,handle,metadata,*products,products.thumbnail',
+	});
 	if (!collections?.length) return null;
 
 	const [featured, ...rest] = collections;
 	const mediumCards = rest.slice(0, 2);
 	const smallCards = rest.slice(2, 6);
+
+	const featuredImage = getImage(featured);
 
 	return (
 		<section className="bg-white">
@@ -65,8 +63,18 @@ export const FeaturedCollectionsSection = async () => {
 						className="col-span-12 lg:col-span-6 relative rounded-2xl overflow-hidden border h-[420px] block group"
 						style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
 					>
-						<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[0], backgroundImage: STRIPE }} />
-						<div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${DARK_OVERLAY_COLORS[0]} 0%, rgba(42,27,62,0.30) 45%, transparent 100%)` }} />
+						{featuredImage ? (
+							<Image
+								src={featuredImage}
+								alt={featured.title}
+								fill
+								className="object-cover transition-transform duration-500 group-hover:scale-105"
+								sizes="(max-width: 1024px) 100vw, 50vw"
+							/>
+						) : (
+							<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[0], backgroundImage: STRIPE }} />
+						)}
+						<div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(20,10,35,0.85) 0%, rgba(20,10,35,0.35) 50%, transparent 100%)' }} />
 						<div className="absolute top-5 left-5 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>New</div>
 						<div className="absolute bottom-0 left-0 right-0 p-7 text-white">
 							<div className="text-[11.5px] font-bold tracking-[0.16em] uppercase" style={{ color: '#FFC533' }}>Editor&apos;s pick</div>
@@ -85,54 +93,73 @@ export const FeaturedCollectionsSection = async () => {
 
 					{/* Right column */}
 					<div className="col-span-12 lg:col-span-6 grid grid-cols-2 grid-rows-2 gap-4 lg:gap-5">
-						{/* Medium cards */}
-						{mediumCards.map((col, i) => (
-							<Link
-								key={col.id}
-								href={`/collections/${col.handle}`}
-								className="col-span-2 lg:col-span-1 relative rounded-2xl overflow-hidden border h-[200px] block group"
-								style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
-							>
-								<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[i + 1], backgroundImage: STRIPE }} />
-								<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, #FAF8F5 0%, rgba(250,248,245,0.70) 50%, transparent 100%)' }} />
-								<div className="absolute inset-0 p-6 flex flex-col justify-between">
-									<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70" style={{ color: '#432C63' }}>Collection</div>
-									<div>
-										<h3 className="text-[22px] font-extrabold leading-[1.1] tracking-tight max-w-[180px] text-[#1B1B1B]">{col.title}</h3>
-										<span className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-bold" style={{ color: '#432C63' }}>Shop now →</span>
+						{/* Medium cards (top row) */}
+						{mediumCards.map((col, i) => {
+							const img = getImage(col);
+							return (
+								<Link
+									key={col.id}
+									href={`/collections/${col.handle}`}
+									className="col-span-2 lg:col-span-1 relative rounded-2xl overflow-hidden border h-[200px] block group"
+									style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
+								>
+									{img ? (
+										<Image
+											src={img}
+											alt={col.title}
+											fill
+											className="object-cover transition-transform duration-500 group-hover:scale-105"
+											sizes="(max-width: 1024px) 100vw, 25vw"
+										/>
+									) : (
+										<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[i + 1], backgroundImage: STRIPE }} />
+									)}
+									<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(250,248,245,0.96) 0%, rgba(250,248,245,0.72) 55%, transparent 100%)' }} />
+									<div className="absolute inset-0 p-6 flex flex-col justify-between">
+										<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70" style={{ color: '#432C63' }}>Collection</div>
+										<div>
+											<h3 className="text-[22px] font-extrabold leading-[1.1] tracking-tight max-w-[180px] text-[#1B1B1B]">{col.title}</h3>
+											<span className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-bold" style={{ color: '#432C63' }}>Shop now →</span>
+										</div>
 									</div>
-								</div>
-							</Link>
-						))}
+								</Link>
+							);
+						})}
 
-						{/* Fill with placeholder if fewer than 2 medium cards */}
-						{mediumCards.length < 1 && (
-							<div className="col-span-2 lg:col-span-1 relative rounded-2xl overflow-hidden border h-[200px]" style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }} />
-						)}
-						{mediumCards.length < 2 && (
-							<div className="col-span-2 lg:col-span-1 relative rounded-2xl overflow-hidden border h-[200px]" style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }} />
-						)}
-
-						{/* Small cards */}
-						{smallCards.map((col, i) => (
-							<Link
-								key={col.id}
-								href={`/collections/${col.handle}`}
-								className="relative rounded-2xl overflow-hidden border h-[180px] lg:h-[200px] block group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-								style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
-							>
-								<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[i + 3], backgroundImage: STRIPE }} />
-								<div className="absolute inset-0 p-5 flex flex-col justify-between">
-									<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70" style={{ color: '#432C63' }}>Collection</div>
-									<div>
-										<h3 className="text-[17px] font-extrabold leading-tight text-[#1B1B1B]">{col.title}</h3>
-										{getDesc(col) && (
-											<div className="text-[12px] mt-0.5 line-clamp-1" style={{ color: '#404040' }}>{getDesc(col)}</div>
-										)}
+						{/* Small cards (bottom row) */}
+						{smallCards.map((col, i) => {
+							const img = getImage(col);
+							return (
+								<Link
+									key={col.id}
+									href={`/collections/${col.handle}`}
+									className="relative rounded-2xl overflow-hidden border h-[180px] lg:h-[200px] block group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+									style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
+								>
+									{img ? (
+										<Image
+											src={img}
+											alt={col.title}
+											fill
+											className="object-cover transition-transform duration-500 group-hover:scale-105"
+											sizes="(max-width: 768px) 50vw, 12.5vw"
+										/>
+									) : (
+										<div className="absolute inset-0" style={{ backgroundColor: CARD_COLORS[i + 3], backgroundImage: STRIPE }} />
+									)}
+									<div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(250,248,245,0.97) 0%, rgba(250,248,245,0.65) 55%, transparent 100%)' }} />
+									<div className="absolute inset-0 p-5 flex flex-col justify-between">
+										<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70" style={{ color: '#432C63' }}>Collection</div>
+										<div>
+											<h3 className="text-[17px] font-extrabold leading-tight text-[#1B1B1B]">{col.title}</h3>
+											{getDesc(col) && (
+												<div className="text-[12px] mt-0.5 line-clamp-1" style={{ color: '#404040' }}>{getDesc(col)}</div>
+											)}
+										</div>
 									</div>
-								</div>
-							</Link>
-						))}
+								</Link>
+							);
+						})}
 					</div>
 				</div>
 			</div>
