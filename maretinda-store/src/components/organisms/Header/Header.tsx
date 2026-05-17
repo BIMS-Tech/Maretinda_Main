@@ -136,7 +136,7 @@ export const Header = async () => {
 
 						<span className="opacity-20 mx-1 text-white">|</span>
 
-						{parentCategories.map((cat) => (
+						{(parentCategories.length > 0 ? parentCategories : categories).slice(0, 10).map((cat) => (
 							<LocalizedClientLink
 								key={cat.id}
 								href={`/categories/${cat.handle}`}

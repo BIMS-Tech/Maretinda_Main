@@ -60,43 +60,20 @@ export const RegisterForm = () => {
 };
 
 const EyeIcon = () => (
-	<svg
-		fill="none"
-		height={18}
-		stroke="currentColor"
-		strokeWidth={1.5}
-		viewBox="0 0 24 24"
-		width={18}
-	>
-		<path
-			d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		/>
-		<path
-			d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		/>
+	<svg fill="none" height={18} stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" width={18}>
+		<path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" strokeLinecap="round" strokeLinejoin="round" />
+		<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
 	</svg>
 );
 
-const StrengthHint = ({
-	met,
-	label,
-}: {
-	met: boolean;
-	label: string;
-}) => (
-	<span
-		className={`flex items-center gap-1 text-xs ${met ? 'text-green-600' : 'text-gray-400'}`}
-	>
-		<span
-			className={`inline-block w-1.5 h-1.5 rounded-full ${met ? 'bg-green-500' : 'bg-gray-300'}`}
-		/>
+const StrengthHint = ({ met, label }: { met: boolean; label: string }) => (
+	<span className={`flex items-center gap-1 text-[11.5px] ${met ? 'text-green-600' : ''}`} style={!met ? { color: '#ACACAC' } : {}}>
+		<span className={`inline-block w-1.5 h-1.5 rounded-full ${met ? 'bg-green-500' : 'bg-[#DCDCDC]'}`} />
 		{label}
 	</span>
 );
+
+const INPUT_CLASS = 'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';
 
 const Form = () => {
 	const {
@@ -149,27 +126,22 @@ const Form = () => {
 	};
 
 	return (
-		<main className="container py-8 md:py-12">
-			<div className="max-w-[520px] mx-auto px-4">
+		<main className="min-h-[60vh] py-10 md:py-16" style={{ backgroundColor: '#FAF8F5' }}>
+			<div className="max-w-[500px] mx-auto px-4">
 				{/* Header */}
 				<div className="text-center mb-8">
-					<h1 className="text-3xl font-bold text-gray-900 mb-2">
-						Create an account
+					<h1 className="font-serif text-[32px] tracking-[-0.01em] text-[#1B1B1B] mb-1.5">
+						Create your account
 					</h1>
-					<p className="text-gray-500 text-sm">
+					<p className="text-[13.5px]" style={{ color: '#737373' }}>
 						Join Maretinda and start shopping today
 					</p>
 				</div>
 
-				<div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-7">
+				<div className="bg-white rounded-2xl shadow-sm p-7" style={{ border: '1px solid #EDEAE3' }}>
 					{/* Server Error */}
 					{serverError && (
-						<Alert
-							className="mb-5"
-							dismissible
-							onClick={() => setServerError(null)}
-							variant="error"
-						>
+						<Alert className="mb-5" dismissible onClick={() => setServerError(null)} variant="error">
 							{serverError}
 						</Alert>
 					)}
@@ -183,10 +155,10 @@ const Form = () => {
 									disabled={isLoading}
 									error={errors.firstName as FieldError}
 									important
-									inputClassName="border border-gray-300 bg-white rounded-lg h-11 px-3 w-full text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+									inputClassName={`${INPUT_CLASS} ${errors.firstName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
 									label="First name"
-									labelClassName="text-sm font-medium text-gray-700"
-									placeholder="John"
+									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
+									placeholder="Juan"
 									{...register('firstName')}
 								/>
 								<LabeledInput
@@ -194,10 +166,10 @@ const Form = () => {
 									disabled={isLoading}
 									error={errors.lastName as FieldError}
 									important
-									inputClassName="border border-gray-300 bg-white rounded-lg h-11 px-3 w-full text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+									inputClassName={`${INPUT_CLASS} ${errors.lastName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
 									label="Last name"
-									labelClassName="text-sm font-medium text-gray-700"
-									placeholder="Doe"
+									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
+									placeholder="dela Cruz"
 									{...register('lastName')}
 								/>
 							</div>
@@ -208,9 +180,9 @@ const Form = () => {
 								disabled={isLoading}
 								error={errors.email as FieldError}
 								important
-								inputClassName="border border-gray-300 bg-white rounded-lg h-11 px-3 w-full text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+								inputClassName={`${INPUT_CLASS} ${errors.email ? 'border-red-400' : 'border-[#EDEAE3]'}`}
 								label="Email address"
-								labelClassName="text-sm font-medium text-gray-700"
+								labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 								placeholder="you@example.com"
 								type="email"
 								{...register('email')}
@@ -218,26 +190,23 @@ const Form = () => {
 
 							{/* Phone */}
 							<div className="flex flex-col gap-1">
-								<p className="text-sm font-medium text-gray-700">
-									Phone number{' '}
-									<span className="text-red-500/50">*</span>
+								<p className="text-[13px] font-semibold text-[#1B1B1B]">
+									Phone number <span className="text-red-400">*</span>
 								</p>
 								<div className="flex gap-2">
 									<select
-										className={`h-11 rounded-lg border ${errors.countryCode ? 'border-red-400' : 'border-gray-300'} bg-white px-2 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-[110px] flex-shrink-0`}
+										className={`h-11 rounded-xl border ${errors.countryCode ? 'border-red-400' : 'border-[#EDEAE3]'} bg-white px-2 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-[110px] flex-shrink-0`}
 										disabled={isLoading}
 										{...register('countryCode')}
 									>
 										<option value="">Code</option>
 										{COUNTRY_CODES.map((c) => (
-											<option key={c.code} value={c.code}>
-												{c.label}
-											</option>
+											<option key={c.code} value={c.code}>{c.label}</option>
 										))}
 									</select>
 									<input
 										autoComplete="tel"
-										className={`flex-1 h-11 rounded-lg border ${errors.phone ? 'border-red-400' : 'border-gray-300'} bg-white px-3 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+										className={`flex-1 h-11 rounded-xl border ${errors.phone ? 'border-red-400' : 'border-[#EDEAE3]'} bg-white px-3.5 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
 										disabled={isLoading}
 										placeholder="9123456789"
 										type="tel"
@@ -245,80 +214,58 @@ const Form = () => {
 									/>
 								</div>
 								{(errors.countryCode || errors.phone) && (
-									<p className="text-xs text-red-500 mt-0.5">
-										{(errors.countryCode?.message as string) ||
-											(errors.phone?.message as string)}
+									<p className="text-[11.5px] text-red-500 mt-0.5">
+										{(errors.countryCode?.message as string) || (errors.phone?.message as string)}
 									</p>
 								)}
 							</div>
 
 							{/* Password */}
 							<div className="flex flex-col gap-1">
-								<p className="text-sm font-medium text-gray-700">
-									Password{' '}
-									<span className="text-red-500/50">*</span>
+								<p className="text-[13px] font-semibold text-[#1B1B1B]">
+									Password <span className="text-red-400">*</span>
 								</p>
 								<div className="relative">
 									<input
 										autoComplete="new-password"
-										className={`w-full border ${errors.password ? 'border-red-400' : 'border-gray-300'} bg-white rounded-lg h-11 px-3 pr-10 text-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+										className={`${INPUT_CLASS} pr-10 ${errors.password ? 'border-red-400' : 'border-[#EDEAE3]'}`}
 										disabled={isLoading}
 										placeholder="Create a strong password"
 										type={showPassword ? 'text' : 'password'}
 										{...register('password')}
 									/>
 									<button
-										className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+										className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+										style={{ color: '#9B9B9B' }}
 										onClick={() => setShowPassword((v) => !v)}
 										tabIndex={-1}
 										type="button"
 									>
-										{showPassword ? (
-											<HideIcon color="#9ca3af" size={18} />
-										) : (
-											<EyeIcon />
-										)}
+										{showPassword ? <HideIcon color="#9B9B9B" size={18} /> : <EyeIcon />}
 									</button>
 								</div>
 
-								{/* Password strength hints */}
 								{showStrength && (
-									<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5 px-0.5">
-										<StrengthHint
-											label="8+ chars"
-											met={!passwordStrength.errors.tooShort}
-										/>
-										<StrengthHint
-											label="Uppercase"
-											met={!passwordStrength.errors.noUpper}
-										/>
-										<StrengthHint
-											label="Lowercase"
-											met={!passwordStrength.errors.noLower}
-										/>
-										<StrengthHint
-											label="Symbol or digit"
-											met={
-												!passwordStrength.errors
-													.noDigitOrSymbol
-											}
-										/>
+									<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
+										<StrengthHint label="8+ chars" met={!passwordStrength.errors.tooShort} />
+										<StrengthHint label="Uppercase" met={!passwordStrength.errors.noUpper} />
+										<StrengthHint label="Lowercase" met={!passwordStrength.errors.noLower} />
+										<StrengthHint label="Symbol or digit" met={!passwordStrength.errors.noDigitOrSymbol} />
 									</div>
 								)}
 
 								{errors.password && (
-									<p className="text-xs text-red-500 mt-0.5">
-										{(errors.password as FieldError).message}
-									</p>
+									<p className="text-[11.5px] text-red-500 mt-0.5">{(errors.password as FieldError).message}</p>
 								)}
 							</div>
 
 							{/* Terms */}
 							<div className="flex flex-col gap-1">
-								<label className="flex items-start gap-2 text-sm text-gray-600 cursor-pointer w-fit">
+								<label className="flex items-start gap-2 text-[13px] cursor-pointer w-fit" style={{ color: '#404040' }}>
 									<span className="relative flex-shrink-0 mt-0.5">
 										<span
-											className={`flex items-center justify-center w-5 h-5 rounded border transition-colors ${termsChecked ? 'bg-gray-900 border-gray-900' : 'bg-white border-gray-300'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+											className={`flex items-center justify-center w-5 h-5 rounded-md border transition-colors ${termsChecked ? 'border-[#432C63]' : 'border-[#DCDCDC]'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+											style={{ backgroundColor: termsChecked ? '#432C63' : 'white' }}
 										>
 											{termsChecked && (
 												<svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
@@ -335,72 +282,54 @@ const Form = () => {
 									</span>
 									<span>
 										I agree to the{' '}
-										<Link
-											className="text-gray-900 font-medium hover:underline"
-											href="/terms"
-										>
+										<Link className="font-semibold hover:underline" style={{ color: '#432C63' }} href="/terms">
 											Terms & Conditions
 										</Link>{' '}
 										and{' '}
-										<Link
-											className="text-gray-900 font-medium hover:underline"
-											href="/privacy"
-										>
+										<Link className="font-semibold hover:underline" style={{ color: '#432C63' }} href="/privacy">
 											Privacy Policy
 										</Link>
 									</span>
 								</label>
 								{errors.terms && (
-									<p className="text-xs text-red-500 ml-7">
-										{errors.terms.message as string}
-									</p>
+									<p className="text-[11.5px] text-red-500 ml-7">{errors.terms.message as string}</p>
 								)}
 							</div>
 
 							{/* Submit */}
 							<button
-								className="w-full h-11 rounded-lg bg-gray-900 hover:bg-gray-800 active:bg-gray-950 text-white text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center mt-1"
+								className="w-full h-11 rounded-full text-[13.5px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center mt-1"
+								style={{ backgroundColor: '#432C63' }}
 								disabled={isLoading}
 								type="submit"
 							>
-								{isSubmitting ? (
-									<Spinner color="white" size={18} />
-								) : (
-									'Create account'
-								)}
+								{isSubmitting ? <Spinner color="white" size={18} /> : 'Create account'}
 							</button>
 						</div>
 					</form>
 
 					{/* Divider */}
 					<div className="flex items-center gap-3 my-6">
-						<div className="flex-1 h-px bg-gray-200" />
-						<span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-							or
-						</span>
-						<div className="flex-1 h-px bg-gray-200" />
+						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
+						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>or</span>
+						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
 					</div>
 
 					{/* Social */}
-					<div className="flex flex-col gap-3">
+					<div className="flex flex-col gap-2.5">
 						<button
-							className="flex items-center justify-center w-full h-11 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed gap-2"
+							className="flex items-center justify-center w-full h-11 rounded-full text-[13.5px] font-medium transition-colors gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#FAF8F5]"
+							style={{ border: '1px solid #EDEAE3', color: '#1B1B1B', backgroundColor: 'white' }}
 							disabled={isLoading}
 							onClick={handleGoogleSignup}
 							type="button"
 						>
-							{isGoogleLoading ? (
-								<Spinner color="#374151" size={18} />
-							) : (
-								<>
-									<GoogleIcon />
-									Continue with Google
-								</>
-							)}
+							{isGoogleLoading ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />Continue with Google</>}
 						</button>
 
 						<button
-							className="flex items-center justify-center w-full h-11 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-400 cursor-not-allowed gap-2"
+							className="flex items-center justify-center w-full h-11 rounded-full text-[13.5px] font-medium gap-2 cursor-not-allowed opacity-50"
+							style={{ border: '1px solid #EDEAE3', color: '#737373', backgroundColor: 'white' }}
 							disabled
 							type="button"
 						>
@@ -410,12 +339,9 @@ const Form = () => {
 					</div>
 
 					{/* Login link */}
-					<p className="mt-6 text-center text-sm text-gray-500">
+					<p className="mt-6 text-center text-[13px]" style={{ color: '#737373' }}>
 						Already have an account?{' '}
-						<Link
-							className="font-medium text-gray-900 hover:underline"
-							href="/login"
-						>
+						<Link className="font-bold hover:underline" style={{ color: '#432C63' }} href="/login">
 							Sign in
 						</Link>
 					</p>
