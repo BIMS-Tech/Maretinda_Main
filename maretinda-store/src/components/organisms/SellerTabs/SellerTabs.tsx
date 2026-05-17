@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 
 import { SellerReviewTab } from '@/components/cells';
-import { TabsContent, TabsList } from '@/components/molecules';
+import { TabsContent } from '@/components/molecules';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import type { SellerProps } from '@/types/seller';
 
@@ -9,6 +9,11 @@ import { ProductListingSkeleton } from '../ProductListingSkeleton/ProductListing
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
 const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
+
+const TAB_ITEMS = [
+	{ label: 'Products', value: 'products' },
+	{ label: 'Reviews', value: 'reviews' },
+];
 
 export const SellerTabs = async ({
 	tab,
@@ -21,21 +26,34 @@ export const SellerTabs = async ({
 	locale: string;
 	currency_code?: string;
 }) => {
-	const tabsList = [
+	const tabLinks = [
 		{ label: 'products', link: `/sellers/${seller.handle}/` },
-		{
-			label: 'reviews',
-			link: `/sellers/${seller.handle}/reviews`,
-		},
+		{ label: 'reviews', link: `/sellers/${seller.handle}/reviews` },
 	];
 
 	return (
-		<div className="mt-8">
-			<TabsList
-				activeTab={tab}
-				className="w-[225px] justify-between text-base font-bold"
-				list={tabsList}
-			/>
+		<div className="mt-6">
+			{/* Tab pills */}
+			<div className="flex gap-2 mb-6 border-b pb-0" style={{ borderColor: '#EDEAE3' }}>
+				{tabLinks.map(({ label, link }) => {
+					const isActive = tab === label;
+					return (
+						<a
+							key={label}
+							href={link}
+							className="px-4 py-2.5 text-[13.5px] font-bold capitalize rounded-t-lg transition-colors -mb-px"
+							style={{
+								color: isActive ? '#432C63' : '#737373',
+								borderBottom: isActive ? '2px solid #432C63' : '2px solid transparent',
+								backgroundColor: isActive ? 'rgba(67,44,99,0.04)' : 'transparent',
+							}}
+						>
+							{label.charAt(0).toUpperCase() + label.slice(1)}
+						</a>
+					);
+				})}
+			</div>
+
 			<TabsContent activeTab={tab} value="products">
 				<Suspense fallback={<ProductListingSkeleton />}>
 					{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (

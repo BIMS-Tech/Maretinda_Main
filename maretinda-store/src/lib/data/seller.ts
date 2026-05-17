@@ -2,6 +2,19 @@ import type { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 
+export const listSellers = async ({
+	limit = 8,
+	offset = 0,
+}: { limit?: number; offset?: number } = {}) => {
+	return sdk.client
+		.fetch<{ sellers: SellerProps[]; count: number }>(`/store/seller`, {
+			next: { revalidate: 300 },
+			query: { limit, offset, fields: 'id,name,handle,photo,description,store_status' },
+		})
+		.then((res) => res)
+		.catch(() => ({ sellers: [], count: 0 }));
+};
+
 export const getSellerByHandle = async (handle: string) => {
 	return sdk.client
 		.fetch<{ seller: SellerProps }>(`/store/seller/${handle}`, {

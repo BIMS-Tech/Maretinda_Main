@@ -40,8 +40,8 @@ export function Footer() {
 							<Image
 								src="/logo-m-2.png"
 								alt="Maretinda"
-								width={130}
-								height={44}
+								width={160}
+								height={52}
 								className="object-contain"
 							/>
 						</Link>

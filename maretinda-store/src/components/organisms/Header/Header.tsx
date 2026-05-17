@@ -18,17 +18,6 @@ import type { Wishlist } from '@/types/wishlist';
 
 import TopHeaderBanner from '../TopHeader/TopHeader';
 
-const NAV_CATEGORIES = [
-	{ label: 'Fresh Groceries', href: '/categories/fresh-groceries' },
-	{ label: 'Food & Beverage', href: '/categories/food-beverage' },
-	{ label: 'Fashion', href: '/categories/fashion' },
-	{ label: 'Electronics', href: '/categories/electronics' },
-	{ label: 'Beauty', href: '/categories/beauty' },
-	{ label: 'Home & Living', href: '/categories/home-living' },
-	{ label: 'Mobile', href: '/categories/mobile' },
-	{ label: 'Baby & Kids', href: '/categories/baby-kids' },
-	{ label: 'Health', href: '/categories/health' },
-];
 
 export const Header = async () => {
 	const cart = await retrieveCart().catch(() => null);
@@ -73,8 +62,8 @@ export const Header = async () => {
 							<Image
 								src="/logo-m-2.png"
 								alt="Maretinda"
-								width={120}
-								height={40}
+								width={160}
+								height={52}
 								className="object-contain"
 								priority
 							/>
@@ -147,13 +136,13 @@ export const Header = async () => {
 
 						<span className="opacity-20 mx-1 text-white">|</span>
 
-						{NAV_CATEGORIES.map((cat) => (
+						{parentCategories.map((cat) => (
 							<LocalizedClientLink
-								key={cat.href}
-								href={cat.href}
+								key={cat.id}
+								href={`/categories/${cat.handle}`}
 								className="px-3 py-1.5 rounded-md text-white/85 hover:text-[#FFC533] hover:bg-white/10 transition-colors whitespace-nowrap"
 							>
-								{cat.label}
+								{cat.name}
 							</LocalizedClientLink>
 						))}
 

@@ -28,8 +28,8 @@ export const NavbarLessHeader = async () => {
 						<Image
 							src="/logo-m-2.png"
 							alt="Maretinda"
-							width={120}
-							height={40}
+							width={160}
+							height={52}
 							className="object-contain"
 							priority
 						/>

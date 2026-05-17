@@ -20,13 +20,19 @@ export default async function SellerPage({
 
 	const tab = 'products';
 
-	if (!seller) {
-		return null;
+	if (!seller || !seller.id) {
+		return (
+			<main className="max-w-[1360px] mx-auto px-4 lg:px-6 py-16 text-center">
+				<div className="text-[40px] mb-4">🏪</div>
+				<h2 className="font-serif text-[28px] text-[#1B1B1B] mb-2">Shop not found</h2>
+				<p className="text-[14px]" style={{ color: '#737373' }}>This vendor shop doesn't exist or is no longer available.</p>
+			</main>
+		);
 	}
 
 	return (
-		<main className="container !max-w-7xl mx-auto">
-			<SellerPageHeader header seller={seller} user={user} />
+		<main className="max-w-[1360px] mx-auto px-4 lg:px-6 py-8 lg:py-10">
+			<SellerPageHeader seller={seller} user={user} />
 			<SellerTabs
 				currency_code={currency_code}
 				locale={locale}
