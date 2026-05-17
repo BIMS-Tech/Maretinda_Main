@@ -4,16 +4,20 @@ import type { HttpTypes } from '@medusajs/types';
 import { useUnreads } from '@talkjs/react';
 import { useState } from 'react';
 
-import {
-	Badge,
-	Divider,
-	LogoutButton,
-	NavigationItem,
-} from '@/components/atoms';
+import { LogoutButton } from '@/components/atoms';
 import { Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ProfileIcon2 } from '@/icons';
 import Spinner from '@/icons/spinner';
+
+const MENU_LINKS = [
+	{ label: 'Orders', href: '/user/orders' },
+	{ label: 'Returns', href: '/user/returns' },
+	{ label: 'Addresses', href: '/user/addresses' },
+	{ label: 'Reviews', href: '/user/reviews' },
+	{ label: 'Wishlist', href: '/user/wishlist' },
+	{ label: 'Settings', href: '/user/settings' },
+];
 
 export const UserDropdown = ({
 	user,
@@ -28,122 +32,109 @@ export const UserDropdown = ({
 
 	return (
 		<div
-			className="relative h-8 lg:h-[56px] flex items-center justify-center min-w-[30px] lg:min-w-[35px] xl:min-w-[45px]"
+			className="relative flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
 			onFocus={() => setOpen(true)}
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>
-			<LocalizedClientLink href={user ? '/user' : '/login'}>
-				<ProfileIcon2 size={20} />
+			<LocalizedClientLink href={user ? '/user' : '/login'} className="flex flex-col items-center gap-0.5">
+				<ProfileIcon2 size={22} className="text-white" />
+				<span className="text-[11px] text-white/80 hidden sm:block leading-none">Account</span>
 			</LocalizedClientLink>
-			<Dropdown className="top-[32px] lg:top-[54px]" show={open}>
+
+			<Dropdown
+				className="!bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-1 !w-[220px]"
+				show={open}
+			>
 				{user ? (
-					<div className="p-1 min-w-60 px-4 py-2">
-						<div className="lg:w-[200px]">
-							<h3 className="uppercase heading-xs border-b p-4">
+					<div className="py-2">
+						{/* Header */}
+						<div className="px-4 py-3 border-b border-[#EDEAE3]">
+							<div className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#432C63' }}>
 								Your account
-							</h3>
+							</div>
+							<div className="text-[13px] font-bold text-[#1B1B1B] mt-0.5 truncate">
+								{user.first_name || user.email}
+							</div>
 						</div>
-						<NavigationItem
-							className="!font-semibold py-2 relative label-md capitalize"
-							href="/user/orders"
-						>
-							Orders
-						</NavigationItem>
-						<NavigationItem
-							className="!font-semibold py-2 relative label-md capitalize"
-							href="/user/messages"
-						>
-							Messages
-							{Boolean(unreads?.length) && (
-								<Badge className="absolute top-3 left-24 w-4 h-4 p-0">
-									{unreads?.length}
-								</Badge>
+
+						{/* Nav links */}
+						<nav className="py-1.5">
+							{MENU_LINKS.map(({ label, href }) => (
+								<LocalizedClientLink
+									key={href}
+									href={href}
+									className="flex items-center justify-between px-4 py-2 text-[13.5px] text-[#1B1B1B] hover:bg-[#FAF8F5] hover:text-[#432C63] transition-colors"
+								>
+									{label}
+									{label === 'Messages' && Boolean(unreads?.length) && (
+										<span
+											className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+											style={{ backgroundColor: '#432C63' }}
+										>
+											{unreads?.length}
+										</span>
+									)}
+								</LocalizedClientLink>
+							))}
+							{user && (
+								<LocalizedClientLink
+									href="/user/messages"
+									className="flex items-center justify-between px-4 py-2 text-[13.5px] text-[#1B1B1B] hover:bg-[#FAF8F5] hover:text-[#432C63] transition-colors"
+								>
+									Messages
+									{Boolean(unreads?.length) && (
+										<span
+											className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+											style={{ backgroundColor: '#432C63' }}
+										>
+											{unreads?.length}
+										</span>
+									)}
+								</LocalizedClientLink>
 							)}
-						</NavigationItem>
-						<NavigationItem
-							className="!font-semibold py-2 label-md capitalize"
-							href="/user/returns"
-						>
-							Returns
-						</NavigationItem>
-						<NavigationItem
-							className="!font-semibold py-2 label-md capitalize"
-							href="/user/addresses"
-						>
-							Addresses
-						</NavigationItem>
-						<NavigationItem
-							className="!font-semibold py-2 label-md capitalize"
-							href="/user/reviews"
-						>
-							Reviews
-						</NavigationItem>
-						<NavigationItem
-							className="!font-semibold py-2 label-md capitalize"
-							href="/user/wishlist"
-						>
-							Wishlist
-						</NavigationItem>
-						<Divider />
-						<NavigationItem
-							className="!font-semibold py-2 label-md capitalize"
-							href="/user/settings"
-						>
-							Settings
-						</NavigationItem>
-						<LogoutButton className="!font-semibold py-2 relative label-md capitalize" />
+						</nav>
+
+						{/* Logout */}
+						<div className="border-t border-[#EDEAE3] pt-1.5">
+							<LogoutButton className="w-full text-left px-4 py-2 text-[13.5px] text-red-600 hover:bg-red-50 transition-colors rounded-b-2xl" />
+						</div>
 					</div>
 				) : (
-					<div className="p-1 min-w-60 px-4 py-7">
-						<div className="px-3">
-							<NavigationItem
-								className="bg-tertiary capitalize text-tertiary label-lg rounded-full justify-center"
-								href="/login"
-								onClick={() => {
-									setIsLoginClicked(true);
-									setTimeout(() => {
-										setIsLoginClicked(false);
-									}, 300);
-								}}
-							>
-								{isLoginClicked ? <Spinner /> : 'Sign In'}
-							</NavigationItem>
-							<NavigationItem
-								className="justify-center capitalize label-lg"
-								href="/register"
-								onClick={() => {
-									setIsRegisterClicked(true);
-									setTimeout(() => {
-										setIsRegisterClicked(false);
-									}, 300);
-								}}
-							>
-								{isRegisterClicked ? <Spinner /> : 'Register'}
-							</NavigationItem>
+					<div className="py-3 px-4">
+						<div className="text-[11px] font-semibold tracking-[0.14em] uppercase mb-3" style={{ color: '#432C63' }}>
+							Welcome
 						</div>
+						<LocalizedClientLink
+							href="/login"
+							className="block w-full h-10 rounded-full text-[13.5px] font-bold text-center flex items-center justify-center transition-opacity hover:opacity-90 mb-2"
+							style={{ backgroundColor: '#432C63', color: 'white' }}
+							onClick={() => { setIsLoginClicked(true); setTimeout(() => setIsLoginClicked(false), 300); }}
+						>
+							{isLoginClicked ? <Spinner /> : 'Sign in'}
+						</LocalizedClientLink>
+						<LocalizedClientLink
+							href="/register"
+							className="block w-full h-10 rounded-full text-[13.5px] font-bold text-center flex items-center justify-center border transition-colors hover:border-[#432C63] hover:text-[#432C63]"
+							style={{ borderColor: 'rgba(27,27,27,0.15)', color: '#1B1B1B' }}
+							onClick={() => { setIsRegisterClicked(true); setTimeout(() => setIsRegisterClicked(false), 300); }}
+						>
+							{isRegisterClicked ? <Spinner /> : 'Register'}
+						</LocalizedClientLink>
 
-						<hr className="border-black/25 my-1" />
-
-						<div className="flex flex-col gap-2.5 pt-4">
-							<NavigationItem
-								className="py-0 justify-start label-md capitalize !font-semibold"
-								href="/help-center"
-							>
-								Help Center
-							</NavigationItem>
-							<NavigationItem
-								className="py-0 justify-start label-md capitalize !font-semibold"
-								href="/refund-policy"
-							>
-								Return & Refund Policy
-							</NavigationItem>
-							<NavigationItem
-								className="py-0 justify-start label-md capitalize !font-semibold"
-								href="/report"
-							>
-								Report
-							</NavigationItem>
+						<div className="border-t border-[#EDEAE3] mt-3 pt-3 flex flex-col gap-1">
+							{[
+								{ label: 'Help Center', href: '/help-center' },
+								{ label: 'Return & Refund Policy', href: '/refund-policy' },
+							].map(({ label, href }) => (
+								<LocalizedClientLink
+									key={href}
+									href={href}
+									className="text-[12.5px] text-[#404040] hover:text-[#432C63] transition-colors py-0.5"
+								>
+									{label}
+								</LocalizedClientLink>
+							))}
 						</div>
 					</div>
 				)}

@@ -54,8 +54,6 @@ export const Header = async () => {
 		parentCategories: HttpTypes.StoreProductCategory[];
 	};
 
-	const cartCount = cart?.items?.length ?? 0;
-
 	return (
 		<header>
 			<TopHeaderBanner />
@@ -96,41 +94,33 @@ export const Header = async () => {
 						{user ? (
 							<LocalizedClientLink
 								href="/user/wishlist"
-								className="flex flex-col items-center px-2.5 py-2 rounded-lg hover:bg-white/10 relative"
+								className="relative flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors"
 							>
-								<WishlistIcon2 className="text-white" size={22} />
-								<span className="text-[11px] mt-0.5 text-white/80 hidden sm:block">Wishlist</span>
-								{Boolean(wishlistCount) && (
-									<span
-										className="absolute top-1 right-1 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
-										style={{ backgroundColor: '#FFC533', color: '#432C63' }}
-									>
-										{wishlistCount}
-									</span>
-								)}
+								<span className="relative">
+									<WishlistIcon2 className="text-white" size={22} />
+									{Boolean(wishlistCount) && (
+										<span
+											className="absolute -top-1.5 -right-1.5 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
+											style={{ backgroundColor: '#FFC533', color: '#432C63' }}
+										>
+											{wishlistCount}
+										</span>
+									)}
+								</span>
+								<span className="text-[11px] text-white/80 hidden sm:block leading-none">Wishlist</span>
 							</LocalizedClientLink>
 						) : (
 							<Link
 								href="/wishlist"
-								className="flex flex-col items-center px-2.5 py-2 rounded-lg hover:bg-white/10"
+								className="flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors"
 							>
 								<WishlistIcon2 className="text-white" size={22} />
-								<span className="text-[11px] mt-0.5 text-white/80 hidden sm:block">Wishlist</span>
+								<span className="text-[11px] text-white/80 hidden sm:block leading-none">Wishlist</span>
 							</Link>
 						)}
 
-						{/* Cart */}
-						<div className="relative">
-							<CartDropdown cart={cart} />
-							{cartCount > 0 && (
-								<span
-									className="absolute top-1 right-1 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center pointer-events-none"
-									style={{ backgroundColor: '#FFC533', color: '#432C63' }}
-								>
-									{cartCount}
-								</span>
-							)}
-						</div>
+						{/* Cart — badge is handled inside CartDropdown */}
+						<CartDropdown cart={cart} />
 
 						{user && <MessageButton />}
 						<div className="hidden lg:block ml-1">

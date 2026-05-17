@@ -4,7 +4,6 @@ import type { HttpTypes } from '@medusajs/types';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Badge, Button } from '@/components/atoms';
 import { CartDropdownItem, Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { usePrevious } from '@/hooks/usePrevious';
@@ -36,7 +35,6 @@ export const CartDropdown = ({
 			const timeout = setTimeout(() => {
 				setOpen(false);
 			}, 2000);
-
 			return () => clearTimeout(timeout);
 		}
 	}, [open]);
@@ -53,27 +51,44 @@ export const CartDropdown = ({
 
 	return (
 		<div
-			className="relative h-8 lg:h-[56px] flex justify-center items-center min-w-[30px] md:min-w-[35px] xl:min-w-[45px]"
+			className="relative flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
 			onMouseLeave={() => setOpen(false)}
 			onMouseOver={() => setOpen(true)}
 		>
-			<LocalizedClientLink className="relative" href="/cart">
-				<CartIcon2 />
-				{Boolean(cartItemsCount) && (
-					<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
-						{cartItemsCount}
-					</Badge>
-				)}
+			<LocalizedClientLink href="/cart" className="flex flex-col items-center gap-0.5 relative">
+				<span className="relative">
+					<CartIcon2 className="text-white" />
+					{Boolean(cartItemsCount) && (
+						<span
+							className="absolute -top-1.5 -right-1.5 text-[9.5px] font-bold rounded-full w-4 h-4 flex items-center justify-center"
+							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
+						>
+							{cartItemsCount}
+						</span>
+					)}
+				</span>
+				<span className="text-[11px] text-white/80 hidden sm:block leading-none">Cart</span>
 			</LocalizedClientLink>
-			<Dropdown className="top-[32px] lg:top-[54px]" show={open}>
-				<div className="lg:w-[460px] shadow-lg">
-					<h3 className="uppercase heading-md border-b p-4">
-						Shopping cart
-					</h3>
+
+			<Dropdown
+				className="!bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-1"
+				show={open}
+			>
+				<div className="w-[360px] lg:w-[420px]">
+					{/* Header */}
+					<div className="flex items-center justify-between px-5 py-3.5 border-b border-[#EDEAE3]">
+						<div className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#432C63' }}>
+							Shopping cart
+						</div>
+						{Boolean(cartItemsCount) && (
+							<span className="text-[11px] text-[#737373]">{cartItemsCount} item{cartItemsCount !== 1 ? 's' : ''}</span>
+						)}
+					</div>
+
 					<div className="p-4">
 						{cartItemsCount ? (
-							<div>
-								<div className="overflow-y-scroll max-h-[360px] no-scrollbar">
+							<>
+								<div className="overflow-y-auto max-h-[320px] no-scrollbar space-y-1">
 									{cart?.items?.map((item) => (
 										<CartDropdownItem
 											currency_code={cart.currency_code}
@@ -82,32 +97,33 @@ export const CartDropdown = ({
 										/>
 									))}
 								</div>
-								<div className="pt-4">
-									<div className="text-secondary flex justify-between items-center">
-										Total{' '}
-										<p className="label-xl text-primary">
-											{total}
-										</p>
+								<div className="mt-4 pt-4 border-t border-[#EDEAE3]">
+									<div className="flex justify-between items-center mb-4">
+										<span className="text-[13px] text-[#404040]">Subtotal</span>
+										<span className="text-[16px] font-extrabold text-[#1B1B1B]">{total}</span>
 									</div>
 									<LocalizedClientLink href="/cart">
-										<Button className="w-full mt-4 py-3">
-											Go to cart
-										</Button>
+										<button
+											className="w-full h-11 rounded-full text-[13.5px] font-bold text-white transition-opacity hover:opacity-90"
+											style={{ backgroundColor: '#432C63' }}
+										>
+											View cart &amp; checkout
+										</button>
 									</LocalizedClientLink>
 								</div>
-							</div>
+							</>
 						) : (
-							<div className="px-8">
-								<h4 className="heading-md uppercase text-center">
-									Your shopping cart is empty
-								</h4>
-								<p className="text-lg text-center py-4">
-									Are you looging for inspiration?
-								</p>
+							<div className="py-6 text-center">
+								<div className="text-[32px] mb-3">🛒</div>
+								<div className="text-[14px] font-semibold text-[#1B1B1B] mb-1">Your cart is empty</div>
+								<div className="text-[12.5px] text-[#737373] mb-4">Add items to start shopping</div>
 								<LocalizedClientLink href="/categories">
-									<Button className="w-full py-3">
-										Explore Home Page
-									</Button>
+									<button
+										className="h-10 px-6 rounded-full text-[13px] font-bold text-white transition-opacity hover:opacity-90"
+										style={{ backgroundColor: '#432C63' }}
+									>
+										Explore products
+									</button>
 								</LocalizedClientLink>
 							</div>
 						)}
