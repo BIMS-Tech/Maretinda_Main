@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 		process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
 		'Maretinda - From fresh groceries to latest fashion, discover everything you need from trusted local vendors',
 	icons: {
-		icon: '/logo-m.png',
+		icon: '/logo-m-2.png',
 	},
 	metadataBase: new URL(
 		process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',

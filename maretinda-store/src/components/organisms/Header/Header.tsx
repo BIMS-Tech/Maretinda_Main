@@ -2,7 +2,6 @@ import type { HttpTypes } from '@medusajs/types';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Badge } from '@/components/atoms';
 import { CartDropdown, MobileNavbar } from '@/components/cells';
 import { SellNowButton } from '@/components/cells/SellNowButton/SellNowButton';
 import { UserDropdown } from '@/components/cells/UserDropdown/UserDropdown';
@@ -74,7 +73,7 @@ export const Header = async () => {
 						</div>
 						<LocalizedClientLink href="/" className="flex items-center gap-2">
 							<Image
-								src="/logo-m.png"
+								src="/logo-m-2.png"
 								alt="Maretinda"
 								width={36}
 								height={36}

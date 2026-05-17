@@ -1,14 +1,13 @@
-import { Footer } from "@/components/organisms"
-import { NavbarLessHeader } from "@/components/organisms/Header/NavbarlessHeader"
+import { Footer, Header } from "@/components/organisms"
 
-export default async function NavbarLessLayout({
+export default async function AccountLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
     <>
-      <NavbarLessHeader />
+      <Header />
       {children}
       <Footer />
     </>

@@ -9,30 +9,12 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { retrieveCart } from '@/lib/data/cart';
 import { listCategories } from '@/lib/data/categories';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { getUserWishlists } from '@/lib/data/wishlist';
-import type { Wishlist } from '@/types/wishlist';
-
 import TopHeaderBanner from '../TopHeader/TopHeader';
 
 export const NavbarLessHeader = async () => {
 	const cart = await retrieveCart().catch(() => null);
 	const user = await retrieveCustomer();
 	const { categories } = await listCategories();
-	let wishlist: Wishlist[] = [];
-
-	// Only try to get wishlist if user is authenticated
-	if (user) {
-		try {
-			const response = await getUserWishlists();
-			wishlist = response.wishlists;
-		} catch (error) {
-			console.warn('Failed to fetch wishlist:', error);
-			// Continue without wishlist data instead of crashing
-			wishlist = [];
-		}
-	}
-
-	const wishlistCount = wishlist?.[0]?.products.length || 0;
 
 	return (
 		<header>
@@ -42,18 +24,19 @@ export const NavbarLessHeader = async () => {
 					{/* <div className="hidden lg:block">
 						<SellNowButton />
 					</div> */}
-					<LocalizedClientLink
-						className="text-2xl font-bold"
-						href="/"
-					>
+					<LocalizedClientLink href="/" className="flex items-center gap-2">
 						<Image
-							alt="Logo"
-							className="object-contain w-[125px] lg:w-[200px]"
-							height={35}
+							src="/logo-m-2.png"
+							alt="Maretinda"
+							width={36}
+							height={36}
+							className="rounded-[8px]"
 							priority
-							src="/Logo-maretinda.svg"
-							width={200}
 						/>
+						<div className="leading-none hidden sm:block">
+							<div className="text-[20px] font-extrabold tracking-tight" style={{ color: '#432C63' }}>maretinda</div>
+							<div className="text-[9px] tracking-[0.18em] uppercase mt-0.5" style={{ color: '#432C63', opacity: 0.6 }}>Philippines</div>
+						</div>
 					</LocalizedClientLink>
 				</div>
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
