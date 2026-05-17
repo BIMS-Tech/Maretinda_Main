@@ -36,18 +36,14 @@ export function Footer() {
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 py-12 lg:py-16">
 					{/* Brand col */}
 					<div className="lg:col-span-2">
-						<Link href="/" className="flex items-center gap-2.5 mb-4">
+						<Link href="/" className="inline-flex mb-4">
 							<Image
 								src="/logo-m-2.png"
 								alt="Maretinda"
-								width={36}
-								height={36}
-								className="rounded-lg"
+								width={130}
+								height={44}
+								className="object-contain"
 							/>
-							<div>
-								<div className="text-white font-extrabold text-[17px] leading-none tracking-tight">maretinda</div>
-								<div className="text-[10px] font-semibold tracking-[0.14em] uppercase mt-0.5" style={{ color: 'rgba(255,255,255,0.50)' }}>Philippines</div>
-							</div>
 						</Link>
 						<p className="text-[13.5px] leading-relaxed max-w-[280px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
 							Your complete Philippine marketplace — from fresh palengke finds to fashion-forward local brands, all in one place.

@@ -24,19 +24,15 @@ export const NavbarLessHeader = async () => {
 					{/* <div className="hidden lg:block">
 						<SellNowButton />
 					</div> */}
-					<LocalizedClientLink href="/" className="flex items-center gap-2">
+					<LocalizedClientLink href="/" className="flex items-center">
 						<Image
 							src="/logo-m-2.png"
 							alt="Maretinda"
-							width={36}
-							height={36}
-							className="rounded-[8px]"
+							width={120}
+							height={40}
+							className="object-contain"
 							priority
 						/>
-						<div className="leading-none hidden sm:block">
-							<div className="text-[20px] font-extrabold tracking-tight" style={{ color: '#432C63' }}>maretinda</div>
-							<div className="text-[9px] tracking-[0.18em] uppercase mt-0.5" style={{ color: '#432C63', opacity: 0.6 }}>Philippines</div>
-						</div>
 					</LocalizedClientLink>
 				</div>
 				<div className="hidden lg:flex lg:justify-center w-full lg:max-w-[545px] items-center">
