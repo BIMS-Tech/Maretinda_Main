@@ -100,7 +100,7 @@ export const Header = async () => {
 							</LocalizedClientLink>
 						) : (
 							<Link
-								href="/wishlist"
+								href="/login?returnTo=/user/wishlist"
 								className="flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors"
 							>
 								<WishlistIcon2 className="text-white" size={22} />
