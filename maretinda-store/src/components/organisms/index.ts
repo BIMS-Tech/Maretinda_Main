@@ -1,4 +1,5 @@
 import { Addresses } from './Addressess/Addresses';
+import { Chatbot } from './Chatbot/Chatbot';
 import { BlogCard } from './BlogCard/BlogCard';
 import { BrandCard } from './BrandCard/BrandCard';
 import { CartItems } from './CartItems/CartItems';
@@ -32,6 +33,7 @@ import { WishlistTabs } from './WishlistTabs/WishlistTabs';
 
 export {
 	Addresses,
+	Chatbot,
 	AlgoliaProductSidebar,
 	BlogCard,
 	BrandCard,

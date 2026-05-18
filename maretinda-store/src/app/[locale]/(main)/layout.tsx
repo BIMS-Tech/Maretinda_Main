@@ -1,4 +1,4 @@
-import { Footer, Header } from '@/components/organisms';
+import { Chatbot, Footer, Header } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { TalkJSProvider } from '@/providers/TalkJSProvider';
 
@@ -21,6 +21,7 @@ export default async function RootLayout({
 			<Header />
 			{children}
 			<Footer />
+			<Chatbot />
 		</TalkJSProvider>
 	);
 }
