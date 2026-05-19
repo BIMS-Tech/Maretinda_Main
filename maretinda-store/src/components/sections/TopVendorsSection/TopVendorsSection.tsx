@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { getServerT } from '@/i18n/serverLang';
+import { HomeText } from '@/i18n/HomeText';
 import { listSellers } from '@/lib/data/seller';
 import type { SellerProps } from '@/types/seller';
 
@@ -23,7 +23,6 @@ const StarIcon = () => (
 );
 
 export const TopVendorsSection = async () => {
-	const { t } = await getServerT();
 	const { sellers } = await listSellers({ limit: 8 });
 	if (!sellers?.length) return null;
 
@@ -33,11 +32,11 @@ export const TopVendorsSection = async () => {
 				{/* Header */}
 				<div className="flex items-end justify-between mb-7 lg:mb-8 flex-wrap gap-4">
 					<div>
-						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}>{t.home.vendorsLabel}</div>
-						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}>{t.home.vendorsHeading}</h2>
+						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}><HomeText k="vendorsLabel" /></div>
+						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}><HomeText k="vendorsHeading" /></h2>
 					</div>
 					<Link href="/sellers" className="text-[13px] font-bold flex items-center gap-1.5 hover:underline" style={{ color: '#432C63' }}>
-						{t.home.vendorsBrowse}
+						<HomeText k="vendorsBrowse" />
 					</Link>
 				</div>
 
@@ -107,7 +106,7 @@ export const TopVendorsSection = async () => {
 										className="mt-3 w-full h-9 rounded-full text-[12px] font-bold transition-colors border hover:border-[#432C63] hover:text-[#432C63]"
 										style={{ backgroundColor: '#FAF8F5', borderColor: '#EDEAE3', color: '#1B1B1B' }}
 									>
-										{t.home.vendorVisitShop}
+										<HomeText k="vendorVisitShop" />
 									</button>
 								</div>
 							</Link>

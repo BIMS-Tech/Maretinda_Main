@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { getServerT } from '@/i18n/serverLang';
+import { HomeText } from '@/i18n/HomeText';
 import { listCollections } from '@/lib/data/collections';
 import type { HttpTypes } from '@medusajs/types';
 
@@ -27,7 +27,6 @@ function getDesc(col: HttpTypes.StoreCollection): string {
 }
 
 export const FeaturedCollectionsSection = async () => {
-	const { t } = await getServerT();
 	const { collections } = await listCollections({
 		limit: '8',
 		fields: 'id,title,handle,metadata,*products,products.thumbnail',
@@ -47,14 +46,14 @@ export const FeaturedCollectionsSection = async () => {
 				<div className="flex items-end justify-between mb-7 lg:mb-8">
 					<div>
 						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}>
-							{t.home.collectionsLabel}
+							<HomeText k="collectionsLabel" />
 						</div>
 						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}>
-							{t.home.collectionsHeading}
+							<HomeText k="collectionsHeading" />
 						</h2>
 					</div>
 					<Link href="/collections" className="text-[13px] font-bold flex items-center gap-1.5 hover:underline" style={{ color: '#432C63' }}>
-						{t.home.viewAllCollections}
+						<HomeText k="viewAllCollections" />
 					</Link>
 				</div>
 

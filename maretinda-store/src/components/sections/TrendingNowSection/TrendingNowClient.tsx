@@ -32,10 +32,8 @@ const StarIcon = () => (
 	</svg>
 );
 
-export function TrendingNowClient({ products, trendingLabel, trendingHeading }: {
+export function TrendingNowClient({ products }: {
 	products: Product[];
-	trendingLabel: string;
-	trendingHeading: string;
 }) {
 	const { t } = useLanguage();
 	const INITIAL_COUNT = 6;
