@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+import { useLanguage } from '@/providers/LanguageProvider';
+
 type Message = {
 	id: number;
 	from: 'bot' | 'user';
@@ -10,14 +12,6 @@ type Message = {
 	links?: { label: string; href: string }[];
 };
 
-const QUICK_REPLIES = [
-	{ label: '📦 Track my order', key: 'track' },
-	{ label: '↩️ Returns & refunds', key: 'returns' },
-	{ label: '🚚 Shipping info', key: 'shipping' },
-	{ label: '💳 Payment methods', key: 'payments' },
-	{ label: '🏪 Become a seller', key: 'seller' },
-	{ label: '🔑 Reset password', key: 'password' },
-];
 
 type BotResponse = {
 	text: string;
@@ -82,18 +76,28 @@ let _id = 0;
 const uid = () => ++_id;
 
 export const Chatbot = () => {
+	const { t } = useLanguage();
+	const s = t.chatbot;
+
+	const quickReplies = [
+		{ label: s.quickReplies.track, key: 'track' },
+		{ label: s.quickReplies.returns, key: 'returns' },
+		{ label: s.quickReplies.shipping, key: 'shipping' },
+		{ label: s.quickReplies.payments, key: 'payments' },
+		{ label: s.quickReplies.seller, key: 'seller' },
+		{ label: s.quickReplies.password, key: 'password' },
+	];
+
 	const [open, setOpen] = useState(false);
-	const [messages, setMessages] = useState<Message[]>([
-		{
-			id: uid(),
-			from: 'bot',
-			text: 'Hi there! 👋 I\'m your Maretinda assistant. Ask me anything about orders, shipping, returns, or payments.',
-		},
-	]);
+	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState('');
 	const [typing, setTyping] = useState(false);
 	const bottomRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		setMessages([{ id: uid(), from: 'bot', text: s.greeting }]);
+	}, [s.greeting]);
 
 	useEffect(() => {
 		if (open) {
@@ -171,7 +175,7 @@ export const Chatbot = () => {
 							<div className="text-[13.5px] font-bold text-white leading-tight">Maretinda Support</div>
 							<div className="flex items-center gap-1.5 mt-0.5">
 								<span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-								<span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.65)' }}>Online · Typically replies instantly</span>
+								<span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.65)' }}>{s.online}</span>
 							</div>
 						</div>
 						<Link
@@ -179,7 +183,7 @@ export const Chatbot = () => {
 							className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors hover:bg-white/20 flex-shrink-0"
 							style={{ color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.25)' }}
 						>
-							Help Center
+							{s.helpCenter}
 						</Link>
 					</div>
 
@@ -236,7 +240,7 @@ export const Chatbot = () => {
 
 					{/* Quick replies */}
 					<div className="px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar flex-shrink-0" style={{ backgroundColor: 'white', borderTop: '1px solid #EDEAE3' }}>
-						{QUICK_REPLIES.map(({ label, key }) => (
+						{quickReplies.map(({ label, key }) => (
 							<button
 								key={key}
 								onClick={() => sendMessage(label.replace(/^[^ ]+ /, ''))}
@@ -259,7 +263,7 @@ export const Chatbot = () => {
 							type="text"
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
-							placeholder="Type your question…"
+							placeholder={s.placeholder}
 							className="flex-1 text-[13px] outline-none bg-transparent"
 							style={{ color: '#1B1B1B' }}
 						/>

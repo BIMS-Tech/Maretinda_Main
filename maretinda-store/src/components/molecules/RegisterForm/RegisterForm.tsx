@@ -17,6 +17,7 @@ import { validatePassword } from '@/components/cells/PasswordValidator/PasswordV
 import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
 import Spinner from '@/icons/spinner';
 import { signup } from '@/lib/data/customer';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 import { type RegisterFormData, registerFormSchema } from './schema';
 
@@ -76,6 +77,9 @@ const StrengthHint = ({ met, label }: { met: boolean; label: string }) => (
 const INPUT_CLASS = 'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';
 
 const Form = () => {
+	const { t } = useLanguage();
+	const s = t.auth;
+
 	const {
 		handleSubmit,
 		register,
@@ -131,10 +135,10 @@ const Form = () => {
 				{/* Header */}
 				<div className="text-center mb-8">
 					<h1 className="font-serif text-[32px] tracking-[-0.01em] text-[#1B1B1B] mb-1.5">
-						Create your account
+						{s.createAccount}
 					</h1>
 					<p className="text-[13.5px]" style={{ color: '#737373' }}>
-						Join Maretinda and start shopping today
+						{s.registerDesc}
 					</p>
 				</div>
 
@@ -156,7 +160,7 @@ const Form = () => {
 									error={errors.firstName as FieldError}
 									important
 									inputClassName={`${INPUT_CLASS} ${errors.firstName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-									label="First name"
+									label={s.firstName}
 									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 									placeholder="Juan"
 									{...register('firstName')}
@@ -167,7 +171,7 @@ const Form = () => {
 									error={errors.lastName as FieldError}
 									important
 									inputClassName={`${INPUT_CLASS} ${errors.lastName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-									label="Last name"
+									label={s.lastName}
 									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 									placeholder="dela Cruz"
 									{...register('lastName')}
@@ -181,7 +185,7 @@ const Form = () => {
 								error={errors.email as FieldError}
 								important
 								inputClassName={`${INPUT_CLASS} ${errors.email ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-								label="Email address"
+								label={s.email}
 								labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 								placeholder="you@example.com"
 								type="email"
@@ -191,7 +195,7 @@ const Form = () => {
 							{/* Phone */}
 							<div className="flex flex-col gap-1">
 								<p className="text-[13px] font-semibold text-[#1B1B1B]">
-									Phone number <span className="text-red-400">*</span>
+									{s.phone} <span className="text-red-400">*</span>
 								</p>
 								<div className="flex gap-2">
 									<select
@@ -223,7 +227,7 @@ const Form = () => {
 							{/* Password */}
 							<div className="flex flex-col gap-1">
 								<p className="text-[13px] font-semibold text-[#1B1B1B]">
-									Password <span className="text-red-400">*</span>
+									{s.password} <span className="text-red-400">*</span>
 								</p>
 								<div className="relative">
 									<input
@@ -281,13 +285,13 @@ const Form = () => {
 										/>
 									</span>
 									<span>
-										I agree to the{' '}
+										{s.terms}{' '}
 										<Link className="font-semibold hover:underline" style={{ color: '#432C63' }} href="/terms">
-											Terms & Conditions
+											{s.termsLink}
 										</Link>{' '}
-										and{' '}
+										{s.and}{' '}
 										<Link className="font-semibold hover:underline" style={{ color: '#432C63' }} href="/privacy">
-											Privacy Policy
+											{s.privacyLink}
 										</Link>
 									</span>
 								</label>
@@ -303,7 +307,7 @@ const Form = () => {
 								disabled={isLoading}
 								type="submit"
 							>
-								{isSubmitting ? <Spinner color="white" size={18} /> : 'Create account'}
+								{isSubmitting ? <Spinner color="white" size={18} /> : s.registerBtn}
 							</button>
 						</div>
 					</form>
@@ -311,7 +315,7 @@ const Form = () => {
 					{/* Divider */}
 					<div className="flex items-center gap-3 my-6">
 						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
-						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>or</span>
+						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>{s.orDivider}</span>
 						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
 					</div>
 
@@ -324,7 +328,7 @@ const Form = () => {
 							onClick={handleGoogleSignup}
 							type="button"
 						>
-							{isGoogleLoading ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />Continue with Google</>}
+							{isGoogleLoading ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />{s.continueGoogle}</>}
 						</button>
 
 						<button
@@ -334,15 +338,15 @@ const Form = () => {
 							type="button"
 						>
 							<FacebookColorIcon />
-							Continue with Facebook
+							{s.continueFacebook}
 						</button>
 					</div>
 
 					{/* Login link */}
 					<p className="mt-6 text-center text-[13px]" style={{ color: '#737373' }}>
-						Already have an account?{' '}
+						{s.alreadyHave}{' '}
 						<Link className="font-bold hover:underline" style={{ color: '#432C63' }} href="/login">
-							Sign in
+							{s.signInBtn}
 						</Link>
 					</p>
 				</div>

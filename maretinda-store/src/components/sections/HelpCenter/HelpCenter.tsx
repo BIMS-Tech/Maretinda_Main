@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { useLanguage } from '@/providers/LanguageProvider';
+
 const TOPICS = [
 	{
 		icon: (
@@ -238,6 +240,9 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
 }
 
 export const HelpCenter = () => {
+	const { t } = useLanguage();
+	const s = t.helpCenter;
+
 	const [query, setQuery] = useState('');
 	const [activeSection, setActiveSection] = useState<SectionId>('orders');
 
@@ -260,10 +265,10 @@ export const HelpCenter = () => {
 					Support
 				</div>
 				<h1 className="font-serif text-white tracking-[-0.02em] mb-4" style={{ fontSize: 'clamp(28px, 4vw, 48px)' }}>
-					How can we help you?
+					{s.heading}
 				</h1>
 				<p className="text-[15px] mb-8 max-w-[460px] mx-auto" style={{ color: 'rgba(255,255,255,0.70)' }}>
-					Search our help articles or browse by topic below.
+					{s.subheading}
 				</p>
 
 				{/* Search */}
@@ -273,7 +278,7 @@ export const HelpCenter = () => {
 					</svg>
 					<input
 						type="search"
-						placeholder={`Search — e.g. "track order", "refund", "COD"`}
+						placeholder={s.placeholder}
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
 						className="w-full h-13 pl-11 pr-5 rounded-2xl text-[14px] outline-none"
@@ -293,14 +298,14 @@ export const HelpCenter = () => {
 				{filteredFaqs !== null ? (
 					<div>
 						<p className="text-[13px] mb-5" style={{ color: '#737373' }}>
-							{filteredFaqs.length} result{filteredFaqs.length !== 1 ? 's' : ''} for &ldquo;<strong>{query}</strong>&rdquo;
+							{filteredFaqs.length} {filteredFaqs.length !== 1 ? s.results_plural : s.results} for &ldquo;<strong>{query}</strong>&rdquo;
 						</p>
 						{filteredFaqs.length === 0 ? (
 							<div className="text-center py-16">
 								<div className="text-[48px] mb-4">🔍</div>
-								<p className="text-[15px] font-semibold text-[#1B1B1B] mb-2">No results found</p>
+								<p className="text-[15px] font-semibold text-[#1B1B1B] mb-2">{s.noResults}</p>
 								<p className="text-[13.5px]" style={{ color: '#737373' }}>
-									Try different keywords or <button className="font-semibold hover:underline" style={{ color: '#432C63' }} onClick={() => setQuery('')}>browse topics</button> below.
+									{s.noResultsDesc}
 								</p>
 							</div>
 						) : (
@@ -372,9 +377,9 @@ export const HelpCenter = () => {
 						</svg>
 					</div>
 					<div className="flex-1">
-						<h3 className="font-serif text-white text-[22px] tracking-[-0.01em] mb-1">Still need help?</h3>
+						<h3 className="font-serif text-white text-[22px] tracking-[-0.01em] mb-1">{s.stillNeedHelp}</h3>
 						<p className="text-[13.5px]" style={{ color: 'rgba(255,255,255,0.65)' }}>
-							Our support team is available Monday–Saturday, 8 AM–8 PM (Philippine time).
+							{s.stillNeedHelpDesc}
 						</p>
 					</div>
 					<div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
@@ -384,14 +389,14 @@ export const HelpCenter = () => {
 							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 						>
 							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-							Email support
+							{s.emailSupport}
 						</a>
 						<Link
 							href="/sellers"
 							className="h-11 px-6 rounded-full text-[13.5px] font-bold flex items-center gap-2 transition-colors"
 							style={{ border: '1.5px solid rgba(255,255,255,0.3)', color: 'white' }}
 						>
-							Browse sellers
+							{s.browseSellers}
 						</Link>
 					</div>
 				</div>
@@ -399,10 +404,10 @@ export const HelpCenter = () => {
 				{/* Popular links */}
 				<div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
 					{[
-						{ label: 'Track my order', href: '/user/orders', icon: '📦' },
-						{ label: 'Request a return', href: '/user/orders', icon: '↩️' },
-						{ label: 'Refund policy', href: '/refund-policy', icon: '💸' },
-						{ label: 'Become a seller', href: '/become-vendor', icon: '🏪' },
+						{ label: s.trackMyOrder, href: '/user/orders', icon: '📦' },
+						{ label: s.requestReturn, href: '/user/orders', icon: '↩️' },
+						{ label: s.refundPolicy, href: '/refund-policy', icon: '💸' },
+						{ label: s.becomeSeller, href: '/become-vendor', icon: '🏪' },
 					].map(({ label, href, icon }) => (
 						<Link
 							key={label}

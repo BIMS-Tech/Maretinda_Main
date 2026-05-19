@@ -9,6 +9,7 @@ import { NavbarSearch } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { MessageButton } from '@/components/molecules/MessageButton/MessageButton';
 import { PARENT_CATEGORIES } from '@/const';
+import { getServerT } from '@/i18n/serverLang';
 import { WishlistIcon2 } from '@/icons';
 import { retrieveCart } from '@/lib/data/cart';
 import { listCategories } from '@/lib/data/categories';
@@ -20,6 +21,7 @@ import TopHeaderBanner from '../TopHeader/TopHeader';
 
 
 export const Header = async () => {
+	const { t } = await getServerT();
 	const cart = await retrieveCart().catch(() => null);
 	const user = await retrieveCustomer();
 	let wishlist: Wishlist[] = [];
@@ -32,7 +34,6 @@ export const Header = async () => {
 			wishlist = [];
 		}
 	}
-
 
 	const wishlistCount = wishlist?.[0]?.products.length || 0;
 
@@ -96,7 +97,7 @@ export const Header = async () => {
 										</span>
 									)}
 								</span>
-								<span className="text-[11px] text-white/80 hidden sm:block leading-none">Wishlist</span>
+								<span className="text-[11px] text-white/80 hidden sm:block leading-none">{t.nav.wishlist}</span>
 							</LocalizedClientLink>
 						) : (
 							<Link
@@ -104,7 +105,7 @@ export const Header = async () => {
 								className="flex flex-col items-center justify-center px-2.5 py-2 rounded-lg hover:bg-white/10 transition-colors"
 							>
 								<WishlistIcon2 className="text-white" size={22} />
-								<span className="text-[11px] text-white/80 hidden sm:block leading-none">Wishlist</span>
+								<span className="text-[11px] text-white/80 hidden sm:block leading-none">{t.nav.wishlist}</span>
 							</Link>
 						)}
 
@@ -131,7 +132,7 @@ export const Header = async () => {
 								<line x1="4" y1="12" x2="20" y2="12" />
 								<line x1="4" y1="18" x2="20" y2="18" />
 							</svg>
-							All Categories
+							{t.nav.allCategories}
 						</button>
 
 						<span className="opacity-20 mx-1 text-white">|</span>
@@ -158,7 +159,7 @@ export const Header = async () => {
 								<span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#FFC533' }} />
 								<span className="relative inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
 							</span>
-							Flash Sale Live
+							{t.nav.flashSale}
 						</LocalizedClientLink>
 					</div>
 				</div>

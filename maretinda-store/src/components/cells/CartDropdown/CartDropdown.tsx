@@ -9,6 +9,7 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { usePrevious } from '@/hooks/usePrevious';
 import { CartIcon2 } from '@/icons';
 import { convertToLocale } from '@/lib/helpers/money';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 const getItemCount = (cart: HttpTypes.StoreCart | null) => {
 	return cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
@@ -19,6 +20,9 @@ export const CartDropdown = ({
 }: {
 	cart: HttpTypes.StoreCart | null;
 }) => {
+	const { t } = useLanguage();
+	const s = t.cart;
+
 	const [open, setOpen] = useState(false);
 
 	const previousItemCount = usePrevious(getItemCount(cart));
@@ -67,7 +71,7 @@ export const CartDropdown = ({
 						</span>
 					)}
 				</span>
-				<span className="text-[11px] text-white/80 hidden sm:block leading-none">Cart</span>
+				<span className="text-[11px] text-white/80 hidden sm:block leading-none">{t.nav.cart}</span>
 			</LocalizedClientLink>
 
 			<Dropdown
@@ -78,10 +82,12 @@ export const CartDropdown = ({
 					{/* Header */}
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-[#EDEAE3]">
 						<div className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#432C63' }}>
-							Shopping cart
+							{s.title}
 						</div>
 						{Boolean(cartItemsCount) && (
-							<span className="text-[11px] text-[#737373]">{cartItemsCount} item{cartItemsCount !== 1 ? 's' : ''}</span>
+							<span className="text-[11px] text-[#737373]">
+								{cartItemsCount} {cartItemsCount !== 1 ? s.items : s.item}
+							</span>
 						)}
 					</div>
 
@@ -99,7 +105,7 @@ export const CartDropdown = ({
 								</div>
 								<div className="mt-4 pt-4 border-t border-[#EDEAE3]">
 									<div className="flex justify-between items-center mb-4">
-										<span className="text-[13px] text-[#404040]">Subtotal</span>
+										<span className="text-[13px] text-[#404040]">{s.subtotal}</span>
 										<span className="text-[16px] font-extrabold text-[#1B1B1B]">{total}</span>
 									</div>
 									<LocalizedClientLink href="/cart">
@@ -107,7 +113,7 @@ export const CartDropdown = ({
 											className="w-full h-11 rounded-full text-[13.5px] font-bold text-white transition-opacity hover:opacity-90"
 											style={{ backgroundColor: '#432C63' }}
 										>
-											View cart &amp; checkout
+											{s.viewCart}
 										</button>
 									</LocalizedClientLink>
 								</div>
@@ -115,14 +121,14 @@ export const CartDropdown = ({
 						) : (
 							<div className="py-6 text-center">
 								<div className="text-[32px] mb-3">🛒</div>
-								<div className="text-[14px] font-semibold text-[#1B1B1B] mb-1">Your cart is empty</div>
-								<div className="text-[12.5px] text-[#737373] mb-4">Add items to start shopping</div>
+								<div className="text-[14px] font-semibold text-[#1B1B1B] mb-1">{s.empty}</div>
+								<div className="text-[12.5px] text-[#737373] mb-4">{s.emptyDesc}</div>
 								<LocalizedClientLink href="/categories">
 									<button
 										className="h-10 px-6 rounded-full text-[13px] font-bold text-white transition-opacity hover:opacity-90"
 										style={{ backgroundColor: '#432C63' }}
 									>
-										Explore products
+										{s.exploreProducts}
 									</button>
 								</LocalizedClientLink>
 							</div>

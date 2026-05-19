@@ -9,14 +9,17 @@ import { Dropdown } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ProfileIcon2 } from '@/icons';
 import Spinner from '@/icons/spinner';
+import { useLanguage } from '@/providers/LanguageProvider';
 
-const MENU_LINKS = [
-	{ label: 'Orders', href: '/user/orders' },
-	{ label: 'Returns', href: '/user/returns' },
-	{ label: 'Addresses', href: '/user/addresses' },
-	{ label: 'Reviews', href: '/user/reviews' },
-	{ label: 'Wishlist', href: '/user/wishlist' },
-	{ label: 'Settings', href: '/user/settings' },
+type NavKey = 'orders' | 'returns' | 'addresses' | 'reviews' | 'wishlist' | 'settings';
+
+const MENU_HREFS: { key: NavKey; href: string }[] = [
+	{ key: 'orders', href: '/user/orders' },
+	{ key: 'returns', href: '/user/returns' },
+	{ key: 'addresses', href: '/user/addresses' },
+	{ key: 'reviews', href: '/user/reviews' },
+	{ key: 'wishlist', href: '/user/wishlist' },
+	{ key: 'settings', href: '/user/settings' },
 ];
 
 export const UserDropdown = ({
@@ -24,6 +27,9 @@ export const UserDropdown = ({
 }: {
 	user: HttpTypes.StoreCustomer | null;
 }) => {
+	const { t } = useLanguage();
+	const s = t.nav;
+
 	const [open, setOpen] = useState(false);
 	const [isLoginClicked, setIsLoginClicked] = useState(false);
 	const [isRegisterClicked, setIsRegisterClicked] = useState(false);
@@ -39,7 +45,7 @@ export const UserDropdown = ({
 		>
 			<LocalizedClientLink href={user ? '/user' : '/login'} className="flex flex-col items-center gap-0.5">
 				<ProfileIcon2 size={22} className="text-white" />
-				<span className="text-[11px] text-white/80 hidden sm:block leading-none">Account</span>
+				<span className="text-[11px] text-white/80 hidden sm:block leading-none">{s.account}</span>
 			</LocalizedClientLink>
 
 			<Dropdown
@@ -51,7 +57,7 @@ export const UserDropdown = ({
 						{/* Header */}
 						<div className="px-4 py-3 border-b border-[#EDEAE3]">
 							<div className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#432C63' }}>
-								Your account
+								{s.yourAccount}
 							</div>
 							<div className="text-[13px] font-bold text-[#1B1B1B] mt-0.5 truncate">
 								{user.first_name || user.email}
@@ -60,21 +66,13 @@ export const UserDropdown = ({
 
 						{/* Nav links */}
 						<nav className="py-1.5">
-							{MENU_LINKS.map(({ label, href }) => (
+							{MENU_HREFS.map(({ key, href }) => (
 								<LocalizedClientLink
 									key={href}
 									href={href}
 									className="flex items-center justify-between px-4 py-2 text-[13.5px] text-[#1B1B1B] hover:bg-[#FAF8F5] hover:text-[#432C63] transition-colors"
 								>
-									{label}
-									{label === 'Messages' && Boolean(unreads?.length) && (
-										<span
-											className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-											style={{ backgroundColor: '#432C63' }}
-										>
-											{unreads?.length}
-										</span>
-									)}
+									{s[key]}
 								</LocalizedClientLink>
 							))}
 							{user && (
@@ -82,7 +80,7 @@ export const UserDropdown = ({
 									href="/user/messages"
 									className="flex items-center justify-between px-4 py-2 text-[13.5px] text-[#1B1B1B] hover:bg-[#FAF8F5] hover:text-[#432C63] transition-colors"
 								>
-									Messages
+									{s.messages}
 									{Boolean(unreads?.length) && (
 										<span
 											className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
@@ -103,7 +101,7 @@ export const UserDropdown = ({
 				) : (
 					<div className="py-3 px-4">
 						<div className="text-[11px] font-semibold tracking-[0.14em] uppercase mb-3" style={{ color: '#432C63' }}>
-							Welcome
+							{s.welcome}
 						</div>
 						<LocalizedClientLink
 							href="/login"
@@ -111,7 +109,7 @@ export const UserDropdown = ({
 							style={{ backgroundColor: '#432C63', color: 'white' }}
 							onClick={() => { setIsLoginClicked(true); setTimeout(() => setIsLoginClicked(false), 300); }}
 						>
-							{isLoginClicked ? <Spinner /> : 'Sign in'}
+							{isLoginClicked ? <Spinner /> : s.signIn}
 						</LocalizedClientLink>
 						<LocalizedClientLink
 							href="/register"
@@ -119,13 +117,13 @@ export const UserDropdown = ({
 							style={{ borderColor: 'rgba(27,27,27,0.15)', color: '#1B1B1B' }}
 							onClick={() => { setIsRegisterClicked(true); setTimeout(() => setIsRegisterClicked(false), 300); }}
 						>
-							{isRegisterClicked ? <Spinner /> : 'Register'}
+							{isRegisterClicked ? <Spinner /> : s.register}
 						</LocalizedClientLink>
 
 						<div className="border-t border-[#EDEAE3] mt-3 pt-3 flex flex-col gap-1">
 							{[
-								{ label: 'Help Center', href: '/help-center' },
-								{ label: 'Return & Refund Policy', href: '/refund-policy' },
+								{ label: s.helpCenter, href: '/help-center' },
+								{ label: s.refundPolicy, href: '/refund-policy' },
 							].map(({ label, href }) => (
 								<LocalizedClientLink
 									key={href}

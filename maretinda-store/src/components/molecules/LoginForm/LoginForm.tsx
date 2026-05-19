@@ -18,6 +18,7 @@ import { LabeledInput } from '@/components/cells';
 import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
 import Spinner from '@/icons/spinner';
 import { login } from '@/lib/data/customer';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 import { type LoginFormData, loginFormSchema } from './schema';
 
@@ -46,6 +47,9 @@ const EyeIcon = () => (
 const INPUT_CLASS = 'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';
 
 const Form = () => {
+	const { t } = useLanguage();
+	const s = t.auth;
+
 	const {
 		handleSubmit,
 		register,
@@ -111,10 +115,10 @@ const Form = () => {
 				{/* Header */}
 				<div className="text-center mb-8">
 					<h1 className="font-serif text-[32px] tracking-[-0.01em] text-[#1B1B1B] mb-1.5">
-						Welcome back
+						{s.welcomeBack}
 					</h1>
 					<p className="text-[13.5px]" style={{ color: '#737373' }}>
-						Sign in to your Maretinda account
+						{s.signInDesc}
 					</p>
 				</div>
 
@@ -139,7 +143,7 @@ const Form = () => {
 								error={errors.email as FieldError}
 								important
 								inputClassName={`${INPUT_CLASS} ${errors.email ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-								label="Email address"
+								label={s.email}
 								labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 								placeholder="you@example.com"
 								type="email"
@@ -158,7 +162,7 @@ const Form = () => {
 										href="/forgot-password"
 										tabIndex={isLoading ? -1 : undefined}
 									>
-										Forgot password?
+										{s.forgotPassword}
 									</Link>
 								</div>
 								<div className="relative">
@@ -188,7 +192,7 @@ const Form = () => {
 							{/* Remember me */}
 							<Checkbox
 								checked={watch('remember')}
-								label="Remember me"
+								label={s.rememberMe}
 								labelClassName="flex items-center gap-2 text-[13px] cursor-pointer w-fit"
 								{...register('remember')}
 							/>
@@ -200,7 +204,7 @@ const Form = () => {
 								disabled={isLoading}
 								type="submit"
 							>
-								{loadingState === 'login' ? <Spinner color="white" size={18} /> : 'Sign in'}
+								{loadingState === 'login' ? <Spinner color="white" size={18} /> : s.signInBtn}
 							</button>
 						</div>
 					</form>
@@ -208,7 +212,7 @@ const Form = () => {
 					{/* Divider */}
 					<div className="flex items-center gap-3 my-6">
 						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
-						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>or</span>
+						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>{s.orDivider}</span>
 						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
 					</div>
 
@@ -221,7 +225,7 @@ const Form = () => {
 							onClick={handleGoogleLogin}
 							type="button"
 						>
-							{loadingState === 'google' ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />Continue with Google</>}
+							{loadingState === 'google' ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />{s.continueGoogle}</>}
 						</button>
 
 						<button
@@ -231,15 +235,15 @@ const Form = () => {
 							type="button"
 						>
 							<FacebookColorIcon />
-							Continue with Facebook
+							{s.continueFacebook}
 						</button>
 					</div>
 
 					{/* Sign up link */}
 					<p className="mt-6 text-center text-[13px]" style={{ color: '#737373' }}>
-						Don&apos;t have an account?{' '}
+						{s.noAccount}{' '}
 						<Link className="font-bold hover:underline" style={{ color: '#432C63' }} href="/register">
-							Create one free
+							{s.createOneFree}
 						</Link>
 					</p>
 				</div>
