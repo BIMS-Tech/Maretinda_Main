@@ -150,7 +150,7 @@ export const Header = async () => {
 
 						{/* Flash sale live indicator */}
 						<LocalizedClientLink
-							href="/categories"
+							href="/flash-sale"
 							className="px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5"
 							style={{ color: '#FFC533' }}
 						>
