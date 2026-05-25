@@ -10,7 +10,7 @@ import {
   usePrompt,
   Badge,
 } from "@medusajs/ui"
-import { Bolt, PencilSquare, Trash, Plus, XCircle } from "@medusajs/icons"
+import { Bolt, PencilSquare, Trash, Plus, XCircle, Check } from "@medusajs/icons"
 import {
   useFlashSale,
   usePublishFlashSale,
@@ -20,6 +20,8 @@ import {
   useAddFlashSaleItem,
   useRemoveFlashSaleItem,
   useUpdateFlashSaleItem,
+  useApproveFlashSaleItem,
+  useRejectFlashSaleItem,
 } from "../../../hooks/api/flash-sales"
 import { FlashSaleItem, getFlashSaleStatus, getTimeRemaining } from "../../../lib/flash-sales"
 
@@ -248,6 +250,84 @@ function ItemRow({
   )
 }
 
+const ITEM_STATUS_STYLE: Record<string, string> = {
+  pending: "bg-orange-100 text-orange-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+}
+
+function VendorApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
+  const prompt = usePrompt()
+  const { mutate: approve, isPending: approving } = useApproveFlashSaleItem(flashSaleId, item.id, {
+    onSuccess: () => toast.success("Application approved"),
+    onError: (err: any) => toast.error(err?.message || "Failed"),
+  })
+  const { mutate: reject, isPending: rejecting } = useRejectFlashSaleItem(flashSaleId, item.id, {
+    onSuccess: () => toast.success("Application rejected"),
+    onError: (err: any) => toast.error(err?.message || "Failed"),
+  })
+  const { mutate: remove } = useRemoveFlashSaleItem(flashSaleId, {
+    onSuccess: () => toast.success("Removed"),
+  })
+
+  const status = item.item_status || "pending"
+
+  return (
+    <div className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
+      {item.product?.thumbnail && (
+        <img src={item.product.thumbnail} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-gray-900 truncate">
+          {item.product?.title || item.product_id}
+        </div>
+        <div className="text-xs text-gray-400 truncate">
+          {item.product_id}
+          {item.seller_id && <span className="ml-2 text-blue-500">vendor: {item.seller_id.slice(-8)}</span>}
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs font-semibold text-red-600">
+            -{item.discount_value}{item.discount_type === "percentage" ? "%" : "₱"}
+          </span>
+          {item.stock_limit && (
+            <span className="text-xs text-gray-400">{item.sold_count}/{item.stock_limit} sold</span>
+          )}
+          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${ITEM_STATUS_STYLE[status] || ITEM_STATUS_STYLE.pending}`}>
+            {status}
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
+        {status === "pending" && (
+          <>
+            <Button size="small" onClick={() => approve()} isLoading={approving} className="h-7 text-xs px-2">
+              <Check className="w-3 h-3 mr-1" />
+              Approve
+            </Button>
+            <Button size="small" variant="secondary" onClick={() => reject()} isLoading={rejecting} className="h-7 text-xs px-2">
+              Reject
+            </Button>
+          </>
+        )}
+        {status === "approved" && (
+          <Button size="small" variant="secondary" onClick={() => reject()} isLoading={rejecting} className="h-7 text-xs px-2">
+            Revoke
+          </Button>
+        )}
+        <button
+          className="p-1 hover:bg-red-50 rounded ml-1"
+          onClick={async () => {
+            const ok = await prompt({ title: "Remove", description: "Remove this product application?", confirmText: "Remove", cancelText: "Cancel" })
+            if (ok) remove(item.id)
+          }}
+        >
+          <Trash className="w-3.5 h-3.5 text-red-400" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export const FlashSaleDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -377,14 +457,17 @@ export const FlashSaleDetail = () => {
         </Container>
       )}
 
-      {/* Products */}
+      {/* Vendor Product Applications */}
       <Container className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <Heading level="h2">Products ({sale.items?.length ?? 0})</Heading>
+          <div>
+            <Heading level="h2">Product Applications</Heading>
+            <p className="text-xs text-gray-400 mt-0.5">Vendor-submitted products — approve to include in this flash sale</p>
+          </div>
           {editable && (
             <Button size="small" variant="secondary" onClick={() => setShowAddItem((v) => !v)}>
               <Plus className="w-3.5 h-3.5 mr-1" />
-              Add Product
+              Add (Admin)
             </Button>
           )}
         </div>
@@ -397,17 +480,16 @@ export const FlashSaleDetail = () => {
 
         {!sale.items?.length ? (
           <div className="text-center py-8 text-sm text-gray-400">
-            No products added yet. Add products to this flash sale.
+            No product applications yet.
           </div>
         ) : (
-          <div className="space-y-3">
-            {sale.items.map((item) => (
-              <ItemRow
-                key={item.id}
-                item={item}
-                flashSaleId={sale.id}
-                editable={editable}
-              />
+          <div className="space-y-2">
+            {sale.items.map((item: any) => (
+              item.seller_id ? (
+                <VendorApplicationRow key={item.id} item={item} flashSaleId={sale.id} />
+              ) : (
+                <ItemRow key={item.id} item={item} flashSaleId={sale.id} editable={editable} />
+              )
             ))}
           </div>
         )}

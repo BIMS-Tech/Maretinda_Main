@@ -712,22 +712,10 @@ export const RouteMap: RouteObject[] = [
               {
                 path: "",
                 lazy: () => import("../../routes/flash-sales/flash-sale-list"),
-                children: [
-                  {
-                    path: "create",
-                    lazy: () => import("../../routes/flash-sales/flash-sale-create"),
-                  },
-                ],
               },
               {
                 path: ":id",
                 lazy: () => import("../../routes/flash-sales/flash-sale-detail"),
-                children: [
-                  {
-                    path: "edit",
-                    lazy: () => import("../../routes/flash-sales/flash-sale-edit"),
-                  },
-                ],
               },
             ],
           },

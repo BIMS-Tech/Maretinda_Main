@@ -1,12 +1,7 @@
-import { Bolt, Trash, EllipsisHorizontal } from "@medusajs/icons"
-import { Button, Container, Heading, usePrompt, toast } from "@medusajs/ui"
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import {
-  useFlashSales,
-  useDeleteFlashSale,
-  useSubmitFlashSale,
-} from "../../../../hooks/api/flash-sales"
+import { Bolt } from "@medusajs/icons"
+import { Container, Heading } from "@medusajs/ui"
+import { useNavigate } from "react-router-dom"
+import { useFlashSales } from "../../../../hooks/api/flash-sales"
 import { FlashSale, getFlashSaleStatus, getTimeRemaining } from "../../../../lib/flash-sales"
 
 const STATUS_COLOR: Record<string, string> = {
@@ -32,61 +27,6 @@ function StatusBadge({ sale }: { sale: FlashSale }) {
   )
 }
 
-function ActionMenu({ sale }: { sale: FlashSale }) {
-  const [open, setOpen] = useState(false)
-  const navigate = useNavigate()
-  const prompt = usePrompt()
-
-  const { mutate: submit } = useSubmitFlashSale(sale.id, {
-    onSuccess: () => toast.success("Submitted for admin approval"),
-    onError: (err: any) => toast.error(err?.message || "Submit failed"),
-  })
-  const { mutate: deleteSale } = useDeleteFlashSale({
-    onSuccess: () => toast.success("Flash sale deleted"),
-    onError: (err: any) => toast.error(err?.message || "Delete failed"),
-  })
-
-  return (
-    <div className="relative">
-      <button onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }} className="p-1.5 rounded hover:bg-gray-100">
-        <EllipsisHorizontal className="w-4 h-4 text-gray-500" />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] py-1" onMouseLeave={() => setOpen(false)}>
-          <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={(e) => { e.stopPropagation(); navigate(sale.id); setOpen(false) }}>
-            View Details
-          </button>
-          {["draft", "pending"].includes(sale.status) && (
-            <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={(e) => { e.stopPropagation(); navigate(`${sale.id}/edit`); setOpen(false) }}>
-              Edit
-            </button>
-          )}
-          {sale.status === "draft" && (
-            <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-green-700" onClick={(e) => { e.stopPropagation(); submit(); setOpen(false) }}>
-              <Bolt className="w-3.5 h-3.5 inline mr-1" />
-              Submit for Approval
-            </button>
-          )}
-          {["draft", "pending", "cancelled"].includes(sale.status) && (
-            <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-red-600"
-              onClick={async (e) => {
-                e.stopPropagation()
-                setOpen(false)
-                const ok = await prompt({ title: "Delete Flash Sale", description: `Delete "${sale.title}"?`, confirmText: "Delete", cancelText: "Cancel" })
-                if (ok) deleteSale(sale.id)
-              }}
-            >
-              <Trash className="w-3.5 h-3.5 inline mr-1" />
-              Delete
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 export const FlashSaleListTable = () => {
   const { flash_sales = [], count = 0, isLoading } = useFlashSales()
   const navigate = useNavigate()
@@ -95,12 +35,9 @@ export const FlashSaleListTable = () => {
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
         <div>
-          <Heading level="h2">Flash Sales</Heading>
-          <p className="text-sm text-gray-500 mt-0.5">{count} total</p>
+          <Heading level="h2">Flash Sale Events</Heading>
+          <p className="text-sm text-gray-500 mt-0.5">Apply your products to platform flash sales</p>
         </div>
-        <Button size="small" variant="secondary" asChild>
-          <Link to="create">Create Flash Sale</Link>
-        </Button>
       </div>
 
       {isLoading ? (
@@ -108,36 +45,63 @@ export const FlashSaleListTable = () => {
       ) : flash_sales.length === 0 ? (
         <div className="px-6 py-12 text-center">
           <Bolt className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-600">No flash sales yet</p>
-          <p className="text-xs text-gray-400 mt-1">Create a flash sale and submit it for admin approval</p>
+          <p className="text-sm font-medium text-gray-600">No flash sales scheduled</p>
+          <p className="text-xs text-gray-400 mt-1">Check back soon — platform flash sales will appear here when scheduled</p>
         </div>
       ) : (
         <table className="w-full text-left">
           <thead>
             <tr className="border-b">
-              {["Flash Sale", "Status", "Starts", "Ends", "Products", ""].map((h) => (
+              {["Flash Sale", "Status", "Period", "My Applications", ""].map((h) => (
                 <th key={h} className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {flash_sales.map((sale) => (
-              <tr key={sale.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => navigate(sale.id)}>
-                <td className="px-6 py-4">
-                  <div className="font-medium text-sm text-gray-900">{sale.title}</div>
-                </td>
-                <td className="px-6 py-4"><StatusBadge sale={sale} /></td>
-                <td className="px-6 py-4 text-sm text-gray-600">{new Date(sale.starts_at).toLocaleString()}</td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-600">{new Date(sale.ends_at).toLocaleString()}</div>
-                  {sale.status === "active" && (
-                    <div className="text-xs text-green-600 font-medium">{getTimeRemaining(sale.ends_at)} left</div>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-600">{(sale as any).item_count ?? 0}</td>
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}><ActionMenu sale={sale} /></td>
-              </tr>
-            ))}
+            {flash_sales.map((sale: any) => {
+              const myTotal = (sale.my_application_count ?? 0)
+              const myApproved = (sale.my_approved_count ?? 0)
+              const myPending = (sale.my_pending_count ?? 0)
+
+              return (
+                <tr key={sale.id} className="border-b hover:bg-gray-50 cursor-pointer" onClick={() => navigate(sale.id)}>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-sm text-gray-900">{sale.title}</div>
+                    {sale.description && (
+                      <div className="text-xs text-gray-400 truncate max-w-xs">{sale.description}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4"><StatusBadge sale={sale} /></td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    <div>{new Date(sale.starts_at).toLocaleDateString()} – {new Date(sale.ends_at).toLocaleDateString()}</div>
+                    {sale.status === "active" && (
+                      <div className="text-xs text-green-600 font-medium">{getTimeRemaining(sale.ends_at)} left</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {myTotal === 0 ? (
+                      <span className="text-xs text-gray-400">None yet</span>
+                    ) : (
+                      <div className="space-y-0.5">
+                        {myApproved > 0 && <div className="text-xs text-green-600 font-medium">{myApproved} approved</div>}
+                        {myPending > 0 && <div className="text-xs text-orange-500">{myPending} pending review</div>}
+                        {myTotal - myApproved - myPending > 0 && (
+                          <div className="text-xs text-red-500">{myTotal - myApproved - myPending} rejected</div>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
+                      className="text-xs text-blue-600 hover:underline"
+                      onClick={(e) => { e.stopPropagation(); navigate(sale.id) }}
+                    >
+                      {myTotal === 0 ? "Apply →" : "Manage →"}
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}

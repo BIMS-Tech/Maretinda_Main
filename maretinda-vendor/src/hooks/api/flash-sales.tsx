@@ -58,62 +58,8 @@ export function useFlashSale(id: string, options?: UseQueryOptions<{ flash_sale:
   return { flash_sale: data?.flash_sale, ...rest }
 }
 
-export function useCreateFlashSale(options?: UseMutationOptions<{ flash_sale: FlashSale }, any, any>) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (body: any) =>
-      (sdk as any).client.fetch("/vendor/flash-sales", { method: "POST", body }),
-    onSuccess: (data, ...args) => {
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.lists() })
-      options?.onSuccess?.(data, ...args)
-    },
-    ...options,
-  })
-}
 
-export function useUpdateFlashSale(
-  id: string,
-  options?: UseMutationOptions<{ flash_sale: FlashSale }, any, any>
-) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (body: any) =>
-      (sdk as any).client.fetch(`/vendor/flash-sales/${id}`, { method: "PUT", body }),
-    onSuccess: (data, ...args) => {
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.lists() })
-      options?.onSuccess?.(data, ...args)
-    },
-    ...options,
-  })
-}
 
-export function useDeleteFlashSale(options?: UseMutationOptions<any, any, string>) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (id: string) =>
-      (sdk as any).client.fetch(`/vendor/flash-sales/${id}`, { method: "DELETE" }),
-    onSuccess: (data, id, ...args) => {
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.lists() })
-      options?.onSuccess?.(data, id, ...args)
-    },
-    ...options,
-  })
-}
-
-export function useSubmitFlashSale(id: string, options?: UseMutationOptions<any, any, void>) {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: () =>
-      (sdk as any).client.fetch(`/vendor/flash-sales/${id}/submit`, { method: "POST" }),
-    onSuccess: (data, ...args) => {
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.detail(id) })
-      queryClient.invalidateQueries({ queryKey: flashSaleKeys.lists() })
-      options?.onSuccess?.(data, ...args)
-    },
-    ...options,
-  })
-}
 
 export function useAddFlashSaleItem(
   flashSaleId: string,

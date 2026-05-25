@@ -211,3 +211,43 @@ export function useRemoveFlashSaleItem(
     ...options,
   })
 }
+
+export function useApproveFlashSaleItem(
+  flashSaleId: string,
+  itemId: string,
+  options?: UseMutationOptions<any, any, void>
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      (sdk as any).client.fetch(`/admin/flash-sales/${flashSaleId}/items/${itemId}`, {
+        method: "PUT",
+        body: { action: "approve" },
+      }),
+    onSuccess: (data, ...args) => {
+      queryClient.invalidateQueries({ queryKey: flashSaleKeys.detail(flashSaleId) })
+      options?.onSuccess?.(data, ...args)
+    },
+    ...options,
+  })
+}
+
+export function useRejectFlashSaleItem(
+  flashSaleId: string,
+  itemId: string,
+  options?: UseMutationOptions<any, any, void>
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () =>
+      (sdk as any).client.fetch(`/admin/flash-sales/${flashSaleId}/items/${itemId}`, {
+        method: "PUT",
+        body: { action: "reject" },
+      }),
+    onSuccess: (data, ...args) => {
+      queryClient.invalidateQueries({ queryKey: flashSaleKeys.detail(flashSaleId) })
+      options?.onSuccess?.(data, ...args)
+    },
+    ...options,
+  })
+}

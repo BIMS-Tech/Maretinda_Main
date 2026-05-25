@@ -1,18 +1,28 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import FlashSaleService, { UpdateFlashSaleItemInput } from "../../../../../../services/flash-sale"
 
-/** PUT /vendor/flash-sales/:id/items/:item_id */
+async function getOwnedItem(service: FlashSaleService, itemId: string, sellerId: string) {
+  const result = await (service as any).pgConnection.raw(
+    `SELECT * FROM "flash_sale_item" WHERE id = ? AND seller_id = ?`,
+    [itemId, sellerId]
+  )
+  return result.rows?.[0] || null
+}
+
+/** PUT /vendor/flash-sales/:id/items/:item_id — update a pending application */
 export async function PUT(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = (req as any).auth_context?.actor_id
     if (!sellerId) return res.status(401).json({ message: "Unauthorized" })
 
-    const { id, item_id } = req.params
+    const { item_id } = req.params
     const service = new FlashSaleService(req.scope as any)
-    const sale = await service.retrieve(id)
+    const existing = await getOwnedItem(service, item_id, sellerId)
 
-    if (!sale) return res.status(404).json({ message: "Flash sale not found" })
-    if (sale.seller_id !== sellerId) return res.status(403).json({ message: "Forbidden" })
+    if (!existing) return res.status(404).json({ message: "Item not found" })
+    if (existing.item_status !== "pending") {
+      return res.status(400).json({ message: "Only pending applications can be edited" })
+    }
 
     const item = await service.updateItem(item_id, req.body as UpdateFlashSaleItemInput)
     res.status(200).json({ item })
@@ -21,22 +31,24 @@ export async function PUT(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   }
 }
 
-/** DELETE /vendor/flash-sales/:id/items/:item_id */
+/** DELETE /vendor/flash-sales/:id/items/:item_id — withdraw a pending application */
 export async function DELETE(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = (req as any).auth_context?.actor_id
     if (!sellerId) return res.status(401).json({ message: "Unauthorized" })
 
-    const { id, item_id } = req.params
+    const { item_id } = req.params
     const service = new FlashSaleService(req.scope as any)
-    const sale = await service.retrieve(id)
+    const existing = await getOwnedItem(service, item_id, sellerId)
 
-    if (!sale) return res.status(404).json({ message: "Flash sale not found" })
-    if (sale.seller_id !== sellerId) return res.status(403).json({ message: "Forbidden" })
+    if (!existing) return res.status(404).json({ message: "Item not found" })
+    if (existing.item_status === "approved") {
+      return res.status(400).json({ message: "Cannot withdraw an approved application — contact admin" })
+    }
 
     await service.removeItem(item_id)
     res.status(200).json({ id: item_id, deleted: true })
   } catch (error: any) {
-    res.status(500).json({ message: "Failed to remove item", error: error.message })
+    res.status(500).json({ message: "Failed to withdraw application", error: error.message })
   }
 }
