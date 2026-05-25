@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { fetchQuery } from "../../../../../lib/client"
 import { useCancelOrder, useCompleteOrder } from "../../../../../hooks/api/orders"
-import { useVendorCapturePayment } from "../../../../../hooks/api/payments"
 import { useDate } from "../../../../../hooks/use-date"
 import {
   getCanceledOrderStatus,
@@ -32,10 +31,6 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
 
   const { mutateAsync: cancelOrder } = useCancelOrder(order.id)
   const { mutateAsync: completeOrder } = useCompleteOrder(order.id)
-  const payments = order?.payment_collections?.flatMap((c: any) => c.payments || []) || []
-  const codPayment = payments.find((p: any) => p?.provider_id === "pp_system_default")
-  const codPaymentId = typeof codPayment?.id === "string" ? codPayment.id : ""
-  const { mutateAsync: vendorCapture } = useVendorCapturePayment(order.id, codPaymentId)
 
   const handleComplete = async () => {
     await completeOrder(undefined, {
@@ -103,15 +98,11 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
             {
               label: t("orders.actions.capturePayment"),
               onClick: async () => {
-                // If we have a specific COD payment id, use it; otherwise, call order-level capture endpoint
-                if (codPaymentId) {
-                  await vendorCapture(undefined, {
-                    onSuccess: () => toast.success("Payment captured"),
-                    onError: (e) => toast.error(e.message),
-                  })
-                } else {
-                  await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: 'POST' })
+                try {
+                  await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: "POST" })
                   toast.success("Payment captured")
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Failed to capture payment")
                 }
               },
               // @ts-ignore

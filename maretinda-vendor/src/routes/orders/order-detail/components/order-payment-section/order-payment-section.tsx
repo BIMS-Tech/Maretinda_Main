@@ -1,11 +1,12 @@
+import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import { Button, Container, Heading, StatusBadge, Text, toast } from "@medusajs/ui"
 
 import { useTranslation } from "react-i18next"
 
+import { fetchQuery } from "../../../../../lib/client"
 import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
 import { getOrderPaymentStatus } from "../../../../../lib/order-helpers"
-import { useVendorCapturePayment } from "../../../../../hooks/api/payments"
 
 type OrderPaymentSectionProps = {
   order: HttpTypes.AdminOrder
@@ -50,32 +51,36 @@ const Header = ({ order }: { order: any }) => {
 
 const Actions = ({ order }: { order: HttpTypes.AdminOrder }) => {
   const { t } = useTranslation()
+  const [isPending, setIsPending] = useState(false)
+
   const payments = getPaymentsFromOrder(order) || []
-  const codPayment = payments.find((p: any) => p?.provider_id === "pp_system_default")
-  const codPaymentId = typeof (codPayment as any)?.id === "string" ? (codPayment as any).id : ""
+  const hasCOD = payments.some((p: any) => p?.provider_id === "pp_system_default")
 
-  const { mutateAsync: vendorCapture, isPending } = useVendorCapturePayment(order.id, codPaymentId)
+  const splitPayment = (order as any)?.split_order_payment
+  const isCaptured = splitPayment
+    ? splitPayment.status === "captured"
+    : order.payment_status === "captured"
 
-  if (!codPaymentId) {
+  if (!hasCOD) {
     return null
   }
-
-  // Treat COD as awaiting until vendor captures
-  const hasCOD = payments.some((p: any) => p?.provider_id === "pp_system_default")
-  const paymentStatus = hasCOD ? "awaiting" : order.payment_status
-  const disabled = paymentStatus === "captured"
 
   return (
     <div className="flex items-center justify-end gap-x-2 px-6 py-4">
       <Button
         size="small"
         variant="secondary"
-        disabled={disabled || isPending}
+        disabled={isCaptured || isPending}
         onClick={async () => {
-          await vendorCapture(undefined, {
-            onSuccess: () => toast.success((t as any)("orders.payment.captured")),
-            onError: (e) => toast.error(e.message),
-          })
+          setIsPending(true)
+          try {
+            await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: "POST" })
+            toast.success((t as any)("orders.payment.captured"))
+          } catch (e: any) {
+            toast.error(e?.message ?? "Failed to capture payment")
+          } finally {
+            setIsPending(false)
+          }
         }}
       >
         {(t as any)("orders.actions.capturePayment")}
