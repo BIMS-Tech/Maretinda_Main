@@ -30,7 +30,7 @@ export default async function firstOrderCleanupHandler({
     if (orderCount !== 1) return
 
     const groups = await customerService.listCustomerGroups({
-      name: [FIRST_TIME_BUYERS_GROUP],
+      name: FIRST_TIME_BUYERS_GROUP,
     })
     const group = groups[0]
     if (!group) return

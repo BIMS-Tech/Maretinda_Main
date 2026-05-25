@@ -22,7 +22,7 @@ export default async function customerCreatedHandler({
     // Add customer to First Time Buyers group for WELCOME promo eligibility
     try {
       const groups = await customerService.listCustomerGroups({
-        name: [FIRST_TIME_BUYERS_GROUP],
+        name: FIRST_TIME_BUYERS_GROUP,
       })
 
       let group = groups[0]
