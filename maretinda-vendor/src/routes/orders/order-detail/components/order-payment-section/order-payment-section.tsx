@@ -30,9 +30,11 @@ export const OrderPaymentSection = ({ order }: OrderPaymentSectionProps) => {
 
 const Header = ({ order }: { order: any }) => {
   const { t } = useTranslation()
-  const payments = getPaymentsFromOrder(order)
-  const isCOD = payments?.some((p: any) => p?.provider_id === "pp_system_default")
-  const effectiveStatus = isCOD && order.payment_status === "captured" ? "awaiting" : order.payment_status
+  // COD orders have captured_amount = 0 because the vendor hasn't physically
+  // collected cash yet. Online payments set captured_amount > 0 immediately.
+  const capturedAmount = order?.split_order_payment?.captured_amount ?? -1
+  const isCOD = capturedAmount === 0 && order.payment_status === "captured"
+  const effectiveStatus = isCOD ? "awaiting" : order.payment_status
   const { label, color } = getOrderPaymentStatus(t, effectiveStatus)
 
   return (

@@ -77,9 +77,9 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
         id: "payment_status",
         header: () => <PaymentStatusHeader />,
         cell: ({ row }) => {
-          const payments = row.original?.payment_collections?.flatMap((c: any) => c.payments || []) || []
-          const isCOD = payments.some((p: any) => p?.provider_id === 'pp_system_default')
-          const status: OrderPaymentStatus = isCOD ? 'awaiting' : (row.original?.payment_status as OrderPaymentStatus)
+          const capturedAmount = (row.original as any)?.split_order_payment?.captured_amount ?? -1
+          const isCOD = capturedAmount === 0 && row.original?.payment_status === "captured"
+          const status: OrderPaymentStatus = isCOD ? "awaiting" : (row.original?.payment_status as OrderPaymentStatus)
           return status ? <PaymentStatusCell status={status} /> : "-"
         },
       }),

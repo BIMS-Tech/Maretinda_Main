@@ -152,8 +152,9 @@ const FulfillmentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
 const PaymentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
   const { t } = useTranslation()
 
-  const hasCOD = order?.payment_collections?.flatMap((c: any) => c.payments || []).some((p: any) => p?.provider_id === 'pp_system_default') ?? false
-  const { label, color } = hasCOD ? { label: t('orders.payment.status.awaiting'), color: 'orange' as const } : getOrderPaymentStatus(t, order.payment_status)
+  const capturedAmount = (order as any)?.split_order_payment?.captured_amount ?? -1
+  const isCOD = capturedAmount === 0 && order.payment_status === "captured"
+  const { label, color } = isCOD ? { label: t('orders.payment.status.awaiting'), color: 'orange' as const } : getOrderPaymentStatus(t, order.payment_status)
 
   return (
     <StatusBadge color={color} className="text-nowrap">
