@@ -1,5 +1,5 @@
-import { Bolt, PencilSquare, Trash, EllipsisHorizontal, XCircle } from "@medusajs/icons"
-import { Badge, Button, Container, Heading, usePrompt, toast } from "@medusajs/ui"
+import { Bolt, PencilSquare, Trash, EllipsisHorizontal } from "@medusajs/icons"
+import { Button, Container, Heading, usePrompt, toast } from "@medusajs/ui"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
@@ -9,8 +9,6 @@ import {
   useDeleteFlashSale,
   usePublishFlashSale,
   useEndFlashSale,
-  useApproveFlashSale,
-  useRejectFlashSale,
 } from "../../../../hooks/api/flash-sales"
 import { FlashSale, getFlashSaleStatus, getTimeRemaining } from "../../../../lib/flash-sales"
 
@@ -50,20 +48,17 @@ function ActionCell({ sale }: { sale: FlashSale }) {
   const { mutate: end } = useEndFlashSale(sale.id, {
     onSuccess: () => toast.success("Flash sale ended"),
   })
-  const { mutate: approve } = useApproveFlashSale(sale.id, {
-    onSuccess: () => toast.success("Flash sale approved"),
-  })
-  const { mutate: reject } = useRejectFlashSale(sale.id, {
-    onSuccess: () => toast.success("Flash sale rejected"),
-  })
   const { mutate: deleteSale } = useDeleteFlashSale({
     onSuccess: () => toast.success("Flash sale deleted"),
   })
 
   const handleDelete = async () => {
+    const isActive = sale.status === "active"
     const confirmed = await prompt({
       title: "Delete Flash Sale",
-      description: `Are you sure you want to delete "${sale.title}"?`,
+      description: isActive
+        ? `"${sale.title}" is currently LIVE. Deleting it will immediately remove it from the storefront. Continue?`
+        : `Are you sure you want to delete "${sale.title}"?`,
       confirmText: "Delete",
       cancelText: "Cancel",
     })
@@ -90,31 +85,12 @@ function ActionCell({ sale }: { sale: FlashSale }) {
             <PencilSquare className="w-3.5 h-3.5" /> View / Edit
           </button>
 
-          {["draft", "pending", "scheduled"].includes(sale.status) && (
+          {["draft", "scheduled"].includes(sale.status) && (
             <button
               className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-green-700"
               onClick={(e) => { e.stopPropagation(); publish(); setOpen(false) }}
             >
-              <Bolt className="w-3.5 h-3.5" />
-              {sale.status === "pending" ? "Approve & Publish" : "Publish"}
-            </button>
-          )}
-
-          {sale.status === "pending" && (
-            <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-orange-700"
-              onClick={(e) => { e.stopPropagation(); approve(); setOpen(false) }}
-            >
-              Approve
-            </button>
-          )}
-
-          {sale.status === "pending" && (
-            <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
-              onClick={(e) => { e.stopPropagation(); reject(); setOpen(false) }}
-            >
-              <XCircle className="w-3.5 h-3.5" /> Reject
+              <Bolt className="w-3.5 h-3.5" /> Publish
             </button>
           )}
 
@@ -127,14 +103,12 @@ function ActionCell({ sale }: { sale: FlashSale }) {
             </button>
           )}
 
-          {!["active"].includes(sale.status) && (
-            <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
-              onClick={(e) => { e.stopPropagation(); handleDelete(); setOpen(false) }}
-            >
-              <Trash className="w-3.5 h-3.5" /> Delete
-            </button>
-          )}
+          <button
+            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+            onClick={(e) => { e.stopPropagation(); handleDelete(); setOpen(false) }}
+          >
+            <Trash className="w-3.5 h-3.5" /> Delete
+          </button>
         </div>
       )}
     </div>
@@ -150,12 +124,7 @@ export const FlashSaleListTable = () => {
       columnHelper.accessor("title", {
         header: "Flash Sale",
         cell: ({ row }) => (
-          <div>
-            <div className="font-medium text-sm text-gray-900">{row.original.title}</div>
-            {row.original.seller_id && (
-              <div className="text-xs text-gray-400">Vendor submission</div>
-            )}
-          </div>
+          <div className="font-medium text-sm text-gray-900">{row.original.title}</div>
         ),
       }),
       columnHelper.accessor("status", {
@@ -247,7 +216,6 @@ export const FlashSaleListTable = () => {
               >
                 <td className="px-6 py-4">
                   <div className="font-medium text-sm text-gray-900">{sale.title}</div>
-                  {sale.seller_id && <div className="text-xs text-gray-400">Vendor submission</div>}
                 </td>
                 <td className="px-6 py-4"><StatusBadge sale={sale} /></td>
                 <td className="px-6 py-4 text-sm text-gray-600">
