@@ -17,8 +17,9 @@ export const revalidate = 30;
 export default async function FlashSalePage({
 	params,
 }: {
-	params: { locale: string };
+	params: Promise<{ locale: string }>;
 }) {
+	await params;
 	const sale = await getActiveFlashSale();
 
 	if (!sale || !sale.items?.length) {
