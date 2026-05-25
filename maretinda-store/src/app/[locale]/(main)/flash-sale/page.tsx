@@ -81,17 +81,30 @@ export default async function FlashSalePage({
 				className="w-full py-10 lg:py-14 relative overflow-hidden"
 				style={{ background: 'linear-gradient(135deg, #1A0A2E 0%, #2D1654 60%, #C0392B 100%)' }}
 			>
+				{/* Vendor-supplied banner image as blended background */}
+				{sale.banner_image && (
+					// eslint-disable-next-line @next/next/no-img-element
+					<img
+						src={sale.banner_image}
+						alt=""
+						aria-hidden
+						className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity pointer-events-none"
+					/>
+				)}
+
 				<div
 					className="absolute inset-0"
 					style={{ backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 14px)' }}
 				/>
 
-				{/* Decorative large lightning bolt */}
-				<div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-5 pointer-events-none hidden lg:block">
-					<svg width="240" height="240" viewBox="0 0 24 24" fill="white" stroke="none">
-						<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
-					</svg>
-				</div>
+				{/* Decorative large lightning bolt — hidden when banner image is set */}
+				{!sale.banner_image && (
+					<div className="absolute right-8 top-1/2 -translate-y-1/2 opacity-5 pointer-events-none hidden lg:block">
+						<svg width="240" height="240" viewBox="0 0 24 24" fill="white" stroke="none">
+							<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+						</svg>
+					</div>
+				)}
 
 				<div className="max-w-[1360px] mx-auto px-4 lg:px-6 relative">
 					{/* Breadcrumb */}

@@ -33,10 +33,9 @@ export const FlashSaleCreate = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.title || !form.starts_at || !form.ends_at) {
-      toast.error("Title, start date, and end date are required")
-      return
-    }
+    if (!form.title.trim()) { toast.error("Title is required"); return }
+    if (!form.starts_at) { toast.error("Start date is required"); return }
+    if (!form.ends_at) { toast.error("End date is required"); return }
     if (new Date(form.ends_at) <= new Date(form.starts_at)) {
       toast.error("End date must be after start date")
       return
@@ -66,7 +65,6 @@ export const FlashSaleCreate = () => {
                 placeholder="Summer Flash Sale"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                required
               />
             </div>
 
@@ -89,7 +87,6 @@ export const FlashSaleCreate = () => {
                   type="datetime-local"
                   value={form.starts_at}
                   onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
-                  required
                 />
               </div>
               <div className="space-y-1.5">
@@ -99,7 +96,6 @@ export const FlashSaleCreate = () => {
                   type="datetime-local"
                   value={form.ends_at}
                   onChange={(e) => setForm((f) => ({ ...f, ends_at: e.target.value }))}
-                  required
                 />
               </div>
             </div>
@@ -112,6 +108,9 @@ export const FlashSaleCreate = () => {
                 value={form.banner_image}
                 onChange={(e) => setForm((f) => ({ ...f, banner_image: e.target.value }))}
               />
+              <p className="text-xs text-gray-400">
+                Displayed as the hero background on the storefront /flash-sale page. Only admin can set this — vendors cannot.
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -127,7 +126,7 @@ export const FlashSaleCreate = () => {
                 onChange={(e) => setForm((f) => ({ ...f, max_order_quantity: e.target.value }))}
               />
               <p className="text-xs text-gray-400">
-                Limits how many sale items a single customer can purchase
+                Limits how many sale items a single customer can purchase at the discounted price.
               </p>
             </div>
           </form>

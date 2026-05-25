@@ -52,6 +52,7 @@ export const FlashSaleEdit = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!form.title.trim()) { toast.error("Title is required"); return }
     if (new Date(form.ends_at) <= new Date(form.starts_at)) {
       toast.error("End date must be after start date")
       return
@@ -83,7 +84,6 @@ export const FlashSaleEdit = () => {
                   id="title"
                   value={form.title}
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                  required
                 />
               </div>
 
@@ -105,7 +105,6 @@ export const FlashSaleEdit = () => {
                     type="datetime-local"
                     value={form.starts_at}
                     onChange={(e) => setForm((f) => ({ ...f, starts_at: e.target.value }))}
-                    required
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -115,7 +114,6 @@ export const FlashSaleEdit = () => {
                     type="datetime-local"
                     value={form.ends_at}
                     onChange={(e) => setForm((f) => ({ ...f, ends_at: e.target.value }))}
-                    required
                   />
                 </div>
               </div>
@@ -124,9 +122,13 @@ export const FlashSaleEdit = () => {
                 <Label htmlFor="banner_image" className="text-sm font-medium">Banner Image URL</Label>
                 <Input
                   id="banner_image"
+                  placeholder="https://..."
                   value={form.banner_image}
                   onChange={(e) => setForm((f) => ({ ...f, banner_image: e.target.value }))}
                 />
+                <p className="text-xs text-gray-400">
+                  Displayed as the hero background on the storefront /flash-sale page. Only admin can set this.
+                </p>
               </div>
 
               <div className="space-y-1.5">
