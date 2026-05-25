@@ -703,6 +703,35 @@ export const RouteMap: RouteObject[] = [
             ],
           },
           {
+            path: "/flash-sales",
+            errorElement: <ErrorBoundary />,
+            handle: {
+              breadcrumb: () => "Flash Sales",
+            },
+            children: [
+              {
+                path: "",
+                lazy: () => import("../../routes/flash-sales/flash-sale-list"),
+                children: [
+                  {
+                    path: "create",
+                    lazy: () => import("../../routes/flash-sales/flash-sale-create"),
+                  },
+                ],
+              },
+              {
+                path: ":id",
+                lazy: () => import("../../routes/flash-sales/flash-sale-detail"),
+                children: [
+                  {
+                    path: "edit",
+                    lazy: () => import("../../routes/flash-sales/flash-sale-edit"),
+                  },
+                ],
+              },
+            ],
+          },
+          {
             path: "/collections",
             errorElement: <ErrorBoundary />,
             handle: {

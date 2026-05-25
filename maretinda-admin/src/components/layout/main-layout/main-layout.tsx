@@ -1,4 +1,5 @@
 import {
+  Bolt,
   BottomToTop,
   BuildingStorefront,
   Buildings,
@@ -242,6 +243,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <Shopping />,
       label: t("sellers.domain"),
       to: "/sellers",
+    },
+    {
+      icon: <Bolt />,
+      label: "Flash Sales",
+      to: "/flash-sales",
     },
     {
       icon: <ReceiptPercent />,

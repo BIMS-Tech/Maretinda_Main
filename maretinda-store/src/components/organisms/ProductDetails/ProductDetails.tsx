@@ -10,6 +10,7 @@ import {
 	// ProductPageDetails,
 	ProductReturnDeliveryDetails,
 } from '@/components/cells';
+import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
 import type { AdditionalAttributeProps } from '@/types/product';
@@ -20,12 +21,14 @@ export const ProductDetails = async ({
 	product,
 	locale,
 	seller,
+	flashSaleItem,
 }: {
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
 	};
 	locale: string;
 	seller: SellerProps;
+	flashSaleItem?: ActiveFlashSaleItem | null;
 }) => {
 	const user = await retrieveCustomer();
 
@@ -44,6 +47,7 @@ export const ProductDetails = async ({
 	return (
 		<div>
 			<ProductDetailsHeader
+				flashSaleItem={flashSaleItem ?? null}
 				locale={locale}
 				product={product}
 				user={user}

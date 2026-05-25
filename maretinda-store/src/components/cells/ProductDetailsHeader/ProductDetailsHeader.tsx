@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button, StarRating, Tag } from '@/components/atoms';
+import { FlashSaleCountdown } from '@/components/sections/FlashSaleSection/FlashSaleCountdown';
 import { ErrorMessage, ProductVariants } from '@/components/molecules';
 import { UpdateItemQuantityButton } from '@/components/molecules/UpdateItemQuantityButton/UpdateItemQuantityButton';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart } from '@/lib/data/cart';
+import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
 import type { SellerProps } from '@/types/seller';
@@ -37,11 +39,13 @@ export const ProductDetailsHeader = ({
 	locale,
 	user,
 	wishlist,
+	flashSaleItem,
 }: {
 	product: HttpTypes.StoreProduct & { seller?: SellerProps; reviews?: any[] };
 	locale: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist?: Wishlist[];
+	flashSaleItem?: ActiveFlashSaleItem | null;
 }) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -129,6 +133,19 @@ export const ProductDetailsHeader = ({
 
 	const discount = ((originalPrice - calculatedPrice) / originalPrice) * 100;
 
+	// Flash sale: compute sale price from original numeric price
+	const basePriceNumber = variantPrice?.original_price_number as number | undefined
+	const flashSalePrice = flashSaleItem && basePriceNumber && basePriceNumber > 0
+		? flashSaleItem.discount_type === 'percentage'
+			? Math.round(basePriceNumber * (1 - flashSaleItem.discount_value / 100))
+			: Math.max(0, Math.round(basePriceNumber - flashSaleItem.discount_value))
+		: null
+	const flashSaleDiscountPct = flashSaleItem?.discount_type === 'percentage'
+		? flashSaleItem.discount_value
+		: basePriceNumber && flashSalePrice !== null
+			? Math.round(((basePriceNumber - flashSalePrice) / basePriceNumber) * 100)
+			: null
+
 	return (
 		<div className="">
 			<div className="flex justify-between">
@@ -148,28 +165,64 @@ export const ProductDetailsHeader = ({
 						</span>
 					</div>
 				)}
+					{/* Flash sale banner */}
+				{flashSaleItem && flashSalePrice !== null && (
+						<div className="mt-3 mb-1 flex flex-wrap items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
+							<div className="flex items-center gap-1.5 text-red-600 font-semibold text-[13px]">
+								<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+									<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+								</svg>
+								Flash Sale
+								{flashSaleDiscountPct !== null && (
+									<span className="ml-1 rounded-md bg-red-600 text-white text-[11px] font-extrabold px-1.5 py-0.5">
+										-{flashSaleDiscountPct}%
+									</span>
+								)}
+							</div>
+							<FlashSaleCountdown endsAt={flashSaleItem.ends_at} />
+						</div>
+					)}
+
 					<div className="mt-2 flex gap-2 items-center">
-						<span
-							className={cn(
-								'heading-md text-primary !font-bold',
-								variantStock < 1 && 'line-through',
-							)}
-						>
-							{variantPrice?.calculated_price}
-						</span>
-						{variantPrice?.calculated_price_number !==
-							variantPrice?.original_price_number && (
-							<span className="heading-md line-through text-black/30 !font-bold">
-								{variantPrice?.original_price}
-							</span>
+						{flashSalePrice !== null ? (
+							<>
+								<span
+									className={cn(
+										'heading-md !font-bold text-red-600',
+										variantStock < 1 && 'line-through',
+									)}
+								>
+									₱{flashSalePrice.toLocaleString()}
+								</span>
+								<span className="heading-md line-through text-black/30 !font-bold">
+									{variantPrice?.original_price}
+								</span>
+							</>
+						) : (
+							<>
+								<span
+									className={cn(
+										'heading-md text-primary !font-bold',
+										variantStock < 1 && 'line-through',
+									)}
+								>
+									{variantPrice?.calculated_price}
+								</span>
+								{variantPrice?.calculated_price_number !==
+									variantPrice?.original_price_number && (
+									<span className="heading-md line-through text-black/30 !font-bold">
+										{variantPrice?.original_price}
+									</span>
+								)}
+							</>
 						)}
 						<div
 							className={cn(
 								'flex items-center justify-center gap-3 ml-2',
-								discount > 0 && 'ml-6',
+								(discount > 0 || flashSalePrice !== null) && 'ml-6',
 							)}
 						>
-							{discount > 0 && <Tag value={discount} />}
+							{flashSalePrice === null && discount > 0 && <Tag value={discount} />}
 							<div className="h-3.5 w-[1px] bg-black" />
 							{variantStock > 0 ? (
 								<span className="text-[#00FF66] text-base">

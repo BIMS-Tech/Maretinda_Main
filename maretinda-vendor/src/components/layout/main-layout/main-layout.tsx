@@ -1,4 +1,5 @@
 import {
+  Bolt,
   Buildings,
   ChevronDownMini,
   CogSixTooth,
@@ -162,6 +163,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           to: "/customer-groups",
         },
       ],
+    },
+    {
+      icon: <Bolt />,
+      label: "Flash Sales",
+      to: "/flash-sales",
     },
     {
       icon: <ReceiptPercent />,

@@ -2,25 +2,35 @@
 
 import React, { useEffect, useState } from 'react';
 
-const TARGET_HOURS = 2;
-
-function getInitialSeconds() {
-	return TARGET_HOURS * 60 * 60;
+function msUntil(iso: string): number {
+	return Math.max(0, new Date(iso).getTime() - Date.now())
 }
 
-export const FlashSaleCountdown = () => {
-	const [seconds, setSeconds] = useState(getInitialSeconds);
+export const FlashSaleCountdown = ({ endsAt }: { endsAt: string }) => {
+	const [ms, setMs] = useState(() => msUntil(endsAt))
 
 	useEffect(() => {
+		setMs(msUntil(endsAt))
 		const id = setInterval(() => {
-			setSeconds((s) => (s > 0 ? s - 1 : 0));
-		}, 1000);
-		return () => clearInterval(id);
-	}, []);
+			const remaining = msUntil(endsAt)
+			setMs(remaining)
+			if (remaining === 0) clearInterval(id)
+		}, 1000)
+		return () => clearInterval(id)
+	}, [endsAt])
 
-	const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
-	const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-	const ss = String(seconds % 60).padStart(2, '0');
+	const totalSeconds = Math.floor(ms / 1000)
+	const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+	const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
+	const ss = String(totalSeconds % 60).padStart(2, '0')
+
+	if (ms === 0) {
+		return (
+			<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
+				<span className="text-[12px] text-red-500 mr-1 font-semibold">Sale ended</span>
+			</div>
+		)
+	}
 
 	return (
 		<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
@@ -37,5 +47,5 @@ export const FlashSaleCountdown = () => {
 				</React.Fragment>
 			))}
 		</div>
-	);
-};
+	)
+}

@@ -4,6 +4,7 @@ import {
 	ProductGallery,
 	ProductTabs,
 } from '@/components/organisms';
+import { getFlashSaleForProduct } from '@/lib/data/flash-sales';
 import { listProducts } from '@/lib/data/products';
 import { getSellerByHandle } from '@/lib/data/seller';
 import type { SellerProps } from '@/types/seller';
@@ -27,9 +28,10 @@ export const ProductDetailsPage = async ({
 
 	if (!prod) return null;
 
-	const seller = (await getSellerByHandle(
-		prod.seller?.handle as string,
-	)) as SellerProps;
+	const [seller, flashSaleItem] = await Promise.all([
+		getSellerByHandle(prod.seller?.handle as string) as Promise<SellerProps>,
+		getFlashSaleForProduct(prod.id),
+	]);
 
 	if (seller?.store_status === 'SUSPENDED') {
 		return NotFound();
@@ -43,6 +45,7 @@ export const ProductDetailsPage = async ({
 				</div>
 				<div className="md:w-1/2 ">
 					<ProductDetails
+						flashSaleItem={flashSaleItem}
 						locale={locale}
 						product={prod}
 						seller={seller}
