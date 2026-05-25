@@ -16,10 +16,9 @@ async function getService(req: AuthenticatedMedusaRequest): Promise<FlashSaleSer
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const service = await getService(req)
-    const { status, seller_id, limit = "20", offset = "0" } = req.query as any
+    const { status, limit = "20", offset = "0" } = req.query as any
     const { flash_sales, count } = await service.list({
       status: status ? (Array.isArray(status) ? status : [status]) : undefined,
-      seller_id,
       limit: parseInt(limit),
       offset: parseInt(offset),
     })
@@ -36,9 +35,6 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     const service = await getService(req)
     const body = req.body as CreateFlashSaleInput & { items?: any[] }
     const { items, ...saleInput } = body
-
-    saleInput.created_by = (req as any).auth_context?.actor_id
-
     const sale = await service.create(saleInput)
 
     // Optionally add items inline
