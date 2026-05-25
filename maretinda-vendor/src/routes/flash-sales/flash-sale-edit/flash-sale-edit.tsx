@@ -41,15 +41,14 @@ export const FlashSaleEdit = () => {
 
   const handleClose = () => { setOpen(false); navigate("..") }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSave = () => {
     if (!form.title.trim()) { toast.error("Title is required"); return }
     if (new Date(form.ends_at) <= new Date(form.starts_at)) {
       toast.error("End date must be after start date")
       return
     }
     update({
-      title: form.title,
+      title: form.title.trim(),
       description: form.description || undefined,
       starts_at: new Date(form.starts_at).toISOString(),
       ends_at: new Date(form.ends_at).toISOString(),
@@ -65,7 +64,7 @@ export const FlashSaleEdit = () => {
         </Drawer.Header>
         <Drawer.Body className="p-6">
           {isLoading ? <div className="text-sm text-gray-400">Loading...</div> : (
-            <form id="vendor-flash-sale-edit-form" onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-5">
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
                 <Input
@@ -114,14 +113,12 @@ export const FlashSaleEdit = () => {
                   onChange={(e) => setForm((f) => ({ ...f, max_order_quantity: e.target.value }))}
                 />
               </div>
-            </form>
+            </div>
           )}
         </Drawer.Body>
         <Drawer.Footer>
           <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-          <Button type="submit" form="vendor-flash-sale-edit-form" isLoading={isPending}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSave} isLoading={isPending}>Save Changes</Button>
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>

@@ -24,8 +24,7 @@ export const FlashSaleCreate = () => {
 
   const handleClose = () => { setOpen(false); navigate("..") }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleCreate = () => {
     if (!form.title.trim()) { toast.error("Title is required"); return }
     if (!form.starts_at) { toast.error("Start date is required"); return }
     if (!form.ends_at) { toast.error("End date is required"); return }
@@ -34,7 +33,7 @@ export const FlashSaleCreate = () => {
       return
     }
     create({
-      title: form.title,
+      title: form.title.trim(),
       description: form.description || undefined,
       starts_at: new Date(form.starts_at).toISOString(),
       ends_at: new Date(form.ends_at).toISOString(),
@@ -52,7 +51,7 @@ export const FlashSaleCreate = () => {
           </p>
         </Drawer.Header>
         <Drawer.Body className="p-6">
-          <form id="vendor-flash-sale-create-form" onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-5">
             <div className="space-y-1.5">
               <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
               <Input
@@ -106,13 +105,11 @@ export const FlashSaleCreate = () => {
                 Limits how many sale items a single customer can purchase at the discounted price.
               </p>
             </div>
-          </form>
+          </div>
         </Drawer.Body>
         <Drawer.Footer>
           <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-          <Button type="submit" form="vendor-flash-sale-create-form" isLoading={isPending}>
-            Create Draft
-          </Button>
+          <Button onClick={handleCreate} isLoading={isPending}>Create Draft</Button>
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>

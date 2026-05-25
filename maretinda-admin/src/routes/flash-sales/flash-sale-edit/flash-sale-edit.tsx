@@ -38,27 +38,20 @@ export const FlashSaleEdit = () => {
   }, [sale])
 
   const { mutate: update, isPending } = useUpdateFlashSale(id!, {
-    onSuccess: () => {
-      toast.success("Flash sale updated")
-      navigate("..")
-    },
+    onSuccess: () => { toast.success("Flash sale updated"); navigate("..") },
     onError: (err: any) => toast.error(err?.message || "Update failed"),
   })
 
-  const handleClose = () => {
-    setOpen(false)
-    navigate("..")
-  }
+  const handleClose = () => { setOpen(false); navigate("..") }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSave = () => {
     if (!form.title.trim()) { toast.error("Title is required"); return }
     if (new Date(form.ends_at) <= new Date(form.starts_at)) {
       toast.error("End date must be after start date")
       return
     }
     update({
-      title: form.title,
+      title: form.title.trim(),
       description: form.description || undefined,
       starts_at: new Date(form.starts_at).toISOString(),
       ends_at: new Date(form.ends_at).toISOString(),
@@ -77,7 +70,7 @@ export const FlashSaleEdit = () => {
           {isLoading ? (
             <div className="text-sm text-gray-400">Loading...</div>
           ) : (
-            <form id="flash-sale-edit-form" onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-5">
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
                 <Input
@@ -86,7 +79,6 @@ export const FlashSaleEdit = () => {
                   onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 />
               </div>
-
               <div className="space-y-1.5">
                 <Label htmlFor="description" className="text-sm font-medium">Description</Label>
                 <Textarea
@@ -96,7 +88,6 @@ export const FlashSaleEdit = () => {
                   rows={3}
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="starts_at" className="text-sm font-medium">Start *</Label>
@@ -117,7 +108,6 @@ export const FlashSaleEdit = () => {
                   />
                 </div>
               </div>
-
               <div className="space-y-1.5">
                 <Label htmlFor="banner_image" className="text-sm font-medium">Banner Image URL</Label>
                 <Input
@@ -130,11 +120,8 @@ export const FlashSaleEdit = () => {
                   Displayed as the hero background on the storefront /flash-sale page. Only admin can set this.
                 </p>
               </div>
-
               <div className="space-y-1.5">
-                <Label htmlFor="max_order_quantity" className="text-sm font-medium">
-                  Max quantity per customer
-                </Label>
+                <Label htmlFor="max_order_quantity" className="text-sm font-medium">Max quantity per customer</Label>
                 <Input
                   id="max_order_quantity"
                   type="number"
@@ -144,14 +131,12 @@ export const FlashSaleEdit = () => {
                   onChange={(e) => setForm((f) => ({ ...f, max_order_quantity: e.target.value }))}
                 />
               </div>
-            </form>
+            </div>
           )}
         </Drawer.Body>
         <Drawer.Footer>
           <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-          <Button type="submit" form="flash-sale-edit-form" isLoading={isPending}>
-            Save Changes
-          </Button>
+          <Button onClick={handleSave} isLoading={isPending}>Save Changes</Button>
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>
