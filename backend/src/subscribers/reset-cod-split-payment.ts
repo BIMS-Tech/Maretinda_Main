@@ -2,14 +2,14 @@ import { type SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules, PaymentEvents } from "@medusajs/framework/utils"
 
 /**
- * Resets split_order_payment.captured_amount back to 0 for COD orders.
+ * Resets COD payment status back to "authorized" after the mercurjs plugin
+ * auto-captures pp_system_default payments on order placement.
  *
  * The @mercurjs/b2c-core subscriber `split-payment-payment-captured` fires on
  * every PaymentEvents.CAPTURED (including pp_system_default auto-captures) and
- * incorrectly marks the split order payment as fully captured. This subscriber
- * runs on the same event with a 600ms delay to ensure it runs AFTER the mercurjs
- * subscriber, then resets COD split payments so the vendor panel shows "Awaiting"
- * until the vendor physically collects cash and manually triggers capture.
+ * marks both the core `payment` record and `split_order_payment` as captured.
+ * This subscriber runs 600ms later to undo that for COD orders — resetting both
+ * tables so the vendor panel shows "Awaiting" until cash is physically collected.
  */
 export default async function resetCodSplitPayment({
   event,
@@ -34,9 +34,21 @@ export default async function resetCodSplitPayment({
   // Wait for the mercurjs subscriber to finish writing its update first
   await new Promise<void>((resolve) => setTimeout(resolve, 600))
 
-  // Use Knex (PG_CONNECTION) to reset the split order payment
   const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+  const now = new Date()
 
+  // Reset the core payment record — this drives the "Captured" badge in the UI
+  await pg("payment")
+    .where({ id: paymentId })
+    .update({
+      status: "authorized",
+      captured_amount: 0,
+      raw_captured_amount: JSON.stringify({ value: "0", precision: 20 }),
+      captured_at: null,
+      updated_at: now,
+    })
+
+  // Reset the split order payment record
   await pg("split_order_payment")
     .where({ payment_collection_id: paymentCollectionId, status: "captured" })
     .whereNull("deleted_at")
@@ -44,7 +56,7 @@ export default async function resetCodSplitPayment({
       captured_amount: 0,
       raw_captured_amount: JSON.stringify({ value: "0", precision: 20 }),
       status: "pending",
-      updated_at: new Date(),
+      updated_at: now,
     })
 }
 

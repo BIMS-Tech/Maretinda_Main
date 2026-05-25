@@ -33,7 +33,7 @@ async function fixCodSplitPayments() {
 
     // Identify affected COD split order payments
     const { rows: affected } = await client.query(`
-      SELECT sop.id, sop.captured_amount, o.display_id
+      SELECT sop.id, sop.captured_amount, o.display_id, p.id AS payment_id
       FROM split_order_payment sop
       JOIN payment_collection pc ON pc.id = sop.payment_collection_id
       JOIN payment p ON p.payment_collection_id = pc.id
@@ -43,7 +43,7 @@ async function fixCodSplitPayments() {
         AND p.deleted_at IS NULL
         AND pc.deleted_at IS NULL
         AND sop.deleted_at IS NULL
-        AND sop.captured_amount > 0
+        AND (sop.captured_amount > 0 OR p.status = 'captured')
     `)
 
     if (affected.length === 0) {
@@ -59,18 +59,38 @@ async function fixCodSplitPayments() {
     const ids = affected.map((r: any) => r.id)
     const placeholders = ids.map((_: any, i: number) => `$${i + 1}`).join(', ')
 
+    // Reset split_order_payment records
     await client.query(`
       UPDATE split_order_payment
       SET
-        captured_amount   = 0,
+        captured_amount     = 0,
         raw_captured_amount = '{"value": "0", "precision": 20}',
-        status            = 'pending',
-        updated_at        = NOW()
+        status              = 'pending',
+        updated_at          = NOW()
       WHERE id IN (${placeholders})
     `, ids)
 
+    // Also reset the core payment records — these drive the "Captured" badge in the UI
+    const paymentIds = affected.map((r: any) => r.payment_id)
+    const uniquePaymentIds = [...new Set(paymentIds)].filter(Boolean)
+    if (uniquePaymentIds.length > 0) {
+      const paymentPlaceholders = uniquePaymentIds.map((_: any, i: number) => `$${i + 1}`).join(', ')
+      await client.query(`
+        UPDATE payment
+        SET
+          status              = 'authorized',
+          captured_amount     = 0,
+          raw_captured_amount = '{"value": "0", "precision": 20}',
+          captured_at         = NULL,
+          updated_at          = NOW()
+        WHERE id IN (${paymentPlaceholders})
+          AND status = 'captured'
+      `, uniquePaymentIds)
+    }
+
     console.log(`\nReset ${affected.length} COD split order payment(s) to captured_amount = 0, status = pending.`)
-    console.log('Done! Vendor panel will now show "Awaiting" for these COD orders.')
+    console.log(`Reset ${uniquePaymentIds.length} COD payment record(s) to status = authorized.`)
+    console.log('Done! Vendor panel will now show the correct status for these COD orders.')
 
   } catch (err) {
     console.error('Error fixing COD split payments:', err)
