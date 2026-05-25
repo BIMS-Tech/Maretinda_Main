@@ -30,7 +30,10 @@ export const OrderPaymentSection = ({ order }: OrderPaymentSectionProps) => {
 
 const Header = ({ order }: { order: any }) => {
   const { t } = useTranslation()
-  const { label, color } = getOrderPaymentStatus(t, order.payment_status)
+  const payments = getPaymentsFromOrder(order)
+  const isCOD = payments?.some((p: any) => p?.provider_id === "pp_system_default")
+  const effectiveStatus = isCOD && order.payment_status === "captured" ? "awaiting" : order.payment_status
+  const { label, color } = getOrderPaymentStatus(t, effectiveStatus)
 
   return (
     <div className="flex items-center justify-between px-6 py-4">

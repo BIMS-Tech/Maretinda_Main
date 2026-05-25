@@ -79,12 +79,16 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
           return <SalesChannelCell channel={channel} />
         },
       }),
-      columnHelper.accessor("payment_status", {
+      columnHelper.display({
+        id: "payment_status",
         header: () => <PaymentStatusHeader />,
-        cell: ({ getValue }) => {
-          const status = getValue()
-
-          return <PaymentStatusCell status={status} />
+        cell: ({ row }) => {
+          const payments = row.original?.payment_collections?.flatMap((c: any) => c.payments || []) || []
+          const isCOD = payments.some((p: any) => p?.provider_id === "pp_system_default")
+          const status = isCOD && row.original?.payment_status === "captured"
+            ? "awaiting"
+            : row.original?.payment_status
+          return status ? <PaymentStatusCell status={status} /> : "-"
         },
       }),
       columnHelper.accessor("fulfillment_status", {

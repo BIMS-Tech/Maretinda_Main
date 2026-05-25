@@ -32,10 +32,8 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
 
   const { mutateAsync: cancelOrder } = useCancelOrder(order.id)
   const { mutateAsync: completeOrder } = useCompleteOrder(order.id)
-  const payments = order?.payment_collections?.payments || []
-  const codPayment = Array.isArray(payments)
-    ? payments.find((p: any) => p?.provider_id === "pp_system_default")
-    : undefined
+  const payments = order?.payment_collections?.flatMap((c: any) => c.payments || []) || []
+  const codPayment = payments.find((p: any) => p?.provider_id === "pp_system_default")
   const codPaymentId = typeof codPayment?.id === "string" ? codPayment.id : ""
   const { mutateAsync: vendorCapture } = useVendorCapturePayment(order.id, codPaymentId)
 
@@ -154,10 +152,8 @@ const FulfillmentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
 const PaymentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
   const { t } = useTranslation()
 
-  const hasCOD = Array.isArray(order?.payment_collections?.payments)
-    ? order.payment_collections.payments.some((p: any) => p?.provider_id === 'pp_system_default')
-    : false
-  const { label, color } = hasCOD ? { label: t('orders.payment.status.awaiting'), color: 'orange' } : getOrderPaymentStatus(t, order.payment_status)
+  const hasCOD = order?.payment_collections?.flatMap((c: any) => c.payments || []).some((p: any) => p?.provider_id === 'pp_system_default') ?? false
+  const { label, color } = hasCOD ? { label: t('orders.payment.status.awaiting'), color: 'orange' as const } : getOrderPaymentStatus(t, order.payment_status)
 
   return (
     <StatusBadge color={color} className="text-nowrap">
