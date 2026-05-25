@@ -77,8 +77,8 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
         id: "payment_status",
         header: () => <PaymentStatusHeader />,
         cell: ({ row }) => {
-          const capturedAmount = (row.original as any)?.split_order_payment?.captured_amount ?? -1
-          const isCOD = capturedAmount === 0 && row.original?.payment_status === "captured"
+          const splitPayment = (row.original as any)?.split_order_payment
+          const isCOD = splitPayment != null && Number(splitPayment.captured_amount ?? 0) === 0
           const status: OrderPaymentStatus = isCOD ? "awaiting" : (row.original?.payment_status as OrderPaymentStatus)
           return status ? <PaymentStatusCell status={status} /> : "-"
         },

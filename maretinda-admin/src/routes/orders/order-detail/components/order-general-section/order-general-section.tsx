@@ -81,7 +81,7 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
                 {
                   label: t("actions.cancel"),
                   onClick: handleCancel,
-                  disabled: !!order.canceled_at,
+                  disabled: order.status === "canceled",
                   icon: <XCircle />,
                 },
               ],
@@ -110,8 +110,10 @@ const FulfillmentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
 
 const PaymentBadge = ({ order }: { order: HttpTypes.AdminOrder }) => {
   const { t } = useTranslation()
-
-  const { label, color } = getOrderPaymentStatus(t, order.payment_status)
+  const payments = (order.payment_collections ?? []).flatMap((c: any) => c.payments || [])
+  const isCOD = payments.some((p: any) => p?.provider_id === "pp_system_default")
+  const effectiveStatus = isCOD && order.payment_status === "captured" ? "awaiting" : order.payment_status
+  const { label, color } = getOrderPaymentStatus(t, effectiveStatus)
 
   return (
     <StatusBadge color={color} className="text-nowrap">

@@ -20,6 +20,7 @@
     "start": "medusa start",
     "dev": "medusa develop",
     "db:init": "npx tsx src/scripts/init-database.ts",
+    "fix:cod": "npx tsx src/scripts/fix-cod-split-payments.ts",
     "db:setup": "medusa db:migrate && npm run db:init",
     "db:migrate": "medusa db:migrate",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
