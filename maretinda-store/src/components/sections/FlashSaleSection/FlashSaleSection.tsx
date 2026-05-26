@@ -59,8 +59,9 @@ export const FlashSaleSection = async ({
 						const product = item.product;
 						if (!product) return null;
 
+						const discountVal = Number(item.discount_value)
 						const discountPct =
-							item.discount_type === 'percentage' ? item.discount_value : null;
+							item.discount_type === 'percentage' ? discountVal : null;
 						const soldPct = item.stock_limit
 							? Math.min(100, Math.round((item.sold_count / item.stock_limit) * 100))
 							: 0;
@@ -69,18 +70,16 @@ export const FlashSaleSection = async ({
 							: null;
 						const bgColor = PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length];
 
-						// Compute base price from first variant
+						// Compute base price from first variant (amount is in pesos — no /100)
 						const variants = product.variants || [];
 						const firstVariant = variants[0];
-						const basePrice = firstVariant?.prices?.[0]?.amount
-							? firstVariant.prices[0].amount / 100
-							: null;
+						const basePrice: number | null = firstVariant?.prices?.[0]?.amount ?? null;
 
 						const salePrice =
 							basePrice !== null
 								? item.discount_type === 'percentage'
-									? Math.round(basePrice * (1 - item.discount_value / 100))
-									: Math.max(0, Math.round(basePrice - item.discount_value))
+									? Math.round(basePrice * (1 - discountVal / 100))
+									: Math.max(0, Math.round(basePrice - discountVal))
 								: null;
 
 						return (
@@ -113,7 +112,7 @@ export const FlashSaleSection = async ({
 									)}
 									{item.discount_type === 'fixed' && (
 										<span className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-md">
-											-₱{item.discount_value}
+											-₱{discountVal.toLocaleString()}
 										</span>
 									)}
 									<button

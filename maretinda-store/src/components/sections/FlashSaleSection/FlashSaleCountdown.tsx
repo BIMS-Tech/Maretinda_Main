@@ -20,7 +20,8 @@ export const FlashSaleCountdown = ({ endsAt }: { endsAt: string }) => {
 	}, [endsAt])
 
 	const totalSeconds = Math.floor(ms / 1000)
-	const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
+	const dd = Math.floor(totalSeconds / 86400)
+	const hh = String(Math.floor((totalSeconds % 86400) / 3600)).padStart(2, '0')
 	const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
 	const ss = String(totalSeconds % 60).padStart(2, '0')
 
@@ -32,18 +33,22 @@ export const FlashSaleCountdown = ({ endsAt }: { endsAt: string }) => {
 		)
 	}
 
+	const units = dd > 0
+		? [{ label: `${dd}d`, value: `${dd}` }, { label: 'h', value: hh }, { label: 'm', value: mm }]
+		: [{ label: 'h', value: hh }, { label: 'm', value: mm }, { label: 's', value: ss }]
+
 	return (
 		<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
 			<span className="text-[12px] text-[#404040] mr-1">Ends in</span>
-			{[hh, mm, ss].map((unit, i) => (
+			{units.map(({ value }, i) => (
 				<React.Fragment key={i}>
 					<span
 						suppressHydrationWarning
 						className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums"
 					>
-						{unit}
+						{value}
 					</span>
-					{i < 2 && <span className="text-[#1B1B1B]/40">:</span>}
+					{i < units.length - 1 && <span className="text-[#1B1B1B]/40">:</span>}
 				</React.Fragment>
 			))}
 		</div>

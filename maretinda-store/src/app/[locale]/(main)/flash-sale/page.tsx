@@ -153,7 +153,7 @@ export default async function FlashSalePage({
 							<div className="w-px h-10 bg-white/10" />
 							<div className="text-center">
 								<div className="text-[28px] font-extrabold text-[#FFC533]">
-									{Math.max(...items.map((i) => i.discount_value))}
+									{Math.max(...items.map((i) => Number(i.discount_value)))}
 									{items.find((i) => i.discount_type === 'percentage') ? '%' : '₱'}
 								</div>
 								<div className="text-[11px] uppercase tracking-wider text-white/50 mt-0.5">Max Off</div>
@@ -177,7 +177,8 @@ export default async function FlashSalePage({
 						const product = item.product;
 						if (!product) return null;
 
-						const discountPct = item.discount_type === 'percentage' ? item.discount_value : null;
+						const discountVal = Number(item.discount_value)
+						const discountPct = item.discount_type === 'percentage' ? discountVal : null;
 						const soldPct = item.stock_limit
 							? Math.min(100, Math.round((item.sold_count / item.stock_limit) * 100))
 							: 0;
@@ -188,12 +189,12 @@ export default async function FlashSalePage({
 
 						const variants = product.variants || [];
 						const firstVariant = variants[0];
-						const basePrice = firstVariant?.prices?.[0]?.amount ?? null;
+						const basePrice: number | null = firstVariant?.prices?.[0]?.amount ?? null;
 						const salePrice =
 							basePrice !== null
 								? item.discount_type === 'percentage'
-									? Math.round(basePrice * (1 - item.discount_value / 100))
-									: Math.max(0, Math.round(basePrice - item.discount_value))
+									? Math.round(basePrice * (1 - discountVal / 100))
+									: Math.max(0, Math.round(basePrice - discountVal))
 								: null;
 
 						return (
@@ -228,7 +229,7 @@ export default async function FlashSalePage({
 									)}
 									{item.discount_type === 'fixed' && (
 										<span className="absolute top-2.5 left-2.5 bg-red-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-md leading-tight">
-											-₱{item.discount_value}
+											-₱{discountVal.toLocaleString()}
 										</span>
 									)}
 
