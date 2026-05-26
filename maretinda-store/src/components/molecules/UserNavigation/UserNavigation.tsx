@@ -60,6 +60,11 @@ const navigationItems = [
 		icon: <HeartIcon />,
 		label: 'Wishlist',
 	},
+	{
+		href: '/user/vouchers',
+		icon: <span className="text-base leading-none">🎟️</span>,
+		label: 'My Vouchers',
+	},
 ];
 
 export const UserNavigation = ({

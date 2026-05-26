@@ -132,6 +132,15 @@ const TopHeaderBanner: React.FC = () => {
 
 					<span className="hidden md:block opacity-20 text-white">|</span>
 
+					<Link href={`/${locale}/vouchers`}
+						className="hidden md:inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors whitespace-nowrap"
+					>
+						<span className="text-[11px]">🎟️</span>
+						Vouchers
+					</Link>
+
+					<span className="hidden md:block opacity-20 text-white">|</span>
+
 					<div className="relative hidden md:block">
 						<button
 							onMouseEnter={() => setAppTooltip(true)} onMouseLeave={() => setAppTooltip(false)}

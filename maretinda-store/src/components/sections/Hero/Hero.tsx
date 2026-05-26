@@ -127,7 +127,7 @@ export const Hero = ({ buttons }: HeroProps) => {
 						</div>
 						<div className="flex items-center justify-between">
 							<code className="font-mono text-[12px] font-bold px-2.5 py-1 rounded-md tracking-wider" style={{ backgroundColor: '#432C63', color: '#FFC533' }}>HELLOMRTD</code>
-							<Link href="/categories" className="text-[13px] font-bold underline underline-offset-4 hover:opacity-80">Claim →</Link>
+							<Link href="/vouchers" className="text-[13px] font-bold underline underline-offset-4 hover:opacity-80">Claim →</Link>
 						</div>
 						<div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border-2 border-[#432C63]/20" />
 					</div>
