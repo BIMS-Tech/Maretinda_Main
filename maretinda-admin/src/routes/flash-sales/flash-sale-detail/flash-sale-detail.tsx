@@ -328,6 +328,28 @@ function VendorApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { s
   )
 }
 
+function BannerImage({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false)
+  return (
+    <Container className="p-4">
+      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Banner Image</p>
+      {failed ? (
+        <div className="flex items-center gap-2 text-xs text-red-400 bg-red-50 rounded-lg p-3">
+          <span>Image failed to load.</span>
+          <span className="truncate text-gray-400">{url}</span>
+        </div>
+      ) : (
+        <img
+          src={url}
+          alt="Banner"
+          className="w-full max-h-48 object-cover rounded-lg"
+          onError={() => setFailed(true)}
+        />
+      )}
+    </Container>
+  )
+}
+
 export const FlashSaleDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -447,14 +469,7 @@ export const FlashSaleDetail = () => {
 
       {/* Banner */}
       {sale.banner_image && (
-        <Container className="p-4">
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Banner Image</p>
-          <img
-            src={sale.banner_image}
-            alt="Banner"
-            className="w-full max-h-48 object-cover rounded-lg"
-          />
-        </Container>
+        <BannerImage url={sale.banner_image} />
       )}
 
       {/* Vendor Product Applications */}

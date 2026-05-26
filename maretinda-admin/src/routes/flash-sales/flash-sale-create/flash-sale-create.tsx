@@ -1,11 +1,14 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button, Drawer, Heading, Input, Label, Textarea, toast } from "@medusajs/ui"
 import { useCreateFlashSale } from "../../../hooks/api/flash-sales"
+import { sdk } from "../../../lib/client"
 
 export const FlashSaleCreate = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -24,6 +27,23 @@ export const FlashSaleCreate = () => {
   })
 
   const handleClose = () => { setOpen(false); navigate("..") }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const { files } = await (sdk as any).admin.upload.create({ files: [file] })
+      const url = files?.[0]?.url
+      if (url) setForm((f) => ({ ...f, banner_image: url }))
+      else toast.error("Upload failed — no URL returned")
+    } catch {
+      toast.error("Failed to upload image")
+    } finally {
+      setUploading(false)
+      e.target.value = ""
+    }
+  }
 
   const handleCreate = () => {
     if (!form.title.trim()) { toast.error("Title is required"); return }
@@ -91,15 +111,51 @@ export const FlashSaleCreate = () => {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="banner_image" className="text-sm font-medium">Banner Image URL</Label>
-              <Input
-                id="banner_image"
-                placeholder="https://..."
-                value={form.banner_image}
-                onChange={(e) => setForm((f) => ({ ...f, banner_image: e.target.value }))}
-              />
+              <Label className="text-sm font-medium">Banner Image</Label>
+              {form.banner_image && (
+                <div className="relative w-full rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                  <img
+                    src={form.banner_image}
+                    alt="Banner preview"
+                    className="w-full max-h-36 object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none" }}
+                  />
+                  <button
+                    type="button"
+                    className="absolute top-1.5 right-1.5 bg-white/80 hover:bg-white rounded px-1.5 py-0.5 text-xs text-red-500"
+                    onClick={() => setForm((f) => ({ ...f, banner_image: "" }))}
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  id="banner_image"
+                  placeholder="https://... or upload a file"
+                  value={form.banner_image}
+                  onChange={(e) => setForm((f) => ({ ...f, banner_image: e.target.value }))}
+                  className="flex-1"
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="small"
+                  isLoading={uploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload
+                </Button>
+              </div>
               <p className="text-xs text-gray-400">
-                Displayed as the hero background on the storefront /flash-sale page. Only admin can set this — vendors cannot.
+                Hero background on the storefront flash sale page.
               </p>
             </div>
             <div className="space-y-1.5">
