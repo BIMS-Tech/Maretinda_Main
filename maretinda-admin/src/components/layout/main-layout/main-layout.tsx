@@ -271,6 +271,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       to: "/giyapay",
     },
     {
+      icon: <ReceiptPercent />,
+      label: "Subscriptions",
+      to: "/subscriptions",
+    },
+    {
       icon: <DocumentText />,
       label: "Settlement Reports",
       to: "/reports",

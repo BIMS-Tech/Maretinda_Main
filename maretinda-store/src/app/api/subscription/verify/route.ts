@@ -20,8 +20,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Safety guard — this route is ONLY for subscription payments
-    if (!String(order_id).startsWith('vsub_')) {
+    // Safety guard — this route is ONLY for subscription payments (new vendor or renewal)
+    const isSubscriptionPayment =
+      String(order_id).startsWith('vsub_') || String(order_id).startsWith('vrenew_')
+    if (!isSubscriptionPayment) {
       return NextResponse.json(
         { success: false, message: 'Not a subscription payment' },
         { status: 400 }

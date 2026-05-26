@@ -38,6 +38,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/giyapay"),
             },
             {
+              path: "/subscriptions",
+              errorElement: <ErrorBoundary />,
+              lazy: () => import("../../routes/subscriptions"),
+            },
+            {
               path: "/reports",
               errorElement: <ErrorBoundary />,
               lazy: () => import("../../routes/reports"),

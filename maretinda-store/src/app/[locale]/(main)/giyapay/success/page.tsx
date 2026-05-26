@@ -4,13 +4,16 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
 
 // ---------------------------------------------------------------------------
-// This page handles TWO distinct GiyaPay success flows:
+// This page handles THREE distinct GiyaPay success flows:
 //
-//  1. CUSTOMER PRODUCT PURCHASE  — order_id does NOT start with "vsub_"
+//  1. CUSTOMER PRODUCT PURCHASE  — order_id does NOT start with "vsub_" or "vrenew_"
 //     → verifies signature + completes cart → redirects to order confirmed
 //
-//  2. VENDOR SUBSCRIPTION PAYMENT — order_id starts with "vsub_"
+//  2. NEW VENDOR SUBSCRIPTION    — order_id starts with "vsub_"
 //     → verifies signature + records transaction → redirects to /become-vendor/register
+//
+//  3. VENDOR SUBSCRIPTION RENEWAL — order_id starts with "vrenew_"
+//     → verifies signature + activates renewal → redirects to vendor panel
 // ---------------------------------------------------------------------------
 
 function SuccessContent() {
@@ -40,7 +43,64 @@ function SuccessContent() {
         }
 
         // ---------------------------------------------------------------
-        // FLOW 2: Vendor subscription payment
+        // FLOW 3: Vendor subscription renewal (from vendor panel)
+        // ---------------------------------------------------------------
+        if (orderId.startsWith('vrenew_')) {
+          setMessage('Verifying renewal payment...');
+
+          // First verify the GiyaPay signature
+          const verifyRes = await fetch('/api/subscription/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nonce, order_id: orderId, refno, timestamp, amount, signature }),
+          });
+
+          const verifyData = await verifyRes.json();
+
+          if (!verifyData.success) {
+            setStatus('error');
+            setMessage(verifyData.message || 'Renewal payment verification failed. Please contact support.');
+            return;
+          }
+
+          setMessage('Activating your subscription...');
+
+          // Activate the subscription on the backend
+          const activateRes = await fetch('/api/subscription/activate-renewal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reference_number: refno, order_id: orderId }),
+          });
+
+          const activateData = await activateRes.json();
+
+          if (!activateData.success) {
+            setStatus('error');
+            setMessage(activateData.message || 'Failed to activate subscription. Please contact support with reference: ' + refno);
+            return;
+          }
+
+          setStatus('success');
+          setMessage('Subscription renewed! Redirecting to your vendor panel...');
+
+          const vendorPanelUrl =
+            (typeof window !== 'undefined' && (window as any).__ENV__?.VITE_VENDOR_PANEL_URL) ||
+            process.env.NEXT_PUBLIC_VENDOR_PANEL_URL ||
+            '';
+
+          setTimeout(() => {
+            if (vendorPanelUrl) {
+              window.location.href = `${vendorPanelUrl}/subscription?renewed=1`;
+            } else {
+              router.push(`/${locale}`);
+            }
+          }, 1500);
+
+          return;
+        }
+
+        // ---------------------------------------------------------------
+        // FLOW 2: New vendor subscription payment
         // ---------------------------------------------------------------
         if (orderId.startsWith('vsub_')) {
           setMessage('Verifying subscription payment...');

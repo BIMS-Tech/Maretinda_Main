@@ -138,17 +138,73 @@ class SubscriptionService {
     return plan
   }
 
-  async updatePlan(planId: string, data: Partial<{ name: string; price: number; features: Record<string, unknown>; status: string }>): Promise<any> {
+  async updatePlan(planId: string, data: Partial<{ name: string; price: number; yearly_price: number; features: Record<string, unknown>; status: string }>): Promise<any> {
     const db = this.getDb()
     const updateData: Record<string, unknown> = { updated_at: new Date() }
     if (data.name !== undefined) updateData.name = data.name
     if (data.price !== undefined) updateData.price = data.price
+    if (data.yearly_price !== undefined) updateData.yearly_price = data.yearly_price
     if (data.features !== undefined) updateData.features = JSON.stringify(data.features)
     if (data.status !== undefined) updateData.status = data.status
 
     const [updated] = await db("subscription_plan").where("id", planId).update(updateData).returning("*")
     if (!updated) throw new Error(`Plan "${planId}" not found.`)
     return updated
+  }
+
+  async setStatus(subscriptionId: string, status: "active" | "cancelled"): Promise<any> {
+    const db = this.getDb()
+    const [updated] = await db("vendor_subscription")
+      .where("id", subscriptionId)
+      .update({ status, updated_at: new Date() })
+      .returning("*")
+    if (!updated) throw new Error(`Subscription "${subscriptionId}" not found.`)
+    return updated
+  }
+
+  async renewSubscription(params: {
+    vendorId: string
+    planName: string
+    billingPeriod: "monthly" | "yearly"
+    price: number
+    paymentReference: string
+    planId?: string
+  }): Promise<any> {
+    const db = this.getDb()
+
+    // Cancel any existing active subscription
+    await db("vendor_subscription")
+      .where("vendor_id", params.vendorId)
+      .where("status", "active")
+      .update({ status: "cancelled", updated_at: new Date() })
+
+    const startDate = new Date()
+    const endDate = new Date(startDate)
+    if (params.billingPeriod === "yearly") {
+      endDate.setFullYear(endDate.getFullYear() + 1)
+    } else {
+      endDate.setMonth(endDate.getMonth() + 1)
+    }
+
+    const [subscription] = await db("vendor_subscription")
+      .insert({
+        id: generateId("vsub"),
+        vendor_id: params.vendorId,
+        plan_id: params.planId || null,
+        plan_name: params.planName,
+        price: params.price,
+        billing_period: params.billingPeriod,
+        start_date: startDate,
+        end_date: endDate,
+        status: "active",
+        auto_renew: false,
+        payment_reference: params.paymentReference,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning("*")
+
+    return subscription
   }
 }
 
