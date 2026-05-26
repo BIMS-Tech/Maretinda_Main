@@ -9,7 +9,7 @@ import { FlashSaleCountdown } from '@/components/sections/FlashSaleSection/Flash
 import { ErrorMessage, ProductVariants } from '@/components/molecules';
 import { UpdateItemQuantityButton } from '@/components/molecules/UpdateItemQuantityButton/UpdateItemQuantityButton';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
-import { addToCart } from '@/lib/data/cart';
+import { addToCart, addFlashSaleItemToCart } from '@/lib/data/cart';
 import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
@@ -101,11 +101,20 @@ export const ProductDetailsHeader = ({
 		setError(null);
 
 		try {
-			await addToCart({
-				countryCode: locale,
-				quantity: quantity,
-				variantId: variantId,
-			});
+			if (flashSaleItem) {
+				await addFlashSaleItemToCart({
+					countryCode: locale,
+					quantity,
+					variantId,
+					flashSaleItemId: flashSaleItem.id,
+				});
+			} else {
+				await addToCart({
+					countryCode: locale,
+					quantity,
+					variantId,
+				});
+			}
 		} catch (err) {
 			setError((err as Error).message);
 		}

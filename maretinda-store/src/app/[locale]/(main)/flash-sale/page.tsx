@@ -188,9 +188,7 @@ export default async function FlashSalePage({
 
 						const variants = product.variants || [];
 						const firstVariant = variants[0];
-						const basePrice = firstVariant?.prices?.[0]?.amount
-							? firstVariant.prices[0].amount / 100
-							: null;
+						const basePrice = firstVariant?.prices?.[0]?.amount ?? null;
 						const salePrice =
 							basePrice !== null
 								? item.discount_type === 'percentage'

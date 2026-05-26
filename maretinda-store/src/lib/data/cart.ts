@@ -178,6 +178,56 @@ export async function addToCart({
 	}
 }
 
+export async function addFlashSaleItemToCart({
+	variantId,
+	quantity,
+	countryCode,
+	flashSaleItemId,
+}: {
+	variantId: string
+	quantity: number
+	countryCode: string
+	flashSaleItemId: string
+}) {
+	if (!variantId || !flashSaleItemId) {
+		throw new Error('Missing variant ID or flash sale item ID')
+	}
+
+	const authHeaders = await getAuthHeaders()
+	if (!authHeaders || !Object.keys(authHeaders).length) {
+		throw new Error('Please login to add items to cart')
+	}
+
+	const cart = await getOrSetCart(countryCode)
+	if (!cart) {
+		throw new Error('Error retrieving or creating cart')
+	}
+
+	const backendUrl = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+	const res = await fetch(`${backendUrl}/store/flash-sale-cart-items`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '',
+			...authHeaders,
+		},
+		body: JSON.stringify({
+			variant_id: variantId,
+			quantity,
+			flash_sale_item_id: flashSaleItemId,
+			cart_id: cart.id,
+		}),
+	})
+
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({ message: 'Failed to add to cart' }))
+		throw new Error(err.message || 'Failed to add flash sale item to cart')
+	}
+
+	const cartCacheTag = await getCacheTag('carts')
+	revalidateTag(cartCacheTag)
+}
+
 export async function updateLineItem({
 	lineId,
 	quantity,
