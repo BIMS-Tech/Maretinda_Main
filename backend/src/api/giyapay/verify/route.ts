@@ -1,4 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
 import GiyaPayService from "../../../services/giyapay"
 
@@ -35,6 +36,26 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       })
     }
 
+    // For subscription renewal payments (vrenew_ prefix), try subscription-specific
+    // GiyaPay config first; fall back to main config if not set.
+    let merchantSecret = config.merchantSecret
+    const isSubscriptionPayment = String(order_id).startsWith("vrenew_") || String(order_id).startsWith("vsub_")
+    if (isSubscriptionPayment) {
+      try {
+        const db = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+        const subConfig = await db("giyapay_subscription_config")
+          .where("is_enabled", true)
+          .select("merchant_secret")
+          .first()
+        if (subConfig?.merchant_secret) {
+          merchantSecret = subConfig.merchant_secret
+          console.log('[GiyaPay Verify] Using subscription-specific merchant secret for order:', order_id)
+        }
+      } catch {
+        // table may not exist yet — fall back to main config
+      }
+    }
+
     // Verify the callback signature using the GiyaPay Gateway Direct algorithm.
     //
     // GiyaPay docs: take the full success callback URL (everything before "&signature="),
@@ -54,7 +75,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const expectedSignature = crypto
       .createHash('sha512')
-      .update(urlWithoutSignature + config.merchantSecret)
+      .update(urlWithoutSignature + merchantSecret)
       .digest('hex')
 
     if (signature !== expectedSignature) {

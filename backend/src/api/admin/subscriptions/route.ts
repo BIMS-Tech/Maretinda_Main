@@ -1,21 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import SubscriptionService from "../../../services/subscription"
 
-/**
- * GET /admin/subscriptions
- *
- * List all vendor subscriptions with optional filters.
- *
- * Query params: status, vendor_id, limit, offset
- *
- * Sample response:
- * {
- *   "subscriptions": [...],
- *   "count": 42,
- *   "limit": 50,
- *   "offset": 0
- * }
- */
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
   try {
     const { status, vendor_id, limit, offset } = req.query as any
@@ -28,8 +14,28 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
       offset: offset ? parseInt(offset) : 0,
     })
 
+    // Enrich subscriptions with seller name + email
+    let enriched = result.subscriptions
+    try {
+      const db = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const vendorIds = [...new Set(result.subscriptions.map((s: any) => s.vendor_id))]
+      if (vendorIds.length > 0) {
+        const sellers = await db("seller").whereIn("id", vendorIds).select("id", "name", "email")
+        const sellerMap: Record<string, { name: string; email: string }> = {}
+        for (const s of sellers) sellerMap[s.id] = { name: s.name, email: s.email }
+        enriched = result.subscriptions.map((sub: any) => ({
+          ...sub,
+          seller_name: sellerMap[sub.vendor_id]?.name || null,
+          seller_email: sellerMap[sub.vendor_id]?.email || null,
+        }))
+      }
+    } catch {
+      // seller join is best-effort
+    }
+
     res.status(200).json({
-      ...result,
+      subscriptions: enriched,
+      count: result.count,
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0,
     })

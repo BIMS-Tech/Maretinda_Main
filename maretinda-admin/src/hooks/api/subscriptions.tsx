@@ -33,6 +33,7 @@ export interface SubscriptionGiyaPayConfig {
 }
 
 export const subscriptionQueryKeys = queryKeysFactory('subscriptions')
+export const subscriptionPlanQueryKeys = queryKeysFactory('subscription-plans')
 export const subscriptionConfigQueryKeys = queryKeysFactory('subscription-giyapay-config')
 
 // List all vendor subscriptions
@@ -97,6 +98,41 @@ export const useAdminAssignSubscription = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() })
+    },
+  })
+}
+
+// List all subscription plans (admin)
+export const useAdminSubscriptionPlans = () => {
+  const { data, ...rest } = useQuery<{ plans: SubscriptionPlan[] }>({
+    queryKey: subscriptionPlanQueryKeys.list([]),
+    queryFn: async () => {
+      const result = await sdk.client.fetch('/admin/subscriptions/plans', { method: 'GET' })
+      return result as any
+    },
+    staleTime: 60_000,
+  })
+  return { plans: data?.plans ?? [], ...rest }
+}
+
+// Update a subscription plan
+export const useUpdateSubscriptionPlan = () => {
+  const qc = useQueryClient()
+  return useMutation<
+    { plan: SubscriptionPlan },
+    Error,
+    { plan_id: string; price?: number; yearly_price?: number; features?: Record<string, unknown>; status?: 'active' | 'inactive' }
+  >({
+    mutationFn: async (payload) => {
+      const result = await sdk.client.fetch('/admin/subscriptions/plans', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      return result as any
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: subscriptionPlanQueryKeys.lists() })
     },
   })
 }
