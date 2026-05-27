@@ -133,16 +133,19 @@ export const CreatePromotionForm = () => {
           }))
       }
 
+      const descriptionValue = (data as any).metadata_description
+
       createPromotion(
         {
           ...promotionData,
           rules: buildRulesData(rules),
           status,
+          metadata: descriptionValue ? { description: descriptionValue } : undefined,
           application_method: {
             ...applicationMethodData,
             ...applicationMethodRuleData,
             target_rules: buildRulesData(targetRulesData),
-            type: "percentage",
+            type: applicationMethodData.type,
           },
           is_automatic: is_automatic === "true",
         },
@@ -606,6 +609,18 @@ export const CreatePromotionForm = () => {
                       }}
                     />
                   </div>
+
+                  {/* Voucher description — stored in metadata by the backend middleware */}
+                  <Form.Item>
+                    <Form.Label optional>Voucher Description</Form.Label>
+                    <Input
+                      placeholder="e.g. 10% off all orders this weekend"
+                      {...form.register("metadata_description" as any)}
+                    />
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      Shown to customers on the voucher page to explain the deal.
+                    </Text>
+                  </Form.Item>
 
                   {!currentTemplate?.hiddenFields?.includes("type") && (
                     <Form.Field

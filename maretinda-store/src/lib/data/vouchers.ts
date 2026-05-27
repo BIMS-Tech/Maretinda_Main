@@ -28,16 +28,34 @@ const baseHeaders = () => ({
 })
 
 /** Fetch all available vouchers (public). Marks collected status for logged-in users. */
-export async function getAvailableVouchers(): Promise<VoucherPromotion[]> {
+export async function getAvailableVouchers(sellerId?: string): Promise<VoucherPromotion[]> {
   try {
     const authHeaders = await getAuthHeaders()
-    const res = await fetch(`${BACKEND_URL}/store/vouchers`, {
+    const url = sellerId
+      ? `${BACKEND_URL}/store/vouchers?seller_id=${sellerId}`
+      : `${BACKEND_URL}/store/vouchers`
+    const res = await fetch(url, {
       headers: { ...baseHeaders(), ...authHeaders },
-      next: { revalidate: 60, tags: ['vouchers'] },
+      next: { revalidate: 60, tags: sellerId ? [`seller-vouchers-${sellerId}`] : ['vouchers'] },
     })
     if (!res.ok) return []
     const data = await res.json()
     return data.vouchers || []
+  } catch {
+    return []
+  }
+}
+
+/** Fetch active campaigns with their linked promotions. */
+export async function getActiveCampaigns(): Promise<any[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/store/campaigns`, {
+      headers: baseHeaders(),
+      next: { revalidate: 300, tags: ['campaigns'] },
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return data.campaigns || []
   } catch {
     return []
   }

@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* ── Brand theme ────────────────────────────────────────────────── */
+@theme {
+  --font-sans:    var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-syne), var(--font-inter), sans-serif;
+
+  --color-brand-purple:        #432C63;
+  --color-brand-purple-deep:   #2A1B3E;
+  --color-brand-purple-mid:    #5C3E88;
+  --color-brand-purple-light:  #9B80D2;
+  --color-brand-purple-pale:   #FDF2FF;
+  --color-brand-yellow:        #FFC533;
+  --color-brand-yellow-deep:   #F2B230;
+}
+
+/* ── Base ──────────────────────────────────────────────────────── */
+html   { scroll-behavior: smooth; }
+body   { overflow-x: hidden; }
+::selection { background: rgba(67,44,99,.18); color: #2A1B3E; }
+
+/* ── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar-track  { background: #F5F3FA; }
+::-webkit-scrollbar-thumb  { background: #9B80D2; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #432C63; }
+
+/* ── AOS scroll animations ─────────────────────────────────────── */
+[data-aos] {
+  opacity: 0;
+  transition: opacity .65s cubic-bezier(.4,0,.2,1),
+              transform .65s cubic-bezier(.4,0,.2,1);
+}
+[data-aos="fade-up"]    { transform: translateY(32px); }
+[data-aos="fade-down"]  { transform: translateY(-24px); }
+[data-aos="fade-left"]  { transform: translateX(32px); }
+[data-aos="fade-right"] { transform: translateX(-32px); }
+[data-aos="zoom-in"]    { transform: scale(.92); }
+[data-aos].aos-animate  { opacity: 1; transform: none; }
+
+/* ── Gradient text ─────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #432C63 0%, #6D3FA5 60%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-text-gold {
+  background: linear-gradient(135deg, #FFC533 10%, #FFE080 50%, #F2B230 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Particles ─────────────────────────────────────────────────── */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.5);
+  animation: particleFloat linear infinite;
+  pointer-events: none;
+}
+@keyframes particleFloat {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  8%   { opacity: .8; }
+  92%  { opacity: .5; }
+  100% { transform: translateY(-100px) scale(1); opacity: 0; }
+}
+
+/* ── Orbs ──────────────────────────────────────────────────────── */
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  33%  { transform: translate(18px,-26px) scale(1.04); }
+  66%  { transform: translate(-14px,18px) scale(.96); }
+}
+.float-orb         { animation: floatOrb  8s ease-in-out infinite; }
+.float-orb-slow    { animation: floatOrb 12s ease-in-out 2s infinite; }
+.float-orb-rev     { animation: floatOrb 10s ease-in-out 5s infinite reverse; }
+
+/* ── Ticker ────────────────────────────────────────────────────── */
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ticker-track { animation: tickerScroll 32s linear infinite; }
+
+/* ── Pulse dot ─────────────────────────────────────────────────── */
+@keyframes pulseDot {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,197,51,.6); }
+  50%     { box-shadow: 0 0 0 6px rgba(255,197,51,0); }
+}
+.pulse-dot { animation: pulseDot 1.8s ease-in-out infinite; }
+
+/* ── Scroll indicator ──────────────────────────────────────────── */
+@keyframes scrollBob {
+  0%,100% { transform: translateY(0); opacity:.5; }
+  50%     { transform: translateY(8px); opacity:1; }
+}
+.scroll-bob { animation: scrollBob 2s ease-in-out infinite; }
+
+/* ── Typewriter cursor ─────────────────────────────────────────── */
+@keyframes cursorBlink {
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0; }
+}
+
+/* ── Dot grid pattern ──────────────────────────────────────────── */
+.dot-grid {
+  background-image: radial-gradient(rgba(67,44,99,.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── Glass card ────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.9);
+}
+
+/* ── Gradient border card ──────────────────────────────────────── */
+.grad-border {
+  position: relative;
+}
+.grad-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,rgba(155,128,210,.4),rgba(255,197,51,.1),rgba(92,62,136,.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}

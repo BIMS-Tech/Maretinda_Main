@@ -11,6 +11,7 @@ import {
 	TrendingNowSection,
 	TrustSection,
 } from '@/components/sections';
+import CampaignBanners from '@/components/sections/CampaignBanners/CampaignBanners';
 
 export const metadata: Metadata = {
 	description:
@@ -62,7 +63,10 @@ export default async function Home({
 			{/* 2. Shop by Category — 10-tile grid */}
 			<HomeCategories heading="Shop by category" />
 
-			{/* 3. Flash Sale — live countdown + product cards */}
+			{/* 3. Campaigns — active sale events */}
+			<CampaignBanners />
+
+			{/* 4. Flash Sale — live countdown + product cards */}
 			<FlashSaleSection locale={locale} />
 
 			{/* 4. Trending Now — 6-card product grid with filter pills */}

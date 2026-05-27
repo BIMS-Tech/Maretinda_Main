@@ -146,10 +146,18 @@ export const CreatePromotionForm = () => {
           : data.campaign.budget.type
       }
 
+      const adminDescription = (data as any).metadata_description
+      const adminIsPublic = (data as any).metadata_is_public
+
       createPromotion(
         {
           ...promotionData,
           rules: buildRulesData(rules),
+          metadata: {
+            scope: "platform",
+            ...(adminDescription ? { description: adminDescription } : {}),
+            is_public: adminIsPublic ? true : false,
+          },
           application_method: {
             ...applicationMethodData,
             ...applicationMethodRuleData,
@@ -603,6 +611,35 @@ export const CreatePromotionForm = () => {
                       }}
                     />
                   </div>
+
+                  {/* Voucher description shown on storefront */}
+                  <Form.Item>
+                    <Form.Label optional>Voucher Description</Form.Label>
+                    <Input
+                      placeholder="e.g. ₱200 off your first order over ₱1,500"
+                      {...form.register("metadata_description" as any)}
+                    />
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      Displayed to customers on the voucher browsing page.
+                    </Text>
+                  </Form.Item>
+
+                  {/* Public visibility — controls whether voucher shows on storefront /vouchers page */}
+                  <Form.Item>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Form.Label>Show on Voucher Page</Form.Label>
+                        <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                          When enabled, this promotion appears as a collectible voucher at /vouchers on the storefront. Disable for code-only promotions shared privately.
+                        </Text>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded"
+                        {...form.register("metadata_is_public" as any)}
+                      />
+                    </div>
+                  </Form.Item>
 
                   {!currentTemplate?.hiddenFields?.includes(
                     "is_tax_inclusive"

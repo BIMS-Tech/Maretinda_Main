@@ -35,40 +35,45 @@ export default class VoucherService {
     this.container = container
   }
 
-  private get query() {
-    return this.container.resolve(ContainerRegistrationKeys.QUERY)
-  }
-
-  private async getDb() {
-    const { pgConnectionLoader } = this.container.resolve(
-      ContainerRegistrationKeys.PG_CONNECTION
-    )
-    const conn = pgConnectionLoader()
-    return conn
-  }
-
-  private async rawQuery(sql: string, params: any[] = []) {
-    const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-    return knex.raw(sql, params)
-  }
-
-  /** List all active promotions available as vouchers */
-  async listAvailablePromotions(customerId?: string): Promise<PromotionWithVoucher[]> {
+  /**
+   * List all promotions that are:
+   * - status = "active"
+   * - metadata.is_public = true  (admin sets this; vendor promotions are always public)
+   *
+   * Optionally filter to a single seller with seller_id param.
+   */
+  async listAvailablePromotions(
+    customerId?: string,
+    sellerIdFilter?: string
+  ): Promise<PromotionWithVoucher[]> {
     const promotionService = this.container.resolve(Modules.PROMOTION)
 
     const promotions = await promotionService.listPromotions(
       { status: ["active"] },
-      { take: 100 }
+      { take: 200 }
     )
 
+    // Filter by public visibility and optional seller
+    const visible = promotions.filter((p: any) => {
+      const meta = p.metadata || {}
+      // Platform promos need is_public=true; seller promos are always public
+      if (meta.scope === "seller") {
+        if (sellerIdFilter && meta.seller_id !== sellerIdFilter) return false
+        return true
+      }
+      // Platform: only show if explicitly marked public
+      if (sellerIdFilter) return false // seller filter excludes platform promos
+      return meta.is_public === true
+    })
+
     // Fetch collected status for this customer
-    let collectedMap: Map<string, CustomerVoucher> = new Map()
+    const collectedMap: Map<string, CustomerVoucher> = new Map()
     if (customerId) {
       const collected = await this.listCollectedVouchers(customerId)
       collected.forEach((cv) => collectedMap.set(cv.promotion_id, cv))
     }
 
-    return promotions.map((p: any) =>
+    return visible.map((p: any) =>
       this.formatPromotion(p, collectedMap.get(p.id))
     )
   }
@@ -116,7 +121,7 @@ export default class VoucherService {
     })
   }
 
-  /** Collect a voucher for a customer (idempotent) */
+  /** Collect a voucher (idempotent) */
   async collectVoucher(
     customerId: string,
     promotionId: string
@@ -124,23 +129,18 @@ export default class VoucherService {
     const promotionService = this.container.resolve(Modules.PROMOTION)
 
     const [promotion] = await promotionService.listPromotions({ id: [promotionId] })
-    if (!promotion) {
-      throw new Error("Promotion not found")
-    }
+    if (!promotion) throw new Error("Promotion not found")
     if ((promotion as any).status !== "active") {
       throw new Error("This voucher is no longer available")
     }
 
     const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
 
-    // Check if already collected
     const existing = await knex.raw(
       `SELECT * FROM customer_voucher WHERE customer_id = ? AND promotion_id = ? LIMIT 1`,
       [customerId, promotionId]
     )
-    if (existing.rows.length > 0) {
-      return existing.rows[0] as CustomerVoucher
-    }
+    if (existing.rows.length > 0) return existing.rows[0] as CustomerVoucher
 
     const expires_at = (promotion as any).ends_at || null
 
@@ -171,19 +171,17 @@ export default class VoucherService {
     )
   }
 
-  /** Mark a voucher as used */
+  /** Mark voucher as used after order placed */
   async markVoucherUsed(customerId: string, promotionCode: string): Promise<void> {
     const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     await knex.raw(
-      `UPDATE customer_voucher SET used_at = now() WHERE customer_id = ? AND promotion_code = ? AND used_at IS NULL`,
+      `UPDATE customer_voucher SET used_at = now()
+       WHERE customer_id = ? AND promotion_code = ? AND used_at IS NULL`,
       [customerId, promotionCode]
     )
   }
 
-  private formatPromotion(
-    p: any,
-    collected?: CustomerVoucher
-  ): PromotionWithVoucher {
+  formatPromotion(p: any, collected?: CustomerVoucher): PromotionWithVoucher {
     const method = p.application_method
 
     let discount_label = "Voucher"
@@ -203,20 +201,20 @@ export default class VoucherService {
       min_order = Number(subtotalRule.values[0]) / 100
     }
 
-    // Determine scope from metadata
-    const isSellerScoped = p.metadata?.seller_id || p.metadata?.scope === "seller"
+    const meta = p.metadata || {}
+    const isSellerScoped = meta.seller_id || meta.scope === "seller"
 
     return {
       id: p.id,
       code: p.code,
       type: p.type,
       status: p.status,
-      description: p.metadata?.description || undefined,
+      description: meta.description || undefined,
       discount_label,
       min_order,
       scope: isSellerScoped ? "seller" : "platform",
-      seller_id: p.metadata?.seller_id,
-      seller_name: p.metadata?.seller_name,
+      seller_id: meta.seller_id,
+      seller_name: meta.seller_name,
       expires_at: p.ends_at || null,
       is_collected: !!collected,
       collected_voucher_id: collected?.id,
