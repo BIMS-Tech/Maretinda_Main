@@ -61,16 +61,18 @@ class SubscriptionService {
     const limit = filters?.limit ?? 50
     const offset = filters?.offset ?? 0
 
-    let query = db("vendor_subscription").orderBy("created_at", "desc")
-    if (filters?.status) query = query.where("status", filters.status)
-    if (filters?.vendor_id) query = query.where("vendor_id", filters.vendor_id)
+    // Build a base query without ORDER BY so the count clone doesn't carry it
+    // (PostgreSQL requires ORDER BY columns to appear in GROUP BY for aggregate queries)
+    let baseQuery = db("vendor_subscription")
+    if (filters?.status) baseQuery = baseQuery.where("status", filters.status)
+    if (filters?.vendor_id) baseQuery = baseQuery.where("vendor_id", filters.vendor_id)
 
-    const [subscriptions, [{ count }]] = await Promise.all([
-      query.clone().limit(limit).offset(offset),
-      query.clone().count("id as count"),
+    const [subscriptions, countResult] = await Promise.all([
+      baseQuery.clone().orderBy("created_at", "desc").limit(limit).offset(offset),
+      baseQuery.clone().count("id as count"),
     ])
 
-    return { subscriptions, count: Number(count) }
+    return { subscriptions, count: Number((countResult as any)[0]?.count ?? 0) }
   }
 
   // Admin: manually assign a plan (e.g. complimentary access); sets end_date since GiyaPay won't manage it
