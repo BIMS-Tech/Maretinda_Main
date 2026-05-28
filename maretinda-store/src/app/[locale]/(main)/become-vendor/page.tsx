@@ -434,14 +434,44 @@ function FileUpload({
   );
 }
 
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  const pct = Math.round(((current + 1) / total) * 100);
+function StepNav({
+  steps,
+  current,
+}: {
+  steps: { id: string; label: string }[];
+  current: number;
+}) {
   return (
-    <div className="w-full bg-gray-100 rounded-full h-1.5 mb-6">
-      <div
-        className="bg-indigo-600 h-1.5 rounded-full transition-all duration-300"
-        style={{ width: `${pct}%` }}
-      />
+    <div className="flex items-center gap-0 overflow-x-auto pb-1 mb-4 scrollbar-hide">
+      {steps.map((s, i) => (
+        <div key={s.id} className="flex items-center shrink-0">
+          <div
+            className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap ${
+              i === current
+                ? 'bg-indigo-600 text-white'
+                : i < current
+                ? 'text-indigo-600'
+                : 'text-gray-400'
+            }`}
+          >
+            <span
+              className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                i === current
+                  ? 'bg-white/20'
+                  : i < current
+                  ? 'bg-indigo-100'
+                  : 'bg-gray-100'
+              }`}
+            >
+              {i < current ? '✓' : i + 1}
+            </span>
+            <span className={i !== current ? 'hidden sm:inline' : ''}>{s.label}</span>
+          </div>
+          {i < steps.length - 1 && (
+            <div className={`h-px w-4 shrink-0 ${i < current ? 'bg-indigo-300' : 'bg-gray-200'}`} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -482,7 +512,7 @@ function StepMerchant({
           placeholder="Unit/House No., Street, Barangay, City, Province, ZIP Code"
         />
       </Field>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label="Mobile Number" required>
           <Input
             value={data.mobile_number}
@@ -498,23 +528,22 @@ function StepMerchant({
             placeholder="juan@example.com"
           />
         </Field>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Designation / Position">
           <Input
             value={data.designation}
             onChange={(e) => set('designation', e.target.value)}
-            placeholder="e.g. Owner, CEO, Manager"
-          />
-        </Field>
-        <Field label="Target Go-Live Date">
-          <Input
-            type="date"
-            value={data.target_go_live}
-            onChange={(e) => set('target_go_live', e.target.value)}
+            placeholder="e.g. Owner, CEO"
           />
         </Field>
       </div>
+      <Field label="Target Go-Live Date">
+        <Input
+          type="date"
+          value={data.target_go_live}
+          onChange={(e) => set('target_go_live', e.target.value)}
+          className="max-w-xs"
+        />
+      </Field>
     </div>
   );
 }
@@ -528,13 +557,22 @@ function StepBusiness({
 }) {
   return (
     <div className="space-y-4">
-      <Field label="Business Name" required>
-        <Input
-          value={data.business_name}
-          onChange={(e) => set('business_name', e.target.value)}
-          placeholder="ABC Trading Co."
-        />
-      </Field>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Business Name" required>
+          <Input
+            value={data.business_name}
+            onChange={(e) => set('business_name', e.target.value)}
+            placeholder="ABC Trading Co."
+          />
+        </Field>
+        <Field label="Business TIN">
+          <Input
+            value={data.business_tin}
+            onChange={(e) => set('business_tin', e.target.value)}
+            placeholder="XXX-XXX-XXX-000"
+          />
+        </Field>
+      </div>
       <Field label="Business Address" required>
         <Input
           value={data.business_address}
@@ -542,7 +580,7 @@ function StepBusiness({
           placeholder="Complete business address"
         />
       </Field>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label="Business Landline">
           <Input
             value={data.business_landline}
@@ -557,8 +595,6 @@ function StepBusiness({
             placeholder="+63 9XX XXX XXXX"
           />
         </Field>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Business Email">
           <Input
             type="email"
@@ -567,16 +603,25 @@ function StepBusiness({
             placeholder="business@example.com"
           />
         </Field>
-        <Field label="Business TIN">
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Merchant Category">
           <Input
-            value={data.business_tin}
-            onChange={(e) => set('business_tin', e.target.value)}
-            placeholder="XXX-XXX-XXX-000"
+            value={data.merchant_category}
+            onChange={(e) => set('merchant_category', e.target.value)}
+            placeholder="e.g. Retail, Food & Beverage"
+          />
+        </Field>
+        <Field label="Business Activity">
+          <Input
+            value={data.business_activity}
+            onChange={(e) => set('business_activity', e.target.value)}
+            placeholder="Describe your main business activity"
           />
         </Field>
       </div>
       <Field label="Form of Organization" required>
-        <div className="flex flex-wrap gap-2 mt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
           {ORG_TYPES.map((t) => (
             <label
               key={t}
@@ -598,22 +643,6 @@ function StepBusiness({
           ))}
         </div>
       </Field>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Merchant Category">
-          <Input
-            value={data.merchant_category}
-            onChange={(e) => set('merchant_category', e.target.value)}
-            placeholder="e.g. Retail, Food & Beverage"
-          />
-        </Field>
-        <Field label="Business Activity">
-          <Input
-            value={data.business_activity}
-            onChange={(e) => set('business_activity', e.target.value)}
-            placeholder="Describe your main business activity"
-          />
-        </Field>
-      </div>
     </div>
   );
 }
@@ -1032,7 +1061,7 @@ export default function BecomeVendorPage() {
   // ---- Success screen ----
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white flex items-center justify-center px-4 py-20">
+      <div className="bg-gradient-to-b from-indigo-50 to-white flex items-center justify-center px-4 py-20 min-h-[60vh]">
         <div className="bg-white rounded-2xl shadow-xl p-10 max-w-lg w-full text-center">
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <svg
@@ -1070,48 +1099,37 @@ export default function BecomeVendorPage() {
 
   // ---- Form ----
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-white">
-      <div className="mx-auto max-w-2xl px-4 pt-16 pb-24">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-1.5 text-xs font-semibold text-indigo-700 mb-4">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-            Vendor Registration
+    <div className="bg-gradient-to-b from-indigo-50 to-white py-10">
+      <div className="mx-auto max-w-3xl px-4 pb-16">
+        {/* Compact header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900">Vendor Registration</h1>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Step {stepIdx + 1} of {steps.length} — {currentStep?.label}
+            </p>
           </div>
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Become a Vendor</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            Complete the registration form to apply for a vendor account on Maretinda.
-          </p>
+          <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
+            Maretinda Vendor
+          </span>
         </div>
 
-        {/* Step indicators */}
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {steps.map((s, i) => (
-            <div
-              key={s.id}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                i === stepIdx
-                  ? 'bg-indigo-600 text-white'
-                  : i < stepIdx
-                  ? 'bg-indigo-100 text-indigo-700'
-                  : 'bg-gray-100 text-gray-400'
-              }`}
-            >
-              <span className="flex h-4 w-4 items-center justify-center">
-                {i < stepIdx ? '✓' : i + 1}
-              </span>
-              {s.label}
-            </div>
-          ))}
-        </div>
+        {/* Step nav */}
+        <StepNav steps={steps} current={stepIdx} />
 
-        <ProgressBar current={stepIdx} total={steps.length} />
+        {/* Progress bar */}
+        <div className="w-full bg-gray-100 rounded-full h-1 mb-5">
+          <div
+            className="bg-indigo-600 h-1 rounded-full transition-all duration-300"
+            style={{ width: `${Math.round(((stepIdx + 1) / steps.length) * 100)}%` }}
+          />
+        </div>
 
         {/* Step card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-5">
-            Step {stepIdx + 1} of {steps.length}:{' '}
-            <span className="text-indigo-700">{currentStep?.label}</span>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-base font-bold text-gray-800 mb-4">
+            <span className="text-indigo-600">{stepIdx + 1}.</span> {currentStep?.label}
           </h2>
 
           {currentStep?.id === 'merchant' && <StepMerchant data={data} set={set} />}
@@ -1139,7 +1157,7 @@ export default function BecomeVendorPage() {
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex items-center justify-between mt-5">
           <button
             type="button"
             onClick={() => {
@@ -1152,10 +1170,6 @@ export default function BecomeVendorPage() {
             ← Back
           </button>
 
-          <span className="text-xs text-gray-400">
-            {stepIdx + 1} / {steps.length}
-          </span>
-
           {stepIdx < steps.length - 1 ? (
             <button
               type="button"
@@ -1163,6 +1177,7 @@ export default function BecomeVendorPage() {
                 if (canNext()) {
                   setStepIdx((i) => i + 1);
                   setError('');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
               disabled={!canNext()}
