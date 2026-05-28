@@ -4,20 +4,10 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 import { useLanguage } from '@/providers/LanguageProvider';
-import type { Product } from '@/types/product';
+import type { TrendingProduct } from '@/lib/data/trending';
 
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)';
 const BG_COLORS = ['#E8DEF7', '#FFE2D2', '#D9E8F0', '#F4D9E2', '#D9EBDC', '#F0E2C5'];
-const BADGES = [
-	{ text: 'Bestseller', bg: 'white', color: '#1B1B1B' },
-	{ text: 'New', bg: '#432C63', color: 'white' },
-	{ text: 'Hot', bg: '#D92D20', color: 'white' },
-	{ text: '-35%', bg: '#1B1B1B', color: 'white' },
-	null,
-	{ text: 'Local pick', bg: 'white', color: '#1B1B1B' },
-];
-const RATINGS = [4.9, 4.8, 4.7, 4.9, 4.8, 4.9];
-const REVIEWS = ['2.3k', '845', '1.1k', '3.4k', '412', '287'];
 
 const VerifiedBadge = () => (
 	<svg width="10" height="10" viewBox="0 0 24 24" fill="#7FA8C9">
@@ -32,9 +22,12 @@ const StarIcon = () => (
 	</svg>
 );
 
-export function TrendingNowClient({ products }: {
-	products: Product[];
-}) {
+function formatReviewCount(n: number): string {
+	if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+	return String(n);
+}
+
+export function TrendingNowClient({ products }: { products: TrendingProduct[] }) {
 	const { t } = useLanguage();
 	const INITIAL_COUNT = 6;
 	const [shown, setShown] = useState(INITIAL_COUNT);
@@ -53,13 +46,10 @@ export function TrendingNowClient({ products }: {
 
 	return (
 		<>
-			{/* 6-card product grid */}
 			<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
 				{visible.map((product, i) => {
-					const badge = BADGES[i % BADGES.length];
 					const bgColor = BG_COLORS[i % BG_COLORS.length];
-					const rating = RATINGS[i % RATINGS.length];
-					const reviews = REVIEWS[i % REVIEWS.length];
+					const hasRating = product.avg_rating && product.avg_rating > 0;
 
 					return (
 						<Link
@@ -77,12 +67,13 @@ export function TrendingNowClient({ products }: {
 									// eslint-disable-next-line @next/next/no-img-element
 									<img src={product.thumbnail} alt={product.title} className="absolute inset-0 w-full h-full object-cover" />
 								)}
-								{badge && (
+								{/* Hot badge for top sellers */}
+								{i === 0 && product.trending_score > 0 && (
 									<span
 										className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2 py-0.5 rounded-md"
-										style={{ backgroundColor: badge.bg, color: badge.color }}
+										style={{ backgroundColor: '#D92D20', color: 'white' }}
 									>
-										{badge.text}
+										Hot
 									</span>
 								)}
 								<button
@@ -107,26 +98,29 @@ export function TrendingNowClient({ products }: {
 							{/* Info */}
 							<div className="p-3">
 								<div className="flex items-center gap-1 text-[10.5px] text-[#737373] mb-1">
-									<span className="font-semibold uppercase tracking-wider truncate">
-										{product.brand || 'Local vendor'}
-									</span>
 									<VerifiedBadge />
+									<span className="font-semibold uppercase tracking-wider truncate">
+										Verified seller
+									</span>
 								</div>
 								<div className="text-[13.5px] font-semibold leading-snug line-clamp-2 min-h-[38px] text-[#1B1B1B]">
 									{product.title}
 								</div>
-								<div className="mt-1.5 flex items-center gap-1 text-[11px]">
-									<StarIcon />
-									<span className="font-semibold">{rating}</span>
-									<span className="text-[#737373]">({reviews})</span>
-								</div>
-								<div className="mt-2 flex items-baseline gap-1.5">
-									<span className="text-[16px] font-extrabold text-[#1B1B1B]">
-										{product.price ? `₱${product.price.toLocaleString()}` : t.product.viewPrice}
+								{hasRating ? (
+									<div className="mt-1.5 flex items-center gap-1 text-[11px]">
+										<StarIcon />
+										<span className="font-semibold">{product.avg_rating!.toFixed(1)}</span>
+										{product.review_count > 0 && (
+											<span className="text-[#737373]">({formatReviewCount(product.review_count)})</span>
+										)}
+									</div>
+								) : (
+									<div className="mt-1.5 h-[17px]" />
+								)}
+								<div className="mt-2">
+									<span className="text-[13px] font-bold text-[#432C63]">
+										{t.product.viewPrice}
 									</span>
-									{product.originalPrice && product.originalPrice > product.price && (
-										<span className="text-[11px] line-through text-[#737373]">₱{product.originalPrice.toLocaleString()}</span>
-									)}
 								</div>
 							</div>
 						</Link>
@@ -134,7 +128,6 @@ export function TrendingNowClient({ products }: {
 				})}
 			</div>
 
-			{/* Load more */}
 			{hasMore && (
 				<div className="mt-8 flex justify-center">
 					<button

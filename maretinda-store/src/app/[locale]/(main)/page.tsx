@@ -37,10 +37,13 @@ export const metadata: Metadata = {
 
 export default async function Home({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ locale: string }>;
+	searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
 	const { locale } = await params;
+	const resolvedSearchParams = searchParams ? await searchParams : {};
 
 	return (
 		<main className="w-full flex flex-col">
@@ -70,7 +73,7 @@ export default async function Home({
 			<FlashSaleSection locale={locale} />
 
 			{/* 4. Trending Now — 6-card product grid with filter pills */}
-			<TrendingNowSection locale={locale} />
+			<TrendingNowSection searchParams={resolvedSearchParams} />
 
 			{/* 5. Featured Collections — editorial 12-col grid */}
 			<FeaturedCollectionsSection />
