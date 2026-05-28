@@ -7,6 +7,8 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND ||
   'http://localhost:9000';
 
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '';
+
 const DIGITAL_SUPPORT_OPTIONS = [
   'Website',
   'Facebook',
@@ -301,7 +303,11 @@ function FileUpload({
     try {
       const fd = new FormData();
       fd.append('files', file);
-      const res = await fetch(`${BACKEND_URL}/store/uploads`, { method: 'POST', body: fd });
+      const res = await fetch(`${BACKEND_URL}/store/uploads`, {
+        method: 'POST',
+        body: fd,
+        headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+      });
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
       const url = data.files?.[0]?.url || data.url || data[0]?.url;
@@ -749,7 +755,10 @@ export default function BecomeVendorPage() {
     try {
       const res = await fetch(`${BACKEND_URL}/store/seller-application`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-publishable-api-key': PUBLISHABLE_KEY,
+        },
         body: JSON.stringify(data),
       });
       if (!res.ok) {

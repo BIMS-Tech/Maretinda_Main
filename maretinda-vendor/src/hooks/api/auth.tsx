@@ -34,7 +34,11 @@ export const useSignUpWithEmailPass = (
 ) => {
   return useMutation({
     mutationFn: (payload) => sdk.auth.register("seller", "emailpass", payload),
-    onSuccess: async (_, variables) => {
+    onSuccess: async (token, variables) => {
+      // Store the registration token so fetchQuery can authenticate the seller creation call
+      if (token && typeof token === "string") {
+        window.localStorage.setItem("medusa_auth_token", token)
+      }
       const seller = {
         name: variables.name,
         member: {
