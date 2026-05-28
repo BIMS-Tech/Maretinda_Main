@@ -69,8 +69,7 @@ export const useUpdateSubscriptionStatus = () => {
     mutationFn: async ({ id, status }) => {
       const result = await sdk.client.fetch(`/admin/subscriptions/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: { status } as any,
       })
       return result as any
     },
@@ -91,8 +90,7 @@ export const useAdminAssignSubscription = () => {
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/subscriptions/assign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload as any,
       })
       return result as any
     },
@@ -126,8 +124,7 @@ export const useUpdateSubscriptionPlan = () => {
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/subscriptions/plans', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload as any,
       })
       return result as any
     },
@@ -160,8 +157,7 @@ export const useUpdateSubscriptionGiyaPayConfig = () => {
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/giyapay/subscription-config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload as any,
       })
       return result as any
     },
