@@ -197,10 +197,11 @@ const GiyaPayConfigPage = () => {
 
   useEffect(() => {
     if (config) {
-      setMerchantId(config.merchantId || "");
-      setMerchantSecret(config.merchantSecret || "");
-      setSandboxMode(config.sandboxMode ?? false);
-      setIsEnabled(config.isEnabled ?? true);
+      const c = config as any;
+      setMerchantId(c.merchantId || "");
+      setMerchantSecret(c.merchantSecret || "");
+      setSandboxMode(c.sandboxMode ?? false);
+      setIsEnabled(c.isEnabled ?? true);
     }
   }, [config]);
 

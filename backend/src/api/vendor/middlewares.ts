@@ -36,7 +36,7 @@ async function injectSellerPromotionMetadata(
   if (!memberId) return next()
 
   try {
-    const knex = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const knex = (req as any).scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
 
     // Look up seller from member record
     const memberResult = await knex.raw(

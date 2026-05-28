@@ -71,7 +71,7 @@ export default async function seedHelloMrtd({ container }: ExecArgs) {
     rules,
   } as any)
 
-  logger.info(`✅ Created HELLOMRTD promotion with ID: ${promotion.id}`)
+  logger.info(`✅ Created HELLOMRTD promotion with ID: ${(promotion as any).id}`)
 
   if (!groupId) {
     logger.warn(

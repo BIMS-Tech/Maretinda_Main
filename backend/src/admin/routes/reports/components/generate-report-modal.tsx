@@ -192,7 +192,7 @@ export const GenerateReportModal = ({ onClose, onSuccess }: GenerateReportModalP
               <Button variant="secondary" onClick={onClose} type="button">
                 Cancel
               </Button>
-              <Button type="submit" loading={loading}>
+              <Button type="submit" isLoading={loading}>
                 Generate {reportType.toUpperCase()} Report
               </Button>
             </div>
