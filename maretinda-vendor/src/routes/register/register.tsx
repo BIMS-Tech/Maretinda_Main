@@ -448,8 +448,14 @@ function StepAccount({ data, set }: { data: FormData; set: <K extends keyof Form
           placeholder="Re-enter your password"
         />
       </Field>
-      {data.password && data.confirm_password && data.password !== data.confirm_password && (
+      {data.password && data.password.length < 8 && (
+        <p className="text-red-500 text-xs">Password must be at least 8 characters.</p>
+      )}
+      {data.password && data.password.length >= 8 && data.confirm_password && data.password !== data.confirm_password && (
         <p className="text-red-500 text-xs">Passwords do not match.</p>
+      )}
+      {data.password && data.password.length >= 8 && data.confirm_password && data.password === data.confirm_password && (
+        <p className="text-green-500 text-xs">Passwords match ✓</p>
       )}
     </div>
   )
