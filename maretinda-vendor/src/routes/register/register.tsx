@@ -10,24 +10,6 @@ import { useTheme } from "../../providers/theme-provider"
 // Constants
 // ---------------------------------------------------------------------------
 
-const PH_BANKS = [
-  "BDO Unibank", "Bank of the Philippine Islands (BPI)", "Metrobank",
-  "China Banking Corporation (Chinabank)", "Philippine National Bank (PNB)",
-  "Rizal Commercial Banking Corporation (RCBC)", "Security Bank",
-  "UnionBank of the Philippines", "Land Bank of the Philippines",
-  "Development Bank of the Philippines (DBP)", "East West Bank",
-  "Philippine Savings Bank (PSBank)", "Maybank Philippines",
-  "Asia United Bank (AUB)", "Bank of Commerce", "Citibank Philippines",
-  "CIMB Bank Philippines", "GOtyme Bank", "HSBC Philippines",
-  "ING Bank Philippines", "Malayan Bank", "OFBank", "PayMaya Bank (Maya Bank)",
-  "Philippine Bank of Communications (PBCOM)", "Philippine Veterans Bank",
-  "Producers Bank", "Robinsons Bank", "Seabank", "Tonik Digital Bank",
-  "UCPB (United Coconut Planters Bank)", "Wealth Development Bank",
-  "Sterling Bank of Asia", "Allied Bank", "First Consolidated Bank",
-]
-
-const GATEWAY_OPTIONS = ["GCASH", "INSTAPAY", "MASTERCARD/VISA", "PAYMAYA", "QRPH", "WECHATPAY", "UNIONPAY"]
-
 const DIGITAL_SUPPORT_OPTIONS = [
   "Website", "Facebook", "Instagram", "TikTok", "Twitter/X",
   "YouTube", "Email Newsletter", "SMS/Viber", "None",
@@ -104,13 +86,6 @@ interface FormData {
   signatory_first_name: string; signatory_middle_name: string; signatory_last_name: string
   signatory_email: string; signatory_landline: string; signatory_mobile: string
   documents: Record<string, string>
-  merchant_trade_name: string; charge_to: string; gateway_account_type: string
-  pay_button_type: string; selected_gateways: string[]
-  payment_links_feature: boolean | null; editable_amount_feature: boolean | null
-  minimum_amount_type: string; minimum_amount_value: string
-  estimated_monthly_hits: string; estimated_amount_per_transaction: string
-  beneficiary_bank: string; bank_address: string; bank_account_name: string
-  bank_account_number: string; settlement_type: string
   brand_colors: string; digital_support: string[]; has_marketing_budget: boolean | null
   password: string; confirm_password: string
 }
@@ -124,13 +99,6 @@ const INITIAL: FormData = {
   signatory_first_name: "", signatory_middle_name: "", signatory_last_name: "",
   signatory_email: "", signatory_landline: "", signatory_mobile: "",
   documents: {},
-  merchant_trade_name: "", charge_to: "", gateway_account_type: "",
-  pay_button_type: "", selected_gateways: [],
-  payment_links_feature: null, editable_amount_feature: null,
-  minimum_amount_type: "", minimum_amount_value: "",
-  estimated_monthly_hits: "", estimated_amount_per_transaction: "",
-  beneficiary_bank: "", bank_address: "", bank_account_name: "",
-  bank_account_number: "", settlement_type: "",
   brand_colors: "", digital_support: [], has_marketing_budget: null,
   password: "", confirm_password: "",
 }
@@ -145,9 +113,6 @@ function getSteps(data: FormData) {
   if (data.form_of_organization)
     steps.push({ id: "documents", label: "Documents" })
   steps.push(
-    { id: "gateway", label: "Payment Gateway" },
-    { id: "features", label: "Features" },
-    { id: "bank", label: "Bank & Settlement" },
     { id: "branding", label: "Branding & Digital" },
     { id: "account", label: "Account Setup" },
   )
@@ -194,18 +159,6 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
-function StyledSelect({ children, value, onChange, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      value={value}
-      onChange={onChange}
-      {...props}
-      className="w-full rounded-lg border border-ui-border-base bg-ui-bg-field text-ui-fg-base px-3 py-2 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400/20"
-    >
-      {children}
-    </select>
-  )
-}
 
 function RadioGroup({ name, options, value, onChange }: {
   name: string; options: { value: string; label: string }[]; value: string; onChange: (v: string) => void
@@ -446,86 +399,6 @@ function StepDocuments({ data, setDoc }: { data: FormData; setDoc: (k: string, u
   )
 }
 
-function StepGateway({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
-  return (
-    <div className="space-y-4">
-      <Field label="Merchant Trade Name">
-        <Input value={data.merchant_trade_name} onChange={e => set("merchant_trade_name", e.target.value)} placeholder="Name shown on payment page" />
-      </Field>
-      <Field label="Charge Processing Fees To" required>
-        <RadioGroup name="charge_to" options={[{ value: "Merchant", label: "Merchant (absorb fees)" }, { value: "Payor", label: "Payor (customer pays fees)" }]} value={data.charge_to} onChange={v => set("charge_to", v)} />
-      </Field>
-      <Field label="Gateway Account Type" required>
-        <RadioGroup name="gateway_type" options={[{ value: "Universal", label: "Universal (all gateways)" }, { value: "Individual", label: "Individual (select gateways)" }]} value={data.gateway_account_type} onChange={v => set("gateway_account_type", v)} />
-      </Field>
-      {data.gateway_account_type === "Individual" && (
-        <Field label="Select Payment Gateways">
-          <CheckboxGroup options={GATEWAY_OPTIONS} values={data.selected_gateways} onChange={v => set("selected_gateways", v)} />
-        </Field>
-      )}
-      <Field label="Pay Button Type" required>
-        <RadioGroup name="pay_button" options={[{ value: "StandardGiyaPayButton", label: "Standard GiyaPay Button" }, { value: "GatewayDirect", label: "Gateway Direct" }]} value={data.pay_button_type} onChange={v => set("pay_button_type", v)} />
-      </Field>
-    </div>
-  )
-}
-
-function StepFeatures({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
-  return (
-    <div className="space-y-4">
-      <Field label="Payment Links Feature">
-        <RadioGroup name="payment_links" options={[{ value: "true", label: "Yes" }, { value: "false", label: "No" }]} value={data.payment_links_feature === null ? "" : String(data.payment_links_feature)} onChange={v => set("payment_links_feature", v === "true")} />
-      </Field>
-      <Field label="Editable Amount Feature">
-        <RadioGroup name="editable_amount" options={[{ value: "true", label: "Yes" }, { value: "false", label: "No" }]} value={data.editable_amount_feature === null ? "" : String(data.editable_amount_feature)} onChange={v => set("editable_amount_feature", v === "true")} />
-      </Field>
-      <Field label="Minimum Amount Type">
-        <RadioGroup name="min_type" options={[{ value: "AmountDue", label: "Amount Due" }, { value: "OtherAmount", label: "Other Amount" }, { value: "NA", label: "Not Applicable" }]} value={data.minimum_amount_type} onChange={v => set("minimum_amount_type", v)} />
-      </Field>
-      {data.minimum_amount_type === "OtherAmount" && (
-        <Field label="Minimum Amount Value (₱)">
-          <Input type="number" min="0" value={data.minimum_amount_value} onChange={e => set("minimum_amount_value", e.target.value)} placeholder="0.00" />
-        </Field>
-      )}
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Estimated Monthly Transactions">
-          <Input value={data.estimated_monthly_hits} onChange={e => set("estimated_monthly_hits", e.target.value)} placeholder="e.g. 100–500" />
-        </Field>
-        <Field label="Estimated Amount Per Transaction (₱)">
-          <Input value={data.estimated_amount_per_transaction} onChange={e => set("estimated_amount_per_transaction", e.target.value)} placeholder="e.g. 500–2,000" />
-        </Field>
-      </div>
-    </div>
-  )
-}
-
-function StepBank({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
-  return (
-    <div className="space-y-4">
-      <Field label="Beneficiary Bank" required>
-        <StyledSelect value={data.beneficiary_bank} onChange={e => set("beneficiary_bank", e.target.value)}>
-          <option value="">Select a bank…</option>
-          {PH_BANKS.map(b => <option key={b} value={b}>{b}</option>)}
-        </StyledSelect>
-      </Field>
-      <Field label="Bank Branch Address" required>
-        <Input value={data.bank_address} onChange={e => set("bank_address", e.target.value)} placeholder="Bank branch complete address" />
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Account Name" required>
-          <Input value={data.bank_account_name} onChange={e => set("bank_account_name", e.target.value)} placeholder="Name on bank account" />
-        </Field>
-        <Field label="Account Number" required>
-          <Input value={data.bank_account_number} onChange={e => set("bank_account_number", e.target.value)} placeholder="XXXX-XXXX-XXXX" />
-        </Field>
-      </div>
-      <Field label="Settlement Preference" required>
-        <RadioGroup name="settlement" options={[{ value: "Standard", label: "Standard (T+1 or T+2)" }, { value: "OnDemand", label: "On-Demand" }]} value={data.settlement_type} onChange={v => set("settlement_type", v)} />
-      </Field>
-    </div>
-  )
-}
-
 function StepBranding({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
   return (
     <div className="space-y-4">
@@ -645,9 +518,6 @@ export const Register = () => {
       case "business": return !!(data.business_name && data.business_address && data.form_of_organization)
       case "signatory": return !!(data.signatory_first_name && data.signatory_last_name)
       case "documents": return true
-      case "gateway": return !!(data.charge_to && data.gateway_account_type && data.pay_button_type)
-      case "features": return true
-      case "bank": return !!(data.beneficiary_bank && data.bank_address && data.bank_account_name && data.bank_account_number && data.settlement_type)
       case "branding": return true
       case "account": return !!(data.password && data.confirm_password && data.password === data.confirm_password && data.password.length >= 8)
       default: return true
@@ -814,9 +684,6 @@ export const Register = () => {
             )}
             {currentStep?.id === "signatory" && <StepSignatory data={data} set={set} />}
             {currentStep?.id === "documents" && <StepDocuments data={data} setDoc={setDoc} />}
-            {currentStep?.id === "gateway" && <StepGateway data={data} set={set} />}
-            {currentStep?.id === "features" && <StepFeatures data={data} set={set} />}
-            {currentStep?.id === "bank" && <StepBank data={data} set={set} />}
             {currentStep?.id === "branding" && <StepBranding data={data} set={set} />}
             {currentStep?.id === "account" && <StepAccount data={data} set={set} />}
           </div>
