@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { fetchQuery, backendUrl, publishableApiKey } from "../../lib/client/client"
+import { fetchQuery } from "../../lib/client/client"
 
 export interface SubscriptionPlan {
   id: string
@@ -52,17 +52,7 @@ export const useSubscriptionStatus = () => {
 export const useSubscriptionPlans = () => {
   return useQuery<{ plans: SubscriptionPlan[] }>({
     queryKey: PLANS_KEY,
-    queryFn: async () => {
-      const bearer = window.localStorage.getItem("medusa_auth_token") || ""
-      const res = await fetch(`${backendUrl}/store/subscription/plans`, {
-        headers: {
-          "x-publishable-api-key": publishableApiKey,
-          authorization: `Bearer ${bearer}`,
-        },
-      })
-      if (!res.ok) throw new Error("Failed to load plans")
-      return res.json()
-    },
+    queryFn: () => fetchQuery("/vendor/subscription/plans", { method: "GET" }),
     staleTime: 1000 * 60 * 10,
   })
 }

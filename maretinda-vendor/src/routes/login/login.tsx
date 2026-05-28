@@ -1,5 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert, Hint, Input } from "@medusajs/ui"
+import {
+  CircleHalfSolid,
+  Moon,
+  Sun,
+  ShoppingBag,
+  ChartBar,
+  CurrencyDollar,
+  ChatBubbleLeftRight,
+} from "@medusajs/icons"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -9,11 +18,31 @@ import { Form } from "../../components/common/form"
 import { useDashboardExtension } from "../../extensions"
 import { useSignInWithEmailPass } from "../../hooks/api"
 import { isFetchError } from "../../lib/is-fetch-error"
+import { useTheme } from "../../providers/theme-provider"
 
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 })
+
+function ThemeToggleButton() {
+  const { theme, setTheme } = useTheme()
+  const cycle = () => {
+    if (theme === "light") setTheme("dark")
+    else if (theme === "dark") setTheme("system")
+    else setTheme("light")
+  }
+  return (
+    <button
+      type="button"
+      onClick={cycle}
+      title={`Theme: ${theme}`}
+      className="flex items-center justify-center w-8 h-8 rounded-lg border border-ui-border-base bg-ui-bg-subtle text-ui-fg-subtle hover:bg-ui-bg-subtle-hover hover:text-ui-fg-base transition-colors"
+    >
+      {theme === "dark" ? <Moon className="w-4 h-4" /> : theme === "light" ? <Sun className="w-4 h-4" /> : <CircleHalfSolid className="w-4 h-4" />}
+    </button>
+  )
+}
 
 export const Login = () => {
   const { t } = useTranslation()
@@ -107,14 +136,14 @@ export const Login = () => {
 
           <div className="mt-10 flex flex-col gap-3">
             {[
-              { icon: "🛍️", label: "List & manage your products" },
-              { icon: "📊", label: "Track sales & analytics" },
-              { icon: "💰", label: "Receive payouts & settlements" },
-              { icon: "💬", label: "Chat with customers" },
+              { icon: <ShoppingBag />, label: "List & manage your products" },
+              { icon: <ChartBar />, label: "Track sales & analytics" },
+              { icon: <CurrencyDollar />, label: "Receive payouts & settlements" },
+              { icon: <ChatBubbleLeftRight />, label: "Chat with customers" },
             ].map(({ icon, label }) => (
               <div key={label} className="flex items-center gap-3">
                 <span
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-sm flex-shrink-0"
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-white flex-shrink-0"
                   style={{ background: "rgba(255,255,255,0.15)" }}
                 >
                   {icon}
@@ -132,31 +161,28 @@ export const Login = () => {
       </div>
 
       {/* Right panel — login form */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-white px-6 py-12">
-        {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-2 mb-8">
-          <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
-          <span className="text-xl font-bold" style={{ color: "#4338ca" }}>Maretinda</span>
-          <span
-            className="text-xs font-medium px-2 py-0.5 rounded-full"
-            style={{ background: "#e0e7ff", color: "#4338ca" }}
-          >
-            Vendor
-          </span>
+      <div className="flex-1 flex flex-col bg-ui-bg-base px-6 py-12">
+        {/* Mobile logo + theme toggle */}
+        <div className="flex items-center justify-between mb-8 lg:justify-end">
+          <div className="lg:hidden flex items-center gap-2">
+            <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
+            <span className="text-xl font-bold" style={{ color: "#6366f1" }}>Maretinda</span>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">
+              Vendor
+            </span>
+          </div>
+          <ThemeToggleButton />
         </div>
 
-        <div className="w-full max-w-[360px]">
+        <div className="w-full max-w-[360px] mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
-              style={{ background: "#e0e7ff", color: "#4338ca" }}
-            >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-indigo-500/10 text-indigo-500">
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               Vendor Portal
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-            <p className="text-gray-500 text-sm">Sign in to your vendor account to manage your store</p>
+            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Welcome back</h2>
+            <p className="text-ui-fg-subtle text-sm">Sign in to your vendor account to manage your store</p>
           </div>
 
           {/* Form */}
@@ -173,14 +199,14 @@ export const Login = () => {
                     name="email"
                     render={({ field }) => (
                       <Form.Item>
-                        <Form.Label className="text-sm font-medium text-gray-700">
+                        <Form.Label className="text-sm font-medium text-ui-fg-base">
                           {t("fields.email")}
                         </Form.Label>
                         <Form.Control>
                           <Input
                             autoComplete="email"
                             {...field}
-                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
+                            className="mt-1"
                             placeholder="vendor@example.com"
                           />
                         </Form.Control>
@@ -192,7 +218,7 @@ export const Login = () => {
                     name="password"
                     render={({ field }) => (
                       <Form.Item>
-                        <Form.Label className="text-sm font-medium text-gray-700">
+                        <Form.Label className="text-sm font-medium text-ui-fg-base">
                           {t("fields.password")}
                         </Form.Label>
                         <Form.Control>
@@ -200,7 +226,7 @@ export const Login = () => {
                             type="password"
                             autoComplete="current-password"
                             {...field}
-                            className="mt-1 !bg-white !text-gray-900 !border-gray-300 placeholder:!text-gray-400"
+                            className="mt-1"
                             placeholder="••••••••"
                           />
                         </Form.Control>
@@ -239,7 +265,7 @@ export const Login = () => {
           </div>
 
           <div className="mt-5 flex flex-col items-center gap-2">
-            <span className="text-gray-400 text-sm">
+            <span className="text-ui-fg-subtle text-sm">
               <Trans
                 i18nKey="login.forgotPassword"
                 components={[

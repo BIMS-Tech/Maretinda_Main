@@ -1,6 +1,6 @@
 import { useState, useRef, ChangeEvent } from "react"
 import { Link } from "react-router-dom"
-import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
+import { CircleHalfSolid, Moon, Sun, CheckCircle, RocketLaunch, GlobeEurope, CurrencyDollar } from "@medusajs/icons"
 import { Input } from "@medusajs/ui"
 import { useSignUpWithEmailPass } from "../../hooks/api"
 import { backendUrl } from "../../lib/client/client"
@@ -739,13 +739,13 @@ export const Register = () => {
           </p>
           <div className="mt-10 flex flex-col gap-3">
             {[
-              { icon: "✅", label: "Free to register & get started" },
-              { icon: "🚀", label: "Quick onboarding process" },
-              { icon: "🌍", label: "Reach customers nationwide" },
-              { icon: "💰", label: "Fast & secure payouts" },
+              { icon: <CheckCircle />, label: "Free to register & get started" },
+              { icon: <RocketLaunch />, label: "Quick onboarding process" },
+              { icon: <GlobeEurope />, label: "Reach customers nationwide" },
+              { icon: <CurrencyDollar />, label: "Fast & secure payouts" },
             ].map(({ icon, label }) => (
               <div key={label} className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full text-sm flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>{icon}</span>
+                <span className="flex items-center justify-center w-8 h-8 rounded-full text-white flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>{icon}</span>
                 <span className="text-indigo-100 text-sm">{label}</span>
               </div>
             ))}
