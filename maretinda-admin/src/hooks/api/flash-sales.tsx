@@ -116,6 +116,20 @@ export function usePublishFlashSale(id: string, options?: UseMutationOptions<any
   })
 }
 
+export function useReviveFlashSale(id: string, options?: UseMutationOptions<any, any, { ends_at?: string } | void>) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body?: { ends_at?: string }) =>
+      (sdk as any).client.fetch(`/admin/flash-sales/${id}/revive`, { method: "POST", body: body ?? {} }),
+    onSuccess: (data, ...args) => {
+      queryClient.invalidateQueries({ queryKey: flashSaleKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: flashSaleKeys.lists() })
+      options?.onSuccess?.(data, ...args)
+    },
+    ...options,
+  })
+}
+
 export function useEndFlashSale(id: string, options?: UseMutationOptions<any, any, void>) {
   const queryClient = useQueryClient()
   return useMutation({

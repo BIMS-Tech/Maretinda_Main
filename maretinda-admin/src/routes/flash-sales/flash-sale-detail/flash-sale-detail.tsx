@@ -15,6 +15,7 @@ import {
   useFlashSale,
   usePublishFlashSale,
   useEndFlashSale,
+  useReviveFlashSale,
   useApproveFlashSale,
   useRejectFlashSale,
   useAddFlashSaleItem,
@@ -328,6 +329,62 @@ function VendorApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { s
   )
 }
 
+function ReviveModal({
+  saleId,
+  endsAt,
+  onClose,
+}: {
+  saleId: string
+  endsAt: string
+  onClose: () => void
+}) {
+  const isPast = new Date(endsAt) <= new Date()
+  const [newEndsAt, setNewEndsAt] = useState("")
+
+  const { mutate: revive, isPending } = useReviveFlashSale(saleId, {
+    onSuccess: () => { toast.success("Flash sale revived"); onClose() },
+    onError: (err: any) => toast.error(err?.message || "Failed to revive"),
+  })
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <Heading level="h2">Revive Flash Sale</Heading>
+        {isPast ? (
+          <>
+            <p className="text-sm text-gray-500">
+              This sale's end date has already passed. Set a new end date to revive it.
+            </p>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">New End Date & Time *</Label>
+              <Input
+                type="datetime-local"
+                value={newEndsAt}
+                onChange={(e) => setNewEndsAt(e.target.value)}
+              />
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-500">
+            The end date is still in the future. The sale will be restored to its original schedule.
+          </p>
+        )}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="secondary" size="small" onClick={onClose}>Cancel</Button>
+          <Button
+            size="small"
+            isLoading={isPending}
+            disabled={isPast && !newEndsAt}
+            onClick={() => revive(isPast && newEndsAt ? { ends_at: new Date(newEndsAt).toISOString() } : undefined)}
+          >
+            Revive
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function BannerImage({ url }: { url: string }) {
   const [failed, setFailed] = useState(false)
   return (
@@ -355,6 +412,7 @@ export const FlashSaleDetail = () => {
   const navigate = useNavigate()
   const prompt = usePrompt()
   const [showAddItem, setShowAddItem] = useState(false)
+  const [showRevive, setShowRevive] = useState(false)
 
   const { flash_sale: sale, isLoading, refetch } = useFlashSale(id!)
 
@@ -385,6 +443,9 @@ export const FlashSaleDetail = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <Outlet />
+      {showRevive && (
+        <ReviveModal saleId={id!} endsAt={sale.ends_at} onClose={() => setShowRevive(false)} />
+      )}
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -424,6 +485,12 @@ export const FlashSaleDetail = () => {
               if (ok) end()
             }} isLoading={ending}>
               End Sale
+            </Button>
+          )}
+          {["ended", "cancelled"].includes(sale.status) && (
+            <Button size="small" variant="secondary" onClick={() => setShowRevive(true)}>
+              <Bolt className="w-3.5 h-3.5 mr-1" />
+              Revive
             </Button>
           )}
           {sale.status === "pending" && (

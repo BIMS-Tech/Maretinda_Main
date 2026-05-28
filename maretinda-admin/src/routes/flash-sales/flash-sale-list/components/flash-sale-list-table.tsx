@@ -9,6 +9,7 @@ import {
   useDeleteFlashSale,
   usePublishFlashSale,
   useEndFlashSale,
+  useReviveFlashSale,
 } from "../../../../hooks/api/flash-sales"
 import { FlashSale, getFlashSaleStatus, getTimeRemaining } from "../../../../lib/flash-sales"
 
@@ -47,6 +48,18 @@ function ActionCell({ sale }: { sale: FlashSale }) {
   })
   const { mutate: end } = useEndFlashSale(sale.id, {
     onSuccess: () => toast.success("Flash sale ended"),
+  })
+  const { mutate: revive } = useReviveFlashSale(sale.id, {
+    onSuccess: () => toast.success("Flash sale revived"),
+    onError: (err: any) => {
+      // If ends_at has passed, redirect to detail page where admin can set a new date
+      if (err?.message?.includes("already passed")) {
+        navigate(sale.id)
+        toast.warning("Set a new end date to revive this sale")
+      } else {
+        toast.error(err?.message || "Failed to revive")
+      }
+    },
   })
   const { mutate: deleteSale } = useDeleteFlashSale({
     onSuccess: () => toast.success("Flash sale deleted"),
@@ -100,6 +113,15 @@ function ActionCell({ sale }: { sale: FlashSale }) {
               onClick={(e) => { e.stopPropagation(); end(); setOpen(false) }}
             >
               End Sale
+            </button>
+          )}
+
+          {["ended", "cancelled"].includes(sale.status) && (
+            <button
+              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-green-700"
+              onClick={(e) => { e.stopPropagation(); revive(); setOpen(false) }}
+            >
+              <Bolt className="w-3.5 h-3.5" /> Revive
             </button>
           )}
 
