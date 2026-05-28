@@ -17,7 +17,7 @@ RUN yarn install --frozen-lockfile
 FROM base AS builder
 
 # Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=base /app/node_modules ./node_modules
 
 # Copy source code
 COPY . .

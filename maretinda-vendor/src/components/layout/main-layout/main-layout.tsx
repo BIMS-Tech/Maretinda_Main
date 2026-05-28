@@ -24,7 +24,7 @@ import { Skeleton } from "../../common/skeleton"
 import { INavItem, NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
 
-import { useLocation } from "react-router-dom"
+import { Navigate, useLocation } from "react-router-dom"
 import { useMe } from "../../../hooks/api"
 
 import { useSearch } from "../../../providers/search-provider"
@@ -32,16 +32,31 @@ import { UserMenu } from "../user-menu"
 import { StripeIcon } from "../../../assets/icons/Stripe"
 import { ImageAvatar } from "../../common/image-avatar"
 import { useUnreads } from "@talkjs/react"
+import { useSubscriptionStatus } from "../../../hooks/api/subscription"
 
 export const MainLayout = () => {
+  const { data, isLoading } = useSubscriptionStatus()
+  const location = useLocation()
+
+  const isActive =
+    !isLoading &&
+    data?.has_subscription === true &&
+    data?.subscription?.status === "active"
+
+  const isOnSubscription = location.pathname.startsWith("/subscription")
+
+  if (!isLoading && !isActive && !isOnSubscription) {
+    return <Navigate to="/subscription" replace />
+  }
+
   return (
     <Shell>
-      <MainSidebar />
+      <MainSidebar subscriptionActive={isLoading || isActive} />
     </Shell>
   )
 }
 
-const MainSidebar = () => {
+const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) => {
   return (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="flex flex-1 flex-col">
@@ -51,12 +66,18 @@ const MainSidebar = () => {
             <Divider variant="dashed" />
           </div>
         </div>
+        {!subscriptionActive && (
+          <div className="mx-3 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="font-semibold">Subscription Required</p>
+            <p className="mt-0.5 text-amber-600">Activate a plan to access all features.</p>
+          </div>
+        )}
         <div className="flex flex-1 flex-col justify-between">
           <div className="flex flex-1 flex-col">
-            <CoreRouteSection />
-            <ExtensionRouteSection />
+            {subscriptionActive && <CoreRouteSection />}
+            <ExtensionRouteSection subscriptionActive={subscriptionActive} />
           </div>
-          <UtilitySection />
+          {subscriptionActive && <UtilitySection />}
         </div>
         <div className="bg-ui-bg-subtle sticky bottom-0">
           <UserSection />
@@ -312,9 +333,13 @@ const CoreRouteSection = () => {
   )
 }
 
-const ExtensionRouteSection = () => {
-  const extensionRoutes = useExtensionRoutes()
+const ExtensionRouteSection = ({ subscriptionActive }: { subscriptionActive: boolean }) => {
+  const allExtensionRoutes = useExtensionRoutes()
   const { t } = useTranslation()
+
+  const extensionRoutes = subscriptionActive
+    ? allExtensionRoutes
+    : allExtensionRoutes.filter((r) => r.to === "/subscription")
 
   if (!extensionRoutes.length) return null
 
