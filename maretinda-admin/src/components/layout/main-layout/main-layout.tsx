@@ -3,6 +3,7 @@ import {
   BottomToTop,
   BuildingStorefront,
   Buildings,
+  ChartPie,
   ChatBubble,
   ChevronDownMini,
   CogSixTooth,
@@ -185,6 +186,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation();
 
   return [
+    {
+      icon: <ChartPie />,
+      label: "Dashboard",
+      to: "/",
+    },
     {
       icon: <ShoppingCart />,
       label: t("orders.domain"),
