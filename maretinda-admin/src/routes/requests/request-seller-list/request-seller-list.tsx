@@ -1,23 +1,40 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Container, Heading, Table, Text, Badge } from "@medusajs/ui";
 
 import { useSellerApplications, type SellerApplication } from "@hooks/api/seller-applications";
+import { useVendorRequests } from "@hooks/api/requests";
+import type { AdminRequest } from "@custom-types/requests";
 import { RequestSellerDetail } from "./components/request-seller-detail";
 
 const PAGE_SIZE = 20;
 
-function statusBadge(status: string) {
+// Unified row type — either a new full application or a legacy request row
+export type NewAppRow = { _source: "new" } & SellerApplication;
+export type LegacyRow = { _source: "legacy" } & AdminRequest & {
+  _name: string;
+  _email: string;
+  _normalizedStatus: "pending" | "approved" | "rejected";
+  _submittedAt: string;
+};
+export type UnifiedRow = NewAppRow | LegacyRow;
+
+function normalizeLegacyStatus(s?: string): "pending" | "approved" | "rejected" {
+  if (s === "accepted") return "approved";
+  if (s === "rejected") return "rejected";
+  return "pending";
+}
+
+function statusBadge(status: "pending" | "approved" | "rejected") {
   if (status === "approved") return <Badge color="green">Approved</Badge>;
   if (status === "rejected") return <Badge color="red">Rejected</Badge>;
   return <Badge color="orange">Pending</Badge>;
 }
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+function formatDate(d: string | Date | undefined | null) {
+  if (!d) return "—";
+  return new Date(d as string).toLocaleDateString(undefined, {
+    year: "numeric", month: "short", day: "numeric",
   });
 }
 
@@ -26,13 +43,56 @@ type StatusFilter = "" | "pending" | "approved" | "rejected";
 export const RequestSellerList = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
-  const [selected, setSelected] = useState<SellerApplication | null>(null);
+  const [selected, setSelected] = useState<UnifiedRow | null>(null);
 
-  const { applications, count, isLoading, refetch } = useSellerApplications({
+  // New applications (paginated on server)
+  const { applications, count: newCount, isLoading: newLoading, refetch: refetchNew } = useSellerApplications({
     limit: PAGE_SIZE,
     offset: currentPage * PAGE_SIZE,
     status: statusFilter || undefined,
   });
+
+  // Legacy requests (fetch all — only ~6 exist)
+  const { requests: legacyRequests, isLoading: legacyLoading } = useVendorRequests({ type: "seller", limit: 200 }) as any;
+
+  // Normalize legacy rows
+  const legacyRows: LegacyRow[] = useMemo(() => {
+    if (!Array.isArray(legacyRequests)) return [];
+    return legacyRequests.map((req: AdminRequest) => {
+      const data = (req.data ?? {}) as any;
+      const name = data?.member?.name || data?.seller?.name || "";
+      const email = data?.member?.email || data?.seller?.email || data?.provider_identity_id || "";
+      return {
+        _source: "legacy" as const,
+        _name: name,
+        _email: email,
+        _normalizedStatus: normalizeLegacyStatus(req.status),
+        _submittedAt: req.created_at ?? "",
+        ...req,
+      };
+    });
+  }, [legacyRequests]);
+
+  // Filter legacy rows by status (since they're client-side)
+  const filteredLegacy = useMemo(() => {
+    if (!statusFilter) return legacyRows;
+    return legacyRows.filter((r) => r._normalizedStatus === statusFilter);
+  }, [legacyRows, statusFilter]);
+
+  // New rows wrapped with source tag
+  const newRows: NewAppRow[] = useMemo(
+    () => applications.map((a: SellerApplication) => ({ _source: "new" as const, ...a })),
+    [applications]
+  );
+
+  // On page 0, show legacy rows first (they're few). On subsequent pages, new apps only.
+  const displayRows: UnifiedRow[] = useMemo(() => {
+    if (currentPage === 0) return [...filteredLegacy, ...newRows];
+    return newRows;
+  }, [currentPage, filteredLegacy, newRows]);
+
+  const totalCount = newCount + filteredLegacy.length;
+  const isLoading = newLoading || legacyLoading;
 
   return (
     <Container>
@@ -64,9 +124,9 @@ export const RequestSellerList = () => {
 
       {/* Detail drawer */}
       <RequestSellerDetail
-        application={selected}
+        row={selected}
         open={!!selected}
-        close={() => { setSelected(null); refetch(); }}
+        close={() => { setSelected(null); refetchNew(); }}
       />
 
       <div className="flex size-full flex-col overflow-hidden">
@@ -85,27 +145,44 @@ export const RequestSellerList = () => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {applications.map((app) => (
-              <Table.Row key={app.id} className="cursor-pointer hover:bg-ui-bg-subtle" onClick={() => setSelected(app)}>
-                <Table.Cell className="font-medium">
-                  {app.first_name} {app.last_name}
-                </Table.Cell>
-                <Table.Cell>{app.email}</Table.Cell>
-                <Table.Cell>{app.business_name}</Table.Cell>
-                <Table.Cell>{app.form_of_organization || "—"}</Table.Cell>
-                <Table.Cell>{formatDate(app.submitted_at)}</Table.Cell>
-                <Table.Cell>{statusBadge(app.status)}</Table.Cell>
-                <Table.Cell>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setSelected(app); }}
-                    className="text-xs text-ui-fg-interactive hover:underline font-medium"
-                  >
-                    Review
-                  </button>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-            {!isLoading && applications.length === 0 && (
+            {displayRows.map((row) => {
+              const isNew = row._source === "new";
+              const name = isNew ? `${row.first_name} ${row.last_name}` : (row as LegacyRow)._name;
+              const email = isNew ? row.email : (row as LegacyRow)._email;
+              const business = isNew ? row.business_name : "—";
+              const org = isNew ? (row.form_of_organization || "—") : "—";
+              const submitted = isNew ? row.submitted_at : (row as LegacyRow)._submittedAt;
+              const status = isNew ? (row.status as "pending" | "approved" | "rejected") : (row as LegacyRow)._normalizedStatus;
+
+              return (
+                <Table.Row
+                  key={row.id}
+                  className="cursor-pointer hover:bg-ui-bg-subtle"
+                  onClick={() => setSelected(row)}
+                >
+                  <Table.Cell className="font-medium">
+                    {name}
+                    {!isNew && (
+                      <span className="ml-1.5 text-[10px] text-ui-fg-muted border border-ui-border-base rounded px-1 py-0.5">legacy</span>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>{email}</Table.Cell>
+                  <Table.Cell>{business}</Table.Cell>
+                  <Table.Cell>{org}</Table.Cell>
+                  <Table.Cell>{formatDate(submitted)}</Table.Cell>
+                  <Table.Cell>{statusBadge(status)}</Table.Cell>
+                  <Table.Cell>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelected(row); }}
+                      className="text-xs text-ui-fg-interactive hover:underline font-medium"
+                    >
+                      Review
+                    </button>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+            {!isLoading && displayRows.length === 0 && (
               <Table.Row>
                 <Table.Cell colSpan={7}>
                   <Text className="text-center py-6 text-ui-fg-subtle">No applications found.</Text>
@@ -117,12 +194,12 @@ export const RequestSellerList = () => {
 
         <Table.Pagination
           className="w-full"
-          canNextPage={PAGE_SIZE * (currentPage + 1) < count}
+          canNextPage={PAGE_SIZE * (currentPage + 1) < totalCount}
           canPreviousPage={currentPage > 0}
           previousPage={() => setCurrentPage((p) => p - 1)}
           nextPage={() => setCurrentPage((p) => p + 1)}
-          count={count}
-          pageCount={Math.max(1, Math.ceil(count / PAGE_SIZE))}
+          count={totalCount}
+          pageCount={Math.max(1, Math.ceil(totalCount / PAGE_SIZE))}
           pageIndex={currentPage}
           pageSize={PAGE_SIZE}
         />

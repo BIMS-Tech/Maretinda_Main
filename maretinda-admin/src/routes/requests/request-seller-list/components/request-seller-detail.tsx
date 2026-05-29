@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { Badge, Button, Drawer, Heading, Text, Textarea } from "@medusajs/ui";
-import { ArrowDownTray, XMark } from "@medusajs/icons";
+import { ArrowDownTray } from "@medusajs/icons";
 
 import {
   useUpdateSellerApplication,
   type SellerApplication,
 } from "@hooks/api/seller-applications";
+import { useReviewRequest } from "@hooks/api/requests";
+import type { NewAppRow, LegacyRow, UnifiedRow } from "../request-seller-list";
 
 type Props = {
-  application: SellerApplication | null;
+  row: UnifiedRow | null;
   open: boolean;
   close: () => void;
 };
 
 function statusBadge(status: string) {
-  if (status === "approved") return <Badge color="green">Approved</Badge>;
+  if (status === "approved" || status === "accepted") return <Badge color="green">Approved</Badge>;
   if (status === "rejected") return <Badge color="red">Rejected</Badge>;
   return <Badge color="orange">Pending</Badge>;
 }
@@ -48,18 +50,19 @@ function Grid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-2 gap-3">{children}</div>;
 }
 
-export function RequestSellerDetail({ application, open, close }: Props) {
+// ─── Full new-application drawer ─────────────────────────────────────────────
+
+function NewAppDrawer({ row, close }: { row: NewAppRow; close: () => void }) {
   const [adminNotes, setAdminNotes] = useState("");
   const [actionError, setActionError] = useState("");
 
-  const updateMutation = useUpdateSellerApplication(application?.id ?? "", {
-    onSuccess: () => { close(); },
+  const app: SellerApplication = row;
+
+  const updateMutation = useUpdateSellerApplication(app.id, {
+    onSuccess: () => close(),
     onError: (err) => setActionError(err.message || "Action failed"),
   });
 
-  if (!application) return null;
-
-  const app = application;
   const docs = typeof app.documents === "string"
     ? JSON.parse(app.documents)
     : (app.documents ?? {});
@@ -109,7 +112,6 @@ export function RequestSellerDetail({ application, open, close }: Props) {
       },
       documents: docs,
     };
-
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -120,179 +122,294 @@ export function RequestSellerDetail({ application, open, close }: Props) {
   };
 
   return (
-    <Drawer open={open} onOpenChange={close}>
-      <Drawer.Content className="max-w-2xl">
-        <Drawer.Header>
-          <div className="flex items-center justify-between w-full">
-            <Drawer.Title>Seller Application — {app.business_name}</Drawer.Title>
-            <div className="flex items-center gap-2">
-              {statusBadge(app.status)}
-              <button onClick={handleDownload} title="Download JSON" className="p-1 rounded hover:bg-ui-bg-subtle text-ui-fg-subtle hover:text-ui-fg-base transition-colors">
-                <ArrowDownTray className="w-4 h-4" />
-              </button>
-            </div>
+    <>
+      <Drawer.Header>
+        <div className="flex items-center justify-between w-full">
+          <Drawer.Title>Seller Application — {app.business_name}</Drawer.Title>
+          <div className="flex items-center gap-2">
+            {statusBadge(app.status)}
+            <button onClick={handleDownload} title="Download JSON" className="p-1 rounded hover:bg-ui-bg-subtle text-ui-fg-subtle hover:text-ui-fg-base transition-colors">
+              <ArrowDownTray className="w-4 h-4" />
+            </button>
           </div>
-        </Drawer.Header>
+        </div>
+      </Drawer.Header>
 
-        <Drawer.Body className="p-4 flex flex-col gap-4 overflow-y-auto">
-          {/* Meta */}
-          <div className="flex gap-4 text-xs text-ui-fg-muted flex-wrap">
-            <span>ID: <span className="font-mono text-ui-fg-subtle">{app.id}</span></span>
-            <span>Submitted: {formatDate(app.submitted_at)}</span>
-            {app.reviewed_at && <span>Reviewed: {formatDate(app.reviewed_at)}</span>}
-          </div>
+      <Drawer.Body className="p-4 flex flex-col gap-4 overflow-y-auto">
+        <div className="flex gap-4 text-xs text-ui-fg-muted flex-wrap">
+          <span>ID: <span className="font-mono text-ui-fg-subtle">{app.id}</span></span>
+          <span>Submitted: {formatDate(app.submitted_at)}</span>
+          {app.reviewed_at && <span>Reviewed: {formatDate(app.reviewed_at)}</span>}
+        </div>
 
-          {/* 1. Merchant Details */}
-          <Section title="Merchant Details">
+        <Section title="Merchant Details">
+          <Grid>
+            <Field label="First Name" value={app.first_name} />
+            <Field label="Last Name" value={app.last_name} />
+            <Field label="Email" value={app.email} />
+            <Field label="Mobile Number" value={app.mobile_number} />
+            <Field label="Designation" value={app.designation} />
+            <Field label="Target Go-Live" value={app.target_go_live} />
+          </Grid>
+          <Field label="Complete Address" value={app.complete_address} />
+        </Section>
+
+        <Section title="Business Profile">
+          <Grid>
+            <Field label="Business Name" value={app.business_name} />
+            <Field label="Organization Type" value={app.form_of_organization} />
+            <Field label="Business TIN" value={app.business_tin} />
+            <Field label="Merchant Category" value={app.merchant_category} />
+            <Field label="Business Landline" value={app.business_landline} />
+            <Field label="Business Mobile" value={app.business_mobile} />
+            <Field label="Business Email" value={app.business_email} />
+            <Field label="Business Activity" value={app.business_activity} />
+          </Grid>
+          <Field label="Business Address" value={app.business_address} />
+        </Section>
+
+        {app.signatory_first_name && (
+          <Section title="Authorized Signatory">
             <Grid>
-              <Field label="First Name" value={app.first_name} />
-              <Field label="Last Name" value={app.last_name} />
-              <Field label="Email" value={app.email} />
-              <Field label="Mobile Number" value={app.mobile_number} />
-              <Field label="Designation" value={app.designation} />
-              <Field label="Target Go-Live" value={app.target_go_live} />
+              <Field label="First Name" value={app.signatory_first_name} />
+              <Field label="Middle Name" value={app.signatory_middle_name} />
+              <Field label="Last Name" value={app.signatory_last_name} />
+              <Field label="Email" value={app.signatory_email} />
+              <Field label="Landline" value={app.signatory_landline} />
+              <Field label="Mobile" value={app.signatory_mobile} />
             </Grid>
-            <Field label="Complete Address" value={app.complete_address} />
           </Section>
+        )}
 
-          {/* 2. Business Profile */}
-          <Section title="Business Profile">
-            <Grid>
-              <Field label="Business Name" value={app.business_name} />
-              <Field label="Organization Type" value={app.form_of_organization} />
-              <Field label="Business TIN" value={app.business_tin} />
-              <Field label="Merchant Category" value={app.merchant_category} />
-              <Field label="Business Landline" value={app.business_landline} />
-              <Field label="Business Mobile" value={app.business_mobile} />
-              <Field label="Business Email" value={app.business_email} />
-              <Field label="Business Activity" value={app.business_activity} />
-            </Grid>
-            <Field label="Business Address" value={app.business_address} />
-          </Section>
-
-          {/* 3. Authorized Signatory (conditional) */}
-          {app.signatory_first_name && (
-            <Section title="Authorized Signatory">
-              <Grid>
-                <Field label="First Name" value={app.signatory_first_name} />
-                <Field label="Middle Name" value={app.signatory_middle_name} />
-                <Field label="Last Name" value={app.signatory_last_name} />
-                <Field label="Email" value={app.signatory_email} />
-                <Field label="Landline" value={app.signatory_landline} />
-                <Field label="Mobile" value={app.signatory_mobile} />
-              </Grid>
-            </Section>
-          )}
-
-          {/* 4. Branding & Digital */}
-          <Section title="Branding & Digital">
-            <Grid>
-              <Field label="Brand Colors" value={app.brand_colors} />
-              <Field
-                label="Has Marketing Budget"
-                value={
-                  app.has_marketing_budget === true
-                    ? "Yes"
-                    : app.has_marketing_budget === false
-                    ? "No"
-                    : undefined
-                }
-              />
-            </Grid>
+        <Section title="Branding & Digital">
+          <Grid>
+            <Field label="Brand Colors" value={app.brand_colors} />
             <Field
-              label="Digital Support Channels"
+              label="Has Marketing Budget"
               value={
-                Array.isArray(app.digital_support) && app.digital_support.length
-                  ? app.digital_support.join(", ")
-                  : null
+                app.has_marketing_budget === true ? "Yes" :
+                app.has_marketing_budget === false ? "No" : undefined
               }
             />
-          </Section>
+          </Grid>
+          <Field
+            label="Digital Support Channels"
+            value={
+              Array.isArray(app.digital_support) && app.digital_support.length
+                ? app.digital_support.join(", ")
+                : null
+            }
+          />
+        </Section>
 
-          {/* 5. Documents */}
-          <Section title="Submitted Documents">
-            {Object.keys(docs).length === 0 ? (
-              <Text className="text-sm text-ui-fg-muted">No documents submitted.</Text>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {Object.entries(docs).map(([key, url]) => (
-                  <div key={key} className="flex items-center justify-between gap-2 text-sm">
-                    <Text className="text-ui-fg-base capitalize">{key.replace(/_/g, " ")}</Text>
-                    <a
-                      href={url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-ui-fg-interactive hover:underline text-xs font-medium flex items-center gap-1"
-                    >
-                      <ArrowDownTray className="w-3 h-3" />
-                      View / Download
-                    </a>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
-
-          {/* Admin notes */}
-          {app.status === "pending" && (
-            <div className="flex flex-col gap-1.5">
-              <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted">Admin Notes (optional)</Text>
-              <Textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Add a note for this decision (optional)…"
-                rows={3}
-              />
+        <Section title="Submitted Documents">
+          {Object.keys(docs).length === 0 ? (
+            <Text className="text-sm text-ui-fg-muted">No documents submitted.</Text>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {Object.entries(docs).map(([key, url]) => (
+                <div key={key} className="flex items-center justify-between gap-2 text-sm">
+                  <Text className="text-ui-fg-base capitalize">{key.replace(/_/g, " ")}</Text>
+                  <a
+                    href={url as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-ui-fg-interactive hover:underline text-xs font-medium flex items-center gap-1"
+                  >
+                    <ArrowDownTray className="w-3 h-3" />
+                    View / Download
+                  </a>
+                </div>
+              ))}
             </div>
           )}
+        </Section>
 
-          {app.admin_notes && (
-            <div className="rounded-xl bg-ui-bg-subtle border border-ui-border-base p-3">
-              <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted mb-1">Admin Notes</Text>
-              <Text className="text-sm text-ui-fg-base">{app.admin_notes}</Text>
-            </div>
-          )}
-
-          {actionError && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {actionError}
-            </div>
-          )}
-        </Drawer.Body>
-
-        <Drawer.Footer>
-          <div className="flex items-center gap-2 w-full">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base px-3 py-2 text-xs font-medium text-ui-fg-base hover:bg-ui-bg-subtle transition-colors mr-auto"
-            >
-              <ArrowDownTray className="w-3.5 h-3.5" />
-              Download JSON
-            </button>
-
-            {app.status === "pending" ? (
-              <>
-                <Button
-                  variant="danger"
-                  isLoading={updateMutation.isPending}
-                  onClick={() => handleAction("rejected")}
-                >
-                  Reject
-                </Button>
-                <Button
-                  isLoading={updateMutation.isPending}
-                  onClick={() => handleAction("approved")}
-                >
-                  Approve
-                </Button>
-              </>
-            ) : (
-              <Button variant="secondary" onClick={close}>
-                Close
-              </Button>
-            )}
+        {app.status === "pending" && (
+          <div className="flex flex-col gap-1.5">
+            <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted">Admin Notes (optional)</Text>
+            <Textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Add a note for this decision (optional)…"
+              rows={3}
+            />
           </div>
-        </Drawer.Footer>
+        )}
+
+        {app.admin_notes && (
+          <div className="rounded-xl bg-ui-bg-subtle border border-ui-border-base p-3">
+            <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted mb-1">Admin Notes</Text>
+            <Text className="text-sm text-ui-fg-base">{app.admin_notes}</Text>
+          </div>
+        )}
+
+        {actionError && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {actionError}
+          </div>
+        )}
+      </Drawer.Body>
+
+      <Drawer.Footer>
+        <div className="flex items-center gap-2 w-full">
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base px-3 py-2 text-xs font-medium text-ui-fg-base hover:bg-ui-bg-subtle transition-colors mr-auto"
+          >
+            <ArrowDownTray className="w-3.5 h-3.5" />
+            Download JSON
+          </button>
+
+          {app.status === "pending" ? (
+            <>
+              <Button variant="danger" isLoading={updateMutation.isPending} onClick={() => handleAction("rejected")}>
+                Reject
+              </Button>
+              <Button isLoading={updateMutation.isPending} onClick={() => handleAction("approved")}>
+                Approve
+              </Button>
+            </>
+          ) : (
+            <Button variant="secondary" onClick={close}>Close</Button>
+          )}
+        </div>
+      </Drawer.Footer>
+    </>
+  );
+}
+
+// ─── Legacy request drawer ────────────────────────────────────────────────────
+
+function LegacyDrawer({ row, close }: { row: LegacyRow; close: () => void }) {
+  const [note, setNote] = useState("");
+  const [actionError, setActionError] = useState("");
+
+  const reviewMutation = useReviewRequest({
+    onSuccess: () => close(),
+    onError: (err: Error) => setActionError(err.message || "Action failed"),
+  });
+
+  const data = (row.data ?? {}) as any;
+  const canReview = row._normalizedStatus === "pending";
+
+  const handleAction = (status: "accepted" | "rejected") => {
+    if (!row.id) return;
+    setActionError("");
+    reviewMutation.mutate({ id: row.id, payload: { status, reviewer_note: note || undefined } });
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([JSON.stringify({ id: row.id, status: row.status, created_at: row.created_at, data }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `seller-request-${row.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <>
+      <Drawer.Header>
+        <div className="flex items-center justify-between w-full">
+          <Drawer.Title>Seller Request — {row._name || row.id}</Drawer.Title>
+          <div className="flex items-center gap-2">
+            {statusBadge(row._normalizedStatus)}
+            <span className="text-[10px] text-ui-fg-muted border border-ui-border-base rounded px-1.5 py-0.5">legacy</span>
+          </div>
+        </div>
+      </Drawer.Header>
+
+      <Drawer.Body className="p-4 flex flex-col gap-4 overflow-y-auto">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          This is a legacy seller request submitted via the old registration system. Only basic information is available.
+        </div>
+
+        <div className="flex gap-4 text-xs text-ui-fg-muted flex-wrap">
+          <span>ID: <span className="font-mono text-ui-fg-subtle">{row.id}</span></span>
+          <span>Submitted: {formatDate(row.created_at ?? "")}</span>
+        </div>
+
+        <Section title="Applicant">
+          <Grid>
+            <Field label="Name" value={row._name} />
+            <Field label="Email" value={row._email} />
+          </Grid>
+        </Section>
+
+        {data?.seller && (
+          <Section title="Seller Info">
+            <Field label="Seller Name" value={data.seller?.name} />
+          </Section>
+        )}
+
+        {canReview && (
+          <div className="flex flex-col gap-1.5">
+            <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted">Reviewer Note (optional)</Text>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add a note…"
+              rows={3}
+            />
+          </div>
+        )}
+
+        {row.reviewer_note && (
+          <div className="rounded-xl bg-ui-bg-subtle border border-ui-border-base p-3">
+            <Text className="text-xs font-bold uppercase tracking-widest text-ui-fg-muted mb-1">Reviewer Note</Text>
+            <Text className="text-sm text-ui-fg-base">{row.reviewer_note}</Text>
+          </div>
+        )}
+
+        {actionError && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {actionError}
+          </div>
+        )}
+      </Drawer.Body>
+
+      <Drawer.Footer>
+        <div className="flex items-center gap-2 w-full">
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-1.5 rounded-lg border border-ui-border-base bg-ui-bg-base px-3 py-2 text-xs font-medium text-ui-fg-base hover:bg-ui-bg-subtle transition-colors mr-auto"
+          >
+            <ArrowDownTray className="w-3.5 h-3.5" />
+            Download JSON
+          </button>
+
+          {canReview ? (
+            <>
+              <Button variant="danger" isLoading={reviewMutation.isPending} onClick={() => handleAction("rejected")}>
+                Reject
+              </Button>
+              <Button isLoading={reviewMutation.isPending} onClick={() => handleAction("accepted")}>
+                Approve
+              </Button>
+            </>
+          ) : (
+            <Button variant="secondary" onClick={close}>Close</Button>
+          )}
+        </div>
+      </Drawer.Footer>
+    </>
+  );
+}
+
+// ─── Combined drawer ──────────────────────────────────────────────────────────
+
+export function RequestSellerDetail({ row, open, close }: Props) {
+  if (!row) return null;
+
+  return (
+    <Drawer open={open} onOpenChange={close}>
+      <Drawer.Content className="max-w-2xl">
+        {row._source === "new"
+          ? <NewAppDrawer row={row as NewAppRow} close={close} />
+          : <LegacyDrawer row={row as LegacyRow} close={close} />
+        }
       </Drawer.Content>
     </Drawer>
   );
