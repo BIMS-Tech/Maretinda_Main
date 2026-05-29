@@ -23,6 +23,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
       count: Number((countResult as any)[0]?.count ?? 0),
     })
   } catch (error) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Failed to list applications" })
+    const msg = error instanceof Error ? error.message : "Failed to list applications"
+    const isTableMissing = msg.includes('relation "seller_application" does not exist') || msg.includes("seller_application")
+    if (isTableMissing) {
+      res.status(500).json({ message: "seller_application table not found. Run: medusa db:migrate" })
+    } else {
+      res.status(500).json({ message: msg })
+    }
   }
 }

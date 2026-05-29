@@ -1,80 +1,78 @@
-import { Knex } from "knex"
+import { Migration } from "@mikro-orm/migrations"
 
-export async function up(knex: Knex): Promise<void> {
-  await knex.schema.createTable("seller_application", (t) => {
-    t.text("id").primary()
-    t.timestamp("submitted_at", { useTz: true }).notNullable().defaultTo(knex.fn.now())
+export class Migration1748400000000 extends Migration {
+  async up(): Promise<void> {
+    this.addSql(`
+      CREATE TABLE IF NOT EXISTS "seller_application" (
+        "id"                          text        NOT NULL,
+        "submitted_at"                timestamptz NOT NULL DEFAULT now(),
 
-    // Step 1 — Merchant contact
-    t.text("first_name").notNullable()
-    t.text("last_name").notNullable()
-    t.text("complete_address").notNullable()
-    t.text("mobile_number").notNullable()
-    t.text("email").notNullable()
-    t.text("designation").nullable()
-    t.date("target_go_live").nullable()
+        -- Merchant contact
+        "first_name"                  text        NOT NULL DEFAULT '',
+        "last_name"                   text        NOT NULL DEFAULT '',
+        "complete_address"            text        NOT NULL DEFAULT '',
+        "mobile_number"               text        NOT NULL DEFAULT '',
+        "email"                       text        NOT NULL DEFAULT '',
+        "designation"                 text        NULL,
+        "target_go_live"              text        NULL,
 
-    // Step 2 — Business info
-    t.text("business_name").notNullable()
-    t.text("business_address").notNullable()
-    t.text("business_landline").nullable()
-    t.text("business_mobile").nullable()
-    t.text("business_email").nullable()
-    t.text("business_tin").nullable()
-    t.text("form_of_organization").notNullable()   // Government|Transportation|Others|SoleProprietorship|Corporation|Partnership|Cooperative|Association
-    t.text("merchant_category").nullable()
-    t.text("business_activity").nullable()
+        -- Business info
+        "business_name"               text        NOT NULL DEFAULT '',
+        "business_address"            text        NOT NULL DEFAULT '',
+        "business_landline"           text        NULL,
+        "business_mobile"             text        NULL,
+        "business_email"              text        NULL,
+        "business_tin"                text        NULL,
+        "form_of_organization"        text        NOT NULL DEFAULT '',
+        "merchant_category"           text        NULL,
+        "business_activity"           text        NULL,
 
-    // Step 3 — Authorized signatory (Corp/Partnership/etc.)
-    t.text("signatory_first_name").nullable()
-    t.text("signatory_middle_name").nullable()
-    t.text("signatory_last_name").nullable()
-    t.text("signatory_email").nullable()
-    t.text("signatory_landline").nullable()
-    t.text("signatory_mobile").nullable()
+        -- Authorized signatory (conditional)
+        "signatory_first_name"        text        NULL,
+        "signatory_middle_name"       text        NULL,
+        "signatory_last_name"         text        NULL,
+        "signatory_email"             text        NULL,
+        "signatory_landline"          text        NULL,
+        "signatory_mobile"            text        NULL,
 
-    // Step 6 — GiyaPay config
-    t.text("merchant_trade_name").nullable()
-    t.text("charge_to").nullable()               // Merchant|Payor
-    t.text("gateway_account_type").nullable()    // Universal|Individual
-    t.text("pay_button_type").nullable()         // StandardGiyaPayButton|GatewayDirect
-    t.specificType("selected_gateways", "text[]").nullable()
+        -- Legacy gateway fields (kept for backwards compatibility)
+        "merchant_trade_name"         text        NULL,
+        "charge_to"                   text        NULL,
+        "gateway_account_type"        text        NULL,
+        "pay_button_type"             text        NULL,
+        "selected_gateways"           text[]      NULL,
+        "payment_links_feature"       boolean     NULL,
+        "editable_amount_feature"     boolean     NULL,
+        "minimum_amount_type"         text        NULL,
+        "minimum_amount_value"        text        NULL,
+        "estimated_monthly_hits"      text        NULL,
+        "estimated_amount_per_transaction" text   NULL,
+        "beneficiary_bank"            text        NULL,
+        "bank_address"                text        NULL,
+        "bank_account_name"           text        NULL,
+        "bank_account_number"         text        NULL,
+        "settlement_type"             text        NULL,
 
-    // Step 7 — Features
-    t.boolean("payment_links_feature").nullable()
-    t.boolean("editable_amount_feature").nullable()
-    t.text("minimum_amount_type").nullable()      // AmountDue|OtherAmount|NA
-    t.text("minimum_amount_value").nullable()
+        -- Branding & digital
+        "brand_colors"                text        NULL,
+        "digital_support"             text[]      NULL,
+        "has_marketing_budget"        boolean     NULL,
 
-    // Step 8 — Transactions
-    t.text("estimated_monthly_hits").nullable()
-    t.text("estimated_amount_per_transaction").nullable()
+        -- Document URLs (JSON object: { key: url })
+        "documents"                   jsonb       NULL,
 
-    // Step 9 — Bank details
-    t.text("beneficiary_bank").nullable()
-    t.text("bank_address").nullable()
-    t.text("bank_account_name").nullable()
-    t.text("bank_account_number").nullable()
-    t.text("settlement_type").nullable()          // Standard|OnDemand
+        -- Admin
+        "status"                      text        NOT NULL DEFAULT 'pending',
+        "admin_notes"                 text        NULL,
+        "seller_id"                   text        NULL,
+        "reviewed_at"                 timestamptz NULL,
 
-    // Step 10 — Branding
-    t.text("brand_colors").nullable()
+        CONSTRAINT "seller_application_pkey" PRIMARY KEY ("id")
+      );
+    `)
+  }
 
-    // Step 11 — Digital support
-    t.specificType("digital_support", "text[]").nullable()
-    t.boolean("has_marketing_budget").nullable()
-
-    // Document URLs (stored after GCS upload)
-    t.jsonb("documents").nullable()              // { board_resolution: url, ... }
-
-    // Status
-    t.text("status").notNullable().defaultTo("pending")   // pending|approved|rejected
-    t.text("admin_notes").nullable()
-    t.text("seller_id").nullable()               // linked after approval
-    t.timestamp("reviewed_at", { useTz: true }).nullable()
-  })
-}
-
-export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists("seller_application")
+  async down(): Promise<void> {
+    this.addSql(`DROP TABLE IF EXISTS "seller_application";`)
+  }
 }
