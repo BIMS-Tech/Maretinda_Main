@@ -38,6 +38,13 @@ export interface CheckoutResponse {
   billing_period: "monthly" | "yearly"
 }
 
+export interface ActivateResponse {
+  success: boolean
+  subscription: VendorSubscription
+  plan: SubscriptionPlan
+  already_activated?: boolean
+}
+
 const SUBSCRIPTION_KEY = ["vendor-subscription"] as const
 const PLANS_KEY = ["subscription-plans"] as const
 
@@ -66,6 +73,24 @@ export const useSubscriptionCheckout = () => {
   >({
     mutationFn: (payload) =>
       fetchQuery("/vendor/subscription/checkout", {
+        method: "POST",
+        body: payload,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY })
+    },
+  })
+}
+
+export const useActivateSubscription = () => {
+  const qc = useQueryClient()
+  return useMutation<
+    ActivateResponse,
+    Error,
+    { order_id: string; refno: string; nonce: string; timestamp: string; amount: string; signature: string }
+  >({
+    mutationFn: (payload) =>
+      fetchQuery("/vendor/subscription/activate", {
         method: "POST",
         body: payload,
       }),

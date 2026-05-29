@@ -6,8 +6,10 @@ import {
   useSubscriptionStatus,
   useSubscriptionPlans,
   useSubscriptionCheckout,
+  useActivateSubscription,
   type SubscriptionPlan,
   type CheckoutResponse,
+  type ActivateResponse,
 } from "../../hooks/api/subscription"
 
 // ---------------------------------------------------------------------------
@@ -62,6 +64,35 @@ function featureDisplay(value: unknown) {
   if (value === -1) return "Unlimited"
   if (typeof value === "string") return value.charAt(0).toUpperCase() + value.slice(1)
   return String(value)
+}
+
+// ---------------------------------------------------------------------------
+// Plan change type
+// ---------------------------------------------------------------------------
+type PlanChangeType = "subscribe" | "renew" | "upgrade" | "downgrade"
+
+function getPlanChangeType(plan: SubscriptionPlan, currentPlanName: string | null, plans: SubscriptionPlan[]): PlanChangeType {
+  if (!currentPlanName) return "subscribe"
+  if (plan.name === currentPlanName) return "renew"
+  const currentPlan = plans.find(p => p.name === currentPlanName)
+  if (!currentPlan) return "subscribe"
+  return plan.price > currentPlan.price ? "upgrade" : "downgrade"
+}
+
+function planChangeLabel(type: PlanChangeType, planName: string): string {
+  switch (type) {
+    case "subscribe": return `Get ${planName}`
+    case "renew": return "Renew Plan"
+    case "upgrade": return `Upgrade to ${planName}`
+    case "downgrade": return `Downgrade to ${planName}`
+  }
+}
+
+function planChangeBtnStyle(type: PlanChangeType, isCurrent: boolean): string {
+  if (isCurrent) return "bg-green-600 text-white hover:bg-green-700"
+  if (type === "upgrade") return "bg-indigo-600 text-white hover:bg-indigo-700"
+  if (type === "downgrade") return "border border-orange-500 text-orange-600 hover:bg-orange-50"
+  return "bg-indigo-600 text-white hover:bg-indigo-700"
 }
 
 // ---------------------------------------------------------------------------
@@ -149,37 +180,93 @@ function MethodModal({
 }
 
 // ---------------------------------------------------------------------------
+// Downgrade confirmation modal
+// ---------------------------------------------------------------------------
+function DowngradeModal({
+  planName,
+  currentPlanName,
+  onConfirm,
+  onCancel,
+}: {
+  planName: string
+  currentPlanName: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+      <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Confirm Downgrade</h3>
+            <p className="text-xs text-gray-500">{currentPlanName} → {planName}</p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 mb-5">
+          You are downgrading from <strong>{currentPlanName}</strong> to <strong>{planName}</strong>.
+          Your current subscription will be replaced immediately. Some features may no longer be available.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+          >
+            Yes, Downgrade
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Plan card
 // ---------------------------------------------------------------------------
 function PlanCard({
   plan,
   billing,
   currentPlanName,
+  allPlans,
   onSelect,
   loading,
 }: {
   plan: SubscriptionPlan
   billing: "monthly" | "yearly"
   currentPlanName: string | null
+  allPlans: SubscriptionPlan[]
   onSelect: (plan: SubscriptionPlan) => void
   loading: boolean
 }) {
   const isCurrent = plan.name === currentPlanName
   const isPopular = plan.name === "Boost"
+  const changeType = getPlanChangeType(plan, currentPlanName, allPlans)
   const price = billing === "yearly" ? (plan.yearly_price ?? plan.price * 10) : plan.price
   const yearlyMonthly = plan.yearly_price ? Math.round(plan.yearly_price / 12) : Math.round(plan.price * 10 / 12)
 
+  const borderClass = isCurrent
+    ? "border-green-500 ring-2 ring-green-400"
+    : changeType === "upgrade"
+    ? "border-indigo-400 ring-1 ring-indigo-300"
+    : changeType === "downgrade"
+    ? "border-orange-300"
+    : isPopular
+    ? "border-indigo-400 ring-1 ring-indigo-300"
+    : "border-gray-200"
+
   return (
-    <div
-      className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md ${
-        isCurrent
-          ? "border-green-500 ring-2 ring-green-400"
-          : isPopular
-          ? "border-indigo-400 ring-1 ring-indigo-300"
-          : "border-gray-200"
-      }`}
-    >
-      {isPopular && !isCurrent && (
+    <div className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition-shadow hover:shadow-md ${borderClass}`}>
+      {isPopular && !isCurrent && changeType !== "downgrade" && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="rounded-full bg-indigo-600 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
             Popular
@@ -190,6 +277,20 @@ function PlanCard({
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="rounded-full bg-green-600 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
             Current Plan
+          </span>
+        </div>
+      )}
+      {!isCurrent && changeType === "upgrade" && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="rounded-full bg-indigo-500 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+            Upgrade
+          </span>
+        </div>
+      )}
+      {!isCurrent && changeType === "downgrade" && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="rounded-full bg-orange-500 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+            Downgrade
           </span>
         </div>
       )}
@@ -227,15 +328,9 @@ function PlanCard({
       <button
         disabled={loading}
         onClick={() => onSelect(plan)}
-        className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-          isCurrent
-            ? "bg-green-600 text-white hover:bg-green-700"
-            : isPopular
-            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-            : "border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
-        } disabled:opacity-50`}
+        className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 ${planChangeBtnStyle(changeType, isCurrent)}`}
       >
-        {loading ? "Processing…" : isCurrent ? "Renew" : "Switch to " + plan.name}
+        {loading ? "Processing…" : planChangeLabel(changeType, plan.name)}
       </button>
     </div>
   )
@@ -258,12 +353,127 @@ function CountdownBox({ label, value }: { label: string; value: number }) {
 }
 
 // ---------------------------------------------------------------------------
+// Payment result banners
+// ---------------------------------------------------------------------------
+type PaymentState = "idle" | "verifying" | "success" | "error" | "cancelled"
+
+function PaymentResultBanner({
+  state,
+  result,
+  onDismiss,
+}: {
+  state: PaymentState
+  result: ActivateResponse | null
+  onDismiss: () => void
+}) {
+  if (state === "verifying") {
+    return (
+      <div className="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 flex items-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent flex-shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-indigo-800">Verifying your payment…</p>
+          <p className="text-xs text-indigo-600 mt-0.5">Please wait while we activate your subscription.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (state === "success" && result) {
+    const sub = result.subscription
+    const plan = result.plan
+    return (
+      <div className="rounded-2xl border border-green-300 bg-green-50 p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-base font-bold text-green-800">
+              {result.already_activated ? "Subscription Already Active" : "Subscription Activated!"}
+            </p>
+            <p className="text-sm text-green-700 mt-1">
+              Welcome to the <strong>{plan?.name || sub.plan_name}</strong> plan!
+              {sub.end_date ? ` Your subscription is active until ${formatDate(sub.end_date)}.` : ""}
+            </p>
+            {sub.payment_reference && (
+              <p className="text-xs text-green-600 mt-1 font-mono">
+                Payment ref: {sub.payment_reference}
+              </p>
+            )}
+          </div>
+          <button onClick={onDismiss} className="text-green-500 hover:text-green-700 ml-2 flex-shrink-0">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (state === "error") {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-base font-bold text-red-800">Payment Failed</p>
+            <p className="text-sm text-red-600 mt-1">
+              We could not process your payment. No charges were made. Please try again or contact support.
+            </p>
+          </div>
+          <button onClick={onDismiss} className="text-red-400 hover:text-red-600 ml-2 flex-shrink-0">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (state === "cancelled") {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-base font-bold text-gray-800">Payment Cancelled</p>
+            <p className="text-sm text-gray-600 mt-1">
+              Your payment was cancelled. No charges were made. Select a plan below to try again.
+            </p>
+          </div>
+          <button onClick={onDismiss} className="text-gray-400 hover:text-gray-600 ml-2 flex-shrink-0">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 export const SubscriptionPage = () => {
   const { data, isLoading, isError } = useSubscriptionStatus()
   const { data: plansData, isLoading: plansLoading } = useSubscriptionPlans()
   const checkout = useSubscriptionCheckout()
+  const activate = useActivateSubscription()
 
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly")
   const [methodModal, setMethodModal] = useState<{
@@ -272,19 +482,72 @@ export const SubscriptionPage = () => {
   const [paymentReady, setPaymentReady] = useState<{
     checkoutUrl: string; formData: Record<string, string>; selectedMethod: string
   } | null>(null)
+  const [downgradeModal, setDowngradeModal] = useState<SubscriptionPlan | null>(null)
+
+  const [paymentState, setPaymentState] = useState<PaymentState>("idle")
+  const [paymentResult, setPaymentResult] = useState<ActivateResponse | null>(null)
 
   const countdown = useCountdown(data?.subscription?.end_date)
 
-  // Check if we came back from a successful renewal
+  // On mount: detect GiyaPay callback params in URL
   useEffect(() => {
     if (typeof window === "undefined") return
+
+    const hash = window.location.hash
     const params = new URLSearchParams(window.location.search)
-    if (params.get("renewed") === "1") {
-      window.history.replaceState({}, "", window.location.pathname)
+
+    // Clean the URL immediately so refreshing doesn't re-trigger
+    window.history.replaceState({}, "", window.location.pathname)
+
+    if (hash === "#payment-error") {
+      setPaymentState("error")
+      return
     }
+
+    if (hash === "#payment-cancelled") {
+      setPaymentState("cancelled")
+      return
+    }
+
+    // Success callback: GiyaPay appends nonce, order_id, refno, timestamp, amount, signature
+    const signature = params.get("signature")
+    const order_id = params.get("order_id")
+    const refno = params.get("refno")
+    const nonce = params.get("nonce")
+    const timestamp = params.get("timestamp")
+    const amount = params.get("amount")
+
+    if (signature && order_id && String(order_id).startsWith("vrenew_") && refno && nonce && timestamp && amount) {
+      setPaymentState("verifying")
+      activate.mutate(
+        { order_id, refno, nonce, timestamp, amount, signature },
+        {
+          onSuccess: (result) => {
+            setPaymentResult(result)
+            setPaymentState("success")
+          },
+          onError: () => {
+            setPaymentState("error")
+          },
+        }
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    const plans = plansData?.plans || []
+    const changeType = getPlanChangeType(plan, data?.subscription?.plan_name ?? null, plans)
+
+    if (changeType === "downgrade") {
+      setDowngradeModal(plan)
+      return
+    }
+
+    await initiateCheckout(plan)
+  }
+
+  const initiateCheckout = async (plan: SubscriptionPlan) => {
     try {
       const result = await checkout.mutateAsync({ plan_name: plan.name, billing_period: billing })
       setMethodModal({ methods: result.enabled_methods, checkoutData: result })
@@ -338,14 +601,35 @@ export const SubscriptionPage = () => {
           onCancel={() => setPaymentReady(null)}
         />
       )}
+      {downgradeModal && (
+        <DowngradeModal
+          planName={downgradeModal.name}
+          currentPlanName={subscription?.plan_name || ""}
+          onConfirm={() => {
+            const plan = downgradeModal
+            setDowngradeModal(null)
+            initiateCheckout(plan)
+          }}
+          onCancel={() => setDowngradeModal(null)}
+        />
+      )}
 
-      <div className="flex flex-col gap-y-8">
+      <div className="flex flex-col gap-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Subscription</h1>
           <p className="mt-1 text-sm text-gray-500">
             Manage your Maretinda vendor subscription. Payments are processed via GiyaPay.
           </p>
         </div>
+
+        {/* Payment result banner */}
+        {paymentState !== "idle" && (
+          <PaymentResultBanner
+            state={paymentState}
+            result={paymentResult}
+            onDismiss={() => { setPaymentState("idle"); setPaymentResult(null) }}
+          />
+        )}
 
         {/* Current subscription card */}
         {has_subscription && subscription ? (
@@ -436,6 +720,24 @@ export const SubscriptionPage = () => {
             </div>
           </div>
 
+          {/* Plan change legend */}
+          {has_subscription && (
+            <div className="flex flex-wrap gap-3 mb-4 text-xs text-gray-500">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                Current Plan
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-indigo-500" />
+                Upgrade (activates immediately)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block w-2 h-2 rounded-full bg-orange-500" />
+                Downgrade (requires confirmation)
+              </span>
+            </div>
+          )}
+
           {plans.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {plans.map((plan) => (
@@ -444,6 +746,7 @@ export const SubscriptionPage = () => {
                   plan={plan}
                   billing={billing}
                   currentPlanName={has_subscription ? subscription?.plan_name ?? null : null}
+                  allPlans={plans}
                   onSelect={handleSelectPlan}
                   loading={checkout.isPending}
                 />

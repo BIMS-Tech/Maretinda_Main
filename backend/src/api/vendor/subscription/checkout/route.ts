@@ -104,10 +104,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const signatureString = `${config.merchantId}${amountCentavos}PHP${orderId}${timestamp}${nonce}${config.merchantSecret}`
     const signature = crypto.createHash("sha512").update(signatureString).digest("hex")
 
-    const storefrontUrl = (
-      process.env.STOREFRONT_URL ||
-      process.env.STORE_CORS?.split(",")[0] ||
-      "http://localhost:3000"
+    const vendorPanelUrl = (
+      process.env.VENDOR_PANEL_URL ||
+      process.env.VENDOR_CORS?.split(",")[0] ||
+      "http://localhost:7001"
     ).replace(/\/$/, "")
 
     const checkoutUrl = config.sandboxMode
@@ -123,9 +123,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       nonce,
       timestamp,
       signature,
-      success_callback: `${storefrontUrl}/giyapay/success`,
-      error_callback: `${storefrontUrl}/giyapay/error`,
-      cancel_callback: `${storefrontUrl}/giyapay/cancel`,
+      success_callback: `${vendorPanelUrl}/subscription`,
+      error_callback: `${vendorPanelUrl}/subscription#payment-error`,
+      cancel_callback: `${vendorPanelUrl}/subscription#payment-cancelled`,
     }
 
     res.status(200).json({
