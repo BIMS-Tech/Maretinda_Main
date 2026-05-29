@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd maretinda-website && npm install --include=dev && npm run build",
+  "outputDirectory": "maretinda-website/.next",
+  "installCommand": "echo 'skip'"
+}
