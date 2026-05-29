@@ -55,28 +55,23 @@ export interface SellerApplication {
 export const sellerApplicationsQueryKeys = queryKeysFactory("seller-applications");
 
 export const useSellerApplications = (params?: { status?: string; limit?: number; offset?: number }) => {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.limit !== undefined) qs.set("limit", String(params.limit));
+  if (params?.offset !== undefined) qs.set("offset", String(params.offset));
+  const qsStr = qs.toString();
+
   const { data, ...other } = useQuery({
     queryKey: sellerApplicationsQueryKeys.list(params),
-    queryFn: () =>
-      sdk.client.fetch<{ applications: SellerApplication[]; count: number }>(
-        "/admin/seller-applications",
-        { method: "GET", query: params as any }
-      ),
-  });
-  return { applications: data?.applications ?? [], count: data?.count ?? 0, ...other };
-};
-
-export const useSellerApplication = (id: string) => {
-  const { data, ...other } = useQuery({
-    queryKey: sellerApplicationsQueryKeys.detail(id),
-    queryFn: () =>
-      sdk.client.fetch<{ application: SellerApplication }>(
-        `/admin/seller-applications/${id}`,
+    queryFn: async () => {
+      const result = await sdk.client.fetch<{ applications: SellerApplication[]; count: number }>(
+        `/admin/seller-applications${qsStr ? `?${qsStr}` : ""}`,
         { method: "GET" }
-      ),
-    enabled: !!id,
+      );
+      return result as any;
+    },
   });
-  return { application: data?.application, ...other };
+  return { applications: (data as any)?.applications ?? [], count: (data as any)?.count ?? 0, ...other };
 };
 
 export const useUpdateSellerApplication = (
@@ -89,14 +84,15 @@ export const useUpdateSellerApplication = (
 ) => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body) =>
-      sdk.client.fetch<{ application: SellerApplication }>(
+    mutationFn: async (body) => {
+      const result = await sdk.client.fetch<{ application: SellerApplication }>(
         `/admin/seller-applications/${id}`,
-        { method: "PATCH", body }
-      ),
+        { method: "PATCH", body: body as any }
+      );
+      return result as any;
+    },
     onSuccess: (data, vars, ctx) => {
       qc.invalidateQueries({ queryKey: sellerApplicationsQueryKeys.lists() });
-      qc.invalidateQueries({ queryKey: sellerApplicationsQueryKeys.detail(id) });
       options?.onSuccess?.(data, vars, ctx);
     },
     ...options,

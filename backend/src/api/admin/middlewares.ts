@@ -22,6 +22,10 @@ export default defineMiddlewares({
       matcher: "/admin/tama*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
     },
+    {
+      matcher: "/admin/seller-applications*",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
+    },
   ],
 })
 

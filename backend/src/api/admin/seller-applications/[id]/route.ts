@@ -1,11 +1,11 @@
-import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
+import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 function getDb(req: any) {
   return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
 }
 
-export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
+export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {
     const db = getDb(req)
     const { id } = req.params
@@ -20,7 +20,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
   }
 }
 
-export async function PATCH(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
+export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {
     const db = getDb(req)
     const { id } = req.params
