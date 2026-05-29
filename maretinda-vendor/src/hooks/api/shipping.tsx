@@ -4,6 +4,14 @@ import { fetchQuery } from "../../lib/client"
 const SHIPPING_QUERY_KEY = "shipping"
 
 // Types
+interface CredentialFieldConfig {
+  type: 'text' | 'password' | 'select' | 'boolean'
+  required: boolean
+  description: string
+  credentialPath?: string
+  options?: string[]
+}
+
 interface VendorShippingProvider {
   providerId: string
   name: string
@@ -15,6 +23,14 @@ interface VendorShippingProvider {
   credentialsLastUsed?: string
   supportedMarkets: string[]
   capabilities: string[]
+  configTemplate?: Record<string, CredentialFieldConfig>
+  credentialLinks?: {
+    signupUrl?: string
+    dashboardUrl?: string
+    apiDocsUrl?: string
+    sandboxUrl?: string
+  }
+  setupInstructions?: string[]
   configuration?: any
   vendorSpecificCapabilities?: any
 }
@@ -75,6 +91,22 @@ export const useShippingProviders = () => {
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "VN", "ID"],
               capabilities: ["Real-time tracking", "Waybill generation", "Webhooks", "Standard & Express"],
+              configTemplate: {
+                client_id: { type: "text", required: true, description: "Client ID from Ninja Dashboard", credentialPath: "Settings > IT Settings" },
+                client_secret: { type: "password", required: true, description: "Client Key from Ninja Dashboard", credentialPath: "Settings > IT Settings" },
+              },
+              credentialLinks: {
+                signupUrl: "https://www.ninjavan.co/en-ph/business-registration",
+                dashboardUrl: "https://dashboard.ninjavan.co",
+                apiDocsUrl: "https://api-docs.ninjavan.co/en",
+              },
+              setupInstructions: [
+                "Register a Ninja Van Postpaid Pro account",
+                "Log in to your Ninja Dashboard (sandbox or production)",
+                "Go to Settings > IT Settings and click \"REGENERATE CLIENT ID & KEY\"",
+                "Copy the Client ID and Client Key into the fields below",
+                "Select your country and toggle sandbox mode on for testing",
+              ],
             },
             {
               providerId: "jnt",
@@ -86,6 +118,21 @@ export const useShippingProviders = () => {
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "VN", "ID"],
               capabilities: ["Tracking via AfterShip", "Status webhooks"],
+              configTemplate: {
+                aftership_api_key: { type: "password", required: true, description: "AfterShip API Key (for tracking)", credentialPath: "AfterShip Dashboard > Settings > API Keys" },
+              },
+              credentialLinks: {
+                signupUrl: "https://www.jtexpress.ph/index/signup.html",
+                dashboardUrl: "https://admin.aftership.com",
+                apiDocsUrl: "https://www.aftership.com/docs/tracking/2024-04/overview",
+              },
+              setupInstructions: [
+                "Register a J&T Express shipper account",
+                "Sign up for AfterShip (free tier available)",
+                "In AfterShip, go to Settings > API Keys and create a new key",
+                "Connect your J&T Express account in AfterShip Couriers",
+                "Paste the AfterShip API Key below",
+              ],
             },
             {
               providerId: "lalamove",
@@ -97,6 +144,49 @@ export const useShippingProviders = () => {
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "HK", "VN"],
               capabilities: ["Same-day delivery", "Real-time tracking", "Proof of delivery"],
+              configTemplate: {
+                api_key: { type: "text", required: true, description: "Lalamove API Key" },
+                api_secret: { type: "password", required: true, description: "Lalamove API Secret" },
+                market: { type: "select", required: true, description: "Your market", options: ["PH", "MY", "SG", "TH", "HK", "VN"] },
+              },
+              credentialLinks: {
+                signupUrl: "https://www.lalamove.com/en-ph/business",
+                dashboardUrl: "https://driver.lalamove.com",
+                apiDocsUrl: "https://developers.lalamove.com",
+              },
+              setupInstructions: [
+                "Register a Lalamove Business account",
+                "Request API access from your account manager",
+                "Obtain your API Key and Secret from the developer portal",
+                "Enter your credentials below",
+              ],
+            },
+            {
+              providerId: "flyingtigers",
+              name: "Flying Tigers Express",
+              type: "standard",
+              enabled: true,
+              hasVendorCredentials: false,
+              isEnabled: false,
+              isDefault: false,
+              supportedMarkets: ["PH"],
+              capabilities: ["Door-to-door delivery", "Cash on Delivery", "Real-time tracking", "Same-day & next-day"],
+              configTemplate: {
+                api_key: { type: "password", required: true, description: "API Key", credentialPath: "Flying Tigers Portal > My Account > API Settings" },
+                merchant_code: { type: "text", required: true, description: "Merchant / Shipper Code", credentialPath: "Flying Tigers Portal > My Account > Profile" },
+              },
+              credentialLinks: {
+                signupUrl: "https://www.flyingtigersexpress.com",
+                dashboardUrl: "https://www.flyingtigersexpress.com",
+                apiDocsUrl: "https://www.flyingtigersexpress.com",
+              },
+              setupInstructions: [
+                "Register a Flying Tigers Express shipper account",
+                "Log in to the Flying Tigers merchant portal",
+                "Go to My Account > API Settings to generate your API Key",
+                "Copy your Merchant Code from My Account > Profile",
+                "Paste both values below and save",
+              ],
             },
           ],
           vendorConfig: {

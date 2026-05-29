@@ -61,6 +61,14 @@ function ProviderIcon({ providerId, size = 'md' }: { providerId: string; size?: 
     )
   }
 
+  if (providerId === 'flyingtigers') {
+    return (
+      <div className={`${dim} flex items-center justify-center rounded bg-yellow-400 font-bold text-yellow-900 text-xs`}>
+        FT
+      </div>
+    )
+  }
+
   return <span className="text-3xl">📦</span>
 }
 
@@ -68,6 +76,7 @@ const TYPE_LABELS: Record<string, string> = {
   same_day: 'Same Day',
   express: 'Express',
   standard: 'Standard',
+  international: 'International',
 }
 
 // ── Provider Status badge ────────────────────────────────────────────────────
@@ -338,7 +347,7 @@ function ProviderDrawer({
 
                   {/* Provider-specific fields */}
                   {Object.entries(provider.configTemplate ?? {}).map(([key, cfg]: [string, any]) => (
-                    key !== 'country_code' && (
+                    key !== 'country_code' && key !== 'sandbox' && (
                       <CredentialField
                         key={key}
                         config={cfg}

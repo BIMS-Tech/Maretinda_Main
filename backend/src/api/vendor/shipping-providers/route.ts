@@ -63,7 +63,6 @@ const PROVIDERS = [
       api_key: { type: 'text', required: true, description: 'Lalamove API Key' },
       api_secret: { type: 'password', required: true, description: 'Lalamove API Secret' },
       market: { type: 'select', required: true, description: 'Your market', options: ['PH', 'MY', 'SG', 'TH', 'HK', 'VN'] },
-      sandbox: { type: 'boolean', required: false, description: 'Use sandbox environment' },
     },
     credentialLinks: {
       signupUrl: 'https://www.lalamove.com/en-ph/business',
@@ -75,6 +74,29 @@ const PROVIDERS = [
       'Request API access from your account manager',
       'Obtain your API Key and Secret from the developer portal',
       'Enter your credentials below',
+    ],
+  },
+  {
+    providerId: 'flyingtigers',
+    name: 'Flying Tigers Express',
+    type: 'standard',
+    supportedMarkets: ['PH'],
+    capabilities: ['Door-to-door delivery', 'Cash on Delivery', 'Real-time tracking', 'Same-day & next-day'],
+    configTemplate: {
+      api_key: { type: 'password', required: true, description: 'API Key', credentialPath: 'Flying Tigers Portal > My Account > API Settings' },
+      merchant_code: { type: 'text', required: true, description: 'Merchant / Shipper Code', credentialPath: 'Flying Tigers Portal > My Account > Profile' },
+    },
+    credentialLinks: {
+      signupUrl: 'https://www.flyingtigersexpress.com',
+      dashboardUrl: 'https://www.flyingtigersexpress.com',
+      apiDocsUrl: 'https://www.flyingtigersexpress.com',
+    },
+    setupInstructions: [
+      'Register a Flying Tigers Express shipper account',
+      'Log in to the Flying Tigers merchant portal',
+      'Go to My Account > API Settings to generate your API Key',
+      'Copy your Merchant Code from My Account > Profile',
+      'Paste both values below and save',
     ],
   },
 ]

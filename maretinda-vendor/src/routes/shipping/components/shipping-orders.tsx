@@ -61,6 +61,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   ninjavan: 'Ninja Van',
   jnt: 'J&T Express',
   lalamove: 'Lalamove',
+  flyingtigers: 'Flying Tigers Express',
 }
 
 const SERVICE_LEVELS = ['Standard', 'Express', 'Sameday', 'Nextday']
@@ -627,6 +628,7 @@ export const ShippingOrders = () => {
             <option value="ninjavan">Ninja Van</option>
             <option value="jnt">J&amp;T Express</option>
             <option value="lalamove">Lalamove</option>
+            <option value="flyingtigers">Flying Tigers Express</option>
           </select>
 
           {(statusFilter || providerFilter) && (
