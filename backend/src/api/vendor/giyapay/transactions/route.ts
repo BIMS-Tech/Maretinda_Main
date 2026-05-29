@@ -50,6 +50,9 @@ export async function GET(
       ? allTransactions.filter((t: any) => t.vendor_id === vendorId)
       : allTransactions
 
+    // Exclude subscription payments — they belong to the subscription history, not order transactions
+    filtered = filtered.filter((t: any) => !(t.order_id || '').startsWith('vrenew_'))
+
     // Gateway filter
     if (gateway) {
       filtered = filtered.filter((t: any) =>
