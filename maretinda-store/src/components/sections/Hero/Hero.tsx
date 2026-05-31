@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 type HeroProps = {
@@ -81,28 +82,56 @@ export const Hero = ({ buttons }: HeroProps) => {
 						</div>
 					</div>
 
-					{/* Right placeholder slot */}
-					<div className="hidden lg:flex absolute right-0 top-0 bottom-0 w-[44%] items-end justify-end p-6">
-						<div
-							className="relative w-full h-full rounded-xl overflow-hidden"
-							style={{
-								backgroundColor: '#D9C4A0',
-								backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
-							}}
-						>
-							<div className="absolute inset-0 flex items-end p-5">
-								<div className="bg-white/95 rounded-lg px-3.5 py-2.5 shadow-sm flex items-center gap-3">
-									<div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(67,44,99,0.10)' }}>
-										<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#432C63" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+					{/* Featured product panel */}
+					<div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[44%]">
+						{/* Product image */}
+						<div className="relative w-full h-full">
+							<Image
+								src="/images/featured-products/fashion.png"
+								alt="Filipiniana Sundress — featured fashion pick"
+								fill
+								className="object-contain object-bottom"
+								sizes="25vw"
+								priority
+							/>
+						</div>
+
+						{/* Sold-today chip */}
+						<div className="absolute top-5 left-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm">
+							<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+							<span className="text-[11px] font-semibold text-[#1a1a1a]">247 sold this week</span>
+						</div>
+
+						{/* FEATURED badge */}
+						<div className="absolute top-4 right-4 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>
+							Featured
+						</div>
+
+						{/* Product info card */}
+						<div className="absolute bottom-5 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md">
+							<div className="flex items-start justify-between gap-3">
+								<div className="min-w-0">
+									<div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: '#432C63' }}>Fashion · Summer Drop</div>
+									<div className="text-[13px] font-bold text-[#1a1a1a] mt-0.5 truncate">Filipiniana Sundress</div>
+									<div className="flex items-center gap-2 mt-1.5">
+										<span className="text-[15px] font-bold" style={{ color: '#432C63' }}>₱899</span>
+										<span className="text-[12px] text-[#aaa] line-through">₱1,299</span>
+										<span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: '#D94040' }}>−31%</span>
 									</div>
-									<div>
-										<div className="text-[11px] text-[#737373] uppercase tracking-wider" style={{ fontFamily: 'monospace' }}>Hero asset slot</div>
-										<div className="text-[12px] font-semibold text-[#1a1a1a]">1100 × 800 — product image</div>
+									<div className="flex items-center gap-1 mt-1">
+										{[1,2,3,4,5].map((s) => (
+											<svg key={s} width="10" height="10" viewBox="0 0 24 24" fill="#FFC533" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+										))}
+										<span className="text-[11px] text-[#888] ml-1">(248)</span>
 									</div>
 								</div>
-							</div>
-							<div className="absolute top-4 right-4 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>
-								Featured
+								<Link
+									href="/categories"
+									className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white mt-1 transition-opacity hover:opacity-80"
+									style={{ backgroundColor: '#432C63' }}
+								>
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+								</Link>
 							</div>
 						</div>
 					</div>
