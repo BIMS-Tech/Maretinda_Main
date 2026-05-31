@@ -71,6 +71,7 @@ export const AlgoliaProductsListing = ({
 		<InstantSearchNext indexName="products" searchClient={client}>
 			<Configure filters={filters} query={query} />
 			<ProductsListing
+				category_id={category_id}
 				currency_code={currency_code}
 				locale={locale}
 				user={user}
@@ -83,11 +84,13 @@ export const AlgoliaProductsListing = ({
 const ProductsListing = ({
 	locale,
 	currency_code,
+	category_id,
 	user,
 	wishlist,
 }: {
 	locale?: string;
 	currency_code?: string;
+	category_id?: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[] | [];
 }) => {
@@ -109,7 +112,9 @@ const ProductsListing = ({
 	useEffect(() => {
 		listProducts({
 			countryCode: locale,
+			category_id,
 			queryParams: {
+				limit: 500,
 				fields: '*variants.calculated_price,+variants.inventory_quantity,*seller.reviews,+seller.name,+seller.photo,-thumbnail,-images,-type,-tags,-variants.options,-options,-collection,-collection_id',
 			},
 		}).then(({ response }) => {
@@ -122,7 +127,7 @@ const ProductsListing = ({
 				}),
 			);
 		});
-	}, [locale]);
+	}, [locale, category_id]);
 
 	useEffect(() => {
 		if (isFilterModalOpen) {
