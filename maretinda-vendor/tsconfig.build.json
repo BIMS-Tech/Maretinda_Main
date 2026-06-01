@@ -2,7 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noImplicitAny": false,
-    "composite": true
+    "composite": true,
+    "paths": {
+      "@hooks/*": ["./src/hooks/*"]
+    }
   },
   "exclude": ["**/*.spec.ts", "**/*.spec.tsx"]
 }
