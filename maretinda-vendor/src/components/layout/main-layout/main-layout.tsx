@@ -31,8 +31,8 @@ import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { StripeIcon } from "../../../assets/icons/Stripe"
 import { ImageAvatar } from "../../common/image-avatar"
-import { useUnreads } from "@talkjs/react"
 import { useSubscriptionStatus } from "../../../hooks/api/subscription"
+import { useChatConversations } from "../../../hooks/api/chat"
 
 export const MainLayout = () => {
   const { data, isLoading } = useSubscriptionStatus()
@@ -123,7 +123,8 @@ const Header = () => {
 const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation()
 
-  const unreadMessages = useUnreads()
+  const { data: chatData } = useChatConversations()
+  const unreadCount = chatData?.unread ?? 0
 
   return [
     {
@@ -218,7 +219,7 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
     },
     {
       icon: <ChatBubbleLeftRight />,
-      label: `Messages ${unreadMessages?.length && unreadMessages?.length > 0 ? `(${unreadMessages?.length})` : ""}`,
+      label: `Messages${unreadCount > 0 ? ` (${unreadCount})` : ""}`,
       to: "/messages",
     },
     {
