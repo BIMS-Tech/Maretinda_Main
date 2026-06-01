@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 
 const BACKEND = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
+const PUB_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? ''
 
 // GET /api/chat/stream  → proxy SSE from /store/chat/stream
 export async function GET() {
@@ -12,7 +13,10 @@ export async function GET() {
   }
 
   const upstream = await fetch(`${BACKEND}/store/chat/stream`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-publishable-api-key': PUB_KEY,
+    },
     cache: 'no-store',
   })
 
