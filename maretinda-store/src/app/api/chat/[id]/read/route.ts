@@ -8,11 +8,12 @@ async function getToken() {
   return jar.get('_medusa_jwt')?.value
 }
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const token = await getToken()
   if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-  const res = await fetch(`${BACKEND}/store/chat/${params.id}/read`, {
+  const res = await fetch(`${BACKEND}/store/chat/${id}/read`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
