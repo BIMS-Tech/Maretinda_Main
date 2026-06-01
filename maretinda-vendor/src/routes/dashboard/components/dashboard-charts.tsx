@@ -28,9 +28,8 @@ import {
   ShoppingBag,
   TriangleRightMini,
 } from "@medusajs/icons"
-import { useUnreads } from "@talkjs/react"
-
 import { useStatistics, useOrders, useProducts } from "../../../hooks/api"
+import { useChatConversations } from "../../../hooks/api/chat"
 import { useReviews } from "../../../hooks/api/review"
 import { usePayouts } from "../../../hooks/api/payouts"
 import { Calendar } from "../../../components/common/calendar/calendar"
@@ -176,7 +175,8 @@ export const DashboardCharts = ({
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeLines, setActiveLines] = useState(["orders", "customers"])
-  const unreadMessages = useUnreads()
+  const { data: chatData } = useChatConversations()
+  const unreadMessages = { length: chatData?.unread ?? 0 }
 
   const from = (searchParams.get("from") ||
     format(addDays(new Date(), -7), "yyyy-MM-dd")) as unknown as Date

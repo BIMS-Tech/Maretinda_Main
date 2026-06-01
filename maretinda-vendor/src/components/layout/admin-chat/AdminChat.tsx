@@ -1,45 +1,14 @@
 import { ChatBubble } from "@medusajs/icons"
 import { Drawer, Heading, IconButton } from "@medusajs/ui"
-import { Chatbox } from "@talkjs/react"
-import { useCallback, useState } from "react"
-import { useMe } from "../../../hooks/api"
-import Talk from "talkjs"
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export const AdminChat = () => {
   const [open, setOpen] = useState(false)
-
-  const { seller, isPending } = useMe()
-
-  if (isPending)
-    return <div className="flex justify-center items-center h-screen" />
-
-  const handleOnOpen = (shouldOpen: boolean) => {
-    if (shouldOpen) {
-      setOpen(true)
-    } else {
-      setOpen(false)
-    }
-  }
-
-  const syncConversation = useCallback((session: any) => {
-    const conversation = session.getOrCreateConversation(
-      `admin-vendor-${seller?.id}`
-    )
-
-    const other = new Talk.User({
-      id: "admin",
-      name: "Admin",
-      welcomeMessage: "Hey, how can I help?",
-    })
-
-    conversation.setParticipant(other)
-    conversation.setParticipant(session.me)
-
-    return conversation
-  }, [])
+  const navigate = useNavigate()
 
   return (
-    <Drawer open={open} onOpenChange={handleOnOpen}>
+    <Drawer open={open} onOpenChange={setOpen}>
       <Drawer.Trigger asChild>
         <IconButton
           variant="transparent"
@@ -51,14 +20,19 @@ export const AdminChat = () => {
       <Drawer.Content>
         <Drawer.Header>
           <Drawer.Title asChild>
-            <Heading>Chat with admin</Heading>
+            <Heading>Messages</Heading>
           </Drawer.Title>
         </Drawer.Header>
-        <Drawer.Body className="overflow-y-auto px-4">
-          <Chatbox
-            syncConversation={syncConversation}
-            style={{ width: "100%", height: "100%" }}
-          />
+        <Drawer.Body className="flex flex-col items-center justify-center gap-3 px-4 text-center">
+          <p className="text-ui-fg-subtle text-sm">
+            Use the Messages page to chat with customers.
+          </p>
+          <button
+            className="text-ui-fg-interactive text-sm underline"
+            onClick={() => { setOpen(false); navigate("/messages") }}
+          >
+            Go to Messages →
+          </button>
         </Drawer.Body>
       </Drawer.Content>
     </Drawer>

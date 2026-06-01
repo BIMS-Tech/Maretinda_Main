@@ -3,6 +3,7 @@
   "compilerOptions": {
     "noImplicitAny": false,
     "composite": true,
+    "baseUrl": ".",
     "paths": {
       "@hooks/*": ["./src/hooks/*"]
     }
