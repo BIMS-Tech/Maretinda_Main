@@ -18,17 +18,22 @@ function authHeaders(token: string) {
 
 // POST /api/chat/:id/message  → POST /store/chat/:id/message
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const token = await getToken()
-  if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
+  try {
+    const { id } = await params
+    const token = await getToken()
+    if (!token) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json()
-  const res = await fetch(`${BACKEND}/store/chat/${id}/message`, {
-    method: 'POST',
-    headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    cache: 'no-store',
-  })
-  const data = await res.json()
-  return NextResponse.json(data, { status: res.status })
+    const body = await req.json()
+    const res = await fetch(`${BACKEND}/store/chat/${id}/message`, {
+      method: 'POST',
+      headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      cache: 'no-store',
+    })
+    const data = await res.json().catch(() => ({ message: 'Bad response from backend' }))
+    return NextResponse.json(data, { status: res.status })
+  } catch (err: any) {
+    console.error('[/api/chat/[id]/message POST]', err?.message)
+    return NextResponse.json({ message: 'Chat service unavailable' }, { status: 503 })
+  }
 }

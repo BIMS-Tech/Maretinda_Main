@@ -84,24 +84,35 @@ export class ChatService {
   }): Promise<{ conversations: ChatConversation[]; count: number }> {
     const { limit = 30, offset = 0, is_admin } = filters
 
-    let query = this.knex("chat_conversation")
-      .orderBy("last_message_at", "desc")
-      .orderByRaw("created_at desc")
+    try {
+      let query = this.knex("chat_conversation")
+        .orderBy("last_message_at", "desc")
+        .orderByRaw("created_at desc")
 
-    if (!is_admin) {
-      if (filters.vendor_id) query = query.where("vendor_id", filters.vendor_id)
-      if (filters.customer_id) query = query.where("customer_id", filters.customer_id)
+      if (!is_admin) {
+        if (filters.vendor_id) query = query.where("vendor_id", filters.vendor_id)
+        if (filters.customer_id) query = query.where("customer_id", filters.customer_id)
+      }
+
+      const countResult = await query.clone().count("id as count")
+      const rows = await query.limit(limit).offset(offset)
+
+      return { conversations: rows, count: Number(countResult[0]?.count ?? 0) }
+    } catch (err: any) {
+      // Tables not yet migrated — return empty rather than 500
+      if (err?.code === "42P01") return { conversations: [], count: 0 }
+      throw err
     }
-
-    const countResult = await query.clone().count("id as count")
-    const rows = await query.limit(limit).offset(offset)
-
-    return { conversations: rows, count: Number(countResult[0]?.count ?? 0) }
   }
 
   async getConversation(id: string): Promise<ChatConversation | null> {
-    const row = await this.knex("chat_conversation").where("id", id).first()
-    return row || null
+    try {
+      const row = await this.knex("chat_conversation").where("id", id).first()
+      return row || null
+    } catch (err: any) {
+      if (err?.code === "42P01") return null
+      throw err
+    }
   }
 
   async getOrCreateConversation(
@@ -130,7 +141,6 @@ export class ChatService {
       })
       .returning("*")
 
-    // Notify vendor of new conversation
     this.pushEvent(vendorId, "new_conversation", row)
     this.pushEvent("__admin__", "new_conversation", row)
 
@@ -175,6 +185,7 @@ export class ChatService {
     limit = 50,
     offset = 0
   ): Promise<{ messages: ChatMessage[]; count: number }> {
+    try {
     const countResult = await this.knex("chat_message")
       .where("conversation_id", conversationId)
       .count("id as count")
@@ -186,6 +197,10 @@ export class ChatService {
       .offset(offset)
 
     return { messages: rows, count: Number(countResult[0]?.count ?? 0) }
+    } catch (err: any) {
+      if (err?.code === "42P01") return { messages: [], count: 0 }
+      throw err
+    }
   }
 
   async sendMessage(params: {
