@@ -1,14 +1,23 @@
-'use client';
+'use client'
 
-import { useUnreads } from '@talkjs/react';
+import { useEffect, useState } from 'react'
 
-import { Badge } from '@/components/atoms';
-import { MessageIcon2 } from '@/icons';
+import { Badge } from '@/components/atoms'
+import { MessageIcon2 } from '@/icons'
 
-import LocalizedClientLink from '../LocalizedLink/LocalizedLink';
+import LocalizedClientLink from '../LocalizedLink/LocalizedLink'
 
 export const MessageButton = () => {
-	const unreads = useUnreads();
+	const [unread, setUnread] = useState(0)
+
+	useEffect(() => {
+		fetch('/api/chat')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => {
+				if (data?.unread) setUnread(Number(data.unread))
+			})
+			.catch(() => {})
+	}, [])
 
 	return (
 		<LocalizedClientLink
@@ -16,11 +25,9 @@ export const MessageButton = () => {
 			href="/user/messages"
 		>
 			<MessageIcon2 size={20} />
-			{Boolean(unreads?.length) && (
-				<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">
-					{unreads?.length}
-				</Badge>
+			{unread > 0 && (
+				<Badge className="absolute -top-2 -right-2 w-4 h-4 p-0">{unread}</Badge>
 			)}
 		</LocalizedClientLink>
-	);
-};
+	)
+}

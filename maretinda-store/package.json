@@ -25,7 +25,6 @@
     "@medusajs/ui": "^4.0.23",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.1.0",
-    "@talkjs/react": "^0.1.11",
     "@types/js-cookie": "^3.0.6",
     "algoliasearch": "^5.40.0",
     "clsx": "^2.1.1",
@@ -48,7 +47,6 @@
     "react-slick": "0.30.3",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.6.0",
-    "talkjs": "^0.37.0",
     "uuid": "^11.0.5",
     "zod": "^3.24.1"
   },

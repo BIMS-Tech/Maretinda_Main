@@ -1,8 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useUnreads } from '@talkjs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { LogoutButton } from '@/components/atoms';
 import { Dropdown } from '@/components/molecules';
@@ -34,7 +33,15 @@ export const UserDropdown = ({
 	const [isLoginClicked, setIsLoginClicked] = useState(false);
 	const [isRegisterClicked, setIsRegisterClicked] = useState(false);
 
-	const unreads = useUnreads();
+	const [unreadCount, setUnreadCount] = useState(0)
+
+	useEffect(() => {
+		if (!user) return
+		fetch('/api/chat')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => { if (data?.unread) setUnreadCount(Number(data.unread)) })
+			.catch(() => {})
+	}, [user])
 
 	return (
 		<div
@@ -81,12 +88,12 @@ export const UserDropdown = ({
 									className="flex items-center justify-between px-4 py-2 text-[13.5px] text-[#1B1B1B] hover:bg-[#FAF8F5] hover:text-[#432C63] transition-colors"
 								>
 									{s.messages}
-									{Boolean(unreads?.length) && (
+									{unreadCount > 0 && (
 										<span
 											className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
 											style={{ backgroundColor: '#432C63' }}
 										>
-											{unreads?.length}
+											{unreadCount}
 										</span>
 									)}
 								</LocalizedClientLink>

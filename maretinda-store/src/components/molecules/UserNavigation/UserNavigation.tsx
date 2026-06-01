@@ -1,7 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useUnreads } from '@talkjs/react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 import {
@@ -72,8 +72,16 @@ export const UserNavigation = ({
 }: {
 	user: HttpTypes.StoreCustomer | null;
 }) => {
-	const unreads = useUnreads();
-	const path = usePathname();
+	const [unreadCount, setUnreadCount] = useState(0)
+	const path = usePathname()
+
+	useEffect(() => {
+		if (!user) return
+		fetch('/api/chat')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => { if (data?.unread) setUnreadCount(Number(data.unread)) })
+			.catch(() => {})
+	}, [user])
 	const targetSegment = '/ph';
 
 	const phIndex = path.indexOf(targetSegment);
@@ -112,9 +120,9 @@ export const UserNavigation = ({
 				>
 					{item.icon}
 					{item.label}
-					{item.label === 'Messages' && Boolean(unreads?.length) && (
+					{item.label === 'Messages' && unreadCount > 0 && (
 						<Badge className="absolute top-3 left-24 w-4 h-4 p-0">
-							{unreads?.length}
+							{unreadCount}
 						</Badge>
 					)}
 				</NavigationItem>

@@ -11,5 +11,9 @@ export default defineMiddlewares({
         authenticate("customer", "bearer", { allowUnregistered: true }),
       ],
     },
+    {
+      matcher: "/store/chat*",
+      middlewares: [authenticate("customer", "bearer", { allowUnregistered: false })],
+    },
   ],
 })
