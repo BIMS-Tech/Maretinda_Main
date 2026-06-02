@@ -119,10 +119,17 @@ export class ChatService {
         if (filters.customer_id) base = base.where("customer_id", filters.customer_id)
       }
 
-      const countResult = await base.clone().count("id as count")
+      const countResult = await base.clone().count("chat_conversation.id as count")
       const rows = await base.clone()
-        .orderByRaw("last_message_at desc nulls last")
-        .orderBy("created_at", "desc")
+        .select(
+          "chat_conversation.*",
+          this.knex.raw(`COALESCE(s.name, 'Vendor') as vendor_name`),
+          this.knex.raw(`COALESCE(NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), c.email, 'Customer') as customer_name`)
+        )
+        .leftJoin("seller as s", "s.id", "chat_conversation.vendor_id")
+        .leftJoin("customer as c", "c.id", "chat_conversation.customer_id")
+        .orderByRaw("chat_conversation.last_message_at desc nulls last")
+        .orderBy("chat_conversation.created_at", "desc")
         .limit(limit)
         .offset(offset)
 

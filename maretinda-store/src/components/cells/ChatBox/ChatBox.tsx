@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { MessageIcon } from '@/icons'
 
+const EMOJIS = [
+	'😊','😂','❤️','👍','🙏','😍','🎉','😭','🔥','✨',
+	'😅','🤔','👀','💯','🥰','😎','🤝','💪','😢','🙌',
+	'👋','😁','🤣','💙','✅','⭐','🎁','🌟','💬','📦',
+	'🏷️','🛒','💰','📸','🚀','⚡','🌈','💡','🎯','🤩',
+]
+
 interface ChatMessage {
 	id: string
 	conversation_id: string
@@ -67,7 +74,9 @@ export function ChatBox({
 	const [sending, setSending] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
+	const [showEmoji, setShowEmoji] = useState(false)
 	const bottomRef = useRef<HTMLDivElement>(null)
+	const inputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
 		chatFetch<{ conversation: ChatConversation }>('/api/chat', {
@@ -225,31 +234,59 @@ export function ChatBox({
 
 			{/* ── Input ──────────────────────────────────────────── */}
 			{conv?.status !== 'closed' ? (
-				<div className="bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-3 shrink-0">
-					<input
-						className="flex-1 bg-[#f7f5fa] border border-transparent rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-purple-300 focus:bg-white transition-all placeholder-gray-400"
-						placeholder={`Message ${sellerName}…`}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && !e.shiftKey) {
-								e.preventDefault()
-								handleSend()
-							}
-						}}
-					/>
-					<button
-						onClick={handleSend}
-						disabled={sending || !input.trim()}
-						className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all shrink-0 active:scale-95 disabled:opacity-40"
-						style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
-					>
-						{sending ? (
-							<div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-						) : (
-							<SendIcon />
-						)}
-					</button>
+				<div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0 relative">
+					{showEmoji && (
+						<div className="absolute bottom-16 left-4 bg-white border border-gray-200 rounded-xl shadow-lg p-3 z-20 w-64">
+							<div className="grid grid-cols-10 gap-1">
+								{EMOJIS.map((e) => (
+									<button
+										key={e}
+										type="button"
+										onClick={() => {
+											setInput((prev) => prev + e)
+											setShowEmoji(false)
+											inputRef.current?.focus()
+										}}
+										className="text-lg hover:bg-gray-100 rounded p-0.5 transition-colors leading-none"
+									>
+										{e}
+									</button>
+								))}
+							</div>
+						</div>
+					)}
+					<div className="flex items-center gap-2">
+						<button
+							type="button"
+							onClick={() => setShowEmoji((v) => !v)}
+							className="text-gray-400 hover:text-[#5c3882] transition-colors text-lg leading-none shrink-0"
+						>
+							😊
+						</button>
+						<input
+							ref={inputRef}
+							className="flex-1 bg-[#f7f5fa] border border-transparent rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-purple-300 focus:bg-white transition-all placeholder-gray-400"
+							placeholder={`Message ${sellerName}…`}
+							value={input}
+							onChange={(e) => setInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+								if (e.key === 'Escape') setShowEmoji(false)
+							}}
+						/>
+						<button
+							onClick={handleSend}
+							disabled={sending || !input.trim()}
+							className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all shrink-0 active:scale-95 disabled:opacity-40"
+							style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
+						>
+							{sending ? (
+								<div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+							) : (
+								<SendIcon />
+							)}
+						</button>
+					</div>
 				</div>
 			) : (
 				<div className="bg-gray-50 border-t border-gray-100 px-4 py-3 text-center shrink-0">

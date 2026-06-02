@@ -14,6 +14,8 @@ interface ChatConversation {
 	last_message_at: string | null
 	unread_customer: number
 	created_at: string
+	vendor_name?: string
+	customer_name?: string
 }
 
 interface ChatMessage {
@@ -56,41 +58,92 @@ function formatTime(iso: string | null): string {
 
 function convLabel(conv: ChatConversation): string {
 	if (conv.type === 'customer_admin') return 'Support Team'
-	if (conv.type === 'vendor_customer') return conv.subject || 'Vendor'
-	return conv.subject || 'Conversation'
+	return conv.vendor_name || conv.subject || 'Vendor'
 }
 
-function convInitial(conv: ChatConversation): string {
-	if (conv.type === 'customer_admin') return 'S'
-	return 'V'
+function initials(name: string): string {
+	return name
+		.split(' ')
+		.slice(0, 2)
+		.map((w) => w.charAt(0).toUpperCase())
+		.join('') || '?'
+}
+
+// ─── Emoji Picker ─────────────────────────────────────────────────────────────
+
+const EMOJIS = [
+	'😊','😂','❤️','👍','🙏','😍','🎉','😭','🔥','✨',
+	'😅','🤔','👀','💯','🥰','😎','🤝','💪','😢','🙌',
+	'👋','😁','🤣','💙','✅','⭐','🎁','🌟','💬','📦',
+	'🏷️','🛒','💰','📸','🚀','⚡','🌈','💡','🎯','🤩',
+]
+
+function EmojiPicker({ onSelect }: { onSelect: (e: string) => void }) {
+	return (
+		<div className="absolute bottom-12 left-0 bg-white border border-gray-200 rounded-xl shadow-lg p-3 z-20 w-64">
+			<div className="grid grid-cols-10 gap-1">
+				{EMOJIS.map((e) => (
+					<button
+						key={e}
+						onClick={() => onSelect(e)}
+						className="text-lg hover:bg-gray-100 rounded p-0.5 transition-colors leading-none"
+						type="button"
+					>
+						{e}
+					</button>
+				))}
+			</div>
+		</div>
+	)
+}
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+
+function Avatar({ name, role }: { name: string; role: 'vendor' | 'customer' | 'admin' }) {
+	const bg =
+		role === 'admin'
+			? 'bg-orange-500'
+			: role === 'vendor'
+			? 'bg-[#5c3882]'
+			: 'bg-gray-700'
+	return (
+		<div className={`w-7 h-7 rounded-full ${bg} flex items-center justify-center shrink-0`}>
+			{role === 'admin' ? (
+				<svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+					<path d="M10 2a8 8 0 100 16A8 8 0 0010 2zm0 14a6 6 0 110-12 6 6 0 010 12zm0-9a1 1 0 00-1 1v3a1 1 0 002 0V8a1 1 0 00-1-1zm0 6a1 1 0 100 2 1 1 0 000-2z" />
+				</svg>
+			) : (
+				<span className="text-[10px] font-bold text-white">{initials(name)}</span>
+			)}
+		</div>
+	)
 }
 
 // ─── ConvItem ─────────────────────────────────────────────────────────────────
 
-function ConvItem({
-	conv,
-	selected,
-	onClick,
-}: {
-	conv: ChatConversation
-	selected: boolean
-	onClick: () => void
-}) {
+function ConvItem({ conv, selected, onClick }: { conv: ChatConversation; selected: boolean; onClick: () => void }) {
+	const label = convLabel(conv)
+	const ini = initials(label)
+	const bgColor = conv.type === 'customer_admin' ? 'bg-orange-500' : 'bg-[#5c3882]'
+
 	return (
 		<button
 			onClick={onClick}
 			className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-start gap-3 ${
-				selected ? 'bg-gray-50' : 'bg-white'
+				selected ? 'bg-purple-50' : 'bg-white'
 			}`}
 		>
-			<div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0 mt-0.5">
-				<span className="text-xs font-bold text-gray-600">{convInitial(conv)}</span>
+			<div className={`w-9 h-9 rounded-full ${bgColor} flex items-center justify-center shrink-0 mt-0.5`}>
+				<span className="text-xs font-bold text-white">{ini}</span>
 			</div>
 			<div className="flex-1 min-w-0">
 				<div className="flex items-center justify-between gap-1">
-					<span className="text-gray-900 text-sm font-medium truncate">{convLabel(conv)}</span>
+					<span className="text-gray-900 text-sm font-medium truncate">{label}</span>
 					<span className="text-gray-400 text-xs shrink-0">{formatTime(conv.last_message_at)}</span>
 				</div>
+				{conv.subject && (
+					<p className="text-gray-400 text-xs truncate mt-0.5">{conv.subject}</p>
+				)}
 				{conv.status === 'closed' && (
 					<span className="mt-1 inline-block text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
 						Closed
@@ -113,25 +166,29 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 	const isAdmin = msg.sender_role === 'admin'
 
 	return (
-		<div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}>
-			<div className={`max-w-[75%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+		<div className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'} mb-3`}>
+			{!isOwn && (
+				<Avatar name={isAdmin ? 'Support' : msg.sender_name} role={msg.sender_role} />
+			)}
+			<div className={`max-w-[72%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
 				{!isOwn && (
-					<span className={`text-xs mb-1 font-medium ${isAdmin ? 'text-orange-600' : 'text-gray-500'}`}>
+					<span className={`text-[11px] mb-1 font-medium ${isAdmin ? 'text-orange-500' : 'text-[#5c3882]'}`}>
 						{isAdmin ? 'Support Team' : msg.sender_name}
 					</span>
 				)}
 				<div
-					className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${
+					className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words shadow-sm ${
 						isOwn
-							? 'bg-black text-white rounded-tr-sm'
+							? 'text-white rounded-br-sm'
 							: isAdmin
-							? 'bg-orange-50 text-orange-900 border border-orange-200 rounded-tl-sm'
-							: 'bg-gray-100 text-gray-900 rounded-tl-sm'
+							? 'bg-orange-50 text-orange-900 border border-orange-200 rounded-bl-sm'
+							: 'bg-white text-gray-900 border border-gray-100 rounded-bl-sm'
 					}`}
+					style={isOwn ? { background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' } : undefined}
 				>
 					{msg.body}
 				</div>
-				<span className="text-gray-400 text-xs mt-1">{formatTime(msg.created_at)}</span>
+				<span className="text-gray-400 text-[11px] mt-1">{formatTime(msg.created_at)}</span>
 			</div>
 		</div>
 	)
@@ -139,18 +196,15 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
 
-function ChatPanel({
-	conv,
-	onNewMessage,
-}: {
-	conv: ChatConversation
-	onNewMessage: (msg: ChatMessage) => void
-}) {
+function ChatPanel({ conv, onNewMessage }: { conv: ChatConversation; onNewMessage: () => void }) {
 	const [messages, setMessages] = useState<ChatMessage[]>([])
 	const [loading, setLoading] = useState(true)
 	const [input, setInput] = useState('')
 	const [sending, setSending] = useState(false)
+	const [showEmoji, setShowEmoji] = useState(false)
 	const bottomRef = useRef<HTMLDivElement>(null)
+	const inputRef = useRef<HTMLInputElement>(null)
+	const label = convLabel(conv)
 
 	useEffect(() => {
 		setLoading(true)
@@ -162,8 +216,6 @@ function ChatPanel({
 				setLoading(false)
 			})
 			.catch(() => setLoading(false))
-
-		// Mark conversation as read
 		fetch(`/api/chat/${conv.id}/read`, { method: 'POST' }).catch(() => {})
 	}, [conv.id])
 
@@ -178,7 +230,6 @@ function ChatPanel({
 		})
 	}, [])
 
-	// Expose handler so parent SSE can push messages in
 	useEffect(() => {
 		;(window as any).__chatPanelPush = handleIncomingMessage
 		return () => { delete (window as any).__chatPanelPush }
@@ -189,6 +240,7 @@ function ChatPanel({
 		if (!trimmed || sending) return
 		setSending(true)
 		setInput('')
+		setShowEmoji(false)
 		try {
 			const data = await chatFetch<{ message: ChatMessage }>(`/api/chat/${conv.id}/message`, {
 				method: 'POST',
@@ -198,7 +250,7 @@ function ChatPanel({
 				if (prev.some((m) => m.id === data.message.id)) return prev
 				return [...prev, data.message]
 			})
-			onNewMessage(data.message)
+			onNewMessage()
 		} catch {
 			setInput(trimmed)
 		} finally {
@@ -206,29 +258,38 @@ function ChatPanel({
 		}
 	}
 
+	const insertEmoji = (e: string) => {
+		setInput((prev) => prev + e)
+		setShowEmoji(false)
+		inputRef.current?.focus()
+	}
+
 	return (
 		<div className="flex-1 flex flex-col min-h-0 min-w-0">
 			{/* Header */}
-			<div className="px-4 py-3 border-b border-gray-200 flex items-center gap-3 shrink-0 bg-white">
-				<div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-					<span className="text-xs font-bold text-gray-600">{convInitial(conv)}</span>
+			<div
+				className="px-4 py-3 flex items-center gap-3 shrink-0"
+				style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
+			>
+				<div className="w-9 h-9 rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center shrink-0">
+					<span className="text-xs font-bold text-white">{initials(label)}</span>
 				</div>
 				<div className="flex-1 min-w-0">
-					<p className="text-gray-900 text-sm font-semibold truncate">{convLabel(conv)}</p>
-					{conv.subject && <p className="text-gray-500 text-xs truncate">{conv.subject}</p>}
+					<p className="text-white text-sm font-semibold truncate">{label}</p>
+					{conv.subject && <p className="text-white/60 text-xs truncate">{conv.subject}</p>}
 				</div>
 				{conv.status === 'closed' && (
-					<span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded shrink-0">Closed</span>
+					<span className="text-xs bg-white/20 text-white/80 px-2.5 py-1 rounded-full shrink-0">Closed</span>
 				)}
 			</div>
 
 			{/* Messages */}
 			{loading ? (
-				<div className="flex-1 flex items-center justify-center bg-gray-50">
-					<div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+				<div className="flex-1 flex items-center justify-center bg-[#f7f5fa]">
+					<div className="w-6 h-6 border-2 border-purple-200 border-t-[#372248] rounded-full animate-spin" />
 				</div>
 			) : (
-				<div className="flex-1 overflow-y-auto px-4 py-4 bg-gray-50">
+				<div className="flex-1 overflow-y-auto px-4 py-4 bg-[#f7f5fa]">
 					{messages.length === 0 ? (
 						<div className="h-full flex items-center justify-center">
 							<p className="text-gray-400 text-sm">No messages yet. Say hello!</p>
@@ -242,26 +303,41 @@ function ChatPanel({
 
 			{/* Input */}
 			{conv.status !== 'closed' && (
-				<div className="px-4 py-3 border-t border-gray-200 flex gap-2 shrink-0 bg-white">
-					<input
-						className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 placeholder-gray-400"
-						placeholder="Type a message…"
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && !e.shiftKey) {
-								e.preventDefault()
-								handleSend()
-							}
-						}}
-					/>
-					<button
-						onClick={handleSend}
-						disabled={sending || !input.trim()}
-						className="bg-black text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-40 hover:bg-gray-900 transition-colors shrink-0"
-					>
-						{sending ? '…' : 'Send'}
-					</button>
+				<div className="px-3 py-3 border-t border-gray-100 shrink-0 bg-white relative">
+					{showEmoji && <EmojiPicker onSelect={insertEmoji} />}
+					<div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-[#5c3882]/20">
+						<button
+							type="button"
+							onClick={() => setShowEmoji((v) => !v)}
+							className="text-gray-400 hover:text-[#5c3882] transition-colors text-lg leading-none shrink-0"
+						>
+							😊
+						</button>
+						<input
+							ref={inputRef}
+							className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400"
+							placeholder="Type a message…"
+							value={input}
+							onChange={(e) => setInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && !e.shiftKey) {
+									e.preventDefault()
+									handleSend()
+								}
+								if (e.key === 'Escape') setShowEmoji(false)
+							}}
+						/>
+						<button
+							onClick={handleSend}
+							disabled={sending || !input.trim()}
+							className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center disabled:opacity-40 transition-colors"
+							style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
+						>
+							<svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" />
+							</svg>
+						</button>
+					</div>
 				</div>
 			)}
 		</div>
@@ -282,7 +358,7 @@ export const UserMessagesSection = () => {
 			)
 			setConversations(data.conversations)
 		} catch {
-			// silently ignore auth errors etc.
+			// silently ignore
 		} finally {
 			setLoading(false)
 		}
@@ -292,19 +368,15 @@ export const UserMessagesSection = () => {
 		loadConversations()
 	}, [loadConversations])
 
-	// SSE — push real-time messages into open panel or refresh conv list
+	// SSE
 	useEffect(() => {
 		let active = true
 		const controller = new AbortController()
 
 		const connect = async () => {
 			try {
-				const res = await fetch('/api/chat/stream', {
-					signal: controller.signal,
-					cache: 'no-store',
-				})
+				const res = await fetch('/api/chat/stream', { signal: controller.signal, cache: 'no-store' })
 				if (!res.ok || !res.body) return
-
 				const reader = res.body.getReader()
 				const decoder = new TextDecoder()
 				let buffer = ''
@@ -327,21 +399,16 @@ export const UserMessagesSection = () => {
 						try {
 							const parsed = JSON.parse(data)
 							if (eventName === 'new_message') {
-								// Push into the open panel if it matches
 								const push = (window as any).__chatPanelPush
-								if (typeof push === 'function' && parsed.conversation_id) {
+								if (typeof push === 'function') {
 									setSelected((prev) => {
-										if (prev?.id === parsed.conversation_id) {
-											push(parsed)
-										}
+										if (prev?.id === parsed.conversation_id) push(parsed)
 										return prev
 									})
 								}
 								loadConversations()
 							}
-							if (eventName === 'new_conversation') {
-								loadConversations()
-							}
+							if (eventName === 'new_conversation') loadConversations()
 						} catch { /* ignore */ }
 					}
 				}
@@ -352,16 +419,13 @@ export const UserMessagesSection = () => {
 		}
 
 		connect()
-		return () => {
-			active = false
-			controller.abort()
-		}
+		return () => { active = false; controller.abort() }
 	}, [loadConversations])
 
 	return (
-		<div className="border border-gray-200 rounded-xl overflow-hidden" style={{ height: '600px' }}>
+		<div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm" style={{ height: '620px' }}>
 			<div className="flex h-full">
-				{/* Conversation list */}
+				{/* Sidebar */}
 				<div className="w-56 sm:w-64 border-r border-gray-200 flex flex-col shrink-0 bg-white">
 					<div className="px-4 py-3 border-b border-gray-100">
 						<h2 className="font-semibold text-gray-900 text-sm">Conversations</h2>
@@ -369,7 +433,7 @@ export const UserMessagesSection = () => {
 					<div className="flex-1 overflow-y-auto">
 						{loading ? (
 							<div className="flex items-center justify-center h-24">
-								<div className="w-5 h-5 border-2 border-gray-200 border-t-black rounded-full animate-spin" />
+								<div className="w-5 h-5 border-2 border-purple-200 border-t-[#372248] rounded-full animate-spin" />
 							</div>
 						) : conversations.length === 0 ? (
 							<div className="flex flex-col items-center justify-center h-32 px-4 text-center gap-2">
@@ -389,27 +453,19 @@ export const UserMessagesSection = () => {
 					</div>
 				</div>
 
-				{/* Chat panel */}
-				<div className="flex-1 flex min-w-0 bg-gray-50">
+				{/* Chat area */}
+				<div className="flex-1 flex min-w-0">
 					{selected ? (
-						<ChatPanel
-							key={selected.id}
-							conv={selected}
-							onNewMessage={() => loadConversations()}
-						/>
+						<ChatPanel key={selected.id} conv={selected} onNewMessage={loadConversations} />
 					) : (
-						<div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8">
-							<div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-								<svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={1.5}
-										d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-									/>
+						<div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 bg-[#f7f5fa]">
+							<div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center">
+								<svg className="w-8 h-8 text-[#5c3882]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+										d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
 								</svg>
 							</div>
-							<p className="font-semibold text-gray-900 text-sm">Your Messages</p>
+							<p className="font-semibold text-gray-800 text-sm">Your Messages</p>
 							<p className="text-gray-400 text-sm max-w-[200px]">
 								Select a conversation or chat with a seller from their store page.
 							</p>
