@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { MessageIcon } from '@/icons'
 
 interface ChatMessage {
 	id: string
@@ -41,14 +42,24 @@ function formatTime(iso: string): string {
 	return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
+function SendIcon() {
+	return (
+		<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+		</svg>
+	)
+}
+
 export function ChatBox({
 	sellerId,
 	sellerName,
 	subject,
+	onClose,
 }: {
 	sellerId: string
 	sellerName: string
 	subject?: string
+	onClose?: () => void
 }) {
 	const [conv, setConv] = useState<ChatConversation | null>(null)
 	const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -58,7 +69,6 @@ export function ChatBox({
 	const [error, setError] = useState<string | null>(null)
 	const bottomRef = useRef<HTMLDivElement>(null)
 
-	// Get or create conversation with this vendor then load messages
 	useEffect(() => {
 		chatFetch<{ conversation: ChatConversation }>('/api/chat', {
 			method: 'POST',
@@ -106,68 +116,105 @@ export function ChatBox({
 		}
 	}
 
-	if (loading) {
-		return (
-			<div className="w-full h-64 flex items-center justify-center">
-				<div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
-			</div>
-		)
-	}
-
-	if (error) {
-		return (
-			<div className="w-full h-32 flex items-center justify-center">
-				<p className="text-sm text-red-500">{error}</p>
-			</div>
-		)
-	}
+	const initials = sellerName
+		.split(' ')
+		.slice(0, 2)
+		.map((w) => w.charAt(0).toUpperCase())
+		.join('')
 
 	return (
-		<div className="flex flex-col" style={{ height: '480px' }}>
-			{/* Seller info header */}
-			<div className="py-2 pb-3 border-b border-gray-100 flex items-center gap-2 shrink-0">
-				<div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-					<span className="text-xs font-bold text-gray-600">{sellerName.charAt(0).toUpperCase()}</span>
+		<div className="flex flex-col h-full bg-white">
+			{/* ── Header ─────────────────────────────────────────── */}
+			<div
+				className="flex items-center gap-3 px-5 py-4 shrink-0"
+				style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
+			>
+				<div className="w-10 h-10 rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center shrink-0">
+					<span className="text-sm font-bold text-white">{initials}</span>
 				</div>
-				<div>
-					<p className="text-sm font-semibold text-gray-900">{sellerName}</p>
-					{conv?.subject && <p className="text-xs text-gray-400">{conv.subject}</p>}
+				<div className="flex-1 min-w-0">
+					<p className="text-white font-semibold text-sm leading-tight truncate">{sellerName}</p>
+					<div className="flex items-center gap-1.5 mt-0.5">
+						<span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+						<span className="text-white/70 text-xs">Online</span>
+					</div>
 				</div>
 				{conv?.status === 'closed' && (
-					<span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">Closed</span>
+					<span className="text-xs bg-white/20 text-white/80 px-2.5 py-1 rounded-full">Closed</span>
+				)}
+				{onClose && (
+					<button
+						onClick={onClose}
+						className="w-8 h-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+							<path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+						</svg>
+					</button>
 				)}
 			</div>
 
-			{/* Messages */}
-			<div className="flex-1 overflow-y-auto py-3 space-y-3">
-				{messages.length === 0 ? (
+			{/* ── Subject strip ──────────────────────────────────── */}
+			{conv?.subject && (
+				<div className="px-5 py-2 bg-[#fdf2ff] border-b border-purple-100 shrink-0">
+					<p className="text-xs text-gray-500 truncate">
+						<span className="font-medium text-gray-600">Topic:</span> {conv.subject}
+					</p>
+				</div>
+			)}
+
+			{/* ── Messages ───────────────────────────────────────── */}
+			<div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-[#f7f5fa]">
+				{loading ? (
 					<div className="h-full flex items-center justify-center">
-						<p className="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+						<div className="w-7 h-7 border-2 border-purple-200 border-t-[#372248] rounded-full animate-spin" />
+					</div>
+				) : error ? (
+					<div className="h-full flex items-center justify-center px-6">
+						<p className="text-sm text-red-500 text-center">{error}</p>
+					</div>
+				) : messages.length === 0 ? (
+					<div className="h-full flex flex-col items-center justify-center gap-3 py-10">
+						<div className="w-14 h-14 rounded-full bg-[#fdf2ff] flex items-center justify-center">
+							<MessageIcon size={24} color="#9B80D2" />
+						</div>
+						<div className="text-center">
+							<p className="text-sm font-medium text-gray-700">Start the conversation</p>
+							<p className="text-xs text-gray-400 mt-1">Send a message to {sellerName}</p>
+						</div>
 					</div>
 				) : (
 					messages.map((msg) => {
 						const isOwn = msg.sender_role === 'customer'
 						const isAdmin = msg.sender_role === 'admin'
+						const senderInitial = msg.sender_name.charAt(0).toUpperCase()
+
 						return (
-							<div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
-								<div className={`max-w-[80%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+							<div key={msg.id} className={`flex items-end gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+								{!isOwn && (
+									<div className="w-7 h-7 rounded-full bg-[#5c3882] flex items-center justify-center shrink-0">
+										<span className="text-[10px] font-bold text-white">{senderInitial}</span>
+									</div>
+								)}
+								<div className={`max-w-[72%] flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
 									{!isOwn && (
-										<span className={`text-xs mb-1 font-medium ${isAdmin ? 'text-orange-600' : 'text-gray-500'}`}>
+										<span className={`text-[11px] font-medium mb-1 ${isAdmin ? 'text-orange-500' : 'text-gray-500'}`}>
 											{isAdmin ? 'Support' : msg.sender_name}
 										</span>
 									)}
 									<div
-										className={`rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap break-words ${
+										className={`rounded-2xl px-3.5 py-2.5 text-sm whitespace-pre-wrap break-words leading-relaxed shadow-sm ${
 											isOwn
-												? 'bg-black text-white rounded-tr-sm'
+												? 'text-white rounded-br-none'
 												: isAdmin
-												? 'bg-orange-50 text-orange-900 border border-orange-200 rounded-tl-sm'
-												: 'bg-gray-100 text-gray-900 rounded-tl-sm'
+												? 'bg-orange-50 text-orange-900 border border-orange-200 rounded-bl-none'
+												: 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
 										}`}
+										style={isOwn ? { background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' } : undefined}
 									>
 										{msg.body}
 									</div>
-									<span className="text-gray-400 text-xs mt-0.5">{formatTime(msg.created_at)}</span>
+									<span className="text-gray-400 text-[11px] mt-1 px-1">{formatTime(msg.created_at)}</span>
 								</div>
 							</div>
 						)
@@ -176,11 +223,11 @@ export function ChatBox({
 				<div ref={bottomRef} />
 			</div>
 
-			{/* Input */}
-			{conv?.status !== 'closed' && (
-				<div className="border-t border-gray-100 pt-3 flex gap-2 shrink-0">
+			{/* ── Input ──────────────────────────────────────────── */}
+			{conv?.status !== 'closed' ? (
+				<div className="bg-white border-t border-gray-100 px-4 py-3 flex items-center gap-3 shrink-0">
 					<input
-						className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 placeholder-gray-400"
+						className="flex-1 bg-[#f7f5fa] border border-transparent rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-purple-300 focus:bg-white transition-all placeholder-gray-400"
 						placeholder={`Message ${sellerName}…`}
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
@@ -194,10 +241,19 @@ export function ChatBox({
 					<button
 						onClick={handleSend}
 						disabled={sending || !input.trim()}
-						className="bg-black text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-40 hover:bg-gray-900 transition-colors shrink-0"
+						className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all shrink-0 active:scale-95 disabled:opacity-40"
+						style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
 					>
-						{sending ? '…' : 'Send'}
+						{sending ? (
+							<div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+						) : (
+							<SendIcon />
+						)}
 					</button>
+				</div>
+			) : (
+				<div className="bg-gray-50 border-t border-gray-100 px-4 py-3 text-center shrink-0">
+					<span className="text-xs text-gray-400">This conversation is closed</span>
 				</div>
 			)}
 		</div>

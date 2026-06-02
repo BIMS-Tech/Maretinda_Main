@@ -53,7 +53,7 @@ export const ProductDetails = async ({
 				user={user}
 				wishlist={wishlist}
 			/>
-			<ProductDetailsSeller seller={seller} />
+			<ProductDetailsSeller product={product} seller={seller} user={user} />
 
 			<div className="accordion-multiple mt-5">
 				<ProductFreeDeliveryDetails />
