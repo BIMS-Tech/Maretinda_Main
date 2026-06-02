@@ -1,0 +1,93 @@
+import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+
+async function getSellerIdFromMember(req: any): Promise<string | null> {
+  const memberId = req.auth_context?.actor_id
+  if (!memberId) return null
+  const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+  const result = await pg.raw(`SELECT seller_id FROM member WHERE id = ? LIMIT 1`, [memberId])
+  return result.rows?.[0]?.seller_id || null
+}
+
+/**
+ * GET /vendor/promotions/rule-value-options/:ruleType/:ruleValue
+ * Return possible values for a given rule attribute.
+ * - customer_group: fetch all customer groups
+ * - product: fetch vendor's own products
+ * - country: return empty (rarely used)
+ * - anything else: return empty
+ */
+export async function GET(
+  req: AuthenticatedMedusaRequest,
+  res: MedusaResponse
+): Promise<void> {
+  try {
+    const { ruleValue } = req.params
+
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+
+    if (ruleValue === "customer_group") {
+      const { data: groups } = await query.graph({
+        entity: "customer_group",
+        fields: ["id", "name"],
+      })
+
+      const values = (groups || []).map((g: any) => ({
+        value: g.id,
+        label: g.name,
+      }))
+
+      res.status(200).json({ values })
+      return
+    }
+
+    if (ruleValue === "product") {
+      const sellerId = await getSellerIdFromMember(req)
+      if (!sellerId) {
+        res.status(401).json({ message: "Unauthorized" })
+        return
+      }
+
+      // Fetch products linked to this seller via the seller_product join table
+      const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const result = await pg.raw(
+        `SELECT p.id, p.title
+         FROM product p
+         INNER JOIN seller_product sp ON sp.product_id = p.id
+         WHERE sp.seller_id = ?
+         ORDER BY p.title ASC
+         LIMIT 500`,
+        [sellerId]
+      )
+
+      const values = (result.rows || []).map((p: any) => ({
+        value: p.id,
+        label: p.title,
+      }))
+
+      res.status(200).json({ values })
+      return
+    }
+
+    if (ruleValue === "product_category") {
+      const { data: categories } = await query.graph({
+        entity: "product_category",
+        fields: ["id", "name"],
+      })
+
+      const values = (categories || []).map((c: any) => ({
+        value: c.id,
+        label: c.name,
+      }))
+
+      res.status(200).json({ values })
+      return
+    }
+
+    // For country and any other values, return empty
+    res.status(200).json({ values: [] })
+  } catch (error: any) {
+    console.error("[VendorRuleValueOptions] Error:", error)
+    res.status(500).json({ message: "Failed to retrieve rule value options", error: error.message })
+  }
+}
