@@ -5,13 +5,18 @@ import VoucherService from "../../../services/voucher"
 /**
  * GET /store/hero-content
  *
- * Returns two pieces of dynamic content for the storefront hero sidebar:
- *   welcome_promo  — active platform promotion with metadata.hero_slot = "welcome"
- *   featured_campaign — first active public campaign with metadata.is_featured = true,
- *                       falling back to the first active public campaign
+ * welcome_promo — priority:
+ *   1. Promotion whose code matches site_settings.hero.welcome_promo_code (admin-pinned)
+ *   2. First active platform promotion (not seller-scoped)
  *
- * Both fields are null when nothing is configured, letting the frontend
- * fall back to its hardcoded defaults.
+ * featured_campaign — priority:
+ *   1. Campaign whose id matches site_settings.hero.featured_campaign_id (admin-pinned)
+ *   2. First active campaign
+ *
+ * site_settings — hero row for editable copy (heading, product card, etc.)
+ *
+ * NOTE: Medusa v2's promotion and campaign tables have no metadata column.
+ * Control is done entirely through site_settings.
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
@@ -20,60 +25,78 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const knex = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const now = new Date()
 
+    // --- Load site_settings ---
+    let site_settings: Record<string, any> = {}
+    try {
+      const row = await knex.raw(
+        `SELECT value FROM site_settings WHERE key = 'hero' LIMIT 1`
+      )
+      if (row.rows.length > 0) site_settings = row.rows[0].value
+    } catch {
+      // table may not exist yet on first deploy
+    }
+
     // --- Welcome promo ---
+    let welcome_promo = null
+    const pinnedCode = site_settings.welcome_promo_code as string | undefined
+
     const allActive = await promotionService.listPromotions(
       { status: ["active"] },
       { take: 200, relations: ["application_method", "rules"] }
+    ) as any[]
+
+    const platformPromos = allActive.filter(
+      (p) => !p.metadata?.seller_id && p.metadata?.scope !== "seller"
     )
 
-    const welcomeRaw = (allActive as any[]).find(
-      (p) => p.metadata?.hero_slot === "welcome"
-    )
-    const welcome_promo = welcomeRaw
-      ? voucherService.formatPromotion(welcomeRaw)
-      : null
+    let welcomeRaw: any = null
+    if (pinnedCode) {
+      welcomeRaw = platformPromos.find((p) => p.code === pinnedCode) ?? null
+    }
+    if (!welcomeRaw) {
+      // fall back: prefer fixed-amount promo, then any active platform promo
+      welcomeRaw =
+        platformPromos.find((p) => p.application_method?.type === "fixed") ??
+        platformPromos[0] ??
+        null
+    }
+
+    if (welcomeRaw) {
+      welcome_promo = voucherService.formatPromotion(welcomeRaw)
+    }
 
     // --- Featured campaign ---
+    let featured_campaign: Record<string, any> | null = null
+    const pinnedCampaignId = site_settings.featured_campaign_id as string | undefined
+
     const allCampaigns = await (promotionService as any).listCampaigns(
       {},
       { take: 50, relations: ["promotions"] }
     )
 
-    const publicCampaigns = (allCampaigns || []).filter((c: any) => {
-      if (c.metadata?.is_public !== true) return false
+    const activeCampaigns = (allCampaigns || []).filter((c: any) => {
       if (c.ends_at && new Date(c.ends_at) < now) return false
       return true
     })
 
-    const featuredRaw =
-      publicCampaigns.find((c: any) => c.metadata?.is_featured === true) ??
-      publicCampaigns[0] ??
-      null
+    let featuredRaw: any = null
+    if (pinnedCampaignId) {
+      featuredRaw = activeCampaigns.find((c: any) => c.id === pinnedCampaignId) ?? null
+    }
+    if (!featuredRaw) {
+      featuredRaw = activeCampaigns[0] ?? null
+    }
 
-    let featured_campaign: Record<string, any> | null = null
     if (featuredRaw) {
       featured_campaign = {
         id: featuredRaw.id,
         name: featuredRaw.name,
         description: featuredRaw.description || null,
         ends_at: featuredRaw.ends_at || null,
-        badge_label: featuredRaw.metadata?.badge_label || null,
-        discount_label: featuredRaw.metadata?.discount_label || null,
-        shop_link: featuredRaw.metadata?.shop_link || "/categories",
+        badge_label: null,
+        discount_label: null,
+        shop_link: "/categories",
       }
-    }
-
-    // --- Site settings hero row ---
-    let site_settings: Record<string, any> = {}
-    try {
-      const row = await knex.raw(
-        `SELECT value FROM site_settings WHERE key = 'hero' LIMIT 1`
-      )
-      if (row.rows.length > 0) {
-        site_settings = row.rows[0].value
-      }
-    } catch {
-      // table may not exist yet during first deploy
     }
 
     res.status(200).json({ welcome_promo, featured_campaign, site_settings })

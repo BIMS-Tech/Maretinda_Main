@@ -8,9 +8,7 @@ import {
   Text,
   Textarea,
   toast,
-  Badge,
 } from "@medusajs/ui"
-import { InformationCircleSolid } from "@medusajs/icons"
 import { useHeroSettings, useUpdateHeroSettings, type HeroSettings } from "../../hooks/api/site-settings"
 
 const DEFAULTS: HeroSettings = {
@@ -27,6 +25,8 @@ const DEFAULTS: HeroSettings = {
   featured_product_link: "/categories",
   featured_product_image: "/images/featured-products/fashion.png",
   vendors_count: "12,800+",
+  welcome_promo_code: "",
+  featured_campaign_id: "",
 }
 
 function FieldRow({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -219,59 +219,35 @@ export const StoreFront = () => {
         </div>
       </Container>
 
-      {/* Promo cards guidance */}
+      {/* Sidebar Promo Cards */}
       <Container className="divide-y p-0">
         <div className="px-6 py-4">
           <Heading level="h2" className="text-base font-semibold">Sidebar Promo Cards</Heading>
           <Text size="small" className="text-ui-fg-muted">
-            The two smaller cards on the right. These are controlled via Promotions and Campaigns.
+            Pin a specific promotion or campaign to the sidebar cards. Leave blank to auto-show the first active one.
           </Text>
         </div>
-        <div className="px-6 py-5 flex flex-col gap-4">
-          {/* Welcome offer */}
-          <div className="rounded-xl border border-ui-border-base bg-ui-bg-subtle p-4 flex gap-4">
-            <div className="mt-0.5 shrink-0">
-              <InformationCircleSolid className="text-ui-fg-muted" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <Text className="font-semibold text-ui-fg-base text-sm">Yellow "Welcome offer" card</Text>
-                <Badge color="yellow" size="xsmall">Promotion</Badge>
-              </div>
-              <Text size="small" className="text-ui-fg-muted">
-                Go to <b>Promotions</b>, open any active promotion, and add the metadata key{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">hero_slot</code>{" "}
-                with value{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">welcome</code>.
-                That promotion's code and discount will appear in the yellow card.
-              </Text>
-            </div>
-          </div>
-
-          {/* Featured campaign */}
-          <div className="rounded-xl border border-ui-border-base bg-ui-bg-subtle p-4 flex gap-4">
-            <div className="mt-0.5 shrink-0">
-              <InformationCircleSolid className="text-ui-fg-muted" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <Text className="font-semibold text-ui-fg-base text-sm">Dark "Festival / Sale" card</Text>
-                <Badge color="purple" size="xsmall">Campaign</Badge>
-              </div>
-              <Text size="small" className="text-ui-fg-muted">
-                Go to <b>Promotions → Campaigns</b>. The first active public campaign is shown by default.
-                To pin a specific campaign, add the metadata key{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">is_featured</code>{" "}
-                with value{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">true</code>.
-                You can also add{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">discount_label</code>{" "}
-                (e.g. "Up to 70% off{"\n"}local brands") and{" "}
-                <code className="bg-ui-bg-base border border-ui-border-base rounded px-1 py-0.5 text-xs font-mono">shop_link</code>{" "}
-                to the campaign metadata for custom text and destination.
-              </Text>
-            </div>
-          </div>
+        <div className="px-6 py-2">
+          <FieldRow
+            label="Welcome offer code"
+            hint='Yellow card — enter a promotion code (e.g. HELLOMRTD). Leave blank to auto-pick the first active promo.'
+          >
+            <Input
+              value={form.welcome_promo_code}
+              onChange={(e) => set("welcome_promo_code", e.target.value)}
+              placeholder="e.g. HELLOMRTD"
+            />
+          </FieldRow>
+          <FieldRow
+            label="Featured campaign ID"
+            hint='Dark card — paste a Campaign ID from Promotions → Campaigns. Leave blank to auto-pick the first active campaign.'
+          >
+            <Input
+              value={form.featured_campaign_id}
+              onChange={(e) => set("featured_campaign_id", e.target.value)}
+              placeholder="procamp_xxxxxxxxxxxx"
+            />
+          </FieldRow>
         </div>
       </Container>
     </div>

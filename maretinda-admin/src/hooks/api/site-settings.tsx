@@ -15,6 +15,9 @@ export interface HeroSettings {
   featured_product_link: string
   featured_product_image: string
   vendors_count: string
+  // sidebar promo card controls
+  welcome_promo_code: string
+  featured_campaign_id: string
 }
 
 export const siteSettingsQueryKeys = queryKeysFactory('site-settings')

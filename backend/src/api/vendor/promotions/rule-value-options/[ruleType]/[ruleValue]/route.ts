@@ -1,5 +1,5 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
@@ -24,8 +24,6 @@ export async function GET(
   try {
     const { ruleValue } = req.params
 
-    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-
     if (ruleValue === "currency_code") {
       const valueFilter = req.query?.value
       const allowed: string[] = Array.isArray(valueFilter)
@@ -44,10 +42,12 @@ export async function GET(
     }
 
     if (ruleValue === "customer_group") {
-      const customerService = req.scope.resolve(Modules.CUSTOMER)
-      const groups = await customerService.listCustomerGroups({}, { take: 200 })
+      const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const result = await pg.raw(
+        `SELECT id, name FROM customer_group WHERE deleted_at IS NULL ORDER BY name ASC LIMIT 200`
+      )
 
-      const values = (groups || []).map((g: any) => ({
+      const values = (result.rows || []).map((g: any) => ({
         value: g.id,
         label: g.name,
       }))
@@ -85,12 +85,12 @@ export async function GET(
     }
 
     if (ruleValue === "product_category") {
-      const { data: categories } = await query.graph({
-        entity: "product_category",
-        fields: ["id", "name"],
-      })
+      const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const result = await pg.raw(
+        `SELECT id, name FROM product_category WHERE deleted_at IS NULL ORDER BY name ASC LIMIT 500`
+      )
 
-      const values = (categories || []).map((c: any) => ({
+      const values = (result.rows || []).map((c: any) => ({
         value: c.id,
         label: c.name,
       }))
