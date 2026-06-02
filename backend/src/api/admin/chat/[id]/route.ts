@@ -3,7 +3,7 @@ import { getChatService } from "../../../../services/chat"
 
 // GET /admin/chat/:id  — get conversation + messages
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
 
   const conv = await chatService.getConversation(req.params.id)
   if (!conv) return res.status(404).json({ message: "Conversation not found" })
@@ -18,7 +18,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
 // PATCH /admin/chat/:id  — close conversation
 export async function PATCH(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
 
   const { status } = req.body as { status: string }
   if (status === "closed") {

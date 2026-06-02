@@ -3,7 +3,7 @@ import { getChatService } from "../../../../../services/chat"
 
 // POST /store/chat/:id/read  — mark conversation read for customer
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 

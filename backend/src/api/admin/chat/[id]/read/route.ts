@@ -3,7 +3,7 @@ import { getChatService } from "../../../../../services/chat"
 
 // POST /admin/chat/:id/read  — mark conversation read for admin
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
 
   const conv = await chatService.getConversation(req.params.id)
   if (!conv) return res.status(404).json({ message: "Conversation not found" })

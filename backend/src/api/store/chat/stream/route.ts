@@ -3,7 +3,7 @@ import { getChatService } from "../../../../services/chat"
 
 // GET /store/chat/stream  — SSE real-time stream for customer
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 

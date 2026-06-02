@@ -3,7 +3,7 @@ import { getChatService } from "../../../services/chat"
 
 // GET /store/chat  — list customer's conversations
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 
@@ -23,7 +23,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
 // POST /store/chat  — start conversation with a vendor
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 

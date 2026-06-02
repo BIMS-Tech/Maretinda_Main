@@ -41,11 +41,18 @@ export function initChatService(container: MedusaContainer): void {
   }
 }
 
-export function getChatService(): ChatService {
+/**
+ * Returns the ChatService singleton. Accepts an optional container so the
+ * first caller (a route handler) can self-initialise without a loader.
+ */
+export function getChatService(container?: MedusaContainer): ChatService {
   if (!_instance) {
-    throw new Error("ChatService not initialised — call initChatService first")
+    if (!container) {
+      throw new Error("ChatService not yet initialised — pass req.scope on first call")
+    }
+    initChatService(container)
   }
-  return _instance
+  return _instance!
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────

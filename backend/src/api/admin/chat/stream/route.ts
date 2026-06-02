@@ -3,7 +3,7 @@ import { getChatService } from "../../../../services/chat"
 
 // GET /admin/chat/stream  — SSE real-time stream for admin
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
 
   res.setHeader("Content-Type", "text/event-stream")
   res.setHeader("Cache-Control", "no-cache, no-transform")

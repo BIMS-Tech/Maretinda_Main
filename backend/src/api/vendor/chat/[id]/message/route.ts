@@ -3,7 +3,7 @@ import { getChatService } from "../../../../../services/chat"
 
 // POST /vendor/chat/:id/message  — send a message
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const memberId = req.auth_context?.actor_id
 
   const sellerId = await chatService.getVendorSellerId(memberId)

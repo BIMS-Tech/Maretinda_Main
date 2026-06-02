@@ -4,7 +4,7 @@ import { getChatService } from "../../../services/chat"
 
 // GET /vendor/chat  — list this vendor's conversations
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService = getChatService()
+  const chatService = getChatService(req.scope as any)
   const memberId = req.auth_context?.actor_id
 
   const sellerId = await chatService.getVendorSellerId(memberId)
