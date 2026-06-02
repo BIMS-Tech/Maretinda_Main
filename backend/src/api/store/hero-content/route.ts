@@ -37,7 +37,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     }
 
     // --- Welcome promo ---
-    let welcome_promo = null
+    let welcome_promo: Record<string, any> | null = null
     const pinnedCode = site_settings.welcome_promo_code as string | undefined
 
     const allActive = await promotionService.listPromotions(
