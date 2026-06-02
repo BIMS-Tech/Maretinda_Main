@@ -12,6 +12,7 @@ import {
 	TrustSection,
 } from '@/components/sections';
 import CampaignBanners from '@/components/sections/CampaignBanners/CampaignBanners';
+import { getHeroContent } from '@/lib/data/hero';
 
 export const metadata: Metadata = {
 	description:
@@ -44,6 +45,7 @@ export default async function Home({
 }) {
 	const { locale } = await params;
 	const resolvedSearchParams = searchParams ? await searchParams : {};
+	const heroContent = await getHeroContent();
 
 	return (
 		<main className="w-full flex flex-col">
@@ -59,8 +61,7 @@ export default async function Home({
 								: 'https://vendor.mercurjs.com',
 					},
 				]}
-				heading="Shop the Philippines. All in one place."
-				paragraph="From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available."
+				heroContent={heroContent}
 			/>
 
 			{/* 2. Shop by Category — 10-tile grid */}

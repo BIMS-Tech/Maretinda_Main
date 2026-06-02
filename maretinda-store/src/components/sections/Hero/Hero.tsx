@@ -1,15 +1,88 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { HeroContent } from '@/lib/data/hero';
 
 type HeroProps = {
 	buttons: { label: string; path: string }[];
 	heading?: string;
 	paragraph?: string;
+	heroContent?: HeroContent;
 };
 
-export const Hero = ({ buttons }: HeroProps) => {
+const FALLBACK = {
+	heading: 'Shop the Philippines. All in one place.',
+	subheading:
+		'From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available.',
+	badge: 'New season · Pampanga local',
+	featured_product_name: 'Filipiniana Sundress',
+	featured_product_category: 'Fashion · Summer Drop',
+	featured_product_price: 89900,
+	featured_product_original_price: 129900,
+	featured_product_rating_count: 248,
+	featured_product_sold_this_week: 247,
+	featured_product_link: '/categories',
+	featured_product_image: '/images/featured-products/fashion.png',
+	vendors_count: '12,800+',
+	welcome_code: 'HELLOMRTD',
+	welcome_label: '₱200 off',
+	welcome_min_order: '₱1,500',
+	festival_name: 'Sari-Sari Festival',
+	festival_discount: 'Up to 70% off\nlocal brands',
+	festival_link: '/categories',
+};
+
+function formatPrice(centavos: number) {
+	return `₱${(centavos / 100).toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
+}
+
+function calcDiscount(price: number, original: number) {
+	return Math.round((1 - price / original) * 100)
+}
+
+function HeroCountdown({ endsAt }: { endsAt: string | null }) {
+	if (!endsAt) return null
+	const now = Date.now()
+	const end = new Date(endsAt).getTime()
+	const diff = Math.max(0, Math.floor((end - now) / 1000))
+	const d = Math.floor(diff / 86400)
+	const h = Math.floor((diff % 86400) / 3600)
+	const m = Math.floor((diff % 3600) / 60)
+	if (diff <= 0) return <span className="text-[12px] opacity-80">Ended</span>
+	return <span className="text-[12px] opacity-80">Ends in {d}d {h}h {m}m</span>
+}
+
+export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const shopBtn = buttons.find((b) => b.label === 'Start Shopping') ?? buttons[0];
 	const sellerBtn = buttons.find((b) => b.label === 'Become a Seller') ?? buttons[1];
+
+	const s = heroContent?.site_settings ?? {}
+	const wp = heroContent?.welcome_promo ?? null
+	const fc = heroContent?.featured_campaign ?? null
+
+	// Hero main card values
+	const heading = s.heading || FALLBACK.heading
+	const subheading = s.subheading || FALLBACK.subheading
+	const badge = s.badge || FALLBACK.badge
+	const productName = s.featured_product_name || FALLBACK.featured_product_name
+	const productCategory = s.featured_product_category || FALLBACK.featured_product_category
+	const productPrice = s.featured_product_price ?? FALLBACK.featured_product_price
+	const productOriginal = s.featured_product_original_price ?? FALLBACK.featured_product_original_price
+	const productRatings = s.featured_product_rating_count ?? FALLBACK.featured_product_rating_count
+	const soldThisWeek = s.featured_product_sold_this_week ?? FALLBACK.featured_product_sold_this_week
+	const productLink = s.featured_product_link || FALLBACK.featured_product_link
+	const productImage = s.featured_product_image || FALLBACK.featured_product_image
+	const vendorsCount = s.vendors_count || FALLBACK.vendors_count
+
+	// Welcome promo card values
+	const welcomeCode = wp?.code || FALLBACK.welcome_code
+	const welcomeLabel = wp?.discount_label || FALLBACK.welcome_label
+	const welcomeMinOrder = wp?.min_order ? `₱${wp.min_order.toLocaleString('en-PH')}` : FALLBACK.welcome_min_order
+
+	// Featured campaign card values
+	const festivalName = fc?.name || FALLBACK.festival_name
+	const festivalDiscount = fc?.discount_label || FALLBACK.festival_discount
+	const festivalLink = fc?.shop_link || FALLBACK.festival_link
+	const festivalEndsAt = fc?.ends_at || null
 
 	return (
 		<section
@@ -38,15 +111,19 @@ export const Hero = ({ buttons }: HeroProps) => {
 						<div>
 							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase" style={{ color: '#432C63' }}>
 								<span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
-								New season · Pampanga local
+								{badge}
 							</div>
 							<h1 className="mt-5 font-serif leading-[1] tracking-[-0.02em] text-[#1a1a1a]" style={{ fontSize: 'clamp(36px, 4.5vw, 60px)' }}>
-								Shop the<br />
-								Philippines.<br />
-								<span style={{ color: '#432C63' }}>All in one place.</span>
+								{heading.split('. ').map((line, i, arr) => (
+									<span key={i}>
+										{i === arr.length - 1
+											? <span style={{ color: '#432C63' }}>{line}</span>
+											: <>{line}.<br /></>}
+									</span>
+								))}
 							</h1>
 							<p className="mt-4 text-[15px] text-[#404040] leading-relaxed max-w-[420px] hidden md:block">
-								From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available.
+								{subheading}
 							</p>
 						</div>
 
@@ -77,18 +154,17 @@ export const Hero = ({ buttons }: HeroProps) => {
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#7FA8C9' }} />
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#D98AA1' }} />
 								</div>
-								<span><b className="text-[#1a1a1a]">12,800+</b> vendors</span>
+								<span><b className="text-[#1a1a1a]">{vendorsCount}</b> vendors</span>
 							</div>
 						</div>
 					</div>
 
 					{/* Featured product panel */}
 					<div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[44%]">
-						{/* Product image */}
 						<div className="relative w-full h-full">
 							<Image
-								src="/images/featured-products/fashion.png"
-								alt="Filipiniana Sundress — featured fashion pick"
+								src={productImage}
+								alt={`${productName} — featured pick`}
 								fill
 								className="object-contain object-bottom"
 								sizes="25vw"
@@ -99,7 +175,7 @@ export const Hero = ({ buttons }: HeroProps) => {
 						{/* Sold-today chip */}
 						<div className="absolute top-5 left-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm">
 							<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-							<span className="text-[11px] font-semibold text-[#1a1a1a]">247 sold this week</span>
+							<span className="text-[11px] font-semibold text-[#1a1a1a]">{soldThisWeek} sold this week</span>
 						</div>
 
 						{/* FEATURED badge */}
@@ -111,22 +187,22 @@ export const Hero = ({ buttons }: HeroProps) => {
 						<div className="absolute bottom-5 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md">
 							<div className="flex items-start justify-between gap-3">
 								<div className="min-w-0">
-									<div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: '#432C63' }}>Fashion · Summer Drop</div>
-									<div className="text-[13px] font-bold text-[#1a1a1a] mt-0.5 truncate">Filipiniana Sundress</div>
+									<div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: '#432C63' }}>{productCategory}</div>
+									<div className="text-[13px] font-bold text-[#1a1a1a] mt-0.5 truncate">{productName}</div>
 									<div className="flex items-center gap-2 mt-1.5">
-										<span className="text-[15px] font-bold" style={{ color: '#432C63' }}>₱899</span>
-										<span className="text-[12px] text-[#aaa] line-through">₱1,299</span>
-										<span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: '#D94040' }}>−31%</span>
+										<span className="text-[15px] font-bold" style={{ color: '#432C63' }}>{formatPrice(productPrice)}</span>
+										<span className="text-[12px] text-[#aaa] line-through">{formatPrice(productOriginal)}</span>
+										<span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: '#D94040' }}>−{calcDiscount(productPrice, productOriginal)}%</span>
 									</div>
 									<div className="flex items-center gap-1 mt-1">
 										{[1,2,3,4,5].map((s) => (
 											<svg key={s} width="10" height="10" viewBox="0 0 24 24" fill="#FFC533" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
 										))}
-										<span className="text-[11px] text-[#888] ml-1">(248)</span>
+										<span className="text-[11px] text-[#888] ml-1">({productRatings})</span>
 									</div>
 								</div>
 								<Link
-									href="/categories"
+									href={productLink}
 									className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white mt-1 transition-opacity hover:opacity-80"
 									style={{ backgroundColor: '#432C63' }}
 								>
@@ -151,17 +227,17 @@ export const Hero = ({ buttons }: HeroProps) => {
 					<div className="relative rounded-2xl overflow-hidden p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>
 						<div>
 							<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70">Welcome offer</div>
-							<div className="mt-2 font-serif leading-[1] tracking-[-0.01em]" style={{ fontSize: '40px' }}>₱200 off</div>
-							<div className="mt-1 text-[13px] font-medium opacity-85">first order over ₱1,500</div>
+							<div className="mt-2 font-serif leading-[1] tracking-[-0.01em]" style={{ fontSize: '40px' }}>{welcomeLabel}</div>
+							<div className="mt-1 text-[13px] font-medium opacity-85">first order over {welcomeMinOrder}</div>
 						</div>
 						<div className="flex items-center justify-between">
-							<code className="font-mono text-[12px] font-bold px-2.5 py-1 rounded-md tracking-wider" style={{ backgroundColor: '#432C63', color: '#FFC533' }}>HELLOMRTD</code>
+							<code className="font-mono text-[12px] font-bold px-2.5 py-1 rounded-md tracking-wider" style={{ backgroundColor: '#432C63', color: '#FFC533' }}>{welcomeCode}</code>
 							<Link href="/vouchers" className="text-[13px] font-bold underline underline-offset-4 hover:opacity-80">Claim →</Link>
 						</div>
 						<div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border-2 border-[#432C63]/20" />
 					</div>
 
-					{/* Sari-Sari festival card */}
+					{/* Featured campaign card */}
 					<div className="relative rounded-2xl overflow-hidden text-white p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#372248' }}>
 						<div
 							className="absolute inset-0 opacity-30"
@@ -171,15 +247,20 @@ export const Hero = ({ buttons }: HeroProps) => {
 							}}
 						/>
 						<div className="relative">
-							<div className="text-[11px] font-bold tracking-[0.16em] uppercase" style={{ color: '#FFC533' }}>Sari-Sari Festival</div>
+							{fc?.badge_label && (
+								<div className="text-[11px] font-bold tracking-[0.16em] uppercase" style={{ color: '#FFC533' }}>{fc.badge_label}</div>
+							)}
+							{!fc?.badge_label && (
+								<div className="text-[11px] font-bold tracking-[0.16em] uppercase" style={{ color: '#FFC533' }}>{festivalName}</div>
+							)}
 							<div className="mt-2 font-serif leading-[1.05] tracking-[-0.01em]" style={{ fontSize: '28px' }}>
-								Up to 70% off<br />local brands
+								{festivalDiscount.split('\n').map((line, i) => <span key={i}>{line}{i === 0 && <br />}</span>)}
 							</div>
 						</div>
 						<div className="relative flex items-center justify-between">
-							<div className="text-[12px] opacity-80">Ends in 2d 14h 22m</div>
+							<HeroCountdown endsAt={festivalEndsAt} />
 							<Link
-								href="/categories"
+								href={festivalLink}
 								className="text-[12px] font-bold px-3.5 py-1.5 rounded-full bg-white hover:bg-white/90 transition-colors"
 								style={{ color: '#432C63' }}
 							>

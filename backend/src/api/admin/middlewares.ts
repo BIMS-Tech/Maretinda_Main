@@ -30,6 +30,10 @@ export default defineMiddlewares({
       matcher: "/admin/chat*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
     },
+    {
+      matcher: "/admin/site-settings*",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
+    },
   ],
 })
 

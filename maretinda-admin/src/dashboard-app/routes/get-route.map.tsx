@@ -48,6 +48,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/reports"),
             },
             {
+              path: "/store-front",
+              errorElement: <ErrorBoundary />,
+              lazy: () => import("../../routes/store-front"),
+            },
+            {
               path: "/products",
               errorElement: <ErrorBoundary />,
               handle: {
