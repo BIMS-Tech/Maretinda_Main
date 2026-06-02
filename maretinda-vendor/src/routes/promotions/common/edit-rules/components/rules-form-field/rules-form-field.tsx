@@ -161,14 +161,22 @@ export const RulesFormField = ({
                     const disabled = !!fieldRule.required
                     const onValueChange = (e: string) => {
                       const currentAttributeOption = attributeOptions.find(
-                        (ao) => ao.id === e
+                        (ao) => ao.value === e
                       )
 
-                      update(index, {
+                      const fieldRuleOverrides: typeof fieldRule = {
                         ...fieldRule,
+                        operator: "",
                         values: [],
                         disguised: currentAttributeOption?.disguised || false,
-                      })
+                      }
+
+                      if (currentAttributeOption?.operators?.length === 1) {
+                        fieldRuleOverrides.operator =
+                          currentAttributeOption.operators[0].value
+                      }
+
+                      update(index, fieldRuleOverrides)
                       onChange(e)
                     }
 

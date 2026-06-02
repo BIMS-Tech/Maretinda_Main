@@ -26,6 +26,23 @@ export async function GET(
 
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
+    if (ruleValue === "currency_code") {
+      const valueFilter = req.query?.value
+      const allowed: string[] = Array.isArray(valueFilter)
+        ? (valueFilter as string[])
+        : valueFilter
+        ? [valueFilter as string]
+        : []
+
+      const values = allowed.map((code) => ({
+        value: code,
+        label: code.toUpperCase(),
+      }))
+
+      res.status(200).json({ values })
+      return
+    }
+
     if (ruleValue === "customer_group") {
       const { data: groups } = await query.graph({
         entity: "customer_group",

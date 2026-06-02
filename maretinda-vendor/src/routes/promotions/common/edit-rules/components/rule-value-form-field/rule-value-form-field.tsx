@@ -1,5 +1,5 @@
 import { RuleAttributeOptionsResponse, StoreDTO } from "@medusajs/types"
-import { Input, Select } from "@medusajs/ui"
+import { Input } from "@medusajs/ui"
 import { useWatch } from "react-hook-form"
 import { Form } from "../../../../../../components/common/form"
 import { Combobox } from "../../../../../../components/inputs/combobox"
@@ -103,39 +103,6 @@ export const RuleValueFormField = ({
               <Form.ErrorMessage />
             </Form.Item>
           )
-        } else if (watchOperator === "eq") {
-          return (
-            <Form.Item className="basis-1/2">
-              <Form.Control>
-                <Select
-                  {...field}
-                  value={
-                    Array.isArray(field.value) ? field.value[0] : field.value
-                  }
-                  onValueChange={onChange}
-                  disabled={!fieldRule.attribute}
-                >
-                  <Select.Trigger ref={ref} className="bg-ui-bg-base">
-                    <Select.Value placeholder="Select Value" />
-                  </Select.Trigger>
-
-                  <Select.Content>
-                    {options?.map((option, i) => (
-                      <Select.Item
-                        key={`${identifier}-value-option-${i}`}
-                        value={option.value}
-                      >
-                        <span className="text-ui-fg-subtle">
-                          {option.label}
-                        </span>
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select>
-              </Form.Control>
-              <Form.ErrorMessage />
-            </Form.Item>
-          )
         } else {
           return (
             <Form.Item className="basis-1/2">
@@ -143,11 +110,13 @@ export const RuleValueFormField = ({
                 <Combobox
                   {...field}
                   ref={ref}
-                  placeholder="Select Values"
+                  placeholder={
+                    watchOperator === "eq" ? "Select Value" : "Select Values"
+                  }
                   options={options}
                   onChange={onChange}
                   className="bg-ui-bg-base"
-                  disabled={!fieldRule.attribute}
+                  disabled={!watchOperator}
                 />
               </Form.Control>
 
