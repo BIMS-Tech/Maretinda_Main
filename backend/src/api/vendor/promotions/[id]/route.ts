@@ -5,6 +5,14 @@ import {
   deletePromotionsWorkflow,
 } from "@medusajs/core-flows"
 
+function computePromotionStatus(promotion: any): string {
+  if (promotion.is_disabled) return "draft"
+  const now = new Date()
+  if (promotion.starts_at && new Date(promotion.starts_at) > now) return "scheduled"
+  if (promotion.ends_at && new Date(promotion.ends_at) < now) return "expired"
+  return "active"
+}
+
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
   if (!memberId) return null
@@ -45,7 +53,9 @@ export async function GET(
       return
     }
 
-    res.status(200).json({ promotion })
+    res.status(200).json({
+      promotion: { ...promotion, status: computePromotionStatus(promotion) },
+    })
   } catch (error: any) {
     console.error("[VendorGetPromotion] Error:", error)
     res.status(500).json({ message: "Failed to retrieve promotion", error: error.message })

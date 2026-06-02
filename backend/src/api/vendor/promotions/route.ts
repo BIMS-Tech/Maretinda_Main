@@ -2,6 +2,14 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { createPromotionsWorkflow } from "@medusajs/core-flows"
 
+function computePromotionStatus(promotion: any): string {
+  if (promotion.is_disabled) return "draft"
+  const now = new Date()
+  if (promotion.starts_at && new Date(promotion.starts_at) > now) return "scheduled"
+  if (promotion.ends_at && new Date(promotion.ends_at) < now) return "expired"
+  return "active"
+}
+
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
   if (!memberId) return null
@@ -25,22 +33,42 @@ export async function GET(
       return
     }
 
+    const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const promotionModule = req.scope.resolve(Modules.PROMOTION)
 
-    const query = req.query as any
-    const limit = parseInt(query.limit || "20", 10)
-    const offset = parseInt(query.offset || "0", 10)
+    const rawQuery = req.query as any
+    const limit = parseInt(rawQuery.limit || "20", 10)
+    const offset = parseInt(rawQuery.offset || "0", 10)
 
-    const [promotions, count] = await promotionModule.listAndCountPromotions(
-      { metadata: { seller_id: sellerId } } as any,
-      {
-        relations: ["application_method", "rules", "campaign"],
-        skip: offset,
-        take: limit,
-      } as any
+    // Use raw SQL to filter by JSONB metadata field
+    const countResult = await pg.raw(
+      `SELECT COUNT(*) AS total FROM promotion WHERE metadata->>'seller_id' = ? AND deleted_at IS NULL`,
+      [sellerId]
+    )
+    const count = parseInt(countResult.rows[0]?.total || "0", 10)
+
+    const idsResult = await pg.raw(
+      `SELECT id FROM promotion WHERE metadata->>'seller_id' = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [sellerId, limit, offset]
+    )
+    const ids: string[] = idsResult.rows.map((r: any) => r.id)
+
+    if (!ids.length) {
+      res.status(200).json({ promotions: [], count: 0, limit, offset })
+      return
+    }
+
+    const promotions = await promotionModule.listPromotions(
+      { id: ids } as any,
+      { relations: ["application_method", "rules", "campaign"] } as any
     )
 
-    res.status(200).json({ promotions, count, limit, offset })
+    const promotionsWithStatus = promotions.map((p: any) => ({
+      ...p,
+      status: computePromotionStatus(p),
+    }))
+
+    res.status(200).json({ promotions: promotionsWithStatus, count, limit, offset })
   } catch (error: any) {
     console.error("[VendorListPromotions] Error:", error)
     res.status(500).json({ message: "Failed to list promotions", error: error.message })

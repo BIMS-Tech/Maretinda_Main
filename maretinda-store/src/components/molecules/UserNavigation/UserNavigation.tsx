@@ -7,8 +7,6 @@ import { usePathname } from 'next/navigation';
 import {
 	Avatar,
 	Badge,
-	Card,
-	Divider,
 	LogoutButton,
 	NavigationItem,
 } from '@/components/atoms';
@@ -37,7 +35,6 @@ const navigationItems = [
 	{
 		href: '/user/messages',
 		icon: <ChatBubbleIcon />,
-
 		label: 'Messages',
 	},
 	{
@@ -72,70 +69,78 @@ export const UserNavigation = ({
 }: {
 	user: HttpTypes.StoreCustomer | null;
 }) => {
-	const [unreadCount, setUnreadCount] = useState(0)
-	const path = usePathname()
+	const [unreadCount, setUnreadCount] = useState(0);
+	const path = usePathname();
 
 	useEffect(() => {
-		if (!user) return
+		if (!user) return;
 		fetch('/api/chat')
 			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => { if (data?.unread) setUnreadCount(Number(data.unread)) })
-			.catch(() => {})
-	}, [user])
+			.then((data) => { if (data?.unread) setUnreadCount(Number(data.unread)); })
+			.catch(() => {});
+	}, [user]);
+
 	const targetSegment = '/ph';
-
 	const phIndex = path.indexOf(targetSegment);
-
 	let pathAfterPH = '';
 	if (phIndex !== -1) {
-		const startIndex = phIndex + targetSegment.length;
-		pathAfterPH = path.substring(startIndex);
+		pathAfterPH = path.substring(phIndex + targetSegment.length);
 	}
 
 	return (
-		<Card className="h-min px-4 lg:p-8 shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] !border-black/15">
-			<div className="flex items-center gap-3">
-				<Avatar
-					className="rounded-full h-12 w-12"
-					initials={user?.first_name?.[0]?.toUpperCase() ?? 'U'}
-					size="large"
-					src={'/talkjs-placeholder.jpg'}
-				/>
-				<div className="flex flex-col gap-1">
-					<span className="label-sm !font-medium text-[#18181B]">
-						Hello, {user?.first_name ?? 'there'}!
-					</span>
-					<span className="label-lg !font-medium text-black !leading-none">
+		<div className="h-min rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-black/[0.07] bg-white">
+			{/* Profile header */}
+			<div className="bg-brandPurple px-6 py-8 flex flex-col items-center gap-3">
+				<div className="relative">
+					<Avatar
+						className="rounded-full h-16 w-16 ring-[3px] ring-white/30"
+						initials={user?.first_name?.[0]?.toUpperCase() ?? 'U'}
+						size="large"
+						src={'/talkjs-placeholder.jpg'}
+					/>
+					<span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 bg-green-400 rounded-full border-2 border-brandPurple" />
+				</div>
+				<div className="text-center">
+					<p className="text-white/60 text-[11px] font-medium tracking-widest uppercase">
+						My Account
+					</p>
+					<h2 className="text-white text-[17px] font-semibold leading-snug mt-0.5">
 						{user?.first_name} {user?.last_name}
-					</span>
+					</h2>
 				</div>
 			</div>
-			<Divider className="mb-7 mt-6 -mx-3  w-[calc(100%+24px)]" />
-			{navigationItems.map((item) => (
+
+			{/* Navigation items */}
+			<div className="px-3 pt-4 pb-2">
+				{navigationItems.map((item) => (
+					<NavigationItem
+						active={pathAfterPH === item.href}
+						className="relative"
+						href={item.href}
+						key={item.label}
+					>
+						{item.icon}
+						<span className="flex-1">{item.label}</span>
+						{item.label === 'Messages' && unreadCount > 0 && (
+							<Badge className="w-5 h-5 p-0 text-xs flex items-center justify-center">
+								{unreadCount}
+							</Badge>
+						)}
+					</NavigationItem>
+				))}
+			</div>
+
+			{/* Footer: settings + logout */}
+			<div className="border-t border-black/[0.07] mx-3 px-0 py-3">
 				<NavigationItem
-					active={pathAfterPH === item.href}
-					className="relative"
-					href={item.href}
-					key={item.label}
+					active={pathAfterPH === '/user/settings'}
+					href={'/user/settings'}
 				>
-					{item.icon}
-					{item.label}
-					{item.label === 'Messages' && unreadCount > 0 && (
-						<Badge className="absolute top-3 left-24 w-4 h-4 p-0">
-							{unreadCount}
-						</Badge>
-					)}
+					<SettingIcon />
+					<span className="flex-1">Settings</span>
 				</NavigationItem>
-			))}
-			<Divider className="my-4 -mx-4 lg:-mx-8 w-[calc(100%+32px)] lg:w-[calc(100%+64px)]" />
-			<NavigationItem
-				active={pathAfterPH === '/user/settings'}
-				href={'/user/settings'}
-			>
-				<SettingIcon />
-				Settings
-			</NavigationItem>
-			<LogoutButton className="w-full text-left" isSidebar />
-		</Card>
+				<LogoutButton className="w-full text-left text-[#4b5563] label-md !font-medium capitalize px-4 py-2.5 my-1 flex items-center gap-3 rounded-lg transition-colors duration-150 hover:bg-red-50 hover:text-red-500" isSidebar />
+			</div>
+		</div>
 	);
 };

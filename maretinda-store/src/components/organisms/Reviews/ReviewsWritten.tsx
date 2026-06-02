@@ -27,7 +27,7 @@ export const ReviewsWritten = ({
 				<div className="flex gap-6">
 					{navigation.map((item) => (
 						<NavigationItem
-							className={`!p-0 !my-0 !min-w-fit ${pathname === `/ph${item.href}` ? 'underline text-black underline-offset-2' : 'text-[#A0A0A0]'}`}
+							className={`!p-0 !my-0 !w-fit !min-w-fit ${pathname === `/ph${item.href}` ? 'underline text-black underline-offset-2' : 'text-[#A0A0A0]'}`}
 							href={item.href}
 							key={item.label}
 						>
