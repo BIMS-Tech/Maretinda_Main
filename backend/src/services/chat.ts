@@ -111,17 +111,20 @@ export class ChatService {
     const { limit = 30, offset = 0, is_admin } = filters
 
     try {
-      let query = this.knex("chat_conversation")
-        .orderBy("last_message_at", "desc")
-        .orderByRaw("created_at desc")
+      // Base query without ordering — used for COUNT (ORDER BY is invalid on aggregates)
+      let base = this.knex("chat_conversation")
 
       if (!is_admin) {
-        if (filters.vendor_id) query = query.where("vendor_id", filters.vendor_id)
-        if (filters.customer_id) query = query.where("customer_id", filters.customer_id)
+        if (filters.vendor_id) base = base.where("vendor_id", filters.vendor_id)
+        if (filters.customer_id) base = base.where("customer_id", filters.customer_id)
       }
 
-      const countResult = await query.clone().count("id as count")
-      const rows = await query.limit(limit).offset(offset)
+      const countResult = await base.clone().count("id as count")
+      const rows = await base.clone()
+        .orderByRaw("last_message_at desc nulls last")
+        .orderBy("created_at", "desc")
+        .limit(limit)
+        .offset(offset)
 
       return { conversations: rows, count: Number(countResult[0]?.count ?? 0) }
     } catch (err: any) {
