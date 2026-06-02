@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../../services/chat"
+import { getChatService } from "../../../../services/chat"
 
 // GET /vendor/chat/stream  — SSE real-time stream for vendor
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
   const memberId = req.auth_context?.actor_id
 
   const sellerId = await chatService.getVendorSellerId(memberId)

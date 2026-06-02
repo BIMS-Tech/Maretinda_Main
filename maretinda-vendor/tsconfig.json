@@ -19,9 +19,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
     "paths": {
-      "@hooks/*": ["src/hooks/*"]
+      "@hooks/*": ["./src/hooks/*"]
     }
   },
   "include": ["src"],

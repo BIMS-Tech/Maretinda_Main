@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../services/chat"
+import { getChatService } from "../../../services/chat"
 
 // GET /admin/chat  — list all conversations
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   const limit = Number(req.query.limit) || 30
   const offset = Number(req.query.offset) || 0
@@ -21,7 +21,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
 // POST /admin/chat  — admin starts a conversation with vendor or customer
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   const { vendor_id, customer_id, subject, type } = req.body as {
     vendor_id?: string

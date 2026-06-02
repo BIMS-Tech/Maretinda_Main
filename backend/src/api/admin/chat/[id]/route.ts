@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../../services/chat"
+import { getChatService } from "../../../../services/chat"
 
 // GET /admin/chat/:id  — get conversation + messages
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   const conv = await chatService.getConversation(req.params.id)
   if (!conv) return res.status(404).json({ message: "Conversation not found" })
@@ -18,7 +18,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
 // PATCH /admin/chat/:id  — close conversation
 export async function PATCH(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   const { status } = req.body as { status: string }
   if (status === "closed") {

@@ -1,16 +1,11 @@
 import { MedusaContainer } from "@medusajs/framework/types"
-import ChatService from "../services/chat"
+import { initChatService } from "../services/chat"
 
 export default async function chatLoader(container: MedusaContainer): Promise<void> {
-  console.log("[Chat Loader] ========== LOADING CHAT SERVICE ==========")
+  console.log("[Chat Loader] ========== INITIALISING CHAT SERVICE ==========")
   try {
-    container.register({
-      chatService: {
-        resolve: () => new ChatService(container),
-        lifetime: "SINGLETON",
-      },
-    })
-    console.log("[Chat Loader] ========== CHAT SERVICE REGISTERED ==========")
+    initChatService(container)
+    console.log("[Chat Loader] ========== CHAT SERVICE READY ==========")
   } catch (error) {
     console.error("[Chat Loader] ========== FAILED ==========", error)
   }

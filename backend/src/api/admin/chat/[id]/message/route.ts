@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../../../services/chat"
+import { getChatService } from "../../../../../services/chat"
 
 // POST /admin/chat/:id/message  — admin sends a message
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   const conv = await chatService.getConversation(req.params.id)
   if (!conv) return res.status(404).json({ message: "Conversation not found" })

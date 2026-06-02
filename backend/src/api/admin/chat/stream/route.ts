@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../../services/chat"
+import { getChatService } from "../../../../services/chat"
 
 // GET /admin/chat/stream  — SSE real-time stream for admin
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
 
   res.setHeader("Content-Type", "text/event-stream")
   res.setHeader("Cache-Control", "no-cache, no-transform")

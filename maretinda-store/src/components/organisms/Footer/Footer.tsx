@@ -3,26 +3,26 @@ import Link from 'next/link';
 
 const SHOP_LINKS = [
 	{ label: 'New arrivals', href: '/categories' },
-	{ label: 'Flash sales', href: '/categories?sale=true' },
-	{ label: 'Collections', href: '/collections' },
-	{ label: 'Trending now', href: '/categories?sort=trending' },
-	{ label: 'Local brands', href: '/vendors' },
+	{ label: 'Flash sales', href: '/flash-sale' },
+	{ label: 'Collections', href: '/categories' },
+	{ label: 'Trending now', href: '/categories' },
+	{ label: 'Local brands', href: '/categories' },
 ];
 
 const SELL_LINKS = [
-	{ label: 'Start selling', href: '/seller/register' },
-	{ label: 'Seller dashboard', href: '/seller' },
-	{ label: 'How it works', href: '/seller/how-it-works' },
-	{ label: 'Fees & pricing', href: '/seller/pricing' },
-	{ label: 'Seller blog', href: '/seller/blog' },
+	{ label: 'Start selling', href: '/become-vendor/register' },
+	{ label: 'Seller dashboard', href: '/become-vendor' },
+	{ label: 'How it works', href: '/become-vendor' },
+	{ label: 'Fees & pricing', href: '/pricing' },
+	{ label: 'Seller blog', href: '#' },
 ];
 
 const SUPPORT_LINKS = [
-	{ label: 'Help center', href: '/help' },
-	{ label: 'Buyer protection', href: '/buyer-protection' },
-	{ label: 'Shipping info', href: '/shipping' },
-	{ label: 'Returns & refunds', href: '/returns' },
-	{ label: 'Contact us', href: '/contact' },
+	{ label: 'Help center', href: '/help-center' },
+	{ label: 'Buyer protection', href: '#' },
+	{ label: 'Shipping info', href: '#' },
+	{ label: 'Returns & refunds', href: '#' },
+	{ label: 'Contact us', href: '#' },
 ];
 
 const PAYMENT_CHIPS = ['VISA', 'Mastercard', 'GCash', 'Maya', 'GiyaPay', 'COD'];

@@ -31,6 +31,25 @@ export interface ChatMessage {
 
 type SenderRole = "vendor" | "customer" | "admin"
 
+// ─── Module-level singleton ────────────────────────────────────────────────────
+
+let _instance: ChatService | null = null
+
+export function initChatService(container: MedusaContainer): void {
+  if (!_instance) {
+    _instance = new ChatService(container)
+  }
+}
+
+export function getChatService(): ChatService {
+  if (!_instance) {
+    throw new Error("ChatService not initialised — call initChatService first")
+  }
+  return _instance
+}
+
+// ─── Service ──────────────────────────────────────────────────────────────────
+
 export class ChatService {
   private connections: Map<string, Set<Response>> = new Map()
   private knex: any
@@ -68,7 +87,7 @@ export class ChatService {
       try {
         res.write(payload)
       } catch {
-        // client disconnected mid-write — will be cleaned up on 'close' event
+        // client disconnected mid-write
       }
     }
   }
@@ -99,7 +118,6 @@ export class ChatService {
 
       return { conversations: rows, count: Number(countResult[0]?.count ?? 0) }
     } catch (err: any) {
-      // Tables not yet migrated — return empty rather than 500
       if (err?.code === "42P01") return { conversations: [], count: 0 }
       throw err
     }
@@ -186,17 +204,17 @@ export class ChatService {
     offset = 0
   ): Promise<{ messages: ChatMessage[]; count: number }> {
     try {
-    const countResult = await this.knex("chat_message")
-      .where("conversation_id", conversationId)
-      .count("id as count")
+      const countResult = await this.knex("chat_message")
+        .where("conversation_id", conversationId)
+        .count("id as count")
 
-    const rows = await this.knex("chat_message")
-      .where("conversation_id", conversationId)
-      .orderBy("created_at", "asc")
-      .limit(limit)
-      .offset(offset)
+      const rows = await this.knex("chat_message")
+        .where("conversation_id", conversationId)
+        .orderBy("created_at", "asc")
+        .limit(limit)
+        .offset(offset)
 
-    return { messages: rows, count: Number(countResult[0]?.count ?? 0) }
+      return { messages: rows, count: Number(countResult[0]?.count ?? 0) }
     } catch (err: any) {
       if (err?.code === "42P01") return { messages: [], count: 0 }
       throw err
@@ -227,7 +245,6 @@ export class ChatService {
       })
       .returning("*")
 
-    // Increment unread counters for every role except the sender
     const unreadUpdates: Record<string, unknown> = {
       last_message_at: new Date(),
       updated_at: new Date(),
@@ -238,7 +255,6 @@ export class ChatService {
 
     await this.knex("chat_conversation").where("id", conversation_id).update(unreadUpdates)
 
-    // Push SSE to all participants
     const eventPayload = { ...msg, conversation_id }
     if (conv.vendor_id && sender_role !== "vendor") {
       this.pushEvent(conv.vendor_id, "new_message", eventPayload)

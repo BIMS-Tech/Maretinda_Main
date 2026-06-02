@@ -1,9 +1,9 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import ChatService from "../../../../services/chat"
+import { getChatService } from "../../../../services/chat"
 
 // GET /store/chat/stream  — SSE real-time stream for customer
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
-  const chatService: ChatService = req.scope.resolve("chatService")
+  const chatService = getChatService()
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 
