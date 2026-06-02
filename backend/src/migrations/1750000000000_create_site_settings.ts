@@ -1,16 +1,16 @@
-import { MigrationInterface, QueryRunner } from "typeorm"
+import { Migration } from "@mikro-orm/migrations"
 
-export class CreateSiteSettings1750000000000 implements MigrationInterface {
-  public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`
+export class Migration1750000000000 extends Migration {
+  async up(): Promise<void> {
+    this.addSql(`
       CREATE TABLE IF NOT EXISTS site_settings (
         key TEXT PRIMARY KEY,
         value JSONB NOT NULL DEFAULT '{}',
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-      )
+      );
     `)
 
-    await queryRunner.query(`
+    this.addSql(`
       INSERT INTO site_settings (key, value) VALUES
         ('hero', '{
           "heading": "Shop the Philippines. All in one place.",
@@ -26,11 +26,11 @@ export class CreateSiteSettings1750000000000 implements MigrationInterface {
           "featured_product_image": "/images/featured-products/fashion.png",
           "vendors_count": "12,800+"
         }')
-      ON CONFLICT (key) DO NOTHING
+      ON CONFLICT (key) DO NOTHING;
     `)
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE IF EXISTS site_settings`)
+  async down(): Promise<void> {
+    this.addSql(`DROP TABLE IF EXISTS site_settings;`)
   }
 }

@@ -50,9 +50,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       publicCampaigns[0] ??
       null
 
-    let featured_campaign = null
+    let featured_campaign: Record<string, any> | null = null
     if (featuredRaw) {
-      const endsAt = featuredRaw.ends_at ? new Date(featuredRaw.ends_at) : null
       featured_campaign = {
         id: featuredRaw.id,
         name: featuredRaw.name,
