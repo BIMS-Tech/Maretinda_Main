@@ -15,7 +15,7 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 
 async function sellerOwnsPromotion(pg: any, sellerId: string, promotionId: string): Promise<boolean> {
   const result = await pg.raw(
-    `SELECT 1 FROM seller_promotion WHERE seller_id = ? AND promotion_id = ? LIMIT 1`,
+    `SELECT 1 FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? AND promotion_id = ? LIMIT 1`,
     [sellerId, promotionId]
   )
   return result.rows.length > 0
@@ -127,7 +127,7 @@ export async function DELETE(
     })
 
     // Clean up junction record
-    await pg.raw(`DELETE FROM seller_promotion WHERE seller_id = ? AND promotion_id = ?`, [sellerId, id])
+    await pg.raw(`UPDATE seller_seller_promotion_promotion SET deleted_at = now() WHERE seller_id = ? AND promotion_id = ? AND deleted_at IS NULL`, [sellerId, id])
 
     res.status(200).json({ id, deleted: true })
   } catch (error: any) {

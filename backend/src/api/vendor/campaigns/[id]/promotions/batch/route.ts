@@ -42,7 +42,7 @@ export async function POST(
     // Verify all promotions being added belong to this vendor
     if (add.length > 0) {
       const owned = await pg.raw(
-        `SELECT promotion_id FROM seller_promotion WHERE seller_id = ? AND promotion_id = ANY(?)`,
+        `SELECT promotion_id FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? AND promotion_id = ANY(?)`,
         [sellerId, add]
       )
       const ownedIds = owned.rows.map((r: any) => r.promotion_id)

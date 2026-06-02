@@ -10,6 +10,14 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
   return result.rows?.[0]?.seller_id || null
 }
 
+async function sellerOwnsPromotion(pg: any, sellerId: string, promotionId: string): Promise<boolean> {
+  const result = await pg.raw(
+    `SELECT 1 FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? AND promotion_id = ? LIMIT 1`,
+    [sellerId, promotionId]
+  )
+  return result.rows.length > 0
+}
+
 function toRuleType(ruleType: string): RuleType {
   if (ruleType === "rules") return RuleType.RULES
   if (ruleType === "target-rules") return RuleType.TARGET_RULES
@@ -40,15 +48,10 @@ export async function POST(
       return
     }
 
+    const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const promotionModule = req.scope.resolve(Modules.PROMOTION)
 
-    const existing = await promotionModule.retrievePromotion(id, {} as any)
-    if (!existing) {
-      res.status(404).json({ message: "Promotion not found" })
-      return
-    }
-
-    if ((existing as any).metadata?.seller_id !== sellerId) {
+    if (!await sellerOwnsPromotion(pg, sellerId, id)) {
       res.status(403).json({ message: "Forbidden: promotion does not belong to your store" })
       return
     }
@@ -65,7 +68,6 @@ export async function POST(
       },
     })
 
-    // Re-fetch the updated promotion so we can return the full object
     const updatedPromotion = await promotionModule.retrievePromotion(id, {
       relations: [
         "rules",

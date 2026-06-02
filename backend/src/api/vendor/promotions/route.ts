@@ -33,13 +33,13 @@ export async function GET(
     const offset = parseInt(rawQuery.offset || "0", 10)
 
     const countResult = await pg.raw(
-      `SELECT COUNT(*) AS total FROM seller_promotion WHERE seller_id = ?`,
+      `SELECT COUNT(*) AS total FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ?`,
       [sellerId]
     )
     const count = parseInt(countResult.rows[0]?.total || "0", 10)
 
     const idsResult = await pg.raw(
-      `SELECT promotion_id FROM seller_promotion WHERE seller_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT promotion_id FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [sellerId, limit, offset]
     )
     const ids: string[] = idsResult.rows.map((r: any) => r.promotion_id)
@@ -87,9 +87,11 @@ export async function POST(
 
     const promotion = Array.isArray(result) ? result[0] : result
 
-    // Record seller ownership
+    // Record seller ownership in the seller module's junction table
     await pg.raw(
-      `INSERT INTO seller_promotion (seller_id, promotion_id) VALUES (?, ?) ON CONFLICT DO NOTHING`,
+      `INSERT INTO seller_seller_promotion_promotion (id, seller_id, promotion_id)
+       VALUES (gen_random_uuid(), ?, ?)
+       ON CONFLICT (seller_id, promotion_id) DO NOTHING`,
       [sellerId, promotion.id]
     )
 

@@ -9,6 +9,14 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
   return result.rows?.[0]?.seller_id || null
 }
 
+async function sellerOwnsPromotion(pg: any, sellerId: string, promotionId: string): Promise<boolean> {
+  const result = await pg.raw(
+    `SELECT 1 FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? AND promotion_id = ? LIMIT 1`,
+    [sellerId, promotionId]
+  )
+  return result.rows.length > 0
+}
+
 /**
  * GET /vendor/promotions/:id/:ruleType
  * Get the rules of a promotion by rule type.
@@ -32,7 +40,13 @@ export async function GET(
       return
     }
 
+    const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const promotionModule = req.scope.resolve(Modules.PROMOTION)
+
+    if (!await sellerOwnsPromotion(pg, sellerId, id)) {
+      res.status(403).json({ message: "Forbidden: promotion does not belong to your store" })
+      return
+    }
 
     const promotion = await promotionModule.retrievePromotion(id, {
       relations: [
@@ -48,11 +62,6 @@ export async function GET(
       return
     }
 
-    if ((promotion as any).metadata?.seller_id !== sellerId) {
-      res.status(403).json({ message: "Forbidden: promotion does not belong to your store" })
-      return
-    }
-
     let rules: any[]
 
     if (ruleType === "rules") {
@@ -60,7 +69,6 @@ export async function GET(
     } else if (ruleType === "target-rules") {
       rules = (promotion as any).application_method?.target_rules || []
     } else {
-      // buy-rules
       rules = (promotion as any).application_method?.buy_rules || []
     }
 
