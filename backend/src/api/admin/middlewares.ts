@@ -34,6 +34,10 @@ export default defineMiddlewares({
       matcher: "/admin/site-settings*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
     },
+    {
+      matcher: "/admin/promotions/:id/metadata",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
+    },
   ],
 })
 

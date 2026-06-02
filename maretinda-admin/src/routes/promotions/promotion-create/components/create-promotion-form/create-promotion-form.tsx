@@ -36,6 +36,7 @@ import {
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useCampaigns } from "../../../../../hooks/api/campaigns"
 import { useCreatePromotion } from "../../../../../hooks/api/promotions"
+import { sdk } from "../../../../../lib/client"
 import {
   currencies,
   getCurrencySymbol,
@@ -148,16 +149,16 @@ export const CreatePromotionForm = () => {
 
       const adminDescription = (data as any).metadata_description
       const adminIsPublic = (data as any).metadata_is_public
+      const metadataPayload = {
+        scope: "platform",
+        ...(adminDescription ? { description: adminDescription } : {}),
+        is_public: adminIsPublic ? true : false,
+      }
 
       createPromotion(
         {
           ...promotionData,
           rules: buildRulesData(rules),
-          metadata: {
-            scope: "platform",
-            ...(adminDescription ? { description: adminDescription } : {}),
-            is_public: adminIsPublic ? true : false,
-          },
           application_method: {
             ...applicationMethodData,
             ...applicationMethodRuleData,
@@ -169,7 +170,17 @@ export const CreatePromotionForm = () => {
           is_automatic: is_automatic === "true",
         },
         {
-          onSuccess: ({ promotion }) => {
+          onSuccess: async ({ promotion }) => {
+            // Medusa's create/update endpoints reject metadata — use custom endpoint
+            try {
+              await sdk.client.fetch(`/admin/promotions/${promotion.id}/metadata`, {
+                method: "POST",
+                body: { metadata: metadataPayload },
+              })
+            } catch {
+              // non-fatal — promotion is created, metadata can be set manually
+            }
+
             toast.success(
               t("promotions.toasts.promotionCreateSuccess", {
                 code: promotion.code,
