@@ -1,5 +1,5 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
@@ -44,10 +44,8 @@ export async function GET(
     }
 
     if (ruleValue === "customer_group") {
-      const { data: groups } = await query.graph({
-        entity: "customer_group",
-        fields: ["id", "name"],
-      })
+      const customerService = req.scope.resolve(Modules.CUSTOMER)
+      const groups = await customerService.listCustomerGroups({}, { take: 200 })
 
       const values = (groups || []).map((g: any) => ({
         value: g.id,
