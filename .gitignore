@@ -146,3 +146,7 @@ Thumbs.db
 # Medusa specific
 .medusa/
 uploads/
+
+# Nested module node_modules (backend sub-modules)
+backend/src/modules/**/node_modules/
+backend/src/modules/**/dist/
