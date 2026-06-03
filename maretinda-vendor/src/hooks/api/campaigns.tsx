@@ -31,7 +31,7 @@ export const useCampaign = (
   const { data, ...rest } = useQuery({
     queryKey: campaignsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/vendor/campaigns/${id}`, {
+      fetchQuery(`/vendor/campaign-view/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
