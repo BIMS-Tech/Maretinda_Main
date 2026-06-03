@@ -1,6 +1,7 @@
 import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
+import * as XLSX from "xlsx"
 
 interface DftTransaction {
   id: string
@@ -101,13 +102,9 @@ class DftFileGeneratorService extends MedusaService({}) {
     return `DFT_${date}_${timestamp}`
   }
 
-  /**
-   * Generate DFT file name
-   * Format: "DFT - YYMMDD.txt"
-   */
   static generateFileName(batchId?: string): string {
     const date = new Date().toISOString().slice(2, 10).replace(/-/g, '') // YYMMDD format
-    return `DFT - ${date}.txt`
+    return `DFT - ${date}.xls`
   }
 
   /**
@@ -294,22 +291,48 @@ class DftFileGeneratorService extends MedusaService({}) {
     }
   }
 
-  /**
-   * Generate DFT file content
-   */
   generateFileContent(
     transactions: DftTransaction[],
     transactionDate?: Date
   ): string {
     const fileDate = transactionDate || new Date()
-    
-    // Generate detail records
-    const detailRecords = transactions.map(transaction => 
+    const detailRecords = transactions.map(transaction =>
       this.generateDftRecord(transaction, fileDate)
     )
-    
-    // DFT format doesn't have a header, just detail records
     return detailRecords.join('\n')
+  }
+
+  generateXlsBuffer(
+    transactions: DftTransaction[],
+    transactionDate?: Date
+  ): Buffer {
+    const fileDate = transactionDate || new Date()
+    const cleanAddress = (addr: string) => addr?.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim() || ''
+
+    const rows = transactions.map(transaction => {
+      const netAmount = transaction.net_amount ?? this.calculateNetAmount(transaction.amount)
+      const formattedAmount = this.formatAmount(netAmount)
+      const formattedDate = this.formatDate(fileDate)
+
+      return [
+        transaction.beneficiary_account,
+        transaction.beneficiary_name,
+        formattedAmount,
+        '', '', '', '', '', '', '', '', '', '',
+        transaction.swift_code,
+        cleanAddress(transaction.beneficiary_address),
+        '',
+        `DFT ${formattedDate}`,
+        cleanAddress(transaction.beneficiary_bank_address),
+        transaction.reference_number,
+        '0'
+      ]
+    })
+
+    const ws = XLSX.utils.aoa_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'DFT')
+    return XLSX.write(wb, { bookType: 'xls', type: 'buffer' })
   }
 
   /**

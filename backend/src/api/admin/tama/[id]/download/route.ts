@@ -5,6 +5,8 @@ import { createGCSService } from '../../../../../utils/google-cloud-storage'
 import * as fs from 'fs'
 import * as path from 'path'
 
+const XLS_CONTENT_TYPE = 'application/vnd.ms-excel'
+
 /**
  * @oas [get] /admin/tama/{id}/download
  * operationId: "AdminDownloadTamaFile"
@@ -78,32 +80,33 @@ export async function GET(
     }
 
     const tamaGeneration = rows[0]
-    const gcsPath = `settlement/tama/${tamaGeneration.file_name}`
+    const xlsFileName = tamaGeneration.file_name.replace(/\.txt$/, '.xls')
+    const gcsPath = `settlement/tama/${xlsFileName}`
     const gcs = createGCSService()
 
-    let fileContent: string | null = null
+    let fileBuffer: Buffer | null = null
 
     // 1. Try local disk
     const tamaDir = path.join(process.cwd(), 'static', 'settlement', 'tama')
-    const filePath = tamaGeneration.file_path || path.join(tamaDir, tamaGeneration.file_name)
+    const filePath = path.join(tamaDir, xlsFileName)
 
     if (fs.existsSync(filePath)) {
       console.log(`[Admin TAMA Download] File found on disk: ${filePath}`)
-      fileContent = fs.readFileSync(filePath, 'utf8')
+      fileBuffer = fs.readFileSync(filePath)
     }
 
     // 2. Try GCS
-    if (!fileContent && gcs) {
+    if (!fileBuffer && gcs) {
       console.log(`[Admin TAMA Download] Checking GCS: ${gcsPath}`)
-      fileContent = await gcs.readTextFile(gcsPath)
-      if (fileContent) {
+      fileBuffer = await gcs.readBinaryFile(gcsPath)
+      if (fileBuffer) {
         console.log(`[Admin TAMA Download] File found in GCS: ${gcsPath}`)
       }
     }
 
-    // 3. Regenerate from transactions
-    if (!fileContent) {
-      console.log(`[Admin TAMA Download] Regenerating file for: ${tamaGeneration.file_name}`)
+    // 3. Regenerate from transactions as XLS
+    if (!fileBuffer) {
+      console.log(`[Admin TAMA Download] Regenerating XLS for: ${xlsFileName}`)
 
       let tamaService: TamaFileGeneratorService
       try {
@@ -125,14 +128,14 @@ export async function GET(
         return
       }
 
-      fileContent = tamaService.generateFileContent(
+      fileBuffer = tamaService.generateXlsBuffer(
         transactions,
         tamaGeneration.funding_account || "2467246570570"
       )
 
       // Save to GCS
       if (gcs) {
-        const saved = await gcs.saveTextFile(gcsPath, fileContent, 'text/plain')
+        const saved = await gcs.saveBinaryFile(gcsPath, fileBuffer, XLS_CONTENT_TYPE)
         if (saved.success) {
           console.log(`[Admin TAMA Download] Saved to GCS: ${gcsPath}`)
         } else {
@@ -140,12 +143,12 @@ export async function GET(
         }
       }
 
-      // Try local disk as well (non-fatal)
+      // Try local disk (non-fatal)
       try {
         await fs.promises.mkdir(tamaDir, { recursive: true })
-        await fs.promises.writeFile(filePath, fileContent, 'utf8')
+        await fs.promises.writeFile(filePath, fileBuffer)
       } catch (writeError) {
-        console.warn('[Admin TAMA Download] Could not save to local disk (read-only filesystem):', (writeError as Error).message)
+        console.warn('[Admin TAMA Download] Could not save to local disk:', (writeError as Error).message)
       }
     }
 
@@ -157,15 +160,15 @@ export async function GET(
     `, [new Date(), new Date(), id])
 
     res.set({
-      'Content-Type': 'text/plain',
-      'Content-Disposition': `attachment; filename="${tamaGeneration.file_name}"`,
+      'Content-Type': XLS_CONTENT_TYPE,
+      'Content-Disposition': `attachment; filename="${xlsFileName}"`,
       'Cache-Control': 'no-cache',
-      'Content-Length': Buffer.byteLength(fileContent, 'utf8').toString()
+      'Content-Length': fileBuffer.length.toString()
     })
 
-    console.log(`[Admin TAMA Download] ✅ Sent: ${tamaGeneration.file_name} (${fileContent.split('\n').length} lines)`)
+    console.log(`[Admin TAMA Download] ✅ Sent: ${xlsFileName} (${fileBuffer.length} bytes)`)
 
-    res.status(200).send(fileContent)
+    res.status(200).send(fileBuffer)
 
   } catch (error) {
     console.error('[Admin TAMA Download] ❌ Error downloading TAMA file:', error)

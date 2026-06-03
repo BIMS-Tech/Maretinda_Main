@@ -5,6 +5,8 @@ import * as path from 'path'
 import DftFileGeneratorService from '../../../../../services/dft-file-generator'
 import { createGCSService } from '../../../../../utils/google-cloud-storage'
 
+const XLS_CONTENT_TYPE = 'application/vnd.ms-excel'
+
 /**
  * @oas [get] /admin/dft/{id}/download
  * operationId: "AdminDownloadDftFile"
@@ -75,32 +77,33 @@ export async function GET(
     }
 
     const dftGeneration = rows[0]
-    const gcsPath = `settlement/dft/${dftGeneration.file_name}`
+    const xlsFileName = dftGeneration.file_name.replace(/\.txt$/, '.xls')
+    const gcsPath = `settlement/dft/${xlsFileName}`
     const gcs = createGCSService()
 
-    let fileContent: string | null = null
+    let fileBuffer: Buffer | null = null
 
     // 1. Try local disk
     const dftDir = path.join(process.cwd(), 'static', 'settlement', 'dft')
-    const filePath = dftGeneration.file_path || path.join(dftDir, dftGeneration.file_name)
+    const filePath = path.join(dftDir, xlsFileName)
 
     if (await fs.promises.access(filePath).then(() => true).catch(() => false)) {
       console.log(`[Admin DFT Download] File found on disk: ${filePath}`)
-      fileContent = await fs.promises.readFile(filePath, 'utf-8')
+      fileBuffer = await fs.promises.readFile(filePath)
     }
 
     // 2. Try GCS
-    if (!fileContent && gcs) {
+    if (!fileBuffer && gcs) {
       console.log(`[Admin DFT Download] Checking GCS: ${gcsPath}`)
-      fileContent = await gcs.readTextFile(gcsPath)
-      if (fileContent) {
+      fileBuffer = await gcs.readBinaryFile(gcsPath)
+      if (fileBuffer) {
         console.log(`[Admin DFT Download] File found in GCS: ${gcsPath}`)
       }
     }
 
-    // 3. Regenerate from transactions
-    if (!fileContent) {
-      console.log(`[Admin DFT Download] Regenerating file for: ${dftGeneration.file_name}`)
+    // 3. Regenerate from transactions as XLS
+    if (!fileBuffer) {
+      console.log(`[Admin DFT Download] Regenerating XLS for: ${xlsFileName}`)
 
       let dftService: DftFileGeneratorService
       try {
@@ -122,11 +125,11 @@ export async function GET(
         return
       }
 
-      fileContent = dftService.generateFileContent(transactions)
+      fileBuffer = dftService.generateXlsBuffer(transactions)
 
       // Save to GCS
       if (gcs) {
-        const saved = await gcs.saveTextFile(gcsPath, fileContent, 'text/plain')
+        const saved = await gcs.saveBinaryFile(gcsPath, fileBuffer, XLS_CONTENT_TYPE)
         if (saved.success) {
           console.log(`[Admin DFT Download] Saved to GCS: ${gcsPath}`)
         } else {
@@ -134,21 +137,21 @@ export async function GET(
         }
       }
 
-      // Try local disk as well (non-fatal)
+      // Try local disk (non-fatal)
       try {
         await fs.promises.mkdir(dftDir, { recursive: true })
-        await fs.promises.writeFile(filePath, fileContent)
+        await fs.promises.writeFile(filePath, fileBuffer)
       } catch (writeError) {
-        console.warn('[Admin DFT Download] Could not save to local disk (read-only filesystem):', (writeError as Error).message)
+        console.warn('[Admin DFT Download] Could not save to local disk:', (writeError as Error).message)
       }
     }
 
     // Send file as download
-    res.setHeader('Content-Type', 'text/plain')
-    res.setHeader('Content-Disposition', `attachment; filename="${dftGeneration.file_name}"`)
-    res.status(200).send(fileContent)
+    res.setHeader('Content-Type', XLS_CONTENT_TYPE)
+    res.setHeader('Content-Disposition', `attachment; filename="${xlsFileName}"`)
+    res.status(200).send(fileBuffer)
 
-    console.log(`[Admin DFT Download] ✅ Sent: ${dftGeneration.file_name} (${fileContent.split('\n').length} lines)`)
+    console.log(`[Admin DFT Download] ✅ Sent: ${xlsFileName} (${fileBuffer.length} bytes)`)
 
   } catch (error) {
     console.error('[Admin DFT Download] ❌ Error:', error)

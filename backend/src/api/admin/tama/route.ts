@@ -176,12 +176,12 @@ export async function POST(
     const batchId = TamaFileGeneratorService.generateBatchId()
     const fileName = TamaFileGeneratorService.generateFileName(batchId)
     
-    // Generate file content
-    const fileContent = tamaService.generateFileContent(
+    // Generate XLS buffer
+    const xlsBuffer = tamaService.generateXlsBuffer(
       validation.validTransactions,
       funding_account
     )
-    
+
     // Generate metadata
     const metadata = tamaService.generateFileMetadata(
       batchId,
@@ -190,16 +190,16 @@ export async function POST(
       funding_account,
       req.auth_context?.actor_id || "admin"
     )
-    
+
     // Create TAMA generation record
     const generationId = await tamaService.createTamaGeneration(metadata, notes)
-    
-    // Save file content
+
+    // Save file to disk
     const tamaDir = path.join(process.cwd(), 'uploads', 'tama')
     await fs.promises.mkdir(tamaDir, { recursive: true })
-    
+
     const filePath = path.join(tamaDir, fileName)
-    await fs.promises.writeFile(filePath, fileContent, 'utf8')
+    await fs.promises.writeFile(filePath, xlsBuffer)
     
     console.log(`TAMA generation created: ${generationId} with ${validation.validTransactions.length} transactions, total: ${metadata.total_amount}`)
 
@@ -225,7 +225,7 @@ export async function POST(
           errors: invalid.errors
         }))
       },
-      file_content_preview: fileContent.split('\n').slice(0, 5).join('\n') + (fileContent.split('\n').length > 5 ? '\n...' : '')
+      file_size_bytes: xlsBuffer.length
     })
 
   } catch (error) {

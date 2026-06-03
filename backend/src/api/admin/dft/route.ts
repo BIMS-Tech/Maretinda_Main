@@ -167,10 +167,8 @@ export async function POST(
     const batchId = DftFileGeneratorService.generateBatchId()
     const fileName = DftFileGeneratorService.generateFileName(batchId)
 
-    // Generate file content
-    const fileContent = dftService.generateFileContent(
-      validTransactions
-    )
+    // Generate XLS buffer
+    const xlsBuffer = dftService.generateXlsBuffer(validTransactions)
 
     const metadata = dftService.generateFileMetadata(
       batchId,
@@ -185,9 +183,9 @@ export async function POST(
     // Write file to disk
     const dftDir = path.join(process.cwd(), 'uploads', 'dft')
     await fs.promises.mkdir(dftDir, { recursive: true })
-    
+
     const filePath = path.join(dftDir, fileName)
-    await fs.promises.writeFile(filePath, fileContent)
+    await fs.promises.writeFile(filePath, xlsBuffer)
 
     console.log(`DFT generation created: ${generationId} with ${validation.validTransactions.length} transactions, total: ${metadata.total_amount}`)
 

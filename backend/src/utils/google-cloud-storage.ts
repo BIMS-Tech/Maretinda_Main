@@ -287,6 +287,42 @@ class GoogleCloudStorageService {
     }
   }
 
+  async saveBinaryFile(
+    gcsPath: string,
+    buffer: Buffer,
+    contentType: string = 'application/octet-stream'
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!this.isConfigured) {
+      return { success: false, error: 'Google Cloud Storage not configured' }
+    }
+
+    try {
+      const file = this.bucket.file(gcsPath)
+      await file.save(buffer, { metadata: { contentType } })
+      console.log('[GCS] saveBinaryFile success:', gcsPath)
+      return { success: true }
+    } catch (error) {
+      console.error('[GCS] saveBinaryFile error:', error)
+      return { success: false, error: error instanceof Error ? error.message : 'Save failed' }
+    }
+  }
+
+  async readBinaryFile(gcsPath: string): Promise<Buffer | null> {
+    if (!this.isConfigured) return null
+
+    try {
+      const file = this.bucket.file(gcsPath)
+      const [exists] = await file.exists()
+      if (!exists) return null
+
+      const [buffer] = await file.download()
+      return buffer
+    } catch (error) {
+      console.error('[GCS] readBinaryFile error:', error)
+      return null
+    }
+  }
+
   /**
    * List files in a folder
    */

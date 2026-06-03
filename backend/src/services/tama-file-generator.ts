@@ -1,6 +1,7 @@
 import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
+import * as XLSX from "xlsx"
 
 interface TamaTransaction {
   id: string
@@ -105,7 +106,7 @@ class TamaFileGeneratorService extends MedusaService({}) {
    */
   static generateFileName(batchId?: string): string {
     const date = new Date().toISOString().slice(2, 10).replace(/-/g, '') // YYMMDD format
-    return `TAMA - ${date}.txt`
+    return `TAMA - ${date}.xls`
   }
 
   /**
@@ -283,28 +284,42 @@ class TamaFileGeneratorService extends MedusaService({}) {
     }
   }
 
-  /**
-   * Generate TAMA file content
-   */
   generateFileContent(
     transactions: TamaTransaction[],
     fundingAccount: string,
     transactionDate?: Date
   ): string {
     const fileDate = transactionDate || new Date()
-    
-    // Generate header record
     const headerRecord = this.generateHeaderRecord(fundingAccount, fileDate)
-    
-    // Generate detail records
-    const detailRecords = transactions.map(transaction => 
+    const detailRecords = transactions.map(transaction =>
       this.generateDetailRecord(transaction)
     )
-    
-    // Combine all records
-    const allRecords = [headerRecord, ...detailRecords]
-    
-    return allRecords.join('\n')
+    return [headerRecord, ...detailRecords].join('\n')
+  }
+
+  generateXlsBuffer(
+    transactions: TamaTransaction[],
+    fundingAccount: string,
+    transactionDate?: Date
+  ): Buffer {
+    const fileDate = transactionDate || new Date()
+
+    const tPlusOneDate = new Date(fileDate)
+    tPlusOneDate.setDate(tPlusOneDate.getDate() + 1)
+    const formattedDate = this.formatDate(tPlusOneDate)
+
+    const headerRow = ['H', fundingAccount, formattedDate, '11:00 AM']
+
+    const detailRows = transactions.map(transaction => {
+      const netAmount = transaction.net_amount ?? this.calculateNetAmount(transaction.amount)
+      const formattedAmount = this.formatAmount(netAmount)
+      return ['D', '', transaction.reference_number, '', '', transaction.beneficiary_account, formattedAmount, transaction.remarks || 'MARETINDA SETTLEMENT']
+    })
+
+    const ws = XLSX.utils.aoa_to_sheet([headerRow, ...detailRows])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'TAMA')
+    return XLSX.write(wb, { bookType: 'xls', type: 'buffer' })
   }
 
   /**
