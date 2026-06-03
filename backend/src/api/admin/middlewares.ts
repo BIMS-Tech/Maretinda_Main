@@ -38,6 +38,10 @@ export default defineMiddlewares({
       matcher: "/admin/promotions/:id/metadata",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
     },
+    {
+      matcher: "/admin/sync-seller-groups",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"], { allowUnregistered: false })],
+    },
   ],
 })
 

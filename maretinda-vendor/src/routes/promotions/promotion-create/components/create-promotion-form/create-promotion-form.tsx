@@ -56,6 +56,7 @@ const defaultValues = {
     allocation: "each" as ApplicationMethodAllocationValues,
     type: "percentage" as ApplicationMethodTypeValues,
     target_type: "items" as ApplicationMethodTargetTypeValues,
+    currency_code: "php",
     max_quantity: 1,
     target_rules: [],
     buy_rules: [],
