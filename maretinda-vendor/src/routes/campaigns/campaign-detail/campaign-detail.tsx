@@ -6,12 +6,10 @@ import { CampaignGeneralSection } from "./components/campaign-general-section"
 import { CampaignPromotionSection } from "./components/campaign-promotion-section"
 import { CampaignSpend } from "./components/campaign-spend"
 import { campaignLoader } from "./loader"
-
 import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
 import { TwoColumnPage } from "../../../components/layout/pages"
 import { useDashboardExtension } from "../../../extensions"
 import { CampaignConfigurationSection } from "./components/campaign-configuration-section"
-import { CAMPAIGN_DETAIL_FIELDS } from "./constants"
 
 export const CampaignDetail = () => {
   const initialData = useLoaderData() as Awaited<
@@ -21,7 +19,7 @@ export const CampaignDetail = () => {
   const { id } = useParams()
   const { campaign, isLoading, isError, error } = useCampaign(
     id!,
-    { fields: CAMPAIGN_DETAIL_FIELDS },
+    undefined,
     { initialData }
   )
 
