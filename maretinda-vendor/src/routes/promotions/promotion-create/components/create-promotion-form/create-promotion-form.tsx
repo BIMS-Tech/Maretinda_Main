@@ -56,7 +56,6 @@ const defaultValues = {
     allocation: "each" as ApplicationMethodAllocationValues,
     type: "percentage" as ApplicationMethodTypeValues,
     target_type: "items" as ApplicationMethodTargetTypeValues,
-    currency_code: "php",
     max_quantity: 1,
     target_rules: [],
     buy_rules: [],
@@ -99,8 +98,12 @@ export const CreatePromotionForm = () => {
       const {
         target_rules: targetRulesData = [],
         buy_rules: buyRulesData = [],
+        currency_code: rawCurrencyCode,
         ...applicationMethodData
       } = application_method
+
+      // Only include currency_code for fixed-amount promotions
+      const currencyCode = applicationMethodData.type === "fixed" ? rawCurrencyCode : undefined
 
       const disguisedRules = [
         ...targetRulesData.filter((r) => !!r.disguised),
@@ -144,6 +147,7 @@ export const CreatePromotionForm = () => {
           metadata: descriptionValue ? { description: descriptionValue } : undefined,
           application_method: {
             ...applicationMethodData,
+            ...(currencyCode ? { currency_code: currencyCode } : {}),
             ...applicationMethodRuleData,
             target_rules: buildRulesData(targetRulesData),
             type: applicationMethodData.type,
