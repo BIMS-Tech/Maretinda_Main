@@ -318,18 +318,7 @@ export const CreatePromotionForm = () => {
 
   const isTargetTypeOrder = targetType === "order"
 
-  const formData = form.getValues()
-  let campaignQuery: object = {}
-
-  if (isFixedValueType && formData.application_method.currency_code) {
-    campaignQuery = {
-      budget: {
-        currency_code: formData.application_method.currency_code,
-      },
-    }
-  }
-
-  const { campaigns } = useCampaigns(campaignQuery)
+  const { campaigns } = useCampaigns({})
 
   const watchCampaignChoice = useWatch({
     control: form.control,
