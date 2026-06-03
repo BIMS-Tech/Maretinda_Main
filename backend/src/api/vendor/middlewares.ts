@@ -101,28 +101,39 @@ async function campaignListOverride(
 /**
  * Intercept GET /vendor/campaigns/:id — mercurjs checks seller_campaign link
  * ownership, which blocks platform campaigns (created by admin, not seller).
- * We bypass by reading the campaign directly.
+ * We bypass by reading the campaign directly. Never calls next() to prevent
+ * mercurjs from returning 403.
  */
 async function campaignDetailOverride(
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ) {
+  // Extract ID from params or fall back to URL path
+  const id = (req as any).params?.id || req.path.split("/").filter(Boolean).pop()
+
+  if (!id) {
+    return res.status(400).json({ message: "Campaign ID is required" })
+  }
+
   try {
-    const { id } = req.params
     const promotionService = (req as any).scope.resolve(Modules.PROMOTION)
 
     const campaign = await (promotionService as any).retrieveCampaign(id, {
       relations: ["promotions", "budget"],
     } as any)
 
-    if (!campaign) {
+    return res.status(200).json({ campaign })
+  } catch (err: any) {
+    if (
+      err?.type === "NOT_FOUND" ||
+      err?.message?.toLowerCase().includes("not found") ||
+      err?.message?.toLowerCase().includes("does not exist")
+    ) {
       return res.status(404).json({ message: "Campaign not found" })
     }
-
-    return res.status(200).json({ campaign })
-  } catch {
-    next()
+    console.error("[campaignDetailOverride] Error:", err?.message)
+    return res.status(500).json({ message: "Failed to retrieve campaign" })
   }
 }
 

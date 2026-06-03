@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getActiveCampaigns } from '@/lib/data/vouchers'
+import { getCampaignDetail } from '@/lib/data/vouchers'
 import { retrieveCustomer } from '@/lib/data/customer'
 import CampaignDetailClient from './CampaignDetailClient'
 
-export const revalidate = 300
+export const revalidate = 60
 
 export async function generateMetadata({
 	params,
@@ -12,10 +12,9 @@ export async function generateMetadata({
 	params: Promise<{ id: string }>
 }): Promise<Metadata> {
 	const { id } = await params
-	const campaigns = await getActiveCampaigns().catch(() => [])
-	const campaign = campaigns.find((c: any) => c.id === id)
+	const data = await getCampaignDetail(id).catch(() => null)
 	return {
-		title: campaign ? `${campaign.name} — Maretinda` : 'Campaign — Maretinda',
+		title: data?.campaign ? `${data.campaign.name} — Maretinda` : 'Campaign — Maretinda',
 	}
 }
 
@@ -25,17 +24,17 @@ export default async function CampaignDetailPage({
 	params: Promise<{ id: string }>
 }) {
 	const { id } = await params
-	const [campaigns, customer] = await Promise.all([
-		getActiveCampaigns().catch(() => []),
+	const [data, customer] = await Promise.all([
+		getCampaignDetail(id).catch(() => null),
 		retrieveCustomer().catch(() => null),
 	])
 
-	const campaign = campaigns.find((c: any) => c.id === id)
-	if (!campaign) return notFound()
+	if (!data?.campaign) return notFound()
 
 	return (
 		<CampaignDetailClient
-			campaign={campaign}
+			campaign={data.campaign}
+			products={data.products || []}
 			isLoggedIn={!!customer}
 		/>
 	)

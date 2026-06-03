@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { VoucherPromotion } from '@/lib/data/vouchers'
 import { collectVoucher } from '@/lib/data/vouchers'
 import { toast } from '@/lib/helpers/toast'
@@ -23,11 +24,21 @@ interface Campaign {
 	promotions: VoucherPromotion[]
 }
 
+interface CampaignProduct {
+	id: string
+	title: string
+	handle: string
+	thumbnail: string | null
+	description: string | null
+}
+
 export default function CampaignDetailClient({
 	campaign,
+	products,
 	isLoggedIn,
 }: {
 	campaign: Campaign
+	products: CampaignProduct[]
 	isLoggedIn: boolean
 }) {
 	const [vouchers, setVouchers] = useState<VoucherPromotion[]>(
@@ -132,6 +143,60 @@ export default function CampaignDetailClient({
 					</div>
 				</div>
 			</div>
+
+			{/* Campaign Products */}
+			{products.length > 0 && (
+				<div className="max-w-5xl mx-auto px-4 lg:px-8 pt-8">
+					<h2
+						className="text-lg font-bold mb-5"
+						style={{ color: '#111827' }}
+					>
+						🛍️ Campaign Products ({products.length})
+					</h2>
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+						{products.map((product) => (
+							<Link
+								key={product.id}
+								href={`/products/${product.handle}`}
+								className="group flex flex-col rounded-xl overflow-hidden border border-gray-100 hover:shadow-md transition-shadow bg-white"
+							>
+								<div className="aspect-square relative bg-gray-50">
+									{product.thumbnail ? (
+										<Image
+											src={product.thumbnail}
+											alt={product.title}
+											fill
+											className="object-cover group-hover:scale-105 transition-transform duration-300"
+											sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+										/>
+									) : (
+										<div
+											className="absolute inset-0 flex items-center justify-center text-3xl"
+											style={{ backgroundColor: '#f9fafb' }}
+										>
+											🛍️
+										</div>
+									)}
+								</div>
+								<div className="p-3">
+									<p
+										className="text-sm font-semibold line-clamp-2 leading-tight"
+										style={{ color: '#111827' }}
+									>
+										{product.title}
+									</p>
+									<span
+										className="inline-block mt-2 text-xs font-bold"
+										style={{ color: '#432C63' }}
+									>
+										Shop now →
+									</span>
+								</div>
+							</Link>
+						))}
+					</div>
+				</div>
+			)}
 
 			{/* Vouchers */}
 			<div className="max-w-5xl mx-auto px-4 lg:px-8 py-8">

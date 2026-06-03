@@ -46,6 +46,20 @@ export async function getAvailableVouchers(sellerId?: string): Promise<VoucherPr
   }
 }
 
+/** Fetch a single campaign with its promotions and targeted products. */
+export async function getCampaignDetail(id: string): Promise<{ campaign: any; products: any[] } | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/store/campaigns/${id}`, {
+      headers: baseHeaders(),
+      next: { revalidate: 60, tags: [`campaign-${id}`] },
+    })
+    if (!res.ok) return null
+    return await res.json()
+  } catch {
+    return null
+  }
+}
+
 /** Fetch active campaigns with their linked promotions. */
 export async function getActiveCampaigns(): Promise<any[]> {
   try {
