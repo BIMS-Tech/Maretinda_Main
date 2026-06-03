@@ -55,9 +55,9 @@ export async function getHeroContent(): Promise<HeroContent> {
       headers: baseHeaders(),
       next: { revalidate: 300, tags: ['hero-content'] },
     })
-    if (!res.ok) return { welcome_promo: null, featured_campaign: null, site_settings: {} }
+    if (!res.ok) return { welcome_promo: null, featured_campaign: null, site_settings: {}, sellers_count: null }
     return await res.json()
   } catch {
-    return { welcome_promo: null, featured_campaign: null, site_settings: {} }
+    return { welcome_promo: null, featured_campaign: null, site_settings: {}, sellers_count: null }
   }
 }
