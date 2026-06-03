@@ -93,9 +93,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         name: featuredRaw.name,
         description: featuredRaw.description || null,
         ends_at: featuredRaw.ends_at || null,
-        badge_label: null,
-        discount_label: null,
-        shop_link: "/categories",
+        badge_label: featuredRaw.metadata?.badge_label || null,
+        discount_label: featuredRaw.metadata?.discount_label || null,
+        shop_link: `/campaigns/${featuredRaw.id}`,
       }
     }
 

@@ -46,8 +46,27 @@ async function promotionCreateOverride(
 
     const body = req.body as any
 
+    // Fetch seller name to tag on promotion metadata
+    const sellerRow2 = await pg.raw(
+      `SELECT s.name FROM seller s WHERE s.id = ? LIMIT 1`,
+      [sellerId]
+    )
+    const sellerName = sellerRow2.rows?.[0]?.name || null
+
+    // Inject seller scope metadata so storefront voucher listing can discover it
+    const enrichedBody = {
+      ...body,
+      metadata: {
+        ...((body.metadata as Record<string, any>) || {}),
+        scope: "seller",
+        seller_id: sellerId,
+        ...(sellerName ? { seller_name: sellerName } : {}),
+        is_public: true,
+      },
+    }
+
     const { result } = await createPromotionsWorkflow((req as any).scope).run({
-      input: { promotionsData: [body] },
+      input: { promotionsData: [enrichedBody] },
     })
 
     const promotion = Array.isArray(result) ? result[0] : result

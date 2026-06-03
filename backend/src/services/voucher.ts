@@ -50,7 +50,7 @@ export default class VoucherService {
 
     const promotions = await promotionService.listPromotions(
       { status: ["active"] },
-      { take: 200 }
+      { take: 200, relations: ["application_method", "rules", "rules.values"] }
     )
 
     // Filter by public visibility and optional seller
@@ -194,11 +194,14 @@ export default class VoucherService {
       }
     }
 
-    // Determine min order from rules
+    // Determine min order from rules (values are objects with a .value property)
     let min_order: number | undefined
     const subtotalRule = p.rules?.find((r: any) => r.attribute === "subtotal")
     if (subtotalRule?.values?.[0]) {
-      min_order = Number(subtotalRule.values[0]) / 100
+      const raw = subtotalRule.values[0]
+      const scalar = typeof raw === "object" ? raw.value : raw
+      const parsed = Number(scalar)
+      if (!isNaN(parsed) && parsed > 0) min_order = parsed / 100
     }
 
     const meta = p.metadata || {}
