@@ -1,5 +1,6 @@
 import { defineMiddlewares } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { createPromotionsWorkflow } from "@medusajs/core-flows"
 import { NextFunction, Request, Response } from "express"
 
 function restorePaymentCollectionsFields(
@@ -17,6 +18,52 @@ function restorePaymentCollectionsFields(
     }
   }
   next()
+}
+
+/**
+ * Intercept POST /vendor/promotions — mercurjs's VendorCreatePromotion validator
+ * only allows type:'percentage' + target_type:'items'. We bypass it to support
+ * all promotion types (fixed, percentage) and target types (order, items).
+ */
+async function promotionCreateOverride(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (req.method !== "POST") return next()
+
+  try {
+    const memberId = (req as any).auth_context?.actor_id
+    if (!memberId) return res.status(401).json({ message: "Unauthorized" })
+
+    const pg = (req as any).scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const sellerRow = await pg.raw(
+      `SELECT seller_id FROM member WHERE id = ? LIMIT 1`,
+      [memberId]
+    )
+    const sellerId = sellerRow.rows?.[0]?.seller_id
+    if (!sellerId) return res.status(401).json({ message: "Unauthorized" })
+
+    const body = req.body as any
+
+    const { result } = await createPromotionsWorkflow((req as any).scope).run({
+      input: { promotionsData: [body] },
+    })
+
+    const promotion = Array.isArray(result) ? result[0] : result
+
+    await pg.raw(
+      `INSERT INTO seller_seller_promotion_promotion (id, seller_id, promotion_id)
+       VALUES (gen_random_uuid(), ?, ?)
+       ON CONFLICT (seller_id, promotion_id) DO NOTHING`,
+      [sellerId, promotion.id]
+    )
+
+    return res.status(201).json({ promotion })
+  } catch (error: any) {
+    console.error("[VendorPromotionCreate] Error:", error.message)
+    return res.status(400).json({ message: error.message })
+  }
 }
 
 /**
@@ -134,6 +181,11 @@ export default defineMiddlewares({
       method: ["GET"],
       matcher: "/vendor/orders/:id",
       middlewares: [restorePaymentCollectionsFields],
+    },
+    {
+      method: ["POST"],
+      matcher: "/vendor/promotions",
+      middlewares: [promotionCreateOverride],
     },
     {
       method: ["GET"],
