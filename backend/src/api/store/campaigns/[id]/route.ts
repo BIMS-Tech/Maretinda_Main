@@ -17,7 +17,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       relations: ["promotions", "budget"],
     } as any)
 
-    if (!campaign || campaign.metadata?.is_public !== true) {
+    if (!campaign) {
       return res.status(404).json({ message: "Campaign not found" })
     }
 
