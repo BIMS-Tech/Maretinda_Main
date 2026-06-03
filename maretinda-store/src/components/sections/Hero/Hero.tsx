@@ -6,7 +6,7 @@ type HeroProps = {
 	buttons: { label: string; path: string }[];
 	heading?: string;
 	paragraph?: string;
-	heroContent?: HeroContent;
+	heroContent?: HeroContent | null;
 };
 
 const FALLBACK = {
@@ -58,6 +58,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const s = heroContent?.site_settings ?? {}
 	const wp = heroContent?.welcome_promo ?? null
 	const fc = heroContent?.featured_campaign ?? null
+	const liveSellersCount = heroContent?.sellers_count ?? null
 
 	// Hero main card values
 	const heading = s.heading || FALLBACK.heading
@@ -71,7 +72,8 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const soldThisWeek = s.featured_product_sold_this_week ?? FALLBACK.featured_product_sold_this_week
 	const productLink = s.featured_product_link || FALLBACK.featured_product_link
 	const productImage = s.featured_product_image || FALLBACK.featured_product_image
-	const vendorsCount = s.vendors_count || FALLBACK.vendors_count
+	// Live count from DB takes priority; admin override next; then fallback
+	const vendorsCount = liveSellersCount || s.vendors_count || FALLBACK.vendors_count
 
 	// Welcome promo card values
 	const welcomeCode = wp?.code || FALLBACK.welcome_code
@@ -154,7 +156,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#7FA8C9' }} />
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#D98AA1' }} />
 								</div>
-								<span><b className="text-[#1a1a1a]">{vendorsCount}</b> vendors</span>
+								<span><b className="text-[#1a1a1a]">{vendorsCount}</b> sellers</span>
 							</div>
 						</div>
 					</div>
@@ -169,6 +171,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 								className="object-contain object-bottom"
 								sizes="25vw"
 								priority
+								unoptimized={productImage.startsWith('http')}
 							/>
 						</div>
 

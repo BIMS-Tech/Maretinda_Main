@@ -46,6 +46,7 @@ export interface HeroContent {
   welcome_promo: HeroWelcomePromo | null
   featured_campaign: HeroFeaturedCampaign | null
   site_settings: HeroSiteSettings
+  sellers_count: string | null
 }
 
 export async function getHeroContent(): Promise<HeroContent> {

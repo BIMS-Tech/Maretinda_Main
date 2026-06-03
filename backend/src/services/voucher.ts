@@ -53,17 +53,16 @@ export default class VoucherService {
       { take: 200, relations: ["application_method", "rules", "rules.values"] }
     )
 
-    // Filter by public visibility and optional seller
+    // Filter by seller scope and optional seller filter
     const visible = promotions.filter((p: any) => {
       const meta = p.metadata || {}
-      // Platform promos need is_public=true; seller promos are always public
-      if (meta.scope === "seller") {
+      if (meta.scope === "seller" || meta.seller_id) {
         if (sellerIdFilter && meta.seller_id !== sellerIdFilter) return false
         return true
       }
-      // Platform: only show if explicitly marked public
+      // Platform promos: show all active ones (status filter already applied above)
       if (sellerIdFilter) return false // seller filter excludes platform promos
-      return meta.is_public === true
+      return true
     })
 
     // Fetch collected status for this customer

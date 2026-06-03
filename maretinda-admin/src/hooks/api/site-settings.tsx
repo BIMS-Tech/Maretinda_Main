@@ -47,3 +47,23 @@ export const useUpdateHeroSettings = () => {
     },
   })
 }
+
+export interface TrendingProduct {
+  id: string
+  title: string
+  handle: string
+  thumbnail: string | null
+  trending_score: number
+  avg_rating: number
+  review_count: number
+}
+
+export const useTrendingProducts = () => {
+  return useQuery({
+    queryKey: ['admin-trending-products'],
+    queryFn: async () => {
+      const result = await sdk.client.fetch('/admin/trending-products?limit=10', { method: 'GET' })
+      return (result as { products: TrendingProduct[] }).products
+    },
+  })
+}

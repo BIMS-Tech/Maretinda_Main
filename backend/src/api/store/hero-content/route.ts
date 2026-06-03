@@ -99,7 +99,19 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
-    res.status(200).json({ welcome_promo, featured_campaign, site_settings })
+    // --- Live seller count ---
+    let sellers_count: string | null = null
+    try {
+      const countRow = await knex.raw(
+        `SELECT COUNT(*) AS cnt FROM seller WHERE store_status = 'ACTIVE'`
+      )
+      const cnt = parseInt(countRow.rows?.[0]?.cnt || "0", 10)
+      if (cnt > 0) sellers_count = cnt.toLocaleString("en-PH")
+    } catch {
+      // seller table may not exist in all environments
+    }
+
+    res.status(200).json({ welcome_promo, featured_campaign, site_settings, sellers_count })
   } catch (error: any) {
     console.error("[Store Hero Content] GET error:", error.message)
     res.status(500).json({ message: "Failed to retrieve hero content", error: error.message })

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import {
   Button,
   Container,
@@ -8,13 +9,14 @@ import {
   Text,
   Textarea,
   toast,
+  Badge,
 } from "@medusajs/ui"
-import { useHeroSettings, useUpdateHeroSettings, type HeroSettings } from "../../hooks/api/site-settings"
+import { useHeroSettings, useUpdateHeroSettings, useTrendingProducts, type HeroSettings, type TrendingProduct } from "../../hooks/api/site-settings"
 
 const DEFAULTS: HeroSettings = {
   heading: "Shop the Philippines. All in one place.",
   subheading:
-    "From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available.",
+    "From fresh palengke produce to fashion-forward finds — discover thousands of trusted local sellers, with fast nationwide delivery and cash on delivery available.",
   badge: "New season · Pampanga local",
   featured_product_name: "Filipiniana Sundress",
   featured_product_category: "Fashion · Summer Drop",
@@ -41,9 +43,69 @@ function FieldRow({ label, hint, children }: { label: string; hint?: string; chi
   )
 }
 
+function ProductPickerCard({
+  product,
+  isSelected,
+  onSelect,
+}: {
+  product: TrendingProduct
+  isSelected: boolean
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`relative flex flex-col rounded-xl border p-3 text-left transition-all hover:shadow-sm ${
+        isSelected
+          ? "border-[#432C63] bg-[#F5F0FF] shadow-sm"
+          : "border-ui-border-base bg-ui-bg-base hover:border-ui-border-strong"
+      }`}
+    >
+      {isSelected && (
+        <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#432C63]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+            <path d="M5 12l5 5L20 7" />
+          </svg>
+        </span>
+      )}
+
+      {/* Thumbnail */}
+      <div className="mb-2 h-24 w-full overflow-hidden rounded-lg bg-ui-bg-subtle flex items-center justify-center">
+        {product.thumbnail ? (
+          <img
+            src={product.thumbnail}
+            alt={product.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-ui-fg-muted">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+        )}
+      </div>
+
+      <p className="text-xs font-semibold text-ui-fg-base line-clamp-2 leading-tight">{product.title}</p>
+
+      <div className="mt-1.5 flex items-center gap-2">
+        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-ui-fg-muted">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="#FFC533"><path d="M12 2l3 7h7l-5.5 4.5L18 22l-6-4-6 4 1.5-8.5L2 9h7z" /></svg>
+          {product.avg_rating > 0 ? product.avg_rating.toFixed(1) : "—"}
+        </span>
+        <span className="text-[11px] text-ui-fg-subtle">
+          {product.trending_score > 0 ? `${product.trending_score} sold/wk` : "No sales yet"}
+        </span>
+      </div>
+    </button>
+  )
+}
+
 export const StoreFront = () => {
   const { settings, updatedAt, isLoading } = useHeroSettings()
   const { mutateAsync: save, isPending: isSaving } = useUpdateHeroSettings()
+  const { data: trendingProducts, isLoading: isLoadingProducts } = useTrendingProducts()
   const [form, setForm] = useState<HeroSettings>(DEFAULTS)
   const [isDirty, setIsDirty] = useState(false)
 
@@ -73,6 +135,19 @@ export const StoreFront = () => {
     if (settings) setForm({ ...DEFAULTS, ...settings })
     else setForm(DEFAULTS)
     setIsDirty(false)
+  }
+
+  const applyTrendingProduct = (product: TrendingProduct) => {
+    setForm((prev) => ({
+      ...prev,
+      featured_product_name: product.title,
+      featured_product_link: `/products/${product.handle}`,
+      featured_product_image: product.thumbnail || prev.featured_product_image,
+      featured_product_rating_count: product.review_count || prev.featured_product_rating_count,
+      featured_product_sold_this_week: product.trending_score || prev.featured_product_sold_this_week,
+    }))
+    setIsDirty(true)
+    toast.success(`"${product.title}" applied to hero. Adjust price and category below, then save.`)
   }
 
   if (isLoading) {
@@ -112,6 +187,36 @@ export const StoreFront = () => {
         </div>
       </div>
 
+      {/* Most-Sold Product Picker */}
+      <Container className="divide-y p-0">
+        <div className="px-6 py-4">
+          <Heading level="h2" className="text-base font-semibold">Most Sold Products</Heading>
+          <Text size="small" className="text-ui-fg-muted">
+            Click a product to auto-fill the hero featured product fields. Adjust price and category below, then save.
+          </Text>
+        </div>
+        <div className="px-6 py-4">
+          {isLoadingProducts ? (
+            <Text size="small" className="text-ui-fg-muted">Loading products…</Text>
+          ) : !trendingProducts?.length ? (
+            <Text size="small" className="text-ui-fg-muted">
+              No product sales data yet. The trending score job runs hourly and updates once orders are placed.
+            </Text>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {trendingProducts.map((product) => (
+                <ProductPickerCard
+                  key={product.id}
+                  product={product}
+                  isSelected={form.featured_product_name === product.title}
+                  onSelect={() => applyTrendingProduct(product)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </Container>
+
       {/* Hero Main Card */}
       <Container className="divide-y p-0">
         <div className="px-6 py-4">
@@ -141,7 +246,7 @@ export const StoreFront = () => {
               placeholder={DEFAULTS.badge}
             />
           </FieldRow>
-          <FieldRow label="Vendors count" hint='Shown as "X+ vendors"'>
+          <FieldRow label="Sellers count" hint='Shown as "X+ sellers" in the hero'>
             <Input
               value={form.vendors_count}
               onChange={(e) => set("vendors_count", e.target.value)}
@@ -157,6 +262,7 @@ export const StoreFront = () => {
           <Heading level="h2" className="text-base font-semibold">Hero — Featured Product</Heading>
           <Text size="small" className="text-ui-fg-muted">
             Product card shown on the right side of the hero (desktop). Prices are in centavos (₱100 = 10000).
+            Use the picker above to auto-fill from real product data.
           </Text>
         </div>
         <div className="px-6 py-2">
@@ -209,7 +315,7 @@ export const StoreFront = () => {
               placeholder={DEFAULTS.featured_product_link}
             />
           </FieldRow>
-          <FieldRow label="Product image path" hint="Relative path from /public">
+          <FieldRow label="Product image URL" hint="Full URL or path from /public (auto-filled from product picker above)">
             <Input
               value={form.featured_product_image}
               onChange={(e) => set("featured_product_image", e.target.value)}
