@@ -116,5 +116,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 # Use tini to handle signals properly
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Run pending migrations then start the server
-CMD ["bash", "-c", "node_modules/.bin/medusa db:migrate && node_modules/.bin/medusa start"]
+# Start the server
+CMD ["node_modules/.bin/medusa", "start"]
