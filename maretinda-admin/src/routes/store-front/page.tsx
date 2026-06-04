@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import {
   Button,
   Container,
@@ -9,7 +8,6 @@ import {
   Text,
   Textarea,
   toast,
-  Badge,
 } from "@medusajs/ui"
 import { useHeroSettings, useUpdateHeroSettings, useTrendingProducts, type HeroSettings, type TrendingProduct } from "../../hooks/api/site-settings"
 
