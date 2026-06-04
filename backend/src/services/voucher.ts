@@ -77,8 +77,30 @@ export default class VoucherService {
     )
   }
 
+  /** Ensure the customer_voucher table exists (idempotent, called before any table access) */
+  private async ensureTable(): Promise<void> {
+    const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    await knex.raw(`
+      CREATE TABLE IF NOT EXISTS customer_voucher (
+        id             TEXT        NOT NULL DEFAULT gen_random_uuid()::text,
+        customer_id    TEXT        NOT NULL,
+        promotion_id   TEXT        NOT NULL,
+        promotion_code TEXT        NOT NULL,
+        collected_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+        used_at        TIMESTAMPTZ,
+        expires_at     TIMESTAMPTZ,
+        metadata       JSONB,
+        CONSTRAINT customer_voucher_pkey PRIMARY KEY (id),
+        CONSTRAINT customer_voucher_unique UNIQUE (customer_id, promotion_id)
+      );
+      CREATE INDEX IF NOT EXISTS customer_voucher_customer_idx ON customer_voucher (customer_id);
+      CREATE INDEX IF NOT EXISTS customer_voucher_promotion_idx ON customer_voucher (promotion_id);
+    `)
+  }
+
   /** List promotions collected by a customer */
   async listCollectedVouchers(customerId: string): Promise<CustomerVoucher[]> {
+    await this.ensureTable()
     const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const result = await knex.raw(
       `SELECT * FROM customer_voucher WHERE customer_id = ? ORDER BY collected_at DESC`,
@@ -125,6 +147,7 @@ export default class VoucherService {
     customerId: string,
     promotionId: string
   ): Promise<CustomerVoucher> {
+    await this.ensureTable()
     const promotionService = this.container.resolve(Modules.PROMOTION)
 
     const [promotion] = await promotionService.listPromotions({ id: [promotionId] })
@@ -163,6 +186,7 @@ export default class VoucherService {
     customerId: string,
     promotionId: string
   ): Promise<void> {
+    await this.ensureTable()
     const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     await knex.raw(
       `DELETE FROM customer_voucher WHERE customer_id = ? AND promotion_id = ?`,

@@ -14,6 +14,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
   try {
     const knex = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+
+    // Ensure table exists before querying (idempotent)
+    await knex.raw(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `)
+
     const row = await knex.raw(
       `SELECT key, value, updated_at FROM site_settings WHERE key = ? LIMIT 1`,
       [key]
@@ -39,6 +49,15 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
 
   try {
     const knex = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+
+    await knex.raw(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key TEXT PRIMARY KEY,
+        value JSONB NOT NULL DEFAULT '{}',
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `)
+
     const result = await knex.raw(
       `INSERT INTO site_settings (key, value, updated_at)
        VALUES (?, ?::jsonb, now())
