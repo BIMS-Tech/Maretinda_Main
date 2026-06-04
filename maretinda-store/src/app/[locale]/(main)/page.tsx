@@ -58,7 +58,7 @@ export default async function Home({
 						path:
 							process.env.NEXT_PUBLIC_ALGOLIA_ID === 'UO3C5Y8NHX'
 								? 'https://vendor-sandbox.vercel.app/'
-								: 'https://testvendor.mearetinda.com',
+								: 'https://testvendor.maretinda.com/login',
 					},
 				]}
 				heroContent={heroContent}
