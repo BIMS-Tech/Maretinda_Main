@@ -168,7 +168,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 								src={productImage}
 								alt={`${productName} — featured pick`}
 								fill
-								className="object-contain object-bottom"
+								className="object-cover object-center"
 								sizes="25vw"
 								priority
 								unoptimized={productImage.startsWith('http')}
