@@ -73,14 +73,6 @@ const useSettingRoutes = (): INavItem[] => {
         label: t("stockLocations.domain"),
         to: "/settings/locations",
       },
-      {
-        label: t("commissionLines.domain"),
-        to: "/settings/commission-lines",
-      },
-      {
-        label: t("commission.domain"),
-        to: "/settings/commission/",
-      },
     ],
     [t],
   );

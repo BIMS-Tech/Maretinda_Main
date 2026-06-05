@@ -276,11 +276,6 @@ const SubscriptionIcon = () => (
 const useExtensionRoutes = (): Omit<INavItem, "pathname">[] => {
   return [
     {
-      icon: <StripeIcon />,
-      label: "Stripe Connect",
-      to: "/stripe-connect",
-    },
-    {
       icon: <GiyaPayIcon />,
       label: "GiyaPay",
       to: "/giyapay",

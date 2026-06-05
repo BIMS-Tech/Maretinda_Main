@@ -679,15 +679,6 @@ const CostBreakdown = ({
           </div>
         )}
       </>
-      {order.commission_value && (
-        <Cost
-          label={"Commission"}
-          value={getLocaleAmount(
-            order.commission_value.amount ?? 0,
-            order.commission_value.currency_code ?? order.currency_code
-          )}
-        />
-      )}
     </div>
   )
 }
