@@ -13,7 +13,7 @@ import { WishlistPage } from './WishlistPage/WishlistPage';
 import { FlashSaleSection } from './FlashSaleSection/FlashSaleSection';
 import { FeaturedCollectionsSection } from './FeaturedCollectionsSection/FeaturedCollectionsSection';
 import { TrendingNowSection } from './TrendingNowSection/TrendingNowSection';
-import { TopsellersSection } from './TopsellersSection/TopsellersSection';
+import { TopsellersSection } from './TopVendorsSection/TopVendorsSection';
 import { BecomeSellerBand } from './BecomeSellerBand/BecomeSellerBand';
 import { TrustSection } from './TrustSection/TrustSection';
 import { NewsletterSection } from './NewsletterSection/NewsletterSection';
