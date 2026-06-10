@@ -16,7 +16,7 @@ import {
   ChatBubbleLeftRight,
   TruckFast,
 } from "@medusajs/icons"
-import { Avatar, Divider, Text, clx } from "@medusajs/ui"
+import { Divider, Text, clx } from "@medusajs/ui"
 import { Collapsible as RadixCollapsible } from "radix-ui"
 import { useTranslation } from "react-i18next"
 
@@ -29,7 +29,6 @@ import { useMe } from "../../../hooks/api"
 
 import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
-import { StripeIcon } from "../../../assets/icons/Stripe"
 import { ImageAvatar } from "../../common/image-avatar"
 import { useSubscriptionStatus } from "../../../hooks/api/subscription"
 import { useChatConversations } from "../../../hooks/api/chat"
