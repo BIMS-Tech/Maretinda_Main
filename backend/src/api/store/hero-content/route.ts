@@ -2,6 +2,43 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import VoucherService from "../../../services/voucher"
 
+async function resolveProductPrice(
+  req: MedusaRequest,
+  productLink: string | undefined
+): Promise<{ featured_product_price?: number } | null> {
+  if (!productLink) return null
+  const match = productLink.match(/^\/products\/(.+)$/)
+  if (!match) return null
+  const handle = match[1]
+
+  try {
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+    const { data: products } = await (query as any).graph({
+      entity: "product",
+      fields: ["id", "handle", "variants.*", "variants.prices.*"],
+      filters: { handle, status: "published" },
+    })
+
+    const product = products?.[0]
+    if (!product?.variants?.length) return null
+
+    const phpPrices: number[] = []
+    for (const variant of product.variants) {
+      for (const price of (variant.prices || [])) {
+        if (price.currency_code?.toLowerCase() === "php" && typeof price.amount === "number") {
+          phpPrices.push(price.amount)
+        }
+      }
+    }
+
+    if (phpPrices.length === 0) return null
+    return { featured_product_price: Math.min(...phpPrices) }
+  } catch (e) {
+    console.error("[Hero Content] Failed to resolve product price:", (e as Error).message)
+    return null
+  }
+}
+
 /**
  * GET /store/hero-content
  *
@@ -97,6 +134,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         discount_label: featuredRaw.metadata?.discount_label || null,
         shop_link: `/campaigns/${featuredRaw.id}`,
       }
+    }
+
+    // --- Featured product price from Medusa ---
+    const resolvedPrice = await resolveProductPrice(req, site_settings.featured_product_link as string | undefined)
+    if (resolvedPrice) {
+      site_settings = { ...site_settings, ...resolvedPrice }
     }
 
     // --- Live seller count ---

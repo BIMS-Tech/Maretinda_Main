@@ -8,8 +8,6 @@ export interface HeroSettings {
   badge: string
   featured_product_name: string
   featured_product_category: string
-  featured_product_price: number
-  featured_product_original_price: number
   featured_product_rating_count: number
   featured_product_sold_this_week: number
   featured_product_link: string

@@ -244,8 +244,8 @@ export const DashboardCharts = ({
           icon={ShoppingCart}
           label="Total Orders"
           value={orderList.length}
-          sub={`${notFulfilledOrders} pending`}
-          iconBg="bg-blue-50"
+          sub={`${notFulfilledOrders} pending fulfillment`}
+          iconBg="bg-blue-500/10"
           iconColor="text-blue-500"
           href="/orders"
         />
@@ -254,7 +254,7 @@ export const DashboardCharts = ({
           label="Total Revenue"
           value={formatMoney(totalRevenue)}
           sub={`Avg ${formatMoney(avgOrderValue)}/order`}
-          iconBg="bg-emerald-50"
+          iconBg="bg-emerald-500/10"
           iconColor="text-emerald-500"
         />
         <StatCard
@@ -262,7 +262,7 @@ export const DashboardCharts = ({
           label="Reviews"
           value={reviewArray.length}
           sub={`${avgRating.toFixed(1)} avg rating`}
-          iconBg="bg-amber-50"
+          iconBg="bg-amber-500/10"
           iconColor="text-amber-500"
           href="/reviews"
         />
@@ -271,7 +271,7 @@ export const DashboardCharts = ({
           label="Unread Messages"
           value={unreadMessages?.length ?? 0}
           sub="Customer support"
-          iconBg="bg-violet-50"
+          iconBg="bg-violet-500/10"
           iconColor="text-violet-500"
           href="/messages"
         />
@@ -494,10 +494,10 @@ export const DashboardCharts = ({
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                             order.fulfillment_status === "fulfilled"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
                               : order.fulfillment_status === "not_fulfilled"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-gray-100 text-gray-600"
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              : "bg-ui-bg-subtle text-ui-fg-subtle"
                           }`}
                         >
                           {(order.fulfillment_status ?? "—").replace(/_/g, " ")}
@@ -614,7 +614,7 @@ export const DashboardCharts = ({
           {/* Products count */}
           <Container className="p-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
                 <ShoppingBag className="text-emerald-500" />
               </div>
               <div className="flex-1">
@@ -666,12 +666,12 @@ export const DashboardCharts = ({
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
                           payout.status === "completed"
-                            ? "bg-green-100 text-green-700"
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
                             : payout.status === "pending"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-gray-100 text-gray-600"
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            : "bg-ui-bg-subtle text-ui-fg-subtle"
                         }`}
                       >
                         {payout.status}

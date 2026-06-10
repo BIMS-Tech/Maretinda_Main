@@ -272,43 +272,48 @@ const ProductsListing = ({
 						</div>
 					) : (
 						<div className="w-[calc(100%+32px)] -mx-4 sm:mx-auto sm:w-full">
-							<ul
-								className={cn(
-									'flex flex-wrap gap-2',
-									isToggleActive && 'flex-row',
-								)}
-							>
-								{products.map(
-									(hit, index) =>
-										prod?.find(
-											(p: any) => p.id === hit.objectID,
-										) &&
-										(!isToggleActive ? (
-											<ProductBigCard
-												api_product={prod?.find(
-													(p: any) =>
-														p.id === hit.objectID,
-												)}
-												id={index}
-												key={hit.objectID}
-												product={hit}
-												user={user}
-												wishlist={wishlist}
-											/>
-										) : (
-											<ProductCard
-												api_product={prod?.find(
-													(p: any) =>
-														p.id === hit.objectID,
-												)}
-												key={hit.objectID}
-												product={hit}
-												user={user}
-												wishlist={wishlist}
-											/>
-										)),
-								)}
-							</ul>
+							{isToggleActive ? (
+								<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+									{products.map(
+										(hit) =>
+											prod?.find(
+												(p: any) => p.id === hit.objectID,
+											) && (
+												<ProductCard
+													api_product={prod?.find(
+														(p: any) =>
+															p.id === hit.objectID,
+													)}
+													key={hit.objectID}
+													product={hit}
+													user={user}
+													wishlist={wishlist}
+												/>
+											),
+									)}
+								</div>
+							) : (
+								<ul className="flex flex-col gap-3">
+									{products.map(
+										(hit, index) =>
+											prod?.find(
+												(p: any) => p.id === hit.objectID,
+											) && (
+												<ProductBigCard
+													api_product={prod?.find(
+														(p: any) =>
+															p.id === hit.objectID,
+													)}
+													id={index}
+													key={hit.objectID}
+													product={hit}
+													user={user}
+													wishlist={wishlist}
+												/>
+											),
+									)}
+								</ul>
+							)}
 						</div>
 					)}
 					{pageLimit < filteredProducts.length && (

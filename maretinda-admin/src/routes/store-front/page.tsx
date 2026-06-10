@@ -18,8 +18,6 @@ const DEFAULTS: HeroSettings = {
   badge: "New season · Pampanga local",
   featured_product_name: "Filipiniana Sundress",
   featured_product_category: "Fashion · Summer Drop",
-  featured_product_price: 89900,
-  featured_product_original_price: 129900,
   featured_product_rating_count: 248,
   featured_product_sold_this_week: 247,
   featured_product_link: "/categories",
@@ -259,7 +257,7 @@ export const StoreFront = () => {
         <div className="px-6 py-4">
           <Heading level="h2" className="text-base font-semibold">Hero — Featured Product</Heading>
           <Text size="small" className="text-ui-fg-muted">
-            Product card shown on the right side of the hero (desktop). Prices are in centavos (₱100 = 10000).
+            Product card shown on the right side of the hero (desktop). Price is fetched automatically from the selected product.
             Use the picker above to auto-fill from real product data.
           </Text>
         </div>
@@ -276,20 +274,6 @@ export const StoreFront = () => {
               value={form.featured_product_category}
               onChange={(e) => set("featured_product_category", e.target.value)}
               placeholder={DEFAULTS.featured_product_category}
-            />
-          </FieldRow>
-          <FieldRow label="Price (centavos)" hint="₱899 = 89900">
-            <Input
-              type="number"
-              value={form.featured_product_price}
-              onChange={(e) => set("featured_product_price", Number(e.target.value))}
-            />
-          </FieldRow>
-          <FieldRow label="Original price (centavos)" hint="Used to compute the discount badge">
-            <Input
-              type="number"
-              value={form.featured_product_original_price}
-              onChange={(e) => set("featured_product_original_price", Number(e.target.value))}
             />
           </FieldRow>
           <FieldRow label="Rating count" hint="Number shown next to the stars">

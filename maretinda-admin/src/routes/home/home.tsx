@@ -58,13 +58,9 @@ const StatCard = ({
   href?: string
 }) => {
   const inner = (
-    <div
-      className={`flex flex-col gap-3 rounded-xl border border-ui-border-base bg-ui-bg-base p-5 shadow-sm hover:shadow-md transition-shadow`}
-    >
+    <div className="flex flex-col gap-3 rounded-xl border border-ui-border-base bg-ui-bg-base p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-lg ${color}`}
-        >
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${color}`}>
           <Icon className="text-white" />
         </div>
         {href && <TriangleRightMini className="text-ui-fg-muted" />}
@@ -175,7 +171,7 @@ export const Home = () => {
         />
         <StatCard
           icon={BuildingStorefront}
-          label="sellers"
+          label="Sellers"
           value={totalsellers || "—"}
           sub={`${activesellers} active`}
           color="bg-emerald-500"
@@ -306,10 +302,10 @@ export const Home = () => {
           <Container className="divide-y p-0">
             <div className="px-5 py-4">
               <Heading level="h2" className="text-base font-semibold">
-                seller Overview
+                Seller Overview
               </Heading>
               <Text size="small" className="text-ui-fg-muted">
-                {totalsellers} total sellers
+                {totalsellers} registered sellers
               </Text>
             </div>
             <div className="px-5 py-4 flex flex-col gap-3">
@@ -379,52 +375,52 @@ export const Home = () => {
       {/* Pending Actions & Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Link to="/requests/seller">
-          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-blue-300 transition-all group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-blue-400 transition-all group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
               <ExclamationCircle className="text-blue-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-ui-fg-base">Seller Requests</p>
-              <p className="text-xs text-ui-fg-muted">Pending approvals</p>
+              <p className="text-xs text-ui-fg-muted">Approve or reject new sellers</p>
             </div>
             <TriangleRightMini className="text-ui-fg-muted group-hover:text-blue-500 transition-colors" />
           </div>
         </Link>
 
         <Link to="/requests/product">
-          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-violet-300 transition-all group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-50">
+          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-violet-400 transition-all group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
               <Tag className="text-violet-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-ui-fg-base">Product Requests</p>
-              <p className="text-xs text-ui-fg-muted">Awaiting review</p>
+              <p className="text-xs text-ui-fg-muted">Review seller product submissions</p>
             </div>
             <TriangleRightMini className="text-ui-fg-muted group-hover:text-violet-500 transition-colors" />
           </div>
         </Link>
 
         <Link to="/subscriptions">
-          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-rose-300 transition-all group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50">
+          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-rose-400 transition-all group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-500/10">
               <CreditCard className="text-rose-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-ui-fg-base">Subscriptions</p>
-              <p className="text-xs text-ui-fg-muted">{subCount ?? 0} active plans</p>
+              <p className="text-xs text-ui-fg-muted">{subCount ?? 0} active seller plans</p>
             </div>
             <TriangleRightMini className="text-ui-fg-muted group-hover:text-rose-500 transition-colors" />
           </div>
         </Link>
 
         <Link to="/flash-sales">
-          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-amber-300 transition-all group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
+          <div className="flex items-center gap-4 rounded-xl border border-ui-border-base bg-ui-bg-base p-4 shadow-sm hover:shadow-md hover:border-amber-400 transition-all group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
               <ArrowUpMini className="text-amber-500" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-ui-fg-base">Flash Sales</p>
-              <p className="text-xs text-ui-fg-muted">Manage campaigns</p>
+              <p className="text-xs text-ui-fg-muted">Create & manage timed promotions</p>
             </div>
             <TriangleRightMini className="text-ui-fg-muted group-hover:text-amber-500 transition-colors" />
           </div>
@@ -452,7 +448,7 @@ export const Home = () => {
             <p className="text-2xl font-bold text-ui-fg-base">
               {totalsellers || "—"}
             </p>
-            <p className="text-xs text-ui-fg-muted mt-1">Total sellers</p>
+            <p className="text-xs text-ui-fg-muted mt-1">Total Sellers</p>
           </div>
           <div className="px-5 py-4 text-center">
             <p className="text-2xl font-bold text-ui-fg-base">

@@ -66,8 +66,13 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const badge = s.badge || FALLBACK.badge
 	const productName = s.featured_product_name || FALLBACK.featured_product_name
 	const productCategory = s.featured_product_category || FALLBACK.featured_product_category
+	// Use FALLBACK prices only when there are no site_settings at all (API down / first deploy).
+	// When a real product is configured, we get featured_product_price from the backend; original
+	// price is omitted because Medusa's raw price API has no "compare-at" concept without a region
+	// context — so we never bleed the FALLBACK original onto a live product.
+	const hasLivePrice = s.featured_product_price != null
 	const productPrice = s.featured_product_price ?? FALLBACK.featured_product_price
-	const productOriginal = s.featured_product_original_price ?? FALLBACK.featured_product_original_price
+	const productOriginal: number | null = s.featured_product_original_price ?? (hasLivePrice ? null : FALLBACK.featured_product_original_price)
 	const productRatings = s.featured_product_rating_count ?? FALLBACK.featured_product_rating_count
 	const soldThisWeek = s.featured_product_sold_this_week ?? FALLBACK.featured_product_sold_this_week
 	const productLink = s.featured_product_link || FALLBACK.featured_product_link
@@ -194,8 +199,12 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 									<div className="text-[13px] font-bold text-[#1a1a1a] mt-0.5 truncate">{productName}</div>
 									<div className="flex items-center gap-2 mt-1.5">
 										<span className="text-[15px] font-bold" style={{ color: '#432C63' }}>{formatPrice(productPrice)}</span>
-										<span className="text-[12px] text-[#aaa] line-through">{formatPrice(productOriginal)}</span>
-										<span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: '#D94040' }}>−{calcDiscount(productPrice, productOriginal)}%</span>
+										{productOriginal != null && productOriginal > productPrice && (
+											<>
+												<span className="text-[12px] text-[#aaa] line-through">{formatPrice(productOriginal)}</span>
+												<span className="text-[10px] font-bold text-white px-1.5 py-0.5 rounded" style={{ backgroundColor: '#D94040' }}>−{calcDiscount(productPrice, productOriginal)}%</span>
+											</>
+										)}
 									</div>
 									<div className="flex items-center gap-1 mt-1">
 										{[1,2,3,4,5].map((s) => (

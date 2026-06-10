@@ -46,23 +46,23 @@ export const ProductCard = ({
 		: null;
 
 	return (
-		<div className="group relative bg-white rounded-2xl overflow-hidden border border-black/[0.07] hover:shadow-[0_8px_40px_rgba(67,44,99,0.13)] transition-all duration-300">
+		<div className="group relative flex flex-col w-full bg-white rounded-2xl overflow-hidden border border-black/[0.06] hover:shadow-[0_8px_40px_rgba(67,44,99,0.14)] hover:border-[#432C63]/20 transition-all duration-300">
 			{/* Image area */}
 			<LocalizedClientLink href={`/products/${product.handle}`}>
-				<div className="relative w-full aspect-[4/5] overflow-hidden bg-[#F5F4F7]">
+				<div className="relative w-full aspect-square overflow-hidden bg-[#F7F6F9]">
 					{thumbnail ? (
 						<Image
 							alt={product.title as string}
-							className="object-cover w-full h-full group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+							className="object-contain w-full h-full p-4 group-hover:scale-[1.05] transition-transform duration-500 ease-out"
 							fill
 							priority
-							sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 25vw"
+							sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
 							src={thumbnail}
 						/>
 					) : (
 						<Image
 							alt="Product placeholder"
-							className="object-cover"
+							className="object-contain p-4"
 							fill
 							sizes="300px"
 							src="/images/placeholder.svg"
@@ -71,7 +71,7 @@ export const ProductCard = ({
 
 					{/* Discount badge */}
 					{discountPct > 0 && (
-						<span className="absolute top-3 left-3 z-10 bg-[#432C63] text-white text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full">
+						<span className="absolute top-3 left-3 z-10 bg-[#432C63] text-white text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
 							−{discountPct}%
 						</span>
 					)}
@@ -85,10 +85,10 @@ export const ProductCard = ({
 				</div>
 			</LocalizedClientLink>
 
-			{/* Wishlist button — always visible */}
+			{/* Wishlist button */}
 			<div className="absolute top-3 right-3 z-10">
 				<WishlistButton
-					className="!w-9 !h-9 !p-0 rounded-full bg-white shadow-sm border-0 flex items-center justify-center hover:shadow-md transition-shadow flex-shrink-0"
+					className="!w-8 !h-8 !p-0 rounded-full bg-white/90 backdrop-blur-sm shadow-sm border-0 flex items-center justify-center hover:bg-white hover:shadow-md transition-all flex-shrink-0"
 					productId={product.id}
 					user={user}
 					wishlist={wishlist}
@@ -96,32 +96,27 @@ export const ProductCard = ({
 			</div>
 
 			{/* Content */}
-			<div className="px-3.5 pt-3 pb-4">
+			<div className="flex flex-col flex-1 px-3.5 pt-3 pb-4 gap-1">
 				{/* Verified Seller */}
-				<div className="flex items-center gap-1.5 mb-1.5">
-					<svg
-						fill="#432C63"
-						height="11"
-						viewBox="0 0 24 24"
-						width="11"
-					>
+				<div className="flex items-center gap-1.5">
+					<svg fill="#432C63" height="10" viewBox="0 0 24 24" width="10">
 						<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
 					</svg>
-					<span className="text-[10px] font-bold text-gray-400 tracking-[0.1em] uppercase">
+					<span className="text-[10px] font-semibold text-[#432C63]/50 tracking-[0.08em] uppercase">
 						Verified Seller
 					</span>
 				</div>
 
 				{/* Title */}
 				<LocalizedClientLink href={`/products/${product.handle}`}>
-					<h3 className="text-[13.5px] font-bold text-gray-900 leading-snug line-clamp-2 min-h-[2.5em] mb-2.5 group-hover:text-[#432C63] transition-colors duration-150">
+					<h3 className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[2.4em] group-hover:text-[#432C63] transition-colors duration-150">
 						{product.title as string}
 					</h3>
 				</LocalizedClientLink>
 
 				{/* Price */}
 				<LocalizedClientLink
-					className="flex items-center gap-2"
+					className="flex items-center gap-2 mt-auto pt-1"
 					href={`/products/${product.handle}`}
 				>
 					<span className="text-[14px] font-bold text-[#432C63]">
