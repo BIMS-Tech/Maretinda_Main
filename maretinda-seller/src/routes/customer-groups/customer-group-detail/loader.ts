@@ -7,7 +7,7 @@ import { CUSTOMER_GROUP_DETAIL_FIELDS } from "./constants"
 const customerGroupDetailQuery = (id: string) => ({
   queryKey: productsQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/seller/customer-groups/${id}`, {
+    fetchQuery(`/vendor/customer-groups/${id}`, {
       method: "GET",
       query: { fields: CUSTOMER_GROUP_DETAIL_FIELDS },
     }),

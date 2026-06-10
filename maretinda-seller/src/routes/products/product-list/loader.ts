@@ -12,7 +12,7 @@ const productsListQuery = () => ({
     offset: 0,
   }),
   queryFn: async () =>
-    fetchQuery("/seller/products", {
+    fetchQuery("/vendor/products", {
       method: "GET",
       query: {
         limit: PAGE_SIZE,

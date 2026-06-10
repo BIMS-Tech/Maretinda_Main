@@ -25,7 +25,7 @@ export const useReview = (
   const { data, ...rest } = useQuery({
     queryKey: reviewsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/seller/sellers/me/review/${id}`, {
+      fetchQuery(`/vendor/sellers/me/review/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -53,7 +53,7 @@ export const useReviews = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/sellers/me/reviews", {
+      fetchQuery("/vendor/sellers/me/reviews", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -71,7 +71,7 @@ export const useUpdateReview = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/sellers/me/review/${id}`, {
+      fetchQuery(`/vendor/sellers/me/review/${id}`, {
         method: "POST",
         body: payload,
       }),

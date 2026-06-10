@@ -50,7 +50,7 @@ const useSettlementInfo = () => {
     queryKey: ["settlement-info"],
     queryFn: async (): Promise<{ settlement_info: SettlementInfo }> => {
       try {
-        return await fetchQuery("/seller/settlement-info")
+        return await fetchQuery("/vendor/settlement-info")
       } catch (error) {
         console.warn("Settlement Info API not available, using mock data:", error)
         // Return mock data

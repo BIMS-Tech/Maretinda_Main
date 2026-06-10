@@ -89,7 +89,7 @@ export const Notifications = () => {
             responseKey="notifications"
             queryKey={notificationQueryKeys.all}
             queryFn={(params) =>
-              fetchQuery("/seller/notifications", {
+              fetchQuery("/vendor/notifications", {
                 method: "GET",
                 query: params as Record<string, string | number>,
               })

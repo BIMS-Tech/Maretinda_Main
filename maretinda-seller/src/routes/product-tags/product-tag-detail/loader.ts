@@ -7,7 +7,7 @@ import { queryClient } from "../../../lib/query-client"
 const productTagDetailQuery = (id: string) => ({
   queryKey: productTagsQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/seller/product-tags/${id}`, {
+    fetchQuery(`/vendor/product-tags/${id}`, {
       method: "GET",
     }),
 })

@@ -74,7 +74,7 @@ const Actions = ({ order }: { order: HttpTypes.AdminOrder }) => {
         onClick={async () => {
           setIsPending(true)
           try {
-            await fetchQuery(`/seller/orders/${order.id}/capture`, { method: "POST" })
+            await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: "POST" })
             toast.success((t as any)("orders.payment.captured"))
           } catch (e: any) {
             toast.error(e?.message ?? "Failed to capture payment")

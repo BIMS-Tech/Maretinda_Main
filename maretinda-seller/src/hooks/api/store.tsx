@@ -22,7 +22,7 @@ export const storeQueryKeys = queryKeysFactory(STORE_QUERY_KEY)
 export async function retrieveActiveStore(
   query?: HttpTypes.AdminStoreParams
 ): Promise<HttpTypes.AdminStoreResponse> {
-  const response = await fetchQuery("/seller/stores", {
+  const response = await fetchQuery("/vendor/stores", {
     method: "GET",
     query: query as { [key: string]: string | number },
   })
@@ -90,7 +90,7 @@ export const useUpdateStore = (
 export const useConfiguration = () => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      await fetchQuery("/seller/configuration", {
+      await fetchQuery("/vendor/configuration", {
         method: "GET",
       }),
     queryKey: ["configuration"],

@@ -12,7 +12,7 @@ const params = {
 const promotionsListQuery = () => ({
   queryKey: promotionsQueryKeys.list(params),
   queryFn: async () =>
-    fetchQuery("/seller/promotions", {
+    fetchQuery("/vendor/promotions", {
       method: "GET",
     }),
 })

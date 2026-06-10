@@ -30,7 +30,7 @@ export const useCollection = (
   const { data, ...rest } = useQuery({
     queryKey: collectionsQueryKeys.detail(id),
     queryFn: async () =>
-      await fetchQuery(`/seller/product-collections/${id}`, {
+      await fetchQuery(`/vendor/product-collections/${id}`, {
         method: "GET",
         query: { fields: "*products" },
       }),
@@ -60,7 +60,7 @@ export const useCollections = (
   const { data, ...rest } = useQuery({
     queryKey: collectionsQueryKeys.list(query),
     queryFn: async () =>
-      fetchQuery("/seller/product-collections", {
+      fetchQuery("/vendor/product-collections", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -143,7 +143,7 @@ export const useCreateCollection = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/requests`, {
+      fetchQuery(`/vendor/requests`, {
         method: "POST",
         body: {
           request: {

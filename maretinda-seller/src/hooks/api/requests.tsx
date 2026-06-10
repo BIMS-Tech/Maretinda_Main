@@ -34,7 +34,7 @@ export const useRequest = (
   const { data, ...rest } = useQuery({
     queryKey: requestsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/seller/requests/${id}`, {
+      fetchQuery(`/vendor/requests/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -62,7 +62,7 @@ export const useRequests = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/requests", {
+      fetchQuery("/vendor/requests", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -79,7 +79,7 @@ export const useCreatesellerRequest = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/seller/requests", {
+      fetchQuery("/vendor/requests", {
         method: "POST",
         body: payload,
       }),
@@ -100,7 +100,7 @@ export const useUpdateRequest = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/requests/${id}`, {
+      fetchQuery(`/vendor/requests/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -122,7 +122,7 @@ export const useUpdateRequest = (
 export const useUpdateOrderReturnRequest = (id: string) => {
   return useMutation({
     mutationFn: (payload: any) =>
-      fetchQuery(`/seller/return-request/${id}`, {
+      fetchQuery(`/vendor/return-request/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -145,7 +145,7 @@ export const useOrderReturnRequest = (
   const { data, ...rest } = useQuery({
     queryKey: [REQUESTS_QUERY_KEY, "return-request", id],
     queryFn: () =>
-      fetchQuery(`/seller/return-request/${id}`, { method: "GET" }),
+      fetchQuery(`/vendor/return-request/${id}`, { method: "GET" }),
     ...options,
   })
 
@@ -170,7 +170,7 @@ export const useOrderReturnRequests = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/return-request", {
+      fetchQuery("/vendor/return-request", {
         method: "GET",
         query: {
           fields: "*order.customer,+created_at",

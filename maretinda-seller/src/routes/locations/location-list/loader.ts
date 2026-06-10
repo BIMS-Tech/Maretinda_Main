@@ -9,7 +9,7 @@ import { LOCATION_LIST_FIELDS } from "./constants"
 const shippingListQuery = () => ({
   queryKey: stockLocationsQueryKeys.lists(),
   queryFn: async () => {
-    return await fetchQuery("/seller/stock-locations", {
+    return await fetchQuery("/vendor/stock-locations", {
       method: "GET",
       query: { fields: LOCATION_LIST_FIELDS },
     })

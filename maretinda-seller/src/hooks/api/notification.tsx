@@ -44,7 +44,7 @@ export const useNotifications = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/notifications", {
+      fetchQuery("/vendor/notifications", {
         method: "GET",
         query: query as Record<string, string | number>,
       }),

@@ -99,7 +99,7 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
               label: t("orders.actions.capturePayment"),
               onClick: async () => {
                 try {
-                  await fetchQuery(`/seller/orders/${order.id}/capture`, { method: "POST" })
+                  await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: "POST" })
                   toast.success("Payment captured")
                 } catch (e: any) {
                   toast.error(e?.message ?? "Failed to capture payment")

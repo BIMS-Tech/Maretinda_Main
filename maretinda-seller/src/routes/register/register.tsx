@@ -1,10 +1,25 @@
 import { useState, useRef, ChangeEvent } from "react"
 import { Link } from "react-router-dom"
-import { CircleHalfSolid, Moon, Sun, CheckCircle, RocketLaunch, GlobeEurope, CurrencyDollar } from "@medusajs/icons"
+import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import { Input } from "@medusajs/ui"
 import { useSignUpWithEmailPass } from "../../hooks/api"
 import { backendUrl } from "../../lib/client/client"
 import { useTheme } from "../../providers/theme-provider"
+
+function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+      {[45, 135, 225, 315].map(angle => (
+        <path
+          key={angle}
+          d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
+          fill={color}
+          transform={`rotate(${angle},16,16)`}
+        />
+      ))}
+    </svg>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -170,8 +185,8 @@ function RadioGroup({ name, options, value, onChange }: {
           key={opt.value}
           className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
             value === opt.value
-              ? "border-indigo-500 bg-indigo-500/10 text-indigo-500 font-medium"
-              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-indigo-400"
+              ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
           }`}
         >
           <input type="radio" name={name} value={opt.value} checked={value === opt.value} onChange={() => onChange(opt.value)} className="sr-only" />
@@ -194,8 +209,8 @@ function CheckboxGroup({ options, values, onChange }: {
           key={opt}
           className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm cursor-pointer transition-colors ${
             values.includes(opt)
-              ? "border-indigo-500 bg-indigo-500/10 text-indigo-500 font-medium"
-              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-indigo-400"
+              ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
           }`}
         >
           <input type="checkbox" checked={values.includes(opt)} onChange={() => toggle(opt)} className="sr-only" />
@@ -336,8 +351,8 @@ function StepBusiness({ data, set }: { data: FormData; set: <K extends keyof For
               key={t}
               className={`flex items-center justify-center rounded-lg border px-2 py-2 text-xs cursor-pointer text-center transition-colors ${
                 data.form_of_organization === t
-                  ? "border-indigo-500 bg-indigo-500/10 text-indigo-500 font-medium"
-                  : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-indigo-400"
+                  ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+                  : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
               }`}
             >
               <input type="radio" name="org_type" checked={data.form_of_organization === t} onChange={() => set("form_of_organization", t)} className="sr-only" />

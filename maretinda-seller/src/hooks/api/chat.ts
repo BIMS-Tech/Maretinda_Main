@@ -31,7 +31,7 @@ export interface ChatMessage {
 export const useChatConversations = () => {
   return useQuery<{ conversations: ChatConversation[]; count: number; unread: number }>({
     queryKey: ["seller-chat-conversations"],
-    queryFn: () => fetchQuery("/seller/chat", { method: "GET" }),
+    queryFn: () => fetchQuery("/vendor/chat", { method: "GET" }),
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 30,
   })
@@ -40,7 +40,7 @@ export const useChatConversations = () => {
 export const useChatMessages = (conversationId: string | null) => {
   return useQuery<{ conversation: ChatConversation; messages: ChatMessage[]; count: number }>({
     queryKey: ["seller-chat-messages", conversationId],
-    queryFn: () => fetchQuery(`/seller/chat/${conversationId}`, { method: "GET" }),
+    queryFn: () => fetchQuery(`/vendor/chat/${conversationId}`, { method: "GET" }),
     enabled: !!conversationId,
     staleTime: 0,
   })
@@ -50,7 +50,7 @@ export const useSendMessage = (conversationId: string) => {
   const qc = useQueryClient()
   return useMutation<{ message: ChatMessage }, Error, { body: string }>({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/chat/${conversationId}/message`, {
+      fetchQuery(`/vendor/chat/${conversationId}/message`, {
         method: "POST",
         body: payload,
       }),
@@ -65,7 +65,7 @@ export const useMarkRead = () => {
   const qc = useQueryClient()
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: (conversationId) =>
-      fetchQuery(`/seller/chat/${conversationId}/read`, { method: "POST" }),
+      fetchQuery(`/vendor/chat/${conversationId}/read`, { method: "POST" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["seller-chat-conversations"] })
     },

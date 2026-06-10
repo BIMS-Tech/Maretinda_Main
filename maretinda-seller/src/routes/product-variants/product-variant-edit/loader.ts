@@ -5,7 +5,7 @@ import { fetchQuery } from "../../../lib/client"
 import { queryClient } from "../../../lib/query-client"
 
 const queryFn = async (id: string, variantId: string) => {
-  const { product } = await fetchQuery(`/seller/products/${id}`, {
+  const { product } = await fetchQuery(`/vendor/products/${id}`, {
     method: "GET",
     query: { fields: "*variants" },
   })

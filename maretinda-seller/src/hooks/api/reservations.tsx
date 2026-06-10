@@ -36,7 +36,7 @@ export const useReservationItem = (
   const { data, ...rest } = useQuery({
     queryKey: reservationItemsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/seller/reservations/${id}`, {
+      fetchQuery(`/vendor/reservations/${id}`, {
         method: "GET",
         query,
       }),
@@ -61,7 +61,7 @@ export const useReservationItems = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/reservations", {
+      fetchQuery("/vendor/reservations", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -96,7 +96,7 @@ export const useUpdateReservationItem = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminUpdateReservation) =>
-      fetchQuery(`/seller/reservations/${id}`, {
+      fetchQuery(`/vendor/reservations/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -128,7 +128,7 @@ export const useCreateReservationItem = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminCreateReservation) =>
-      fetchQuery("/seller/reservations", {
+      fetchQuery("/vendor/reservations", {
         method: "POST",
         body: payload,
       }),
@@ -158,7 +158,7 @@ export const useDeleteReservationItem = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/seller/reservations/${id}`, { method: "DELETE" }),
+      fetchQuery(`/vendor/reservations/${id}`, { method: "DELETE" }),
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({
         queryKey: reservationItemsQueryKeys.lists(),

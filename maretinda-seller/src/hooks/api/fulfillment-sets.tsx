@@ -31,7 +31,7 @@ export const useDeleteFulfillmentSet = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/seller/fulfillment-sets/${id}`, {
+      fetchQuery(`/vendor/fulfillment-sets/${id}`, {
         method: "DELETE",
       }),
     onSuccess: async (data, variables, context) => {
@@ -98,7 +98,7 @@ export const useCreateFulfillmentSetServiceZone = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/fulfillment-sets/${fulfillmentSetId}/service-zones`, {
+      fetchQuery(`/vendor/fulfillment-sets/${fulfillmentSetId}/service-zones`, {
         method: "POST",
         body: payload,
       }),
@@ -132,7 +132,7 @@ export const useUpdateFulfillmentSetServiceZone = (
   return useMutation({
     mutationFn: (payload) =>
       fetchQuery(
-        `/seller/fulfillment-sets/${fulfillmentSetId}/service-zones/${serviceZoneId}`,
+        `/vendor/fulfillment-sets/${fulfillmentSetId}/service-zones/${serviceZoneId}`,
         { method: "POST", body: payload }
       ),
     onSuccess: async (data, variables, context) => {
@@ -164,7 +164,7 @@ export const useDeleteFulfillmentServiceZone = (
   return useMutation({
     mutationFn: () =>
       fetchQuery(
-        `/seller/fulfillment-sets/${fulfillmentSetId}/service-zones/${serviceZoneId}`,
+        `/vendor/fulfillment-sets/${fulfillmentSetId}/service-zones/${serviceZoneId}`,
         { method: "DELETE" }
       ),
     onSuccess: async (data, variables, context) => {

@@ -58,7 +58,7 @@ export const useGiyaPayTransactions = (filters: GiyaPayFilters = {}) => {
   return useQuery({
     queryKey: ["giyapay-transactions", page, limit, status, gateway, search, date_from, date_to],
     queryFn: async (): Promise<GiyaPayTransactionsResponse> => {
-      return await fetchQuery(`/seller/giyapay/transactions`, {
+      return await fetchQuery(`/vendor/giyapay/transactions`, {
         method: "GET",
         query,
       })

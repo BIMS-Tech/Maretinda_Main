@@ -76,7 +76,7 @@ export const useShippingProviders = () => {
       sellerConfig: sellershippingConfig
     }> => {
       try {
-        return await fetchQuery("/seller/shipping-providers", { method: "GET" })
+        return await fetchQuery("/vendor/shipping-providers", { method: "GET" })
       } catch (error) {
         console.warn("Shipping Providers API not available, using mock data:", error)
         return {
@@ -218,7 +218,7 @@ export const useConfigureShippingProvider = () => {
       providerId: string
       data: any
     }) => {
-      return await fetchQuery("/seller/shipping-providers", {
+      return await fetchQuery("/vendor/shipping-providers", {
         method: "POST",
         body: data,
       })
@@ -242,7 +242,7 @@ export const useShippingOrders = (filters?: Record<string, string>) => {
     }> => {
       try {
         const params = new URLSearchParams(filters || {})
-        return await fetchQuery(`/seller/shipping-orders?${params.toString()}`, { method: "GET" })
+        return await fetchQuery(`/vendor/shipping-orders?${params.toString()}`, { method: "GET" })
       } catch (error) {
         console.warn("Shipping Orders API not available:", error)
         return { orders: [], count: 0, hasMore: false, summary: {} }
@@ -262,7 +262,7 @@ export const useCreateShippingOrder = () => {
       providerId?: string
       reason?: string
     }) => {
-      return await fetchQuery("/seller/shipping-orders", {
+      return await fetchQuery("/vendor/shipping-orders", {
         method: "POST",
         body: data,
       })
@@ -282,7 +282,7 @@ export const useShippingAnalytics = (period: string = "30d", providerId?: string
       try {
         const params = new URLSearchParams({ period })
         if (providerId) params.append("provider_id", providerId)
-        return await fetchQuery(`/seller/shipping-analytics?${params.toString()}`, { method: "GET" })
+        return await fetchQuery(`/vendor/shipping-analytics?${params.toString()}`, { method: "GET" })
       } catch (error) {
         console.warn("Shipping Analytics API not available, using mock data:", error)
         return {

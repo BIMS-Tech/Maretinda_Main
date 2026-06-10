@@ -92,7 +92,7 @@ export const usesellerCapturePayment = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/seller/orders/${orderId}/payments/${paymentId}/capture`, {
+      fetchQuery(`/vendor/orders/${orderId}/payments/${paymentId}/capture`, {
         method: "POST",
       }),
     onSuccess: (data, variables, context) => {

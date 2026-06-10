@@ -209,42 +209,42 @@ async function ruleValueOptionsOverride(
 export default defineMiddlewares({
   routes: [
     {
-      matcher: "/seller*",
+      matcher: "/vendor*",
       middlewares: [sellerCors],
     },
     {
       method: ["GET"],
-      matcher: "/seller/orders",
+      matcher: "/vendor/orders",
       middlewares: [restorePaymentCollectionsFields],
     },
     {
       method: ["GET"],
-      matcher: "/seller/orders/:id",
+      matcher: "/vendor/orders/:id",
       middlewares: [restorePaymentCollectionsFields],
     },
     {
       method: ["POST"],
-      matcher: "/seller/promotions",
+      matcher: "/vendor/promotions",
       middlewares: [promotionCreateOverride],
     },
     {
       method: ["GET"],
-      matcher: "/seller/campaigns",
+      matcher: "/vendor/campaigns",
       middlewares: [campaignListOverride],
     },
     {
       method: ["GET"],
-      matcher: "/seller/campaigns/:id",
+      matcher: "/vendor/campaigns/:id",
       middlewares: [campaignDetailOverride],
     },
     {
       method: ["GET"],
-      matcher: "/seller/promotions/rule-value-options/:ruleType/:ruleValue",
+      matcher: "/vendor/promotions/rule-value-options/:ruleType/:ruleValue",
       middlewares: [ruleValueOptionsOverride],
     },
     {
       method: ["GET"],
-      matcher: "/seller/promotions/rule-value-options/:rule_type/:rule_attribute_id",
+      matcher: "/vendor/promotions/rule-value-options/:rule_type/:rule_attribute_id",
       middlewares: [ruleValueOptionsOverride],
     },
   ],

@@ -31,7 +31,7 @@ export const usePriceList = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/seller/price-lists/${id}`, {
+      fetchQuery(`/vendor/price-lists/${id}`, {
         method: "GET",
         query,
       }),
@@ -57,7 +57,7 @@ export const usePriceListProducts = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/seller/price-lists/${id}/products`, {
+      fetchQuery(`/vendor/price-lists/${id}/products`, {
         method: "GET",
         query,
       }),
@@ -82,7 +82,7 @@ export const usePriceLists = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/price-lists", {
+      fetchQuery("/vendor/price-lists", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -104,7 +104,7 @@ export const useCreatePriceList = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/seller/price-lists", {
+      fetchQuery("/vendor/price-lists", {
         method: "POST",
         body: payload,
       }),
@@ -133,7 +133,7 @@ export const useUpdatePriceList = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/price-lists/${id}`, {
+      fetchQuery(`/vendor/price-lists/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -165,7 +165,7 @@ export const useDeletePriceList = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/seller/price-lists/${id}`, {
+      fetchQuery(`/vendor/price-lists/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -215,7 +215,7 @@ export const usePriceListLinkProducts = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/seller/price-lists/${id}/products`, {
+      fetchQuery(`/vendor/price-lists/${id}/products`, {
         method: "POST",
         body: payload,
       }),

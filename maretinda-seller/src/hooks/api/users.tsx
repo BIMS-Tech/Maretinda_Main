@@ -30,7 +30,7 @@ export const useMe = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery("/seller/sellers/me", {
+      fetchQuery("/vendor/sellers/me", {
         method: "GET",
         query: {
           fields:
@@ -57,7 +57,7 @@ export const useUpdateMe = (
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery("/seller/sellers/me", {
+      fetchQuery("/vendor/sellers/me", {
         method: "POST",
         body,
       }),
@@ -92,7 +92,7 @@ export const useUpdateBankInfo = (
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery("/seller/sellers/me/bank-info", {
+      fetchQuery("/vendor/sellers/me/bank-info", {
         method: "POST",
         body,
       }),
@@ -114,7 +114,7 @@ export const useUpdateBankInfo = (
 export const useOnboarding = () => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/sellers/me/onboarding", {
+      fetchQuery("/vendor/sellers/me/onboarding", {
         method: "GET",
       }),
     queryKey: ["onboarding"],
@@ -130,7 +130,7 @@ export const useOnboarding = () => {
 export const useUpdateOnboarding = () => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery("/seller/sellers/me/onboarding", {
+      fetchQuery("/vendor/sellers/me/onboarding", {
         method: "POST",
         body: {},
       }),
@@ -158,7 +158,7 @@ export const useUserMe = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/seller/me`, {
+      fetchQuery(`/vendor/me`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -173,7 +173,7 @@ export const useStatistics = ({ from, to }: { from: string; to: string }) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
       fetchQuery(
-        `/seller/statistics?time_from=${from}T00:00:00Z&time_to=${to}T23:59:59Z`,
+        `/vendor/statistics?time_from=${from}T00:00:00Z&time_to=${to}T23:59:59Z`,
         {
           method: "GET",
         }
@@ -201,7 +201,7 @@ export const useUser = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/seller/members/${id}`, {
+      fetchQuery(`/vendor/members/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -226,7 +226,7 @@ export const useUsers = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/seller/members", {
+      fetchQuery("/vendor/members", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -254,7 +254,7 @@ export const useUpdateUser = (
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery(`/seller/members/${id}`, {
+      fetchQuery(`/vendor/members/${id}`, {
         method: "POST",
         body,
       }),
@@ -287,7 +287,7 @@ export const useDeleteUser = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/seller/members/${id}`, {
+      fetchQuery(`/vendor/members/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {

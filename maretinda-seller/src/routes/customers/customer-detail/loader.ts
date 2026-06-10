@@ -6,7 +6,7 @@ import { queryClient } from "../../../lib/query-client"
 const customerDetailQuery = (id: string) => ({
   queryKey: productsQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/seller/customers/${id}`, {
+    fetchQuery(`/vendor/customers/${id}`, {
       method: "GET",
       query: {
         fields: "*groups, *groups.customers",

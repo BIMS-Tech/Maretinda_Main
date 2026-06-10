@@ -48,7 +48,7 @@ export const useInvites = (
   >
 ) => {
   const { data, ...rest } = useQuery({
-    queryFn: () => fetchQuery("/seller/invites", { method: "GET" }),
+    queryFn: () => fetchQuery("/vendor/invites", { method: "GET" }),
     queryKey: invitesQueryKeys.list(query),
     ...options,
   })
@@ -65,7 +65,7 @@ export const useCreateInvite = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/seller/invites", {
+      fetchQuery("/vendor/invites", {
         method: "POST",
         body: { ...payload, role: "member" },
       }),

@@ -1,14 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert, Hint, Input } from "@medusajs/ui"
-import {
-  CircleHalfSolid,
-  Moon,
-  Sun,
-  ShoppingBag,
-  ChartBar,
-  CurrencyDollar,
-  ChatBubbleLeftRight,
-} from "@medusajs/icons"
+import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -24,6 +16,21 @@ const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 })
+
+function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+      {[45, 135, 225, 315].map(angle => (
+        <path
+          key={angle}
+          d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
+          fill={color}
+          transform={`rotate(${angle},16,16)`}
+        />
+      ))}
+    </svg>
+  )
+}
 
 function ThemeToggleButton() {
   const { theme, setTheme } = useTheme()
@@ -88,37 +95,28 @@ export const Login = () => {
 
   return (
     <div className="min-h-dvh w-dvw flex">
-      {/* Left panel — branding */}
+
+      {/* Left panel — vendor brand */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden"
-        style={{ background: "linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%)" }}
+        style={{ backgroundColor: "#432C63" }}
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
-            style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-80 h-80 rounded-full"
-            style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full"
-            style={{ background: "radial-gradient(circle, #a5b4fc 0%, transparent 70%)" }}
-          />
+        {/* Subtle background texture */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
         </div>
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo-m.png" alt="Maretinda" className="w-10 h-10 brightness-200" />
+          <MaretindaFlower color="white" size={40} />
           <div>
             <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
             <span
               className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}
+              style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}
             >
-              seller
+              Vendor
             </span>
           </div>
         </div>
@@ -130,25 +128,27 @@ export const Login = () => {
             business with<br />
             Maretinda
           </h1>
-          <p className="text-indigo-200 text-base leading-relaxed max-w-xs">
+          <p className="text-white/70 text-base leading-relaxed max-w-xs">
             Manage your store, track orders, handle payments, and connect with customers — all from one dashboard.
           </p>
 
-          <div className="mt-10 flex flex-col gap-3">
+          <div className="mt-10 flex flex-col gap-4">
             {[
-              { icon: <ShoppingBag />, label: "List & manage your products" },
-              { icon: <ChartBar />, label: "Track sales & analytics" },
-              { icon: <CurrencyDollar />, label: "Receive payouts & settlements" },
-              { icon: <ChatBubbleLeftRight />, label: "Chat with customers" },
-            ].map(({ icon, label }) => (
+              "List & manage your products",
+              "Track sales & analytics",
+              "Receive payouts & settlements",
+              "Chat directly with customers",
+            ].map(label => (
               <div key={label} className="flex items-center gap-3">
                 <span
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-white flex-shrink-0"
-                  style={{ background: "rgba(255,255,255,0.15)" }}
+                  className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 text-white/90"
+                  style={{ background: "rgba(255,255,255,0.18)" }}
                 >
-                  {icon}
+                  <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </span>
-                <span className="text-indigo-100 text-sm">{label}</span>
+                <span className="text-white/80 text-sm">{label}</span>
               </div>
             ))}
           </div>
@@ -156,7 +156,7 @@ export const Login = () => {
 
         {/* Bottom */}
         <div className="relative z-10">
-          <p className="text-indigo-300 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
+          <p className="text-white/40 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
         </div>
       </div>
 
@@ -165,10 +165,10 @@ export const Login = () => {
         {/* Mobile logo + theme toggle */}
         <div className="flex items-center justify-between mb-8 lg:justify-end">
           <div className="lg:hidden flex items-center gap-2">
-            <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
-            <span className="text-xl font-bold" style={{ color: "#6366f1" }}>Maretinda</span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">
-              seller
+            <MaretindaFlower color="#432C63" size={28} />
+            <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>
+              Vendor
             </span>
           </div>
           <ThemeToggleButton />
@@ -177,12 +177,15 @@ export const Login = () => {
         <div className="w-full max-w-[360px] mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-indigo-500/10 text-indigo-500">
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
+              style={{ background: "#F2ECF8", color: "#432C63" }}
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              seller Portal
+              Vendor Portal
             </div>
             <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Welcome back</h2>
-            <p className="text-ui-fg-subtle text-sm">Sign in to your seller account to manage your store</p>
+            <p className="text-ui-fg-subtle text-sm">Sign in to your vendor account to manage your store</p>
           </div>
 
           {/* Form */}
@@ -203,12 +206,7 @@ export const Login = () => {
                           {t("fields.email")}
                         </Form.Label>
                         <Form.Control>
-                          <Input
-                            autoComplete="email"
-                            {...field}
-                            className="mt-1"
-                            placeholder="seller@example.com"
-                          />
+                          <Input autoComplete="email" {...field} className="mt-1" placeholder="vendor@example.com" />
                         </Form.Control>
                       </Form.Item>
                     )}
@@ -222,13 +220,7 @@ export const Login = () => {
                           {t("fields.password")}
                         </Form.Label>
                         <Form.Control>
-                          <Input
-                            type="password"
-                            autoComplete="current-password"
-                            {...field}
-                            className="mt-1"
-                            placeholder="••••••••"
-                          />
+                          <Input type="password" autoComplete="current-password" {...field} className="mt-1" placeholder="••••••••" />
                         </Form.Control>
                       </Form.Item>
                     )}
@@ -237,22 +229,18 @@ export const Login = () => {
 
                 {validationError && (
                   <div className="text-center">
-                    <Hint className="inline-flex" variant="error">
-                      {validationError}
-                    </Hint>
+                    <Hint className="inline-flex" variant="error">{validationError}</Hint>
                   </div>
                 )}
                 {serverError && (
-                  <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">
-                    {serverError}
-                  </Alert>
+                  <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">{serverError}</Alert>
                 )}
 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1"
-                  style={{ background: "linear-gradient(135deg, #312e81 0%, #6366f1 100%)" }}
+                  className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1 hover:opacity-90"
+                  style={{ backgroundColor: "#432C63" }}
                 >
                   {isPending ? "Signing in…" : "Sign In"}
                 </button>
@@ -273,14 +261,14 @@ export const Login = () => {
                     key="reset-password-link"
                     to="/reset-password"
                     className="font-medium transition-colors hover:opacity-80"
-                    style={{ color: "#4338ca" }}
+                    style={{ color: "#432C63" }}
                   />,
                 ]}
               />
             </span>
 
             {__DISABLE_SELLERS_REGISTRATION__ === "false" && (
-              <span className="text-gray-400 text-sm">
+              <span className="text-ui-fg-subtle text-sm">
                 <Trans
                   i18nKey="login.notSellerYet"
                   components={[
@@ -288,7 +276,7 @@ export const Login = () => {
                       key="register-link"
                       to="/register"
                       className="font-medium transition-colors hover:opacity-80"
-                      style={{ color: "#4338ca" }}
+                      style={{ color: "#432C63" }}
                     />,
                   ]}
                 />

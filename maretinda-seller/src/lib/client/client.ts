@@ -19,7 +19,7 @@ export const importProductsQuery = async (file: File) => {
   const formData = new FormData()
   formData.append("file", file)
 
-  return await fetch(`${backendUrl}/seller/products/import`, {
+  return await fetch(`${backendUrl}/vendor/products/import`, {
     method: "POST",
     body: formData,
     headers: {

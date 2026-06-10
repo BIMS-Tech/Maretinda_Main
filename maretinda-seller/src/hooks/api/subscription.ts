@@ -51,7 +51,7 @@ const PLANS_KEY = ["subscription-plans"] as const
 export const useSubscriptionStatus = () => {
   return useQuery<SubscriptionStatusResponse>({
     queryKey: SUBSCRIPTION_KEY,
-    queryFn: () => fetchQuery("/seller/subscription/status", { method: "GET" }),
+    queryFn: () => fetchQuery("/vendor/subscription/status", { method: "GET" }),
     staleTime: 1000 * 60 * 5,
   })
 }
@@ -59,7 +59,7 @@ export const useSubscriptionStatus = () => {
 export const useSubscriptionPlans = () => {
   return useQuery<{ plans: SubscriptionPlan[] }>({
     queryKey: PLANS_KEY,
-    queryFn: () => fetchQuery("/seller/subscription/plans", { method: "GET" }),
+    queryFn: () => fetchQuery("/vendor/subscription/plans", { method: "GET" }),
     staleTime: 1000 * 60 * 10,
   })
 }
@@ -72,7 +72,7 @@ export const useSubscriptionCheckout = () => {
     { plan_name: string; billing_period: "monthly" | "yearly" }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/seller/subscription/checkout", {
+      fetchQuery("/vendor/subscription/checkout", {
         method: "POST",
         body: payload,
       }),
@@ -90,7 +90,7 @@ export const useActivateSubscription = () => {
     { order_id: string; refno: string; nonce: string; timestamp: string; amount: string; signature: string }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/seller/subscription/activate", {
+      fetchQuery("/vendor/subscription/activate", {
         method: "POST",
         body: payload,
       }),

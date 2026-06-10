@@ -47,7 +47,7 @@ export const EditShippingOptionForm = ({
   const shippingProfiles = useComboboxData({
     queryFn: async () => {
       const { shipping_profiles } = await fetchQuery(
-        "/seller/shipping-profiles",
+        "/vendor/shipping-profiles",
         {
           method: "GET",
         }

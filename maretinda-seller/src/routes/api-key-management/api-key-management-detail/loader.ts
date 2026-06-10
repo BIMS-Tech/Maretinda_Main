@@ -6,7 +6,7 @@ import { queryClient } from "../../../lib/query-client"
 
 const apiKeyDetailQuery = (id: string) => ({
   queryKey: apiKeysQueryKeys.detail(id),
-  queryFn: async () => fetchQuery(`/seller/api-keys/${id}`, { method: "GET" }),
+  queryFn: async () => fetchQuery(`/vendor/api-keys/${id}`, { method: "GET" }),
 })
 
 export const apiKeyLoader = async ({ params }: LoaderFunctionArgs) => {
