@@ -53,8 +53,10 @@ export default class VoucherService {
       { take: 200, relations: ["application_method", "rules", "rules.values"] }
     )
 
-    // Filter by seller scope and optional seller filter
+    // Filter by seller scope, optional seller filter, and expiry
+    const now = new Date()
     const visible = promotions.filter((p: any) => {
+      if (p.ends_at && new Date(p.ends_at) < now) return false
       const meta = p.metadata || {}
       if (meta.scope === "seller" || meta.seller_id) {
         if (sellerIdFilter && meta.seller_id !== sellerIdFilter) return false
@@ -210,7 +212,7 @@ export default class VoucherService {
     let discount_label = "Voucher"
     if (method) {
       if (method.type === "fixed") {
-        const amount = (method.value || 0) / 100
+        const amount = method.value || 0
         discount_label = `₱${amount.toLocaleString()} off`
       } else if (method.type === "percentage") {
         discount_label = `${method.value}% off`
