@@ -56,7 +56,7 @@ export const ProductCard = ({
 							className="object-contain w-full h-full p-4 group-hover:scale-[1.05] transition-transform duration-500 ease-out"
 							fill
 							priority
-							sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+							sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
 							src={thumbnail}
 						/>
 					) : (

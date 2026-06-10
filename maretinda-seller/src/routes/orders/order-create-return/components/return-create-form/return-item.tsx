@@ -160,10 +160,12 @@ function ReturnItem({
                               onChange(v)
                             }}
                             {...field}
-                            options={return_reasons.map((reason) => ({
-                              label: reason.label,
-                              value: reason.id,
-                            }))}
+                            options={return_reasons
+                              .filter((r) => r?.id && r?.label)
+                              .map((reason) => ({
+                                label: reason.label,
+                                value: reason.id,
+                              }))}
                           />
                         </Form.Control>
                         <Form.ErrorMessage />

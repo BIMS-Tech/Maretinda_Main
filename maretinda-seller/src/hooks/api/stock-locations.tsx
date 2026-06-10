@@ -61,6 +61,7 @@ export const useStockLocations = (
     queryFn: () =>
       fetchQuery("/vendor/stock-locations", {
         method: "GET",
+        query: query as Record<string, string | number>,
       }),
     queryKey: stockLocationsQueryKeys.list(query),
     ...options,
