@@ -464,12 +464,12 @@ export const ExchangeInboundSection = ({
                           onChange(v)
                           onLocationChange(v)
                         }}
-                        options={(stock_locations ?? []).map(
-                          (stockLocation) => ({
-                            label: stockLocation.name,
+                        options={(stock_locations ?? [])
+                          .filter((s) => s?.id)
+                          .map((stockLocation) => ({
+                            label: stockLocation.name || stockLocation.id,
                             value: stockLocation.id,
-                          })
-                        )}
+                          }))}
                       />
                     </Form.Control>
                   </Form.Item>
