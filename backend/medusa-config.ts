@@ -12,8 +12,8 @@ module.exports = defineConfig({
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
-      // @ts-expect-error: sellerCors is not a valid config
-      sellerCors: (process.env.SELLER_CORS || process.env.VENDOR_CORS)!,
+      // @ts-expect-error: vendorCors is not a valid config — mercurjs reads this key
+      vendorCors: (process.env.SELLER_CORS || process.env.VENDOR_CORS)!,
       authCors: process.env.AUTH_CORS!,
       jwtSecret: process.env.JWT_SECRET || 'supersecret',
       cookieSecret: process.env.COOKIE_SECRET || 'supersecret'

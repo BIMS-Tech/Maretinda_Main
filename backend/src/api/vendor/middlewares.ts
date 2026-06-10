@@ -1,7 +1,13 @@
 import { defineMiddlewares } from "@medusajs/framework/http"
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules, parseCorsOrigins } from "@medusajs/framework/utils"
 import { createPromotionsWorkflow } from "@medusajs/core-flows"
 import { NextFunction, Request, Response } from "express"
+import cors from "cors"
+
+function sellerCors(req: Request, res: Response, next: NextFunction) {
+  const origins = process.env.SELLER_CORS || process.env.VENDOR_CORS || "http://localhost:5173"
+  return cors({ origin: parseCorsOrigins(origins), credentials: true })(req as any, res as any, next)
+}
 
 function restorePaymentCollectionsFields(
   req: Request,
@@ -202,6 +208,10 @@ async function ruleValueOptionsOverride(
 
 export default defineMiddlewares({
   routes: [
+    {
+      matcher: "/seller*",
+      middlewares: [sellerCors],
+    },
     {
       method: ["GET"],
       matcher: "/seller/orders",
