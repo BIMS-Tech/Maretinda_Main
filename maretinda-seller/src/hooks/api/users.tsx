@@ -1,0 +1,310 @@
+import { FetchError } from "@medusajs/js-sdk"
+import { HttpTypes } from "@medusajs/types"
+import {
+  QueryKey,
+  UseMutationOptions,
+  UseQueryOptions,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query"
+import { fetchQuery } from "../../lib/client"
+import { queryClient } from "../../lib/query-client"
+import { queryKeysFactory } from "../../lib/query-key-factory"
+import { Storeseller, TeamMemberProps } from "../../types/user"
+
+const USERS_QUERY_KEY = "users" as const
+const usersQueryKeys = {
+  ...queryKeysFactory(USERS_QUERY_KEY),
+  me: () => [USERS_QUERY_KEY, "me"],
+}
+
+export const useMe = (
+  options?: UseQueryOptions<
+    HttpTypes.AdminUserResponse,
+    FetchError,
+    HttpTypes.AdminUserResponse & {
+      seller: Storeseller
+    },
+    QueryKey
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: async () =>
+      fetchQuery("/seller/sellers/me", {
+        method: "GET",
+        query: {
+          fields:
+            "id,name,description,phone,email,media,address_line,postal_code,country_code,city,region,metadata,tax_id,photo,store_status,bank_name,account_number,account_name,branch_name,swift_code,beneficiary_address,beneficiary_bank_address,dft_bank_name,dft_bank_code,dft_swift_code,dft_bank_address,dft_beneficiary_name,dft_beneficiary_code,dft_beneficiary_address,dft_account_number",
+        },
+      }),
+    queryKey: usersQueryKeys.me(),
+    ...options,
+  })
+
+  return {
+    seller: data?.seller,
+    ...rest,
+  }
+}
+
+export const useUpdateMe = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserResponse,
+    FetchError,
+    Storeseller,
+    QueryKey
+  >
+) => {
+  return useMutation({
+    mutationFn: (body) =>
+      fetchQuery("/seller/sellers/me", {
+        method: "POST",
+        body,
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.setQueryData(usersQueryKeys.me(), data)
+
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.lists(),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.me(),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+/**
+ * Hook for updating bank information only
+ * Uses a separate endpoint to bypass Mercur plugin validation
+ */
+export const useUpdateBankInfo = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserResponse,
+    FetchError,
+    Partial<Storeseller>,
+    QueryKey
+  >
+) => {
+  return useMutation({
+    mutationFn: (body) =>
+      fetchQuery("/seller/sellers/me/bank-info", {
+        method: "POST",
+        body,
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.lists(),
+      })
+
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.me(),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useOnboarding = () => {
+  const { data, ...rest } = useQuery({
+    queryFn: () =>
+      fetchQuery("/seller/sellers/me/onboarding", {
+        method: "GET",
+      }),
+    queryKey: ["onboarding"],
+    staleTime: 0,
+  })
+
+  return {
+    ...data,
+    ...rest,
+  }
+}
+
+export const useUpdateOnboarding = () => {
+  return useMutation({
+    mutationFn: () =>
+      fetchQuery("/seller/sellers/me/onboarding", {
+        method: "POST",
+        body: {},
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["onboarding"],
+      })
+    },
+  })
+}
+
+export const useUserMe = (
+  query?: HttpTypes.AdminUserParams,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminUserResponse,
+      FetchError,
+      HttpTypes.AdminUserResponse & {
+        member: TeamMemberProps
+      },
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () =>
+      fetchQuery(`/seller/me`, {
+        method: "GET",
+        query: query as { [key: string]: string | number },
+      }),
+    queryKey: [USERS_QUERY_KEY, "user", "me"],
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useStatistics = ({ from, to }: { from: string; to: string }) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () =>
+      fetchQuery(
+        `/seller/statistics?time_from=${from}T00:00:00Z&time_to=${to}T23:59:59Z`,
+        {
+          method: "GET",
+        }
+      ),
+    queryKey: [USERS_QUERY_KEY, "statistics"],
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useUser = (
+  id: string,
+  query?: HttpTypes.AdminUserParams,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminUserResponse,
+      FetchError,
+      HttpTypes.AdminUserResponse & {
+        member: TeamMemberProps
+      },
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () =>
+      fetchQuery(`/seller/members/${id}`, {
+        method: "GET",
+        query: query as { [key: string]: string | number },
+      }),
+    queryKey: usersQueryKeys.detail(id),
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useUsers = (
+  query?: HttpTypes.AdminUserListParams,
+  options?: Omit<
+    UseQueryOptions<
+      HttpTypes.AdminUserListResponse,
+      FetchError,
+      HttpTypes.AdminUserListResponse & { members: any[] },
+      QueryKey
+    >,
+    "queryFn" | "queryKey"
+  >
+) => {
+  const { data, ...rest } = useQuery({
+    queryFn: () =>
+      fetchQuery("/seller/members", {
+        method: "GET",
+        query: query as { [key: string]: string | number },
+      }),
+    queryKey: usersQueryKeys.list(query),
+    ...options,
+  })
+
+  return { ...data, ...rest }
+}
+
+export const useUpdateUser = (
+  id: string,
+  options?: UseMutationOptions<
+    TeamMemberProps,
+    FetchError,
+    {
+      name?: string
+      photo?: string
+      language?: string
+      phone?: string
+      bio?: string
+    },
+    QueryKey
+  >
+) => {
+  return useMutation({
+    mutationFn: (body) =>
+      fetchQuery(`/seller/members/${id}`, {
+        method: "POST",
+        body,
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.detail(id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.lists(),
+      })
+
+      // We invalidate the me query in case the user updates their own profile
+      queryClient.invalidateQueries({
+        queryKey: [USERS_QUERY_KEY, "user", "me"],
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useDeleteUser = (
+  id: string,
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserDeleteResponse,
+    FetchError,
+    void
+  >
+) => {
+  return useMutation({
+    mutationFn: () =>
+      fetchQuery(`/seller/members/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.detail(id),
+      })
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.lists(),
+      })
+
+      // We invalidate the me query in case the user updates their own profile
+      queryClient.invalidateQueries({
+        queryKey: usersQueryKeys.me(),
+      })
+
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}

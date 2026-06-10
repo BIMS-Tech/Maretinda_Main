@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@hooks/*": ["./src/hooks/*"]
+    }
+  },
+  "exclude": ["**/*.spec.ts", "**/*.spec.tsx"]
+}
