@@ -10,7 +10,7 @@ import { ProfileIcon2 } from '@/icons';
 import Spinner from '@/icons/spinner';
 import { useLanguage } from '@/providers/LanguageProvider';
 
-type NavKey = 'orders' | 'returns' | 'addresses' | 'reviews' | 'wishlist' | 'settings';
+type NavKey = 'orders' | 'returns' | 'addresses' | 'reviews' | 'wishlist' | 'vouchers' | 'settings';
 
 const MENU_HREFS: { key: NavKey; href: string }[] = [
 	{ key: 'orders', href: '/user/orders' },
@@ -18,6 +18,7 @@ const MENU_HREFS: { key: NavKey; href: string }[] = [
 	{ key: 'addresses', href: '/user/addresses' },
 	{ key: 'reviews', href: '/user/reviews' },
 	{ key: 'wishlist', href: '/user/wishlist' },
+	{ key: 'vouchers', href: '/user/vouchers' },
 	{ key: 'settings', href: '/user/settings' },
 ];
 

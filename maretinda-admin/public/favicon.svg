@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#1F172A"/>
+  <!-- 4-petal flower: top, right, bottom, left petals -->
+  <ellipse cx="16" cy="9.5" rx="4.5" ry="7.5" fill="#C4B5FD"/>
+  <ellipse cx="22.5" cy="16" rx="7.5" ry="4.5" fill="#C4B5FD"/>
+  <ellipse cx="16" cy="22.5" rx="4.5" ry="7.5" fill="#C4B5FD"/>
+  <ellipse cx="9.5" cy="16" rx="7.5" ry="4.5" fill="#C4B5FD"/>
+</svg>
