@@ -4,7 +4,7 @@ import SubscriptionService from "../../../../services/subscription"
 /**
  * PATCH /admin/subscriptions/:id
  *
- * Activate or deactivate a specific vendor subscription.
+ * Activate or deactivate a specific seller subscription.
  * Body: { "status": "active" | "cancelled" }
  */
 export async function PATCH(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {

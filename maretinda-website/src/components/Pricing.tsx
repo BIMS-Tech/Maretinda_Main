@@ -107,7 +107,7 @@ export default function Pricing() {
         {/* Header */}
         <div data-aos="fade-up" className="text-center mb-9">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-purple-mid bg-[rgba(92,62,136,.09)] border border-[rgba(92,62,136,.18)] px-3.5 py-1.5 rounded-full mb-4">
-            Vendor Plans
+            seller Plans
           </span>
           <h2
             className="font-display font-extrabold leading-tight mb-3"

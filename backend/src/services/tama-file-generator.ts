@@ -6,8 +6,8 @@ import * as XLSX from "xlsx"
 interface TamaTransaction {
   id: string
   reference_number: string
-  vendor_id?: string
-  vendor_name?: string
+  seller_id?: string
+  seller_name?: string
   beneficiary_name: string
   beneficiary_account: string
   amount: number // Gross amount
@@ -241,10 +241,10 @@ class TamaFileGeneratorService extends MedusaService({}) {
           s.dft_beneficiary_name as beneficiary_name,
           s.dft_account_number as beneficiary_account,
           s.dft_bank_name,
-          s.id as vendor_id,
-          s.name as vendor_name
+          s.id as seller_id,
+          s.name as seller_name
         FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.vendor_id
+        LEFT JOIN seller s ON s.id = gt.seller_id
         WHERE gt.status = 'SUCCESS'
           AND s.dft_bank_name ILIKE '%metrobank%'
           AND s.dft_account_number IS NOT NULL
@@ -267,8 +267,8 @@ class TamaFileGeneratorService extends MedusaService({}) {
         return {
           id: row.id,
           reference_number: row.reference_number,
-          vendor_id: row.vendor_id,
-          vendor_name: row.vendor_name,
+          seller_id: row.seller_id,
+          seller_name: row.seller_name,
           beneficiary_name: row.beneficiary_name,
           beneficiary_account: row.beneficiary_account,
           amount: grossAmount,

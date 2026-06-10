@@ -4,8 +4,8 @@ import {
 } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 // Note: using pgConnection directly since query.graph requires admin actor for 'review' entity
-// Note: using /vendor/sellers/me/review/:id (singular) to avoid Mercur's checkResourceOwnershipByResourceId
-// middleware on /vendor/sellers/me/reviews/:id which only checks seller_review links (not product_review links)
+// Note: using /seller/sellers/me/review/:id (singular) to avoid Mercur's checkResourceOwnershipByResourceId
+// middleware on /seller/sellers/me/reviews/:id which only checks seller_review links (not product_review links)
 //
 // Link tables discovered from DB schema:
 //   customer_customer_review_review: customer_id, review_id
@@ -103,7 +103,7 @@ export const GET = async (
       }
     })
   } catch (error) {
-    console.error('[Vendor Review Detail] Error:', error)
+    console.error('[seller Review Detail] Error:', error)
     res.status(500).json({
       message: 'Failed to fetch review',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -156,7 +156,7 @@ export const POST = async (
       review: updatedReview
     })
   } catch (error) {
-    console.error('[Vendor Review Update] Error:', error)
+    console.error('[seller Review Update] Error:', error)
     res.status(500).json({
       message: 'Failed to update review',
       error: error instanceof Error ? error.message : 'Unknown error'

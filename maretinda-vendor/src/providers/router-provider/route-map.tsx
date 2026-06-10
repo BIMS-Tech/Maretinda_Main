@@ -52,7 +52,7 @@ export const RouteMap: RouteObject[] = [
           {
             path: "shipping",
             handle: {
-              breadcrumb: () => "Multi-Vendor Shipping",
+              breadcrumb: () => "Multi-seller Shipping",
             },
             errorElement: <ErrorBoundary />,
             lazy: () => import("../../routes/shipping"),

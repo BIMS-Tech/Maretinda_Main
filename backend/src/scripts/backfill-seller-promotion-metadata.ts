@@ -2,7 +2,7 @@ import { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * Backfill metadata for vendor-created promotions that are missing
+ * Backfill metadata for seller-created promotions that are missing
  * scope/seller_id/is_public flags. Run once after deploying the fix.
  *
  * Usage:  yarn medusa exec src/scripts/backfill-seller-promotion-metadata.ts

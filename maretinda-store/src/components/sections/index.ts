@@ -13,7 +13,7 @@ import { WishlistPage } from './WishlistPage/WishlistPage';
 import { FlashSaleSection } from './FlashSaleSection/FlashSaleSection';
 import { FeaturedCollectionsSection } from './FeaturedCollectionsSection/FeaturedCollectionsSection';
 import { TrendingNowSection } from './TrendingNowSection/TrendingNowSection';
-import { TopVendorsSection } from './TopVendorsSection/TopVendorsSection';
+import { TopsellersSection } from './TopsellersSection/TopsellersSection';
 import { BecomeSellerBand } from './BecomeSellerBand/BecomeSellerBand';
 import { TrustSection } from './TrustSection/TrustSection';
 import { NewsletterSection } from './NewsletterSection/NewsletterSection';
@@ -34,7 +34,7 @@ export {
 	ProductDetailsPage,
 	ProductListing,
 	SellerPageHeader,
-	TopVendorsSection,
+	TopsellersSection,
 	TrendingNowSection,
 	TrustSection,
 	WishlistPage,

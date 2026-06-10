@@ -92,7 +92,7 @@ export const Orders: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true)
-      // In a real implementation, this would fetch vendor-specific orders
+      // In a real implementation, this would fetch seller-specific orders
       // For now, we'll use mock data
       const mockOrders: OrderWithPayment[] = [
         {

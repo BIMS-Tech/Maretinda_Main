@@ -65,12 +65,12 @@ function PlanCard({
   const displayPrice = billing === 'yearly' ? yearlyPrice : monthlyPrice
   const yearlyMonthly = Math.round(yearlyPrice / 12)
 
-  const vendorPanelUrl =
+  const sellerPanelUrl =
     typeof window !== 'undefined'
-      ? (window as any).__ENV__?.VITE_VENDOR_PANEL_URL ||
-        process.env.NEXT_PUBLIC_VENDOR_PANEL_URL ||
+      ? (window as any).__ENV__?.VITE_seller_PANEL_URL ||
+        process.env.NEXT_PUBLIC_seller_PANEL_URL ||
         ''
-      : process.env.NEXT_PUBLIC_VENDOR_PANEL_URL || ''
+      : process.env.NEXT_PUBLIC_seller_PANEL_URL || ''
 
   return (
     <div
@@ -118,7 +118,7 @@ function PlanCard({
 
       <div className="space-y-2">
         <Link
-          href={`/${locale}/become-vendor?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
+          href={`/${locale}/become-seller?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
           className={`block w-full rounded-xl px-4 py-3 text-center text-sm font-semibold transition-colors ${
             isPopular
               ? 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -127,12 +127,12 @@ function PlanCard({
         >
           Get Started — {plan.name}
         </Link>
-        {vendorPanelUrl && (
+        {sellerPanelUrl && (
           <a
-            href={`${vendorPanelUrl}/subscription?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
+            href={`${sellerPanelUrl}/subscription?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
             className="block w-full rounded-xl border border-gray-300 px-4 py-2 text-center text-xs text-gray-500 hover:bg-gray-50 transition-colors"
           >
-            Already a vendor? Renew here →
+            Already a seller? Renew here →
           </a>
         )}
       </div>
@@ -164,7 +164,7 @@ export default function PricingPage() {
       <div className="mx-auto max-w-4xl px-4 pt-20 pb-10 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-indigo-100 px-4 py-1.5 text-xs font-semibold text-indigo-700 mb-6">
           <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-          Vendor Plans
+          seller Plans
         </div>
         <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl">
           Simple, Transparent Pricing
@@ -219,7 +219,7 @@ export default function PricingPage() {
         <div className="mt-16 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
           <h3 className="text-lg font-bold text-gray-900">Questions?</h3>
           <p className="mt-2 text-sm text-gray-500">
-            All plans include a 1-month validity. Upgrade, downgrade, or renew at any time from your vendor panel.
+            All plans include a 1-month validity. Upgrade, downgrade, or renew at any time from your seller panel.
           </p>
           <p className="mt-3 text-sm text-gray-400">
             Payment is processed securely by{' '}

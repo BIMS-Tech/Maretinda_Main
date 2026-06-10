@@ -7,7 +7,7 @@ import { queryClient } from "../../../lib/query-client"
 const productTypeDetailQuery = (id: string) => ({
   queryKey: productTypesQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/vendor/product-types/${id}`, {
+    fetchQuery(`/seller/product-types/${id}`, {
       method: "GET",
     }),
 })

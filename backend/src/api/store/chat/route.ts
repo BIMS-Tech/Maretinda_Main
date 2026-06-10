@@ -21,16 +21,16 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   res.json({ conversations, count, unread })
 }
 
-// POST /store/chat  — start conversation with a vendor
+// POST /store/chat  — start conversation with a seller
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const chatService = getChatService(req.scope as any)
   const customerId = req.auth_context?.actor_id
   if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 
-  const { vendor_id, subject } = req.body as { vendor_id: string; subject?: string }
-  if (!vendor_id) return res.status(400).json({ message: "vendor_id is required" })
+  const { seller_id, subject } = req.body as { seller_id: string; subject?: string }
+  if (!seller_id) return res.status(400).json({ message: "seller_id is required" })
 
-  const conversation = await chatService.getOrCreateConversation(vendor_id, customerId, subject)
+  const conversation = await chatService.getOrCreateConversation(seller_id, customerId, subject)
 
   res.status(201).json({ conversation })
 }

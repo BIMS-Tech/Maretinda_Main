@@ -33,7 +33,7 @@ export const useStockLocation = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/stock-locations/${id}`, {
+      fetchQuery(`/seller/stock-locations/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -59,7 +59,7 @@ export const useStockLocations = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/stock-locations", {
+      fetchQuery("/seller/stock-locations", {
         method: "GET",
       }),
     queryKey: stockLocationsQueryKeys.list(query),
@@ -87,16 +87,16 @@ export const useCreateStockLocation = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/stock-locations", {
+      fetchQuery("/seller/stock-locations", {
         method: "POST",
         body: payload,
       }),
     onSuccess: async (data, variables, context) => {
-      const { sales_channels } = await fetchQuery("/vendor/sales-channels", {
+      const { sales_channels } = await fetchQuery("/seller/sales-channels", {
         method: "GET",
       })
       await fetchQuery(
-        `/vendor/stock-locations/${data.stock_location.id}/sales-channels`,
+        `/seller/stock-locations/${data.stock_location.id}/sales-channels`,
         {
           method: "POST",
           body: { add: [sales_channels?.[0].id || null] },
@@ -122,7 +122,7 @@ export const useUpdateStockLocation = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/stock-locations/${id}`, {
+      fetchQuery(`/seller/stock-locations/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -150,7 +150,7 @@ export const useUpdateStockLocationSalesChannels = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/stock-locations/${id}/sales-channels`, {
+      fetchQuery(`/seller/stock-locations/${id}/sales-channels`, {
         method: "POST",
         body: payload,
       }),
@@ -178,7 +178,7 @@ export const useDeleteStockLocation = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/stock-locations/${id}`, {
+      fetchQuery(`/seller/stock-locations/${id}`, {
         method: "DELETE",
       }),
     onSuccess: async (data, variables, context) => {
@@ -205,7 +205,7 @@ export const useCreateStockLocationFulfillmentSet = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/stock-locations/${locationId}/fulfillment-sets`, {
+      fetchQuery(`/seller/stock-locations/${locationId}/fulfillment-sets`, {
         method: "POST",
         body: payload,
       }),
@@ -230,7 +230,7 @@ export const useUpdateStockLocationFulfillmentProviders = (
 ) => {
   return useMutation({
     mutationFn: async (payload) =>
-      await fetchQuery(`/vendor/stock-locations/${id}/fulfillment-providers`, {
+      await fetchQuery(`/seller/stock-locations/${id}/fulfillment-providers`, {
         method: "POST",
         body: payload,
       }),

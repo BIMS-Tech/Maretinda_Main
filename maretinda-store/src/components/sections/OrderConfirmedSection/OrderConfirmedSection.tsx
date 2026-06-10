@@ -15,7 +15,7 @@ export const OrderConfirmedSection = ({
 		amount: number;
 		currency: string;
 		gateway: string;
-		vendorName?: string;
+		sellerName?: string;
 		description?: string;
 	}>(null);
 
@@ -41,7 +41,7 @@ export const OrderConfirmedSection = ({
 						description: data.description,
 						gateway: (data.gateway || '').toString().toUpperCase(),
 						referenceNumber: data.referenceNumber,
-						vendorName: data.vendorName,
+						sellerName: data.sellerName,
 					});
 				} else {
 					console.log('[Order Confirmed] Transaction not found, will use payment collection data');

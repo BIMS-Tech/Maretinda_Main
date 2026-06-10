@@ -10,8 +10,8 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 }
 
 /**
- * GET /vendor/campaigns
- * List all campaigns (platform-wide — vendors can see them to link their promotions).
+ * GET /seller/campaigns
+ * List all campaigns (platform-wide — sellers can see them to link their promotions).
  */
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -41,13 +41,13 @@ export async function GET(
 
     res.status(200).json({ campaigns, count, limit, offset })
   } catch (error: any) {
-    console.error("[VendorListCampaigns] Error:", error)
+    console.error("[sellerListCampaigns] Error:", error)
     res.status(500).json({ message: "Failed to list campaigns", error: error.message })
   }
 }
 
 /**
- * POST /vendor/campaigns
+ * POST /seller/campaigns
  * Campaign creation is restricted to platform administrators.
  */
 export async function POST(

@@ -1,4 +1,4 @@
-# Vendor Panel - Google Cloud Build configuration
+# seller Panel - Google Cloud Build configuration
 steps:
   # Build the Docker image with build arguments
   - name: 'gcr.io/cloud-builders/docker'
@@ -47,7 +47,7 @@ steps:
 
 # Substitutions - Update these with your actual values
 substitutions:
-  _SERVICE: 'maretinda-vendor-panel-test'
+  _SERVICE: 'maretinda-seller-panel-test'
   _REGION: 'europe-west1'
   _GAR_LOCATION: 'europe-west1'
   _BACKEND_URL: 'https://maretindatest.medusajs.app'

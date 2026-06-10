@@ -39,7 +39,7 @@ export interface HeroSiteSettings {
   featured_product_sold_this_week?: number
   featured_product_link?: string
   featured_product_image?: string
-  vendors_count?: string
+  sellers_count?: string
 }
 
 export interface HeroContent {

@@ -5,7 +5,7 @@ function getSellerId(req: AuthenticatedMedusaRequest): string | null {
   return (req as any).auth_context?.actor_id || null
 }
 
-/** GET /vendor/flash-sales/:id — platform event + vendor's own applications */
+/** GET /seller/flash-sales/:id — platform event + seller's own applications */
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = getSellerId(req)

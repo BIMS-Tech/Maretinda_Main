@@ -153,7 +153,7 @@ export default async function SellersPage() {
               Be the first to sell on Maretinda.
             </p>
             <Link
-              href="/become-vendor"
+              href="/become-seller"
               className="inline-flex items-center gap-2 h-11 px-7 rounded-full font-bold text-[13.5px] text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#432C63' }}
             >
@@ -192,7 +192,7 @@ export default async function SellersPage() {
             </p>
           </div>
           <Link
-            href="/become-vendor"
+            href="/become-seller"
             className="shrink-0 inline-flex items-center gap-2 h-12 px-8 rounded-full font-bold text-[14px] transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#FFC533', color: '#432C63' }}
           >

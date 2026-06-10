@@ -83,7 +83,7 @@ export default function PaymentSuccessPage({
 							result.orderId,
 						);
 
-						// Also forward gateway/vendor info to backend to fix payment method and vendor column
+						// Also forward gateway/seller info to backend to fix payment method and seller column
 						const gateway = (
 							resolvedSearchParams.gateway ||
 							resolvedSearchParams.channel ||
@@ -93,8 +93,8 @@ export default function PaymentSuccessPage({
 						)
 							.toString()
 							.toUpperCase();
-						const vendor_id = resolvedSearchParams.vendor_id;
-						const vendor_name = resolvedSearchParams.vendor_name;
+						const seller_id = resolvedSearchParams.seller_id;
+						const seller_name = resolvedSearchParams.seller_name;
 						const description =
 							resolvedSearchParams.description ||
 							'GiyaPay payment authorization';
@@ -110,8 +110,8 @@ export default function PaymentSuccessPage({
 									result.orderId ||
 									actualOrderId ||
 									'',
-								vendor_id: (vendor_id as any) || '',
-								vendor_name: (vendor_name as any) || '',
+								seller_id: (seller_id as any) || '',
+								seller_name: (seller_name as any) || '',
 							});
 							await fetch(
 								`/api/payment/giyapay/update?${params.toString()}`,

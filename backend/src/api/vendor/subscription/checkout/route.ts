@@ -3,10 +3,10 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
 
 /**
- * POST /vendor/subscription/checkout
+ * POST /seller/subscription/checkout
  *
- * Authenticated vendor endpoint — generates GiyaPay form data so the vendor
- * can renew or upgrade their subscription from the vendor panel.
+ * Authenticated seller endpoint — generates GiyaPay form data so the seller
+ * can renew or upgrade their subscription from the seller panel.
  *
  * Request body:
  * { "plan_name": "Boost", "billing_period": "monthly" | "yearly" }
@@ -40,13 +40,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       pgConnection = (req.scope as any).__pg_connection__ || (req.scope as any).pgConnection
     }
 
-    // Resolve vendor's seller_id
+    // Resolve seller's seller_id
     const member = await pgConnection("member").where("id", memberId).first()
     if (!member?.seller_id) {
-      res.status(403).json({ message: "Not a vendor" })
+      res.status(403).json({ message: "Not a seller" })
       return
     }
-    const vendorId = member.seller_id
+    const sellerId = member.seller_id
 
     // Validate plan
     const plan = await pgConnection("subscription_plan")
@@ -96,7 +96,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     const planSlug = plan_name.toLowerCase().replace(/\s+/g, "_")
-    const orderId = `vrenew_${planSlug}_${billing_period}_${vendorId}_${Date.now()}`
+    const orderId = `vrenew_${planSlug}_${billing_period}_${sellerId}_${Date.now()}`
 
     const nonce = crypto.randomBytes(16).toString("hex")
     const timestamp = Math.floor(Date.now() / 1000).toString()
@@ -104,9 +104,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const signatureString = `${config.merchantId}${amountCentavos}PHP${orderId}${timestamp}${nonce}${config.merchantSecret}`
     const signature = crypto.createHash("sha512").update(signatureString).digest("hex")
 
-    const vendorPanelUrl = (
-      process.env.VENDOR_PANEL_URL ||
-      process.env.VENDOR_CORS?.split(",")[0] ||
+    const sellerPanelUrl = (
+      process.env.seller_PANEL_URL ||
+      process.env.seller_CORS?.split(",")[0] ||
       "http://localhost:7001"
     ).replace(/\/$/, "")
 
@@ -119,13 +119,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       order_id: orderId,
       amount: amountCentavos,
       currency: "PHP",
-      description: `Maretinda Vendor Subscription - ${plan.name} Plan (${billing_period})`,
+      description: `Maretinda seller Subscription - ${plan.name} Plan (${billing_period})`,
       nonce,
       timestamp,
       signature,
-      success_callback: `${vendorPanelUrl}/subscription`,
-      error_callback: `${vendorPanelUrl}/subscription#payment-error`,
-      cancel_callback: `${vendorPanelUrl}/subscription#payment-cancelled`,
+      success_callback: `${sellerPanelUrl}/subscription`,
+      error_callback: `${sellerPanelUrl}/subscription#payment-error`,
+      cancel_callback: `${sellerPanelUrl}/subscription#payment-cancelled`,
     }
 
     res.status(200).json({

@@ -14,7 +14,7 @@ import { transformNullableFormData } from "../../../../../lib/form-helpers"
 import { uploadFilesQuery } from "../../../../../lib/client/client"
 import { CreateCategoryDetails } from "./create-category-details"
 import { CreateCategorySchema } from "./schema"
-import { useCreateVendorRequest } from "../../../../../hooks/api"
+import { useCreatesellerRequest } from "../../../../../hooks/api"
 
 type CreateCategoryFormProps = {
   parentCategoryId: string | null
@@ -70,7 +70,7 @@ export const CreateCategoryForm = ({
     resolver: zodResolver(CreateCategorySchema),
   })
 
-  const { mutateAsync, isPending } = useCreateVendorRequest()
+  const { mutateAsync, isPending } = useCreatesellerRequest()
 
   const handleSubmit = form.handleSubmit((data) => {
     if (isUploading) {

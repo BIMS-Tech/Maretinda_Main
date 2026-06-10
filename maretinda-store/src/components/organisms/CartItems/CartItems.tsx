@@ -19,7 +19,7 @@ export const CartItems = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 		const seller = groupedItems[key]?.seller;
 		return items.map((item: any) => ({
 			...item,
-			vendorName: seller?.name || 'Maretinda',
+			sellerName: seller?.name || 'Maretinda',
 		}));
 	});
 

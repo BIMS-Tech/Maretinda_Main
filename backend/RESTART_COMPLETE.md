@@ -12,12 +12,12 @@ The backend has been successfully restarted with all the necessary changes loade
    - Properly exported from `src/models/index.ts`
 
 2. **✅ Validation Fixed**
-   - File: `src/api/vendor/sellers/me/validators.ts`  
+   - File: `src/api/seller/sellers/me/validators.ts`  
    - Changed from `.strict()` to `.passthrough()`
    - Now allows custom bank fields
 
 3. **✅ Middleware Updated**
-   - File: `src/api/vendor/sellers/me/middlewares.ts`
+   - File: `src/api/seller/sellers/me/middlewares.ts`
    - Added `validateBody = false`
    - Prevents framework from blocking custom fields
 
@@ -33,9 +33,9 @@ The backend has been successfully restarted with all the necessary changes loade
 
 ## Test It Now!
 
-### Option 1: Test from Vendor Panel
+### Option 1: Test from seller Panel
 
-1. Go to your vendor panel at http://localhost:5173
+1. Go to your seller panel at http://localhost:5173
 2. Navigate to your profile/settings page
 3. Fill in the bank information fields
 4. Click "Save" or "Update"
@@ -44,14 +44,14 @@ The backend has been successfully restarted with all the necessary changes loade
 ### Option 2: Test with cURL
 
 ```bash
-# Replace YOUR_TOKEN with your actual vendor auth token
-curl -X POST http://localhost:9000/vendor/sellers/me \
+# Replace YOUR_TOKEN with your actual seller auth token
+curl -X POST http://localhost:9000/seller/sellers/me \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "bank_name": "Test Bank",
     "account_number": "1234567890",
-    "account_name": "Test Vendor Account",
+    "account_name": "Test seller Account",
     "branch_name": "Main Branch",
     "swift_code": "TESTPH22"
   }'
@@ -65,7 +65,7 @@ curl -X POST http://localhost:9000/vendor/sellers/me \
     "name": "...",
     "bank_name": "Test Bank",
     "account_number": "1234567890",
-    "account_name": "Test Vendor Account",
+    "account_name": "Test seller Account",
     "branch_name": "Main Branch",
     "swift_code": "TESTPH22",
     ...
@@ -81,9 +81,9 @@ tail -f /Users/tamimhossain/.cursor/projects/Users-tamimhossain-Desktop-Codes-BI
 ```
 
 You should see:
-- ✅ `POST /vendor/sellers/me` with status `200` (not `400`)
-- ✅ `[VendorUpdateSeller] Updating seller:...`
-- ✅ `[VendorUpdateSeller] ✅ Successfully updated seller`
+- ✅ `POST /seller/sellers/me` with status `200` (not `400`)
+- ✅ `[sellerUpdateSeller] Updating seller:...`
+- ✅ `[sellerUpdateSeller] ✅ Successfully updated seller`
 
 ❌ You should **NOT** see:
 - ❌ `Invalid request: Unrecognized fields`
@@ -96,7 +96,7 @@ You should see:
 - [x] Validator using `.passthrough()` mode
 - [x] Middleware has `validateBody = false`
 - [x] Backend restarted with new code
-- [ ] **TEST:** Submit bank information from vendor panel
+- [ ] **TEST:** Submit bank information from seller panel
 - [ ] **VERIFY:** Data saves successfully
 
 ## If It Still Doesn't Work
@@ -114,7 +114,7 @@ export { default as Seller } from "./seller"
 
 ### 2. Verify the validator
 ```bash
-tail -1 backend/src/api/vendor/sellers/me/validators.ts
+tail -1 backend/src/api/seller/sellers/me/validators.ts
 ```
 Should show:
 ```typescript
@@ -150,13 +150,13 @@ Should show the bank fields.
 
 **Modified:**
 - `src/models/index.ts` - Exports Seller
-- `src/api/vendor/sellers/me/validators.ts` - Passthrough mode
-- `src/api/vendor/sellers/me/middlewares.ts` - Disabled auto-validation
+- `src/api/seller/sellers/me/validators.ts` - Passthrough mode
+- `src/api/seller/sellers/me/middlewares.ts` - Disabled auto-validation
 - `package.json` - Added db:init and db:setup scripts
 
 ## Next Steps
 
-1. **Test the endpoint** from your vendor panel
+1. **Test the endpoint** from your seller panel
 2. **Verify data saves** to the database
 3. **Check the response** includes your bank fields
 4. **Celebrate** 🎉 - Your settlement system is working!

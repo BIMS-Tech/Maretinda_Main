@@ -246,7 +246,7 @@ DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@127.0.0.1:5432/${DB_NAME}
 # =================================================================
 STORE_CORS=http://localhost:3000,http://localhost:8000
 ADMIN_CORS=http://localhost:3001,http://localhost:7001
-VENDOR_CORS=http://localhost:3002,http://localhost:5173
+seller_CORS=http://localhost:3002,http://localhost:5173
 AUTH_CORS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173
 
 # =================================================================

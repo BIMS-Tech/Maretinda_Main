@@ -1,10 +1,10 @@
-# Vendor Panel Environment Variables Template
+# seller Panel Environment Variables Template
 
 Copy this content to create your `.env` file:
 
 ```bash
 # Quick setup
-cd vendor-panel
+cd seller-panel
 cat > .env << 'EOF'
 VITE_MEDUSA_BACKEND_URL=http://localhost:9000
 VITE_MEDUSA_STOREFRONT_URL=http://localhost:8000

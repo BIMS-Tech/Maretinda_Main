@@ -87,7 +87,7 @@ function SubscriptionPaymentConfig() {
         <div>
           <Heading level="h2">Subscription Payment Gateway</Heading>
           <Text className="text-ui-fg-subtle" size="small">
-            GiyaPay credentials used specifically for vendor subscription payments.
+            GiyaPay credentials used specifically for seller subscription payments.
           </Text>
         </div>
         {!editing && (
@@ -312,7 +312,7 @@ function PlansTab() {
 function AssignModal({ onClose }: { onClose: () => void }) {
   const assign = useAdminAssignSubscription()
   const { plans, isLoading: plansLoading } = useAdminSubscriptionPlans()
-  const [vendorId, setVendorId] = useState("")
+  const [sellerId, setsellerId] = useState("")
   const [planName, setPlanName] = useState("")
   const [durationDays, setDurationDays] = useState(30)
 
@@ -323,10 +323,10 @@ function AssignModal({ onClose }: { onClose: () => void }) {
   }, [plans, planName])
 
   const handleSubmit = async () => {
-    if (!vendorId) { toast.error("Vendor ID is required"); return }
+    if (!sellerId) { toast.error("seller ID is required"); return }
     if (!planName) { toast.error("Select a plan"); return }
     try {
-      await assign.mutateAsync({ vendor_id: vendorId, plan_name: planName, duration_days: durationDays })
+      await assign.mutateAsync({ seller_id: sellerId, plan_name: planName, duration_days: durationDays })
       toast.success("Subscription assigned")
       onClose()
     } catch (err: any) {
@@ -340,8 +340,8 @@ function AssignModal({ onClose }: { onClose: () => void }) {
         <Heading level="h2" className="mb-4">Manually Assign Subscription</Heading>
         <div className="flex flex-col gap-3">
           <div>
-            <Label htmlFor="assign-vid">Vendor ID (seller_…)</Label>
-            <Input id="assign-vid" value={vendorId} onChange={(e) => setVendorId(e.target.value)} placeholder="seller_..." />
+            <Label htmlFor="assign-vid">seller ID (seller_…)</Label>
+            <Input id="assign-vid" value={sellerId} onChange={(e) => setsellerId(e.target.value)} placeholder="seller_..." />
           </div>
           <div>
             <Label htmlFor="assign-plan">Plan</Label>
@@ -391,15 +391,15 @@ type Tab = "subscriptions" | "plans"
 export const SubscriptionsPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>("subscriptions")
   const [statusFilter, setStatusFilter] = useState("")
-  const [vendorSearch, setVendorSearch] = useState("")
+  const [sellersearch, setsellersearch] = useState("")
   const [page, setPage] = useState(0)
   const [showAssign, setShowAssign] = useState(false)
-  const [appliedVendorId, setAppliedVendorId] = useState("")
+  const [appliedsellerId, setAppliedsellerId] = useState("")
   const limit = 20
 
   const { data, isLoading, refetch } = useAdminSubscriptions({
     status: statusFilter || undefined,
-    vendor_id: appliedVendorId || undefined,
+    seller_id: appliedsellerId || undefined,
     limit,
     offset: page * limit,
   })
@@ -425,9 +425,9 @@ export const SubscriptionsPage = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <Heading>Vendor Subscriptions</Heading>
+          <Heading>seller Subscriptions</Heading>
           <Text className="text-ui-fg-subtle" size="small">
-            Manage vendor subscription plans and status.
+            Manage seller subscription plans and status.
           </Text>
         </div>
         <div className="flex gap-2">
@@ -452,7 +452,7 @@ export const SubscriptionsPage = () => {
                 : "border-transparent text-ui-fg-subtle hover:text-ui-fg-base",
             ].join(" ")}
           >
-            {tab === "subscriptions" ? "Vendor Subscriptions" : "Plan Management"}
+            {tab === "subscriptions" ? "seller Subscriptions" : "Plan Management"}
           </button>
         ))}
       </div>
@@ -481,28 +481,28 @@ export const SubscriptionsPage = () => {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="vendor-search">Vendor ID</Label>
+              <Label htmlFor="seller-search">seller ID</Label>
               <div className="flex gap-2">
                 <Input
-                  id="vendor-search"
+                  id="seller-search"
                   placeholder="seller_..."
-                  value={vendorSearch}
-                  onChange={(e) => setVendorSearch(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { setAppliedVendorId(vendorSearch); setPage(0) } }}
+                  value={sellersearch}
+                  onChange={(e) => setsellersearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { setAppliedsellerId(sellersearch); setPage(0) } }}
                   className="w-52"
                 />
                 <Button
                   size="small"
                   variant="secondary"
-                  onClick={() => { setAppliedVendorId(vendorSearch); setPage(0) }}
+                  onClick={() => { setAppliedsellerId(sellersearch); setPage(0) }}
                 >
                   Search
                 </Button>
-                {appliedVendorId && (
+                {appliedsellerId && (
                   <Button
                     size="small"
                     variant="secondary"
-                    onClick={() => { setVendorSearch(""); setAppliedVendorId(""); setPage(0) }}
+                    onClick={() => { setsellersearch(""); setAppliedsellerId(""); setPage(0) }}
                   >
                     Clear
                   </Button>
@@ -516,7 +516,7 @@ export const SubscriptionsPage = () => {
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>Vendor</Table.HeaderCell>
+                  <Table.HeaderCell>seller</Table.HeaderCell>
                   <Table.HeaderCell>Plan</Table.HeaderCell>
                   <Table.HeaderCell>Billing</Table.HeaderCell>
                   <Table.HeaderCell>Price</Table.HeaderCell>
@@ -550,7 +550,7 @@ export const SubscriptionsPage = () => {
                           {sub.seller_email ? (
                             <span className="text-xs text-ui-fg-subtle">{sub.seller_email}</span>
                           ) : null}
-                          <span className="font-mono text-xs text-ui-fg-muted">{sub.vendor_id}</span>
+                          <span className="font-mono text-xs text-ui-fg-muted">{sub.seller_id}</span>
                         </div>
                       </Table.Cell>
                       <Table.Cell className="font-medium">{sub.plan_name}</Table.Cell>

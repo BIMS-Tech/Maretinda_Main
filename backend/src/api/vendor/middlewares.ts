@@ -21,7 +21,7 @@ function restorePaymentCollectionsFields(
 }
 
 /**
- * Intercept POST /vendor/promotions — mercurjs's VendorCreatePromotion validator
+ * Intercept POST /seller/promotions — mercurjs's sellerCreatePromotion validator
  * only allows type:'percentage' + target_type:'items'. We bypass it to support
  * all promotion types (fixed, percentage) and target types (order, items).
  */
@@ -80,13 +80,13 @@ async function promotionCreateOverride(
 
     return res.status(201).json({ promotion })
   } catch (error: any) {
-    console.error("[VendorPromotionCreate] Error:", error.message)
+    console.error("[sellerPromotionCreate] Error:", error.message)
     return res.status(400).json({ message: error.message })
   }
 }
 
 /**
- * Intercept GET /vendor/campaigns — mercurjs applies filterBySellerId which
+ * Intercept GET /seller/campaigns — mercurjs applies filterBySellerId which
  * restricts to seller-owned campaigns only (platform campaigns are excluded),
  * and also rejects object query params like `budget=[object Object]`.
  * We bypass both by handling the request directly.
@@ -118,7 +118,7 @@ async function campaignListOverride(
 }
 
 /**
- * Intercept GET /vendor/campaigns/:id — mercurjs checks seller_campaign link
+ * Intercept GET /seller/campaigns/:id — mercurjs checks seller_campaign link
  * ownership, which blocks platform campaigns (created by admin, not seller).
  * We bypass by reading the campaign directly. Never calls next() to prevent
  * mercurjs from returning 403.
@@ -204,37 +204,37 @@ export default defineMiddlewares({
   routes: [
     {
       method: ["GET"],
-      matcher: "/vendor/orders",
+      matcher: "/seller/orders",
       middlewares: [restorePaymentCollectionsFields],
     },
     {
       method: ["GET"],
-      matcher: "/vendor/orders/:id",
+      matcher: "/seller/orders/:id",
       middlewares: [restorePaymentCollectionsFields],
     },
     {
       method: ["POST"],
-      matcher: "/vendor/promotions",
+      matcher: "/seller/promotions",
       middlewares: [promotionCreateOverride],
     },
     {
       method: ["GET"],
-      matcher: "/vendor/campaigns",
+      matcher: "/seller/campaigns",
       middlewares: [campaignListOverride],
     },
     {
       method: ["GET"],
-      matcher: "/vendor/campaigns/:id",
+      matcher: "/seller/campaigns/:id",
       middlewares: [campaignDetailOverride],
     },
     {
       method: ["GET"],
-      matcher: "/vendor/promotions/rule-value-options/:ruleType/:ruleValue",
+      matcher: "/seller/promotions/rule-value-options/:ruleType/:ruleValue",
       middlewares: [ruleValueOptionsOverride],
     },
     {
       method: ["GET"],
-      matcher: "/vendor/promotions/rule-value-options/:rule_type/:rule_attribute_id",
+      matcher: "/seller/promotions/rule-value-options/:rule_type/:rule_attribute_id",
       middlewares: [ruleValueOptionsOverride],
     },
   ],

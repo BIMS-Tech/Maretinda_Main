@@ -420,7 +420,7 @@ function StepAccount({ data, set }: { data: FormData; set: <K extends keyof Form
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle px-3 py-2 text-xs text-ui-fg-muted">
-        Set a password for your vendor account. Your email (<strong className="text-ui-fg-subtle">{data.email || "from Step 1"}</strong>) will be your login.
+        Set a password for your seller account. Your email (<strong className="text-ui-fg-subtle">{data.email || "from Step 1"}</strong>) will be your login.
       </div>
       <Field label="Password" required>
         <div className="relative">
@@ -568,7 +568,7 @@ export const Register = () => {
           </div>
           <h2 className="text-2xl font-bold text-ui-fg-base mb-2">Registration submitted!</h2>
           <p className="text-ui-fg-subtle text-sm leading-relaxed mb-8">
-            Thank you for applying to become a vendor on Maretinda. Your application is under review.
+            Thank you for applying to become a seller on Maretinda. Your application is under review.
             You will receive an email once your account is activated.
           </p>
           <Link
@@ -602,7 +602,7 @@ export const Register = () => {
           <img src="/logo-m.png" alt="Maretinda" className="w-10 h-10 brightness-200" />
           <div>
             <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}>Vendor</span>
+            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}>seller</span>
           </div>
         </div>
 
@@ -650,7 +650,7 @@ export const Register = () => {
             <div className="lg:hidden flex items-center gap-2">
               <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
               <span className="text-xl font-bold" style={{ color: "#6366f1" }}>Maretinda</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">Vendor</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">seller</span>
             </div>
             <div className="ml-auto">
               <ThemeToggleButton />
@@ -661,9 +661,9 @@ export const Register = () => {
           <div className="mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-indigo-500/10 text-indigo-500">
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Vendor Registration
+              seller Registration
             </div>
-            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your vendor account</h2>
+            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your seller account</h2>
             <p className="text-ui-fg-subtle text-sm">Step {stepIdx + 1} of {steps.length} — {currentStep?.label}</p>
           </div>
 

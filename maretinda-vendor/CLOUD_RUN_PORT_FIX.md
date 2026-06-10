@@ -2,7 +2,7 @@
 
 ## The Problem
 
-Your vendor panel deployment was failing with:
+Your seller panel deployment was failing with:
 ```
 ERROR: The user-provided container failed to start and listen on the port defined provided by the PORT=5173 environment variable
 Default STARTUP TCP probe failed 1 time consecutively for container "placeholder-1" on port 5173
@@ -39,19 +39,19 @@ Default STARTUP TCP probe failed 1 time consecutively for container "placeholder
 
 ### Option 1: Quick Deploy (Recommended)
 ```bash
-cd vendor-panel
+cd seller-panel
 gcloud builds submit --config cloudbuild.yaml
 ```
 
 ### Option 2: Local Build + Deploy
 ```bash
-cd vendor-panel
+cd seller-panel
 ./deploy.sh
 ```
 
 ### Option 3: Just Fix Service Config (No Redeploy)
 ```bash
-cd vendor-panel
+cd seller-panel
 ./fix-cloud-run-service.sh
 ```
 
@@ -121,14 +121,14 @@ You should NOT see:
 
 2. **Check Docker image builds locally**:
    ```bash
-   docker build -t vendor-panel-test .
-   docker run -p 3000:3000 vendor-panel-test
+   docker build -t seller-panel-test .
+   docker run -p 3000:3000 seller-panel-test
    # Visit http://localhost:3000
    ```
 
 3. **Verify yarn.lock is for Yarn v1**:
    ```bash
-   cd vendor-panel
+   cd seller-panel
    rm yarn.lock
    yarn install
    git add yarn.lock
@@ -149,7 +149,7 @@ You should NOT see:
 
 For future deployments, just run:
 ```bash
-cd vendor-panel
+cd seller-panel
 gcloud builds submit --config cloudbuild.yaml
 ```
 

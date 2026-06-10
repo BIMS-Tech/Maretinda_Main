@@ -10,9 +10,9 @@ export class Migration1746000000000 extends Migration {
     this.addSql(`UPDATE "subscription_plan" SET "yearly_price" = ROUND("price" * 10) WHERE "id" = 'subplan_boost';`)
     this.addSql(`UPDATE "subscription_plan" SET "yearly_price" = ROUND("price" * 10) WHERE "id" = 'subplan_managed';`)
 
-    // Add billing_period and plan_id to vendor_subscription
-    this.addSql(`ALTER TABLE "vendor_subscription" ADD COLUMN IF NOT EXISTS "billing_period" text NOT NULL DEFAULT 'monthly';`)
-    this.addSql(`ALTER TABLE "vendor_subscription" ADD COLUMN IF NOT EXISTS "plan_id" text NULL;`)
+    // Add billing_period and plan_id to seller_subscription
+    this.addSql(`ALTER TABLE "seller_subscription" ADD COLUMN IF NOT EXISTS "billing_period" text NOT NULL DEFAULT 'monthly';`)
+    this.addSql(`ALTER TABLE "seller_subscription" ADD COLUMN IF NOT EXISTS "plan_id" text NULL;`)
 
     // GiyaPay config dedicated to subscription payments
     this.addSql(`
@@ -31,8 +31,8 @@ export class Migration1746000000000 extends Migration {
 
   async down(): Promise<void> {
     this.addSql(`ALTER TABLE "subscription_plan" DROP COLUMN IF EXISTS "yearly_price";`)
-    this.addSql(`ALTER TABLE "vendor_subscription" DROP COLUMN IF EXISTS "billing_period";`)
-    this.addSql(`ALTER TABLE "vendor_subscription" DROP COLUMN IF EXISTS "plan_id";`)
+    this.addSql(`ALTER TABLE "seller_subscription" DROP COLUMN IF EXISTS "billing_period";`)
+    this.addSql(`ALTER TABLE "seller_subscription" DROP COLUMN IF EXISTS "plan_id";`)
     this.addSql(`DROP TABLE IF EXISTS "giyapay_subscription_config";`)
   }
 }

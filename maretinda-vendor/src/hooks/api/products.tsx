@@ -35,7 +35,7 @@ export const useCreateProductOption = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminCreateProductOption) =>
-      fetchQuery(`/vendor/products/${productId}/options`, {
+      fetchQuery(`/seller/products/${productId}/options`, {
         method: "POST",
         body: payload,
       }),
@@ -59,7 +59,7 @@ export const useUpdateProductOption = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminUpdateProductOption) =>
-      fetchQuery(`/vendor/products/${productId}/options/${optionId}`, {
+      fetchQuery(`/seller/products/${productId}/options/${optionId}`, {
         method: "POST",
         body: payload,
       }),
@@ -87,7 +87,7 @@ export const useDeleteProductOption = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/products/${productId}/options/${optionId}`, {
+      fetchQuery(`/seller/products/${productId}/options/${optionId}`, {
         method: "DELETE",
       }),
     onSuccess: (data: any, variables: any, context: any) => {
@@ -123,7 +123,7 @@ export const useProductVariant = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () => {
-      const { product } = await fetchQuery(`/vendor/products/${productId}`, {
+      const { product } = await fetchQuery(`/seller/products/${productId}`, {
         method: "GET",
         query: {
           fields:
@@ -175,7 +175,7 @@ export const useCreateProductVariant = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminCreateProductVariant) =>
-      fetchQuery(`/vendor/products/${productId}/variants`, {
+      fetchQuery(`/seller/products/${productId}/variants`, {
         method: "POST",
         body: payload,
       }),
@@ -199,7 +199,7 @@ export const useUpdateProductVariant = (
 ) => {
   return useMutation({
     mutationFn: (body: HttpTypes.AdminUpdateProductVariant) =>
-      fetchQuery(`/vendor/products/${productId}/variants/${variantId}`, {
+      fetchQuery(`/seller/products/${productId}/variants/${variantId}`, {
         method: "POST",
         body,
       }),
@@ -283,7 +283,7 @@ export const useDeleteVariant = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/products/${productId}/variants/${variantId}`, {
+      fetchQuery(`/seller/products/${productId}/variants/${variantId}`, {
         method: "DELETE",
       }),
     onSuccess: (data: any, variables: any, context: any) => {
@@ -313,7 +313,7 @@ export const useDeleteVariantLazy = (
 ) => {
   return useMutation({
     mutationFn: ({ variantId }) =>
-      fetchQuery(`/vendor/products/${productId}/variants/${variantId}`, {
+      fetchQuery(`/seller/products/${productId}/variants/${variantId}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -336,7 +336,7 @@ export const useDeleteVariantLazy = (
 export const useProductAttributes = (id: string) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/products/${id}/applicable-attributes`, {
+      fetchQuery(`/seller/products/${id}/applicable-attributes`, {
         method: "GET",
       }),
     queryKey: ["product", id, "product-attributes"],
@@ -360,7 +360,7 @@ export const useProduct = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/products/${id}`, {
+      fetchQuery(`/seller/products/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -398,7 +398,7 @@ export const useProducts = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/products", {
+      fetchQuery("/seller/products", {
         method: "GET",
         query: query as Record<string, string | number>,
       }),
@@ -473,7 +473,7 @@ export const useCreateProduct = (
 ) => {
   return useMutation({
     mutationFn: async (payload) =>
-      await fetchQuery("/vendor/products", {
+      await fetchQuery("/seller/products", {
         method: "POST",
         body: payload,
       }),
@@ -500,7 +500,7 @@ export const useUpdateProduct = (
 ) => {
   return useMutation({
     mutationFn: async (payload) => {
-      const { product } = await fetchQuery(`/vendor/products/${id}`, {
+      const { product } = await fetchQuery(`/seller/products/${id}`, {
         method: "GET",
         query: {
           fields:
@@ -512,7 +512,7 @@ export const useUpdateProduct = (
       await delete product.rating
       await delete payload.status
 
-      return fetchQuery(`/vendor/products/${id}`, {
+      return fetchQuery(`/seller/products/${id}`, {
         method: "POST",
         body: {
           ...product,
@@ -548,7 +548,7 @@ export const useDeleteProduct = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/products/${id}`, {
+      fetchQuery(`/seller/products/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data: any, variables: any, context: any) => {
@@ -575,7 +575,7 @@ export const useExportProducts = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/products/export", {
+      fetchQuery("/seller/products/export", {
         method: "POST",
         body: payload,
         query: query as { [key: string]: string },

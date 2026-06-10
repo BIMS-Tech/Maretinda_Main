@@ -46,7 +46,7 @@ export const useSignUpWithEmailPass = (
           email: variables.email,
         },
       }
-      await fetchQuery("/vendor/sellers", {
+      await fetchQuery("/seller/sellers", {
         method: "POST",
         body: seller,
       })

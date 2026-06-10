@@ -12,12 +12,12 @@ interface CredentialFieldConfig {
   options?: string[]
 }
 
-interface VendorShippingProvider {
+interface sellershippingProvider {
   providerId: string
   name: string
   type: string
   enabled: boolean
-  hasVendorCredentials: boolean
+  hassellerCredentials: boolean
   isEnabled: boolean
   isDefault: boolean
   credentialsLastUsed?: string
@@ -32,11 +32,11 @@ interface VendorShippingProvider {
   }
   setupInstructions?: string[]
   configuration?: any
-  vendorSpecificCapabilities?: any
+  sellerspecificCapabilities?: any
 }
 
-interface VendorShippingConfig {
-  vendorId: string
+interface sellershippingConfig {
+  sellerId: string
   enabledProviders: string[]
   defaultProvider?: string
   preferences: {
@@ -46,7 +46,7 @@ interface VendorShippingConfig {
     blacklistedProviders: string[]
   }
   billingConfig: {
-    paymentMethod: 'marketplace' | 'vendor-direct'
+    paymentMethod: 'marketplace' | 'seller-direct'
     costMarkup?: number
     handlingFee?: number
   }
@@ -60,7 +60,7 @@ interface ShippingOrder {
   trackingNumber?: string
   trackingUrl?: string
   estimatedDelivery?: string
-  vendorCost: number
+  sellerCost: number
   marketplaceCost: number
   billingResponsibility: string
   credentialsSource: string
@@ -72,11 +72,11 @@ export const useShippingProviders = () => {
   return useQuery({
     queryKey: [SHIPPING_QUERY_KEY, "providers"],
     queryFn: async (): Promise<{
-      providers: VendorShippingProvider[]
-      vendorConfig: VendorShippingConfig
+      providers: sellershippingProvider[]
+      sellerConfig: sellershippingConfig
     }> => {
       try {
-        return await fetchQuery("/vendor/shipping-providers", { method: "GET" })
+        return await fetchQuery("/seller/shipping-providers", { method: "GET" })
       } catch (error) {
         console.warn("Shipping Providers API not available, using mock data:", error)
         return {
@@ -86,7 +86,7 @@ export const useShippingProviders = () => {
               name: "Ninja Van",
               type: "express",
               enabled: true,
-              hasVendorCredentials: false,
+              hassellerCredentials: false,
               isEnabled: false,
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "VN", "ID"],
@@ -113,7 +113,7 @@ export const useShippingProviders = () => {
               name: "J&T Express",
               type: "express",
               enabled: true,
-              hasVendorCredentials: false,
+              hassellerCredentials: false,
               isEnabled: false,
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "VN", "ID"],
@@ -139,7 +139,7 @@ export const useShippingProviders = () => {
               name: "Lalamove",
               type: "same_day",
               enabled: true,
-              hasVendorCredentials: false,
+              hassellerCredentials: false,
               isEnabled: false,
               isDefault: false,
               supportedMarkets: ["PH", "MY", "SG", "TH", "HK", "VN"],
@@ -166,7 +166,7 @@ export const useShippingProviders = () => {
               name: "Flying Tigers Express",
               type: "standard",
               enabled: true,
-              hasVendorCredentials: false,
+              hassellerCredentials: false,
               isEnabled: false,
               isDefault: false,
               supportedMarkets: ["PH"],
@@ -189,8 +189,8 @@ export const useShippingProviders = () => {
               ],
             },
           ],
-          vendorConfig: {
-            vendorId: "vendor_mock",
+          sellerConfig: {
+            sellerId: "seller_mock",
             enabledProviders: [],
             preferences: {
               autoSelectBestRate: false,
@@ -198,7 +198,7 @@ export const useShippingProviders = () => {
               blacklistedProviders: [],
             },
             billingConfig: {
-              paymentMethod: "vendor-direct",
+              paymentMethod: "seller-direct",
               costMarkup: 0,
               handlingFee: 0,
             },
@@ -218,7 +218,7 @@ export const useConfigureShippingProvider = () => {
       providerId: string
       data: any
     }) => {
-      return await fetchQuery("/vendor/shipping-providers", {
+      return await fetchQuery("/seller/shipping-providers", {
         method: "POST",
         body: data,
       })
@@ -242,7 +242,7 @@ export const useShippingOrders = (filters?: Record<string, string>) => {
     }> => {
       try {
         const params = new URLSearchParams(filters || {})
-        return await fetchQuery(`/vendor/shipping-orders?${params.toString()}`, { method: "GET" })
+        return await fetchQuery(`/seller/shipping-orders?${params.toString()}`, { method: "GET" })
       } catch (error) {
         console.warn("Shipping Orders API not available:", error)
         return { orders: [], count: 0, hasMore: false, summary: {} }
@@ -262,7 +262,7 @@ export const useCreateShippingOrder = () => {
       providerId?: string
       reason?: string
     }) => {
-      return await fetchQuery("/vendor/shipping-orders", {
+      return await fetchQuery("/seller/shipping-orders", {
         method: "POST",
         body: data,
       })
@@ -282,7 +282,7 @@ export const useShippingAnalytics = (period: string = "30d", providerId?: string
       try {
         const params = new URLSearchParams({ period })
         if (providerId) params.append("provider_id", providerId)
-        return await fetchQuery(`/vendor/shipping-analytics?${params.toString()}`, { method: "GET" })
+        return await fetchQuery(`/seller/shipping-analytics?${params.toString()}`, { method: "GET" })
       } catch (error) {
         console.warn("Shipping Analytics API not available, using mock data:", error)
         return {

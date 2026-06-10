@@ -29,7 +29,7 @@ export const useFulfillmentProviders = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/fulfillment-providers", {
+      fetchQuery("/seller/fulfillment-providers", {
         method: "GET",
         query,
       }),
@@ -54,7 +54,7 @@ export const useFulfillmentProviderOptions = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/fulfillment-providers/${providerId}/options`, {
+      fetchQuery(`/seller/fulfillment-providers/${providerId}/options`, {
         method: "GET",
       }),
     queryKey: fulfillmentProviderOptionsQueryKeys.list(providerId),

@@ -8,7 +8,7 @@ import { Form } from "../../../../../components/common/form"
 
 import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { StoreVendor } from "../../../../../types/user"
+import { Storeseller } from "../../../../../types/user"
 import { useUpdateMe, useUpdateBankInfo } from "../../../../../hooks/api"
 import { MediaSchema } from "../../../../products/product-create/constants"
 import {
@@ -81,7 +81,7 @@ const SUPPORTED_FORMATS_FILE_EXTENSIONS = [
   ".svg",
 ]
 
-export const EditStoreForm = ({ seller }: { seller: StoreVendor }) => {
+export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
   const { banks, isLoading: banksLoading } = useBanks()

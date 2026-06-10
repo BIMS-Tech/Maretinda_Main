@@ -66,7 +66,7 @@ export type MemberInviteDTO = {
   accepted: boolean;
 };
 
-export interface VendorSeller {
+export interface sellerseller {
   id: string;
   created_at: string;
   updated_at: string;
@@ -83,10 +83,10 @@ export interface VendorSeller {
   state?: string | null;
   country_code?: string | null;
   tax_id?: string | null;
-  members?: VendorMember[];
+  members?: sellerMember[];
 }
 
-export interface VendorMember {
+export interface sellerMember {
   id: string;
   created_at: string;
   updated_at: string;

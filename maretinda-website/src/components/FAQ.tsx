@@ -6,7 +6,7 @@ import { FiPlus, FiMinus, FiArrowRight } from "react-icons/fi";
 const faqs = [
   {
     q: "What is Maretinda?",
-    a: "Maretinda is the Philippines' premier multi-vendor e-commerce platform. It enables entrepreneurs and businesses to create and manage their online stores, list products, accept payments, and reach hundreds of thousands of customers across the country.",
+    a: "Maretinda is the Philippines' premier multi-seller e-commerce platform. It enables entrepreneurs and businesses to create and manage their online stores, list products, accept payments, and reach hundreds of thousands of customers across the country.",
   },
   {
     q: "Do I need technical skills to use Maretinda?",
@@ -18,11 +18,11 @@ const faqs = [
   },
   {
     q: "How long does it take to set up my store?",
-    a: "Most vendors complete their store setup within 1 hour. Our onboarding wizard guides you through each step — account creation, store customization, and product listing. You can go from signing up to your first sale the same day.",
+    a: "Most sellers complete their store setup within 1 hour. Our onboarding wizard guides you through each step — account creation, store customization, and product listing. You can go from signing up to your first sale the same day.",
   },
   {
     q: "Can I upgrade or downgrade my plan anytime?",
-    a: "Yes! You can upgrade or downgrade your plan at any time from your vendor dashboard. When you upgrade, you'll be charged the prorated difference. When you downgrade, the credit will be applied to your next billing cycle. No penalties, no hassle.",
+    a: "Yes! You can upgrade or downgrade your plan at any time from your seller dashboard. When you upgrade, you'll be charged the prorated difference. When you downgrade, the credit will be applied to your next billing cycle. No penalties, no hassle.",
   },
   {
     q: "What is a transaction fee and how is it calculated?",
@@ -84,7 +84,7 @@ export default function FAQ() {
                     {init}
                   </div>
                 ))}
-                <span className="text-[12px] text-[#6B6480] font-medium ml-1">+2,497 vendors</span>
+                <span className="text-[12px] text-[#6B6480] font-medium ml-1">+2,497 sellers</span>
               </div>
               <p className="text-[13px] text-[#6B6480] leading-relaxed">
                 Already selling on Maretinda and loving it. <strong className="text-brand-purple">Join them today.</strong>

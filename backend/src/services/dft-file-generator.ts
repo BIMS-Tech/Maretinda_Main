@@ -6,8 +6,8 @@ import * as XLSX from "xlsx"
 interface DftTransaction {
   id: string
   reference_number: string
-  vendor_id?: string
-  vendor_name?: string
+  seller_id?: string
+  seller_name?: string
   beneficiary_name: string
   beneficiary_account: string
   swift_code: string
@@ -239,10 +239,10 @@ class DftFileGeneratorService extends MedusaService({}) {
           COALESCE(s.account_number, s.dft_account_number) as beneficiary_account,
           COALESCE(s.beneficiary_address, s.dft_beneficiary_address) as beneficiary_address,
           COALESCE(s.beneficiary_bank_address, s.dft_bank_address) as beneficiary_bank_address,
-          s.id as vendor_id,
-          s.name as vendor_name
+          s.id as seller_id,
+          s.name as seller_name
         FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.vendor_id
+        LEFT JOIN seller s ON s.id = gt.seller_id
         WHERE gt.status = 'SUCCESS'
           AND (
             (COALESCE(s.bank_name, s.dft_bank_name) NOT ILIKE '%metrobank%')
@@ -271,8 +271,8 @@ class DftFileGeneratorService extends MedusaService({}) {
         return {
           id: row.id,
           reference_number: row.reference_number,
-          vendor_id: row.vendor_id,
-          vendor_name: row.vendor_name,
+          seller_id: row.seller_id,
+          seller_name: row.seller_name,
           beneficiary_name: row.beneficiary_name,
           beneficiary_account: row.beneficiary_account,
           swift_code: row.swift_code,

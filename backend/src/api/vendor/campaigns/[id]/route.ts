@@ -10,7 +10,7 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 }
 
 /**
- * GET /vendor/campaigns/:id
+ * GET /seller/campaigns/:id
  * Retrieve a single campaign by ID.
  */
 export async function GET(
@@ -38,13 +38,13 @@ export async function GET(
 
     res.status(200).json({ campaign })
   } catch (error: any) {
-    console.error("[VendorGetCampaign] Error:", error)
+    console.error("[sellerGetCampaign] Error:", error)
     res.status(500).json({ message: "Failed to retrieve campaign", error: error.message })
   }
 }
 
 /**
- * PUT /vendor/campaigns/:id
+ * PUT /seller/campaigns/:id
  * Campaign updates are restricted to platform administrators.
  */
 export async function PUT(
@@ -57,7 +57,7 @@ export async function PUT(
 }
 
 /**
- * DELETE /vendor/campaigns/:id
+ * DELETE /seller/campaigns/:id
  * Campaign deletion is restricted to platform administrators.
  */
 export async function DELETE(

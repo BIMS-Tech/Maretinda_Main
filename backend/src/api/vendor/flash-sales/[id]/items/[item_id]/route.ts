@@ -9,7 +9,7 @@ async function getOwnedItem(service: FlashSaleService, itemId: string, sellerId:
   return result.rows?.[0] || null
 }
 
-/** PUT /vendor/flash-sales/:id/items/:item_id — update a pending application */
+/** PUT /seller/flash-sales/:id/items/:item_id — update a pending application */
 export async function PUT(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = (req as any).auth_context?.actor_id
@@ -31,7 +31,7 @@ export async function PUT(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   }
 }
 
-/** DELETE /vendor/flash-sales/:id/items/:item_id — withdraw a pending application */
+/** DELETE /seller/flash-sales/:id/items/:item_id — withdraw a pending application */
 export async function DELETE(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = (req as any).auth_context?.actor_id

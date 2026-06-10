@@ -1,12 +1,12 @@
 import { Container, Heading, Text } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 
-import { StoreVendor } from "../../../../../types/user"
+import { Storeseller } from "../../../../../types/user"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Pencil } from "@medusajs/icons"
 import { ImageAvatar } from "../../../../../components/common/image-avatar"
 
-export const StoreGeneralSection = ({ seller }: { seller: StoreVendor }) => {
+export const StoreGeneralSection = ({ seller }: { seller: Storeseller }) => {
   const { t } = useTranslation()
 
   return (

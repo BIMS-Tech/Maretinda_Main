@@ -154,7 +154,7 @@ DATABASE_URL=postgresql://medusa_user:YOUR_APP_PASSWORD@127.0.0.1:5432/medusa
 # CORS Settings
 STORE_CORS=http://localhost:3000,https://yourdomain.com
 ADMIN_CORS=http://localhost:3001,https://admin.yourdomain.com
-VENDOR_CORS=http://localhost:3002,https://vendor.yourdomain.com
+seller_CORS=http://localhost:3002,https://seller.yourdomain.com
 AUTH_CORS=http://localhost:3000,http://localhost:3001,http://localhost:3002
 
 # Secrets

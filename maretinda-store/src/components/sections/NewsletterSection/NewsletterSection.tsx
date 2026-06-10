@@ -24,7 +24,7 @@ export const NewsletterSection = () => {
 							Get ₱100 off your first order
 						</h2>
 						<p className="mt-2 text-[14px] max-w-[400px]" style={{ color: '#404040' }}>
-							Subscribe for exclusive deals, new local vendor spotlights, and flash sale early access.
+							Subscribe for exclusive deals, new local seller spotlights, and flash sale early access.
 						</p>
 					</div>
 

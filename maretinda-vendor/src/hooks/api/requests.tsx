@@ -34,7 +34,7 @@ export const useRequest = (
   const { data, ...rest } = useQuery({
     queryKey: requestsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/vendor/requests/${id}`, {
+      fetchQuery(`/seller/requests/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -62,7 +62,7 @@ export const useRequests = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/requests", {
+      fetchQuery("/seller/requests", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -74,12 +74,12 @@ export const useRequests = (
   return { ...data, ...rest }
 }
 
-export const useCreateVendorRequest = (
+export const useCreatesellerRequest = (
   options?: UseMutationOptions<any, FetchError, any>
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/requests", {
+      fetchQuery("/seller/requests", {
         method: "POST",
         body: payload,
       }),
@@ -100,7 +100,7 @@ export const useUpdateRequest = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/requests/${id}`, {
+      fetchQuery(`/seller/requests/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -122,7 +122,7 @@ export const useUpdateRequest = (
 export const useUpdateOrderReturnRequest = (id: string) => {
   return useMutation({
     mutationFn: (payload: any) =>
-      fetchQuery(`/vendor/return-request/${id}`, {
+      fetchQuery(`/seller/return-request/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -145,7 +145,7 @@ export const useOrderReturnRequest = (
   const { data, ...rest } = useQuery({
     queryKey: [REQUESTS_QUERY_KEY, "return-request", id],
     queryFn: () =>
-      fetchQuery(`/vendor/return-request/${id}`, { method: "GET" }),
+      fetchQuery(`/seller/return-request/${id}`, { method: "GET" }),
     ...options,
   })
 
@@ -170,7 +170,7 @@ export const useOrderReturnRequests = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/return-request", {
+      fetchQuery("/seller/return-request", {
         method: "GET",
         query: {
           fields: "*order.customer,+created_at",

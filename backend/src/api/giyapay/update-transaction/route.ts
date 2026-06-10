@@ -59,37 +59,37 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     }
     
-    // Extract vendor_id from the cart's products
+    // Extract seller_id from the cart's products
     if (cart_id) {
       try {
-        // Get products from cart items and find their vendor
-        const vendorQuery = `
-          SELECT DISTINCT s.id as vendor_id, s.name as vendor_name
+        // Get products from cart items and find their seller
+        const sellerQuery = `
+          SELECT DISTINCT s.id as seller_id, s.name as seller_name
           FROM cart_line_item cli
           JOIN seller_seller_product_product ssp ON ssp.product_id = cli.product_id
           JOIN seller s ON s.id = ssp.seller_id
           WHERE cli.cart_id = ?
           LIMIT 1
         `
-        const vendorResults = await manager.raw(vendorQuery, [cart_id])
-        const vendorRows = vendorResults?.rows || vendorResults || []
+        const sellerResults = await manager.raw(sellerQuery, [cart_id])
+        const sellerRows = sellerResults?.rows || sellerResults || []
         
-        if (vendorRows.length > 0) {
-          const vendorId = vendorRows[0].vendor_id
-          const vendorName = vendorRows[0].vendor_name
+        if (sellerRows.length > 0) {
+          const sellerId = sellerRows[0].seller_id
+          const sellerName = sellerRows[0].seller_name
           
-          // Update transaction with vendor_id
+          // Update transaction with seller_id
           await manager.raw(
-            'UPDATE giyapay_transaction SET vendor_id = ?, updated_at = NOW() WHERE reference_number = ?',
-            [vendorId, reference_number]
+            'UPDATE giyapay_transaction SET seller_id = ?, updated_at = NOW() WHERE reference_number = ?',
+            [sellerId, reference_number]
           )
-          console.log('[GiyaPay Update Transaction] Vendor ID updated:', vendorId, '(' + vendorName + ')')
+          console.log('[GiyaPay Update Transaction] seller ID updated:', sellerId, '(' + sellerName + ')')
         } else {
-          console.log('[GiyaPay Update Transaction] No vendor found for cart:', cart_id)
+          console.log('[GiyaPay Update Transaction] No seller found for cart:', cart_id)
         }
-      } catch (vendorError) {
-        console.error('[GiyaPay Update Transaction] Failed to extract vendor_id:', vendorError)
-        // Non-fatal - transaction can still proceed without vendor_id
+      } catch (sellerError) {
+        console.error('[GiyaPay Update Transaction] Failed to extract seller_id:', sellerError)
+        // Non-fatal - transaction can still proceed without seller_id
       }
     } else if (order_id) {
       try {
@@ -104,40 +104,40 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           const resolvedCartId = orderCartRows[0].cart_id
           console.log('[GiyaPay Update Transaction] Resolved cart_id from order:', resolvedCartId)
           
-          // Now get vendor from cart items
-          const vendorQuery = `
-            SELECT DISTINCT s.id as vendor_id, s.name as vendor_name
+          // Now get seller from cart items
+          const sellerQuery = `
+            SELECT DISTINCT s.id as seller_id, s.name as seller_name
             FROM cart_line_item cli
             JOIN seller_seller_product_product ssp ON ssp.product_id = cli.product_id
             JOIN seller s ON s.id = ssp.seller_id
             WHERE cli.cart_id = ?
             LIMIT 1
           `
-          const vendorResults = await manager.raw(vendorQuery, [resolvedCartId])
-          const vendorRows = vendorResults?.rows || vendorResults || []
+          const sellerResults = await manager.raw(sellerQuery, [resolvedCartId])
+          const sellerRows = sellerResults?.rows || sellerResults || []
           
-          if (vendorRows.length > 0) {
-            const vendorId = vendorRows[0].vendor_id
-            const vendorName = vendorRows[0].vendor_name
+          if (sellerRows.length > 0) {
+            const sellerId = sellerRows[0].seller_id
+            const sellerName = sellerRows[0].seller_name
             
-            // Update transaction with vendor_id
+            // Update transaction with seller_id
             await manager.raw(
-              'UPDATE giyapay_transaction SET vendor_id = ?, updated_at = NOW() WHERE reference_number = ?',
-              [vendorId, reference_number]
+              'UPDATE giyapay_transaction SET seller_id = ?, updated_at = NOW() WHERE reference_number = ?',
+              [sellerId, reference_number]
             )
-            console.log('[GiyaPay Update Transaction] Vendor ID updated:', vendorId, '(' + vendorName + ')')
+            console.log('[GiyaPay Update Transaction] seller ID updated:', sellerId, '(' + sellerName + ')')
           } else {
-            console.log('[GiyaPay Update Transaction] No vendor found for cart:', resolvedCartId)
+            console.log('[GiyaPay Update Transaction] No seller found for cart:', resolvedCartId)
           }
         } else {
           console.log('[GiyaPay Update Transaction] No cart_id found for order:', order_id)
         }
-      } catch (vendorError) {
-        console.error('[GiyaPay Update Transaction] Failed to extract vendor_id from order:', vendorError)
-        // Non-fatal - transaction can still proceed without vendor_id
+      } catch (sellerError) {
+        console.error('[GiyaPay Update Transaction] Failed to extract seller_id from order:', sellerError)
+        // Non-fatal - transaction can still proceed without seller_id
       }
     } else {
-      console.log('[GiyaPay Update Transaction] No cart_id or order_id provided - cannot determine vendor')
+      console.log('[GiyaPay Update Transaction] No cart_id or order_id provided - cannot determine seller')
     }
     
     console.log('[GiyaPay Update Transaction] Transaction updated:', reference_number, order_id)

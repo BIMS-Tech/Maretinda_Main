@@ -406,7 +406,7 @@ export const isVideoFile = (mimetype: string): boolean => {
 }
 
 /**
- * Usage Example in uploads-vendor/route.ts:
+ * Usage Example in uploads-seller/route.ts:
  * 
  * import { createGCSService } from '../../utils/google-cloud-storage'
  * 
@@ -414,7 +414,7 @@ export const isVideoFile = (mimetype: string): boolean => {
  * 
  * // Upload file
  * const result = await gcs.uploadFile(file.buffer, file.originalname, {
- *   folder: 'vendor-uploads',
+ *   folder: 'seller-uploads',
  *   contentType: file.mimetype,
  *   metadata: {
  *     userId: auth.userId,
@@ -428,9 +428,9 @@ export const isVideoFile = (mimetype: string): boolean => {
  * }
  * 
  * // Delete file
- * await gcs.deleteFile('vendor-uploads/12345-file.jpg')
+ * await gcs.deleteFile('seller-uploads/12345-file.jpg')
  * 
  * // Get signed URL for private files
- * const signedUrl = await gcs.getSignedUrl('vendor-uploads/private-doc.pdf', 3600)
+ * const signedUrl = await gcs.getSignedUrl('seller-uploads/private-doc.pdf', 3600)
  */
 

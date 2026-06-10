@@ -40,7 +40,7 @@ const RESPONSES: Record<string, BotResponse> = {
 	},
 	seller: {
 		text: 'Becoming a Maretinda seller is free! Register your shop, upload a valid ID, and you\'ll be approved within 1–2 business days. We charge 5% commission per sale — no listing fees.',
-		links: [{ label: 'Start selling', href: '/become-vendor' }],
+		links: [{ label: 'Start selling', href: '/become-seller' }],
 	},
 	password: {
 		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',
@@ -60,7 +60,7 @@ const INTENT_MAP: [RegExp, string][] = [
 	[/return|refund|exchange|money back|wrong item|damaged/i, 'returns'],
 	[/ship|deliver|courier|how long|how many days|lbc|j&t|ninja|lalamove/i, 'shipping'],
 	[/pay|payment|gcash|maya|cod|cash on delivery|credit|debit|visa|mastercard|card/i, 'payments'],
-	[/sell|vendor|seller|shop|listing|commission|payout/i, 'seller'],
+	[/sell|seller|seller|shop|listing|commission|payout/i, 'seller'],
 	[/password|forgot|reset|login|can.*log|sign in/i, 'password'],
 	[/hi|hello|hey|good morning|good afternoon|good evening|help/i, 'greeting'],
 ];

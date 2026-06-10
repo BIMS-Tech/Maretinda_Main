@@ -45,9 +45,9 @@ export interface AdminOrderReturnRequest {
   id: string;
   customer_id?: string;
   customer_note?: string;
-  vendor_reviewer_id?: string;
-  vendor_reviewer_note?: string;
-  vendor_reviewer_date?: string;
+  seller_reviewer_id?: string;
+  seller_reviewer_note?: string;
+  seller_reviewer_date?: string;
   admin_reviewer_id?: string;
   admin_reviewer_note?: string;
   admin_reviewer_date?: string;

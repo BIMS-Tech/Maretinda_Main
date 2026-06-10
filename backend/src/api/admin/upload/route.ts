@@ -1,6 +1,6 @@
 /**
  * Admin Upload - Direct to Google Cloud Storage
- * Same as vendor upload but for admin panel
+ * Same as seller upload but for admin panel
  */
 
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"

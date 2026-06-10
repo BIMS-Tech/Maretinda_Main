@@ -35,7 +35,7 @@ export default function CTABanner() {
           <div className="inline-flex items-center gap-2 text-[12px] font-semibold text-white/60 px-4 py-1.5 rounded-full border border-white/12 mb-5"
             style={{ background:"rgba(255,255,255,.06)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-brand-yellow pulse-dot" />
-            Join 2,500+ Filipino Vendors
+            Join 2,500+ Filipino sellers
           </div>
 
           <h2

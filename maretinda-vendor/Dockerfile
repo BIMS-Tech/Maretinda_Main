@@ -1,4 +1,4 @@
-# Vendor Panel Dockerfile
+# seller Panel Dockerfile
 FROM node:22-alpine AS base
 
 # Install curl for health checks

@@ -16,12 +16,12 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "Maretinda — The Ultimate Vendor Platform for the Philippines",
+  title: "Maretinda — The Ultimate seller Platform for the Philippines",
   description:
-    "Maretinda is the Philippines' most powerful e-commerce vendor platform. Launch your online store, reach millions of customers, and grow your business faster.",
-  keywords: ["maretinda", "vendor platform", "ecommerce philippines", "online store", "sell online"],
+    "Maretinda is the Philippines' most powerful e-commerce seller platform. Launch your online store, reach millions of customers, and grow your business faster.",
+  keywords: ["maretinda", "seller platform", "ecommerce philippines", "online store", "sell online"],
   openGraph: {
-    title: "Maretinda — The Ultimate Vendor Platform for the Philippines",
+    title: "Maretinda — The Ultimate seller Platform for the Philippines",
     description:
       "Launch your online store, reach millions of customers, and grow your business on Maretinda.",
     type: "website",

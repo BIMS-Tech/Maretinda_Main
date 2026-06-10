@@ -12,7 +12,7 @@ export const usePayouts = (
   const { data, ...rest } = useQuery({
     queryFn: async () => {
       try {
-        return await fetchQuery("/vendor/payouts", {
+        return await fetchQuery("/seller/payouts", {
           method: "GET",
           query: query as { [key: string]: string | number },
         })
@@ -40,7 +40,7 @@ export const usePayoutAccount = (options?: any) => {
   const { data, ...rest } = useQuery({
     queryFn: async () => {
       try {
-        return await fetchQuery("/vendor/payout-account", {
+        return await fetchQuery("/seller/payout-account", {
           method: "GET",
         })
       } catch (error) {
@@ -67,7 +67,7 @@ export const useCreatePayoutAccount = (options?: any) => {
 
   return useMutation({
     mutationFn: (payload: any) =>
-      fetchQuery("/vendor/payout-account", {
+      fetchQuery("/seller/payout-account", {
         method: "POST",
         body: payload,
       }),
@@ -86,7 +86,7 @@ export const useCreatePayoutRequest = (options?: any) => {
 
   return useMutation({
     mutationFn: (payload: { amount: number; currency?: string; notes?: string }) =>
-      fetchQuery("/vendor/payouts", {
+      fetchQuery("/seller/payouts", {
         method: "POST",
         body: payload,
       }),
@@ -105,7 +105,7 @@ export const useGiyaPayAnalytics = (options?: any) => {
   const { data, ...rest } = useQuery({
     queryFn: async () => {
       try {
-        return await fetchQuery("/vendor/giyapay-analytics")
+        return await fetchQuery("/seller/giyapay-analytics")
       } catch (error) {
         console.error("❌ Failed to fetch real GiyaPay analytics:", error)
         return {

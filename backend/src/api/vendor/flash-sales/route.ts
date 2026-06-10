@@ -16,7 +16,7 @@ async function getService(req: AuthenticatedMedusaRequest): Promise<FlashSaleSer
   return service
 }
 
-/** GET /vendor/flash-sales — list platform events with vendor's application counts */
+/** GET /seller/flash-sales — list platform events with seller's application counts */
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = getSellerId(req)
@@ -24,7 +24,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     const service = await getService(req)
     const { limit = "20", offset = "0" } = req.query as any
-    const { flash_sales, count } = await service.listForVendor(sellerId, {
+    const { flash_sales, count } = await service.listForseller(sellerId, {
       limit: parseInt(limit),
       offset: parseInt(offset),
     })

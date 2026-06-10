@@ -2,24 +2,24 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * POST /store/vendor/register
+ * POST /store/seller/register
  *
- * Public endpoint — registers a new vendor after verifying their GiyaPay subscription payment.
+ * Public endpoint — registers a new seller after verifying their GiyaPay subscription payment.
  *
  * Steps:
  *  1. Verify the payment reference (must be a vsub_ transaction, SUCCESS, unclaimed)
- *  2. Call Medusa's vendor auth registration endpoint internally
+ *  2. Call Medusa's seller auth registration endpoint internally
  *  3. Extract member_id from the JWT token
  *  4. Wait for Mercur to create the seller record, then look it up
  *  5. Update seller name
  *  6. Auto-activate the seller (no admin approval needed)
  *  7. Create the subscription record
- *  8. Claim the giyapay_transaction by setting vendor_id
+ *  8. Claim the giyapay_transaction by setting seller_id
  *
  * Request body:
  * {
  *   "name": "My Store Name",
- *   "email": "vendor@example.com",
+ *   "email": "seller@example.com",
  *   "password": "secure_password",
  *   "payment_reference": "GIYAPAY-REF-123",
  *   "plan_name": "Foundation"
@@ -28,8 +28,8 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
  * Sample response (201):
  * {
  *   "success": true,
- *   "message": "Vendor account created. You can now log in to your vendor panel.",
- *   "vendor_panel_url": "https://vendor.maretinda.com"
+ *   "message": "seller account created. You can now log in to your seller panel.",
+ *   "seller_panel_url": "https://seller.maretinda.com"
  * }
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {
@@ -60,12 +60,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     if (!txn.order_id || !String(txn.order_id).startsWith("vsub_")) {
-      res.status(400).json({ message: "This payment reference is not for a vendor subscription." })
+      res.status(400).json({ message: "This payment reference is not for a seller subscription." })
       return
     }
 
-    if (txn.vendor_id) {
-      res.status(409).json({ message: "This payment has already been used to create a vendor account." })
+    if (txn.seller_id) {
+      res.status(409).json({ message: "This payment has already been used to create a seller account." })
       return
     }
 
@@ -82,10 +82,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // --- 3. Register the vendor via Medusa auth API ---
+    // --- 3. Register the seller via Medusa auth API ---
     const backendUrl = (process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 9000}`).replace(/\/$/, "")
 
-    const authRes = await fetch(`${backendUrl}/auth/vendor/emailpass/register`, {
+    const authRes = await fetch(`${backendUrl}/auth/seller/emailpass/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -140,12 +140,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     if (!sellerId) {
-      // Registration succeeded — subscription will be created when vendor logs in
-      console.warn(`[VendorRegister] Could not find seller_id for member ${memberId}. Subscription deferred.`)
+      // Registration succeeded — subscription will be created when seller logs in
+      console.warn(`[sellerRegister] Could not find seller_id for member ${memberId}. Subscription deferred.`)
       res.status(201).json({
         success: true,
-        message: "Vendor account created. You can now log in to your vendor panel.",
-        vendor_panel_url: process.env.VENDOR_PANEL_URL || "",
+        message: "seller account created. You can now log in to your seller panel.",
+        seller_panel_url: process.env.seller_PANEL_URL || "",
         deferred: true,
       })
       return
@@ -155,7 +155,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     try {
       await pgConnection("seller").where("id", sellerId).update({
         name,
-        // Force-activate the seller (bypass admin approval for payment-verified vendors)
+        // Force-activate the seller (bypass admin approval for payment-verified sellers)
         is_active: true,
         updated_at: new Date(),
       })
@@ -178,9 +178,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     endDate.setDate(endDate.getDate() + 30)
 
     try {
-      await pgConnection("vendor_subscription").insert({
+      await pgConnection("seller_subscription").insert({
         id: `vsub_${randomBytes(12).toString("hex")}`,
-        vendor_id: sellerId,
+        seller_id: sellerId,
         plan_name: plan.name,
         price: plan.price,
         start_date: startDate,
@@ -192,27 +192,27 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
         updated_at: new Date(),
       })
     } catch (subErr) {
-      console.error("[VendorRegister] Failed to create subscription (non-fatal):", subErr)
+      console.error("[sellerRegister] Failed to create subscription (non-fatal):", subErr)
     }
 
     // --- 8. Claim the giyapay_transaction ---
     try {
       await pgConnection("giyapay_transaction")
         .where("reference_number", payment_reference)
-        .update({ vendor_id: sellerId, updated_at: new Date() })
+        .update({ seller_id: sellerId, updated_at: new Date() })
     } catch (claimErr) {
-      console.error("[VendorRegister] Failed to claim transaction (non-fatal):", claimErr)
+      console.error("[sellerRegister] Failed to claim transaction (non-fatal):", claimErr)
     }
 
-    console.log(`[VendorRegister] Vendor ${sellerId} registered successfully on plan ${plan.name}`)
+    console.log(`[sellerRegister] seller ${sellerId} registered successfully on plan ${plan.name}`)
 
     res.status(201).json({
       success: true,
-      message: "Vendor account created successfully. You can now log in to your vendor panel.",
-      vendor_panel_url: process.env.VENDOR_PANEL_URL || "",
+      message: "seller account created successfully. You can now log in to your seller panel.",
+      seller_panel_url: process.env.seller_PANEL_URL || "",
     })
   } catch (error) {
-    console.error("[VendorRegister] Error:", error)
+    console.error("[sellerRegister] Error:", error)
     res.status(500).json({ message: error instanceof Error ? error.message : "Registration failed" })
   }
 }

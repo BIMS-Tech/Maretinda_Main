@@ -14,14 +14,14 @@ import {
   useProductTags,
   useProductType,
 } from "@hooks/api";
-import { useVendorRequest } from "@hooks/api/requests";
+import { usesellerRequest } from "@hooks/api/requests";
 
 import { ResolveRequestPrompt } from "@routes/requests/common/components/resolve-request";
 import { SectionRow } from "@routes/requests/common/components/section-row";
 
 export const ProductRequestDetail = ({ id }: { id: string }) => {
   const navigate = useNavigate();
-  const { request, isError, isLoading } = useVendorRequest(id!);
+  const { request, isError, isLoading } = usesellerRequest(id!);
   const requestData = request?.data as ProductDTO;
 
   const [promptOpen, setPromptOpen] = useState(false);

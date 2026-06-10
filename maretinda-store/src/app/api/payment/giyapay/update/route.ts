@@ -63,11 +63,11 @@ export async function GET(req: NextRequest) {
 				query.refno ||
 				query.ref ||
 				query.referenceNumber,
-			vendor_id: query.vendor_id || query.vendorId,
-			vendor_name: query.vendor_name || query.vendorName,
+			seller_id: query.seller_id || query.sellerId,
+			seller_name: query.seller_name || query.sellerName,
 		};
-		// Enrich vendor info from the order if missing
-		if ((!payload.vendor_id || !payload.vendor_name) && payload.order_id) {
+		// Enrich seller info from the order if missing
+		if ((!payload.seller_id || !payload.seller_name) && payload.order_id) {
 			try {
 				const authHeaders = await getAuthHeaders();
 				const publishable =
@@ -90,14 +90,14 @@ export async function GET(req: NextRequest) {
 					const data = await orderRes.json().catch(() => ({}) as any);
 					const order = (data?.order || data) as any;
 					const seller = order?.seller || order?.order?.seller;
-					// Prefer member_id to align with vendor panel auth (uses member ids)
-					payload.vendor_id =
-						payload.vendor_id ||
+					// Prefer member_id to align with seller panel auth (uses member ids)
+					payload.seller_id =
+						payload.seller_id ||
 						seller?.member_id ||
 						seller?.id ||
 						seller?.seller_id;
-					payload.vendor_name =
-						payload.vendor_name ||
+					payload.seller_name =
+						payload.seller_name ||
 						seller?.name ||
 						seller?.store_name ||
 						seller?.store?.name;

@@ -84,15 +84,15 @@ export const useCapturePayment = (
   })
 }
 
-// Vendor-side capture using the vendor route (for COD/manual payments)
-export const useVendorCapturePayment = (
+// seller-side capture using the seller route (for COD/manual payments)
+export const usesellerCapturePayment = (
   orderId: string,
   paymentId: string,
   options?: UseMutationOptions<any, FetchError, void>
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/orders/${orderId}/payments/${paymentId}/capture`, {
+      fetchQuery(`/seller/orders/${orderId}/payments/${paymentId}/capture`, {
         method: "POST",
       }),
     onSuccess: (data, variables, context) => {

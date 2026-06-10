@@ -2,10 +2,10 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * @oas [post] /vendor/sellers/me
- * operationId: "VendorUpdateSeller"
- * summary: "Update Vendor Seller Profile"
- * description: "Updates the authenticated vendor's seller profile including bank information"
+ * @oas [post] /seller/sellers/me
+ * operationId: "sellerUpdateSeller"
+ * summary: "Update seller Seller Profile"
+ * description: "Updates the authenticated seller's seller profile including bank information"
  * x-authenticated: true
  * requestBody:
  *   content:
@@ -57,17 +57,17 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
  *   "200":
  *     description: OK
  * tags:
- *   - Vendor Sellers
+ *   - seller Sellers
  */
 export async function POST(
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
-  console.log('🔥🔥🔥 [CUSTOM ROUTE] POST /vendor/sellers/me handler REACHED!', req.body)
+  console.log('🔥🔥🔥 [CUSTOM ROUTE] POST /seller/sellers/me handler REACHED!', req.body)
   
   try {
     // Skip validation - we manually handle the fields we need
-    // const validated = VendorUpdateSeller.parse(req.body)
+    // const validated = sellerUpdateSeller.parse(req.body)
     
     // Get the authenticated member ID from the request
     const memberId = (req as any).auth_context?.actor_id || (req as any).user?.id
@@ -135,8 +135,8 @@ export async function POST(
     // Add updated_at timestamp
     updateData.updated_at = new Date()
 
-    console.log('[VendorUpdateSeller] Updating seller:', sellerId, 'for member:', memberId)
-    console.log('[VendorUpdateSeller] Fields being updated:', Object.keys(updateData))
+    console.log('[sellerUpdateSeller] Updating seller:', sellerId, 'for member:', memberId)
+    console.log('[sellerUpdateSeller] Fields being updated:', Object.keys(updateData))
 
     // Use knex query builder for UPDATE
     const result = await pgConnection('seller')
@@ -154,14 +154,14 @@ export async function POST(
       return
     }
 
-    console.log('[VendorUpdateSeller] ✅ Successfully updated seller')
+    console.log('[sellerUpdateSeller] ✅ Successfully updated seller')
 
     res.status(200).json({
       seller: updatedSeller
     })
 
   } catch (error) {
-    console.error('[VendorUpdateSeller] ❌ Error updating seller:', error)
+    console.error('[sellerUpdateSeller] ❌ Error updating seller:', error)
     res.status(500).json({
       message: "Failed to update seller",
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -170,16 +170,16 @@ export async function POST(
 }
 
 /**
- * @oas [get] /vendor/sellers/me
- * operationId: "VendorGetSeller"
- * summary: "Get Vendor Seller Profile"
- * description: "Gets the authenticated vendor's seller profile"
+ * @oas [get] /seller/sellers/me
+ * operationId: "sellerGetSeller"
+ * summary: "Get seller Seller Profile"
+ * description: "Gets the authenticated seller's seller profile"
  * x-authenticated: true
  * responses:
  *   "200":
  *     description: OK
  * tags:
- *   - Vendor Sellers
+ *   - seller Sellers
  */
 export async function GET(
   req: MedusaRequest,
@@ -210,7 +210,7 @@ export async function GET(
       return
     }
 
-    console.log('[VendorGetSeller] Fetching seller for member ID:', memberId)
+    console.log('[sellerGetSeller] Fetching seller for member ID:', memberId)
 
     // First, get the seller_id from the member table
     const member = await pgConnection('member')
@@ -225,14 +225,14 @@ export async function GET(
       return
     }
 
-    console.log('[VendorGetSeller] Found seller ID:', member.seller_id)
+    console.log('[sellerGetSeller] Found seller ID:', member.seller_id)
 
     // Now get the seller
     const seller = await pgConnection('seller')
       .where('id', member.seller_id)
       .first()
 
-    console.log('[VendorGetSeller] Query result:', seller ? 'Found' : 'Not found')
+    console.log('[sellerGetSeller] Query result:', seller ? 'Found' : 'Not found')
 
     if (!seller) {
       res.status(404).json({
@@ -247,7 +247,7 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('[VendorGetSeller] Error:', error)
+    console.error('[sellerGetSeller] Error:', error)
     res.status(500).json({
       message: "Failed to fetch seller",
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -59,7 +59,7 @@ pids/
 .yarn-integrity
 
 # Ignore subdirectories that aren't needed for main deployment
-vendor-panel/
+seller-panel/
 mercur/
 backend/admin-panel/
 configure-giyapay.js

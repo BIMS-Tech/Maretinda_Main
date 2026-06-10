@@ -6,10 +6,10 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
  *
  * Public endpoint — verifies that a GiyaPay reference number:
  *   1. Exists in giyapay_transaction with status SUCCESS
- *   2. Was for a vendor subscription order (order_id starts with "vsub_")
- *   3. Has NOT already been used (vendor_id is still null)
+ *   2. Was for a seller subscription order (order_id starts with "vsub_")
+ *   3. Has NOT already been used (seller_id is still null)
  *
- * Used by the store's /become-vendor/register page to gate access to the signup form.
+ * Used by the store's /become-seller/register page to gate access to the signup form.
  *
  * Sample response (valid):
  * { "valid": true, "plan_name": "Foundation", "amount": 999 }
@@ -49,13 +49,13 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
 
     // Must be a subscription payment
     if (!txn.order_id || !String(txn.order_id).startsWith("vsub_")) {
-      res.status(200).json({ valid: false, reason: "Not a vendor subscription payment" })
+      res.status(200).json({ valid: false, reason: "Not a seller subscription payment" })
       return
     }
 
     // Must not already be claimed
-    if (txn.vendor_id) {
-      res.status(200).json({ valid: false, reason: "This payment has already been used to create a vendor account" })
+    if (txn.seller_id) {
+      res.status(200).json({ valid: false, reason: "This payment has already been used to create a seller account" })
       return
     }
 

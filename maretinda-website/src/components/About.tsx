@@ -56,7 +56,7 @@ export default function About() {
             </div>
             <div className="absolute right-0 bottom-0 bg-white rounded-2xl shadow-[0_8px_30px_rgba(67,44,99,.14)] px-5 py-4 text-center border border-[rgba(67,44,99,.07)]">
               <div className="font-display text-[22px] font-extrabold text-brand-purple">2.5K+</div>
-              <div className="text-[12px] text-[#6B6480] font-medium mt-0.5">Vendors</div>
+              <div className="text-[12px] text-[#6B6480] font-medium mt-0.5">sellers</div>
             </div>
           </div>
 

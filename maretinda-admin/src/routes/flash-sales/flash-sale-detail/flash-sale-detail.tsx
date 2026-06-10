@@ -257,7 +257,7 @@ const ITEM_STATUS_STYLE: Record<string, string> = {
   rejected: "bg-red-100 text-red-700",
 }
 
-function VendorApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
+function sellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
   const prompt = usePrompt()
   const { mutate: approve, isPending: approving } = useApproveFlashSaleItem(flashSaleId, item.id, {
     onSuccess: () => toast.success("Application approved"),
@@ -284,7 +284,7 @@ function VendorApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { s
         </div>
         <div className="text-xs text-gray-400 truncate">
           {item.product_id}
-          {item.seller_id && <span className="ml-2 text-blue-500">vendor: {item.seller_id.slice(-8)}</span>}
+          {item.seller_id && <span className="ml-2 text-blue-500">seller: {item.seller_id.slice(-8)}</span>}
         </div>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs font-semibold text-red-600">
@@ -539,12 +539,12 @@ export const FlashSaleDetail = () => {
         <BannerImage url={sale.banner_image} />
       )}
 
-      {/* Vendor Product Applications */}
+      {/* seller Product Applications */}
       <Container className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
             <Heading level="h2">Product Applications</Heading>
-            <p className="text-xs text-gray-400 mt-0.5">Vendor-submitted products — approve to include in this flash sale</p>
+            <p className="text-xs text-gray-400 mt-0.5">seller-submitted products — approve to include in this flash sale</p>
           </div>
           {editable && (
             <Button size="small" variant="secondary" onClick={() => setShowAddItem((v) => !v)}>
@@ -568,7 +568,7 @@ export const FlashSaleDetail = () => {
           <div className="space-y-2">
             {sale.items.map((item: any) => (
               item.seller_id ? (
-                <VendorApplicationRow key={item.id} item={item} flashSaleId={sale.id} />
+                <sellerApplicationRow key={item.id} item={item} flashSaleId={sale.id} />
               ) : (
                 <ItemRow key={item.id} item={item} flashSaleId={sale.id} editable={editable} />
               )

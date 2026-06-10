@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import type { AdminRequest } from "@custom-types/requests";
 
-import { useVendorRequests } from "@hooks/api/requests";
+import { usesellerRequests } from "@hooks/api/requests";
 
 import {
   FilterRequests,
@@ -35,7 +35,7 @@ export const RequestProductList = () => {
     setDetailOpen(true);
   };
 
-  const { requests, isLoading, count } = useVendorRequests({
+  const { requests, isLoading, count } = usesellerRequests({
     limit: PAGE_SIZE,
     offset: currentPage * PAGE_SIZE,
     type: "product",

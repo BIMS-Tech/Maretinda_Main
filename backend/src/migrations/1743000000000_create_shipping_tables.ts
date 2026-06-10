@@ -2,9 +2,9 @@ import { Migration } from "@mikro-orm/migrations"
 
 export class Migration1743000000000 extends Migration {
   async up(): Promise<void> {
-    // Vendor shipping credentials (per provider, per seller)
+    // seller shipping credentials (per provider, per seller)
     this.addSql(`
-      CREATE TABLE IF NOT EXISTS vendor_shipping_credential (
+      CREATE TABLE IF NOT EXISTS seller_shipping_credential (
         id TEXT PRIMARY KEY,
         seller_id TEXT NOT NULL,
         provider TEXT NOT NULL,
@@ -23,7 +23,7 @@ export class Migration1743000000000 extends Migration {
 
     // Shipping orders created through third-party carriers
     this.addSql(`
-      CREATE TABLE IF NOT EXISTS vendor_shipping_order (
+      CREATE TABLE IF NOT EXISTS seller_shipping_order (
         id TEXT PRIMARY KEY,
         seller_id TEXT NOT NULL,
         medusa_order_id TEXT,
@@ -49,23 +49,23 @@ export class Migration1743000000000 extends Migration {
     `)
 
     this.addSql(`
-      CREATE INDEX IF NOT EXISTS idx_vendor_shipping_credential_seller
-        ON vendor_shipping_credential(seller_id);
+      CREATE INDEX IF NOT EXISTS idx_seller_shipping_credential_seller
+        ON seller_shipping_credential(seller_id);
     `)
 
     this.addSql(`
-      CREATE INDEX IF NOT EXISTS idx_vendor_shipping_order_seller
-        ON vendor_shipping_order(seller_id);
+      CREATE INDEX IF NOT EXISTS idx_seller_shipping_order_seller
+        ON seller_shipping_order(seller_id);
     `)
 
     this.addSql(`
-      CREATE INDEX IF NOT EXISTS idx_vendor_shipping_order_medusa
-        ON vendor_shipping_order(medusa_order_id);
+      CREATE INDEX IF NOT EXISTS idx_seller_shipping_order_medusa
+        ON seller_shipping_order(medusa_order_id);
     `)
   }
 
   async down(): Promise<void> {
-    this.addSql(`DROP TABLE IF EXISTS vendor_shipping_order;`)
-    this.addSql(`DROP TABLE IF EXISTS vendor_shipping_credential;`)
+    this.addSql(`DROP TABLE IF EXISTS seller_shipping_order;`)
+    this.addSql(`DROP TABLE IF EXISTS seller_shipping_credential;`)
   }
 }

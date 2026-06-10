@@ -6,7 +6,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 // ---------------------------------------------------------------------------
 // This page is ONLY accessible after a successful GiyaPay subscription payment.
 // It gates registration behind a valid payment reference so nobody can
-// sign up as a vendor without paying first.
+// sign up as a seller without paying first.
 // ---------------------------------------------------------------------------
 
 const BACKEND_URL =
@@ -95,7 +95,7 @@ function RegisterContent() {
     try {
       const planName = verifyInfo?.plan_name || planSlug.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-      const res = await fetch(`${BACKEND_URL}/store/vendor/register`, {
+      const res = await fetch(`${BACKEND_URL}/store/seller/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ function RegisterContent() {
           <h2 className="text-xl font-bold text-gray-900 mb-2">Payment Verification Failed</h2>
           <p className="text-sm text-gray-500 mb-6">{errorMsg}</p>
           <button
-            onClick={() => router.push(`/${locale}/become-vendor`)}
+            onClick={() => router.push(`/${locale}/become-seller`)}
             className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             Back to Plans
@@ -168,7 +168,7 @@ function RegisterContent() {
 
   // Success screen
   if (state === 'success') {
-    const vendorPanelUrl = process.env.NEXT_PUBLIC_VENDOR_PANEL_URL || '';
+    const sellerPanelUrl = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
     return (
       <div className="min-h-screen flex items-center justify-center bg-indigo-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -179,23 +179,23 @@ function RegisterContent() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">You're all set!</h2>
           <p className="text-sm text-gray-600 mb-2">
-            Your vendor account has been created and your{' '}
+            Your seller account has been created and your{' '}
             <span className="font-semibold text-indigo-700">{planDisplayName}</span> subscription
             is now active.
           </p>
           <p className="text-sm text-gray-500 mb-8">
-            Log in to your vendor panel with the email and password you just set up.
+            Log in to your seller panel with the email and password you just set up.
           </p>
-          {vendorPanelUrl ? (
+          {sellerPanelUrl ? (
             <a
-              href={`${vendorPanelUrl}/login`}
+              href={`${sellerPanelUrl}/login`}
               className="block w-full rounded-xl bg-indigo-600 py-3 text-sm font-bold text-white hover:bg-indigo-700 text-center"
             >
-              Go to Vendor Panel →
+              Go to seller Panel →
             </a>
           ) : (
             <p className="text-xs text-gray-400">
-              Visit your vendor panel to start selling.
+              Visit your seller panel to start selling.
             </p>
           )}
         </div>
@@ -226,9 +226,9 @@ function RegisterContent() {
               style={{ background: '#e0e7ff', color: '#4338ca' }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Vendor Registration
+              seller Registration
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Create your vendor account</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Create your seller account</h2>
             <p className="text-sm text-gray-500 mt-1">
               Complete the form below to activate your store.
             </p>
@@ -265,7 +265,7 @@ function RegisterContent() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="vendor@example.com"
+                placeholder="seller@example.com"
                 required
                 className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-300"
               />
@@ -307,14 +307,14 @@ function RegisterContent() {
               className="mt-1 w-full rounded-xl py-3 text-sm font-bold text-white transition-all disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #312e81 0%, #6366f1 100%)' }}
             >
-              {state === 'submitting' ? 'Creating account…' : 'Create Vendor Account'}
+              {state === 'submitting' ? 'Creating account…' : 'Create seller Account'}
             </button>
           </form>
 
           <p className="mt-5 text-center text-xs text-gray-400">
             Already have an account?{' '}
             <a
-              href={process.env.NEXT_PUBLIC_VENDOR_PANEL_URL || '#'}
+              href={process.env.NEXT_PUBLIC_seller_PANEL_URL || '#'}
               className="text-indigo-600 font-medium hover:underline"
             >
               Sign in
@@ -327,7 +327,7 @@ function RegisterContent() {
 }
 
 // Wrap in Suspense because useSearchParams requires it in Next.js App Router
-export default function VendorRegisterPage() {
+export default function sellerRegisterPage() {
   return (
     <Suspense
       fallback={

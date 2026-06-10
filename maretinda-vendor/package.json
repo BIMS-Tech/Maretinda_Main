@@ -1,5 +1,5 @@
 {
-  "name": "vendor-panel",
+  "name": "seller-panel",
   "version": "1.0.0",
   "scripts": {
     "generate:static": "node ./scripts/generate-currencies.js && prettier --write ./src/lib/currencies.ts",
@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://https://github.com/mercurjs/vendor-panel"
+    "url": "https://https://github.com/mercurjs/seller-panel"
   },
   "files": [
     "package.json",

@@ -23,12 +23,12 @@ interface SettlementResult {
  * Settlement Router Service
  * 
  * Responsible for routing transactions to appropriate settlement batch:
- * - Metrobank vendors → TAMA batch
- * - Non-Metrobank vendors → DFT batch
+ * - Metrobank sellers → TAMA batch
+ * - Non-Metrobank sellers → DFT batch
  * 
  * Rules:
- * - Non-Metrobank vendors must NEVER appear in TAMA
- * - Metrobank vendors must NEVER appear in DFT
+ * - Non-Metrobank sellers must NEVER appear in TAMA
+ * - Metrobank sellers must NEVER appear in DFT
  * - Missing required bank data must exclude transaction and log error
  */
 class SettlementRouterService extends MedusaService({}) {
@@ -332,7 +332,7 @@ class SettlementRouterService extends MedusaService({}) {
             OR COALESCE(s.account_name, s.dft_beneficiary_name) IS NULL
           THEN 1 END) as incomplete_count
         FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.vendor_id
+        LEFT JOIN seller s ON s.id = gt.seller_id
         WHERE gt.status = 'SUCCESS'
           AND COALESCE(s.bank_name, s.dft_bank_name) ILIKE '%metrobank%'
       `
@@ -355,7 +355,7 @@ class SettlementRouterService extends MedusaService({}) {
             OR COALESCE(s.beneficiary_bank_address, s.dft_bank_address) IS NULL
           THEN 1 END) as incomplete_count
         FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.vendor_id
+        LEFT JOIN seller s ON s.id = gt.seller_id
         WHERE gt.status = 'SUCCESS'
           AND (
             (COALESCE(s.bank_name, s.dft_bank_name) NOT ILIKE '%metrobank%')

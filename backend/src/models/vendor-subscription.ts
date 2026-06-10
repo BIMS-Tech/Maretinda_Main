@@ -1,8 +1,8 @@
 import { model } from "@medusajs/framework/utils"
 
-const VendorSubscription = model.define("vendor_subscription", {
+const sellersubscription = model.define("seller_subscription", {
   id: model.id({ prefix: "vsub" }).primaryKey(),
-  vendor_id: model.text(),
+  seller_id: model.text(),
   plan_name: model.text(),
   price: model.number(),
   start_date: model.dateTime(),
@@ -14,4 +14,4 @@ const VendorSubscription = model.define("vendor_subscription", {
   updated_at: model.dateTime().default(new Date()),
 })
 
-export default VendorSubscription
+export default sellersubscription

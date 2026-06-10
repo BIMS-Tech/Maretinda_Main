@@ -101,13 +101,13 @@ export const Login = () => {
             with ease
           </h1>
           <p className="text-purple-200 text-base leading-relaxed max-w-xs">
-            Complete control over your orders, products, vendors, and settlements — all in one place.
+            Complete control over your orders, products, sellers, and settlements — all in one place.
           </p>
 
           <div className="mt-10 flex flex-col gap-3">
             {[
               { icon: "📦", label: "Order & product management" },
-              { icon: "🏪", label: "Vendor & seller oversight" },
+              { icon: "🏪", label: "seller & seller oversight" },
               { icon: "💳", label: "Payments & settlements" },
             ].map(({ icon, label }) => (
               <div key={label} className="flex items-center gap-3">

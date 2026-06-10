@@ -25,7 +25,7 @@ export const useReturn = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/returns/${id}`, {
+      fetchQuery(`/seller/returns/${id}`, {
         method: "GET",
         query,
       }),
@@ -50,7 +50,7 @@ export const useReturns = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/returns`, {
+      fetchQuery(`/seller/returns`, {
         method: "GET",
       }),
     queryKey: returnsQueryKeys.list(query),

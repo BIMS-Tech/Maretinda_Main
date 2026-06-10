@@ -5,15 +5,15 @@ import SubscriptionService from "../../../../services/subscription"
 /**
  * POST /store/subscription/activate-renewal
  *
- * Public endpoint called by the store's GiyaPay success page after a vendor
- * renewal payment completes.  It decodes the vendor_id from the order_id,
+ * Public endpoint called by the store's GiyaPay success page after a seller
+ * renewal payment completes.  It decodes the seller_id from the order_id,
  * validates the GiyaPay transaction and activates the subscription.
  *
  * Request body:
  * { "reference_number": "GYP-...", "order_id": "vrenew_boost_monthly_seller_xxx_1746..." }
  *
- * The order_id format is:  vrenew_<planSlug>_<period>_<vendorId>_<timestamp>
- * where vendorId is the seller id (e.g. "seller_01abc...")
+ * The order_id format is:  vrenew_<planSlug>_<period>_<sellerId>_<timestamp>
+ * where sellerId is the seller id (e.g. "seller_01abc...")
  */
 export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {
@@ -25,7 +25,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     if (!String(order_id).startsWith("vrenew_")) {
-      res.status(400).json({ success: false, message: "Not a vendor renewal payment" })
+      res.status(400).json({ success: false, message: "Not a seller renewal payment" })
       return
     }
 
@@ -54,8 +54,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // Parse order_id: vrenew_<planSlug>_<period>_<vendorId>_<timestamp>
-    // vendorId contains underscores (e.g. "seller_01abc") so we parse from the right
+    // Parse order_id: vrenew_<planSlug>_<period>_<sellerId>_<timestamp>
+    // sellerId contains underscores (e.g. "seller_01abc") so we parse from the right
     const withoutPrefix = order_id.replace(/^vrenew_/, "")
     // Remove trailing timestamp (last segment after final underscore that is numeric)
     const tsMatch = withoutPrefix.match(/_(\d{13,})$/)
@@ -65,7 +65,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
     const withoutTs = withoutPrefix.slice(0, withoutPrefix.lastIndexOf(`_${tsMatch[1]}`))
 
-    // Remaining: <planSlug>_<period>_<vendorId>
+    // Remaining: <planSlug>_<period>_<sellerId>
     // period is always "monthly" or "yearly"
     const periodMatch = withoutTs.match(/_(monthly|yearly)_(.+)$/)
     if (!periodMatch) {
@@ -73,7 +73,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
     const billingPeriod = periodMatch[1] as "monthly" | "yearly"
-    const vendorId = periodMatch[2]
+    const sellerId = periodMatch[2]
     const planSlug = withoutTs.slice(0, withoutTs.lastIndexOf(`_${billingPeriod}_`))
 
     // Look up the plan by slug
@@ -94,7 +94,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     // Activate subscription
     const service = new SubscriptionService(req.scope)
     const subscription = await service.renewSubscription({
-      vendorId,
+      sellerId,
       planName: plan.name,
       planId: plan.id,
       billingPeriod,
@@ -105,7 +105,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     // Mark transaction as claimed
     await pgConnection("giyapay_transaction")
       .where("reference_number", reference_number)
-      .update({ vendor_id: vendorId, updated_at: new Date() })
+      .update({ seller_id: sellerId, updated_at: new Date() })
 
     res.status(200).json({
       success: true,

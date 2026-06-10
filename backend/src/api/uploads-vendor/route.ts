@@ -1,9 +1,9 @@
 /**
- * Vendor Upload — GCS with WebP optimization
+ * seller Upload — GCS with WebP optimization
  * - Accepts images/documents via multipart
  * - Converts images to WebP (quality 85, max 2048px) before GCS upload
  * - Returns permanent public GCS URLs
- * - Folder: vendor-uploads/images/{vendorId}/ or vendor-uploads/documents/
+ * - Folder: seller-uploads/images/{sellerId}/ or seller-uploads/documents/
  */
 
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
@@ -26,7 +26,7 @@ const ALLOWED_TYPES = [
 ]
 
 const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.VENDOR_CORS || "http://localhost:5173").split(",")
+  const allowedOrigins = (process.env.seller_CORS || "http://localhost:5173").split(",")
   res.setHeader("Access-Control-Allow-Origin", allowedOrigins[0].trim())
   res.setHeader("Access-Control-Allow-Credentials", "true")
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -106,8 +106,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
         return res.status(400).json({ message: "No files uploaded" })
       }
 
-      // Extract vendorId hint from body (optional, for folder organisation)
-      const vendorId = (req.body as any)?.vendor_id as string | undefined
+      // Extract sellerId hint from body (optional, for folder organisation)
+      const sellerId = (req.body as any)?.seller_id as string | undefined
 
       const uploadPromises = files.map(async (file) => {
         try {
@@ -129,19 +129,19 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
             filenameForGCS = filenameForGCS.replace(/\.[^.]+$/, "") + ".webp"
 
             console.log(
-              `[uploads-vendor] Optimized ${file.originalname}: ` +
+              `[uploads-seller] Optimized ${file.originalname}: ` +
               `${(optimized.originalSize / 1024).toFixed(0)}KB → ${(optimized.optimizedSize / 1024).toFixed(0)}KB WebP`
             )
           }
 
           // Build folder path
           const folder = isImageFile(file.mimetype)
-            ? vendorId
-              ? `vendor-uploads/images/${vendorId}`
-              : "vendor-uploads/images"
+            ? sellerId
+              ? `seller-uploads/images/${sellerId}`
+              : "seller-uploads/images"
             : isDocumentFile(file.mimetype)
-            ? "vendor-uploads/documents"
-            : "vendor-uploads/other"
+            ? "seller-uploads/documents"
+            : "seller-uploads/other"
 
           const result = await gcs.uploadFile(buffer, filenameForGCS, {
             folder,
@@ -183,7 +183,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       const errors = results.filter((r) => !r.success).map((r) => ({ filename: r.filename!, error: r.error! }))
 
       const duration = Date.now() - startTime
-      console.log("[uploads-vendor] Complete:", { successful: uploadedFiles.length, failed: errors.length, duration: `${duration}ms` })
+      console.log("[uploads-seller] Complete:", { successful: uploadedFiles.length, failed: errors.length, duration: `${duration}ms` })
 
       res.status(200).json({
         files: uploadedFiles,
@@ -197,7 +197,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       })
     })
   } catch (error) {
-    console.error("[uploads-vendor] Unexpected error:", error)
+    console.error("[uploads-seller] Unexpected error:", error)
     res.status(500).json({ message: "Internal server error" })
   }
 }

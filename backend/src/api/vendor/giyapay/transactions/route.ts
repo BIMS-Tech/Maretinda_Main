@@ -13,8 +13,8 @@ export async function GET(
       return res.status(401).json({ message: "Unauthorized" })
     }
 
-    // Resolve vendor's seller_id from member
-    let vendorId: string | null = null
+    // Resolve seller's seller_id from member
+    let sellerId: string | null = null
     try {
       const pgConnection = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
       const memberResult = await pgConnection.raw(
@@ -22,9 +22,9 @@ export async function GET(
         [memberId]
       )
       const rows = memberResult?.rows || memberResult || []
-      vendorId = rows[0]?.seller_id || null
+      sellerId = rows[0]?.seller_id || null
     } catch (e) {
-      console.warn('[Vendor GiyaPay Transactions] Could not resolve seller_id:', e)
+      console.warn('[seller GiyaPay Transactions] Could not resolve seller_id:', e)
     }
 
     const page = parseInt((req.query.page as string) || "1", 10)
@@ -45,9 +45,9 @@ export async function GET(
 
     const allTransactions = await giyaPayService.getTransactions({ status })
 
-    // Filter by vendor_id
-    let filtered = vendorId
-      ? allTransactions.filter((t: any) => t.vendor_id === vendorId)
+    // Filter by seller_id
+    let filtered = sellerId
+      ? allTransactions.filter((t: any) => t.seller_id === sellerId)
       : allTransactions
 
     // Exclude subscription payments — they belong to the subscription history, not order transactions
@@ -94,8 +94,8 @@ export async function GET(
     const offset = (page - 1) * limit
     const transactions = filtered.slice(offset, offset + limit).map((t: any) => ({
       ...t,
-      vendor_id: t.vendor_id ?? vendorId,
-      vendor_name: t.vendor_name ?? "",
+      seller_id: t.seller_id ?? sellerId,
+      seller_name: t.seller_name ?? "",
     }))
 
     return res.status(200).json({
@@ -104,10 +104,10 @@ export async function GET(
       count: total,
       page,
       limit,
-      vendor_id: vendorId,
+      seller_id: sellerId,
     })
   } catch (error) {
-    console.error('[Vendor GiyaPay Transactions] Error:', error)
+    console.error('[seller GiyaPay Transactions] Error:', error)
     return res.status(500).json({
       error: "Failed to get transactions",
       message: (error as Error).message,

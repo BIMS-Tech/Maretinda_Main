@@ -79,7 +79,7 @@ const LINE_ITEM_ATTRIBUTES: RuleAttributeOption[] = [
 ]
 
 /**
- * GET /vendor/promotions/rule-attribute-options/:ruleType
+ * GET /seller/promotions/rule-attribute-options/:ruleType
  * Return static rule attribute options for the given rule type.
  * ruleType can be: "rules", "target-rules", or "buy-rules".
  */

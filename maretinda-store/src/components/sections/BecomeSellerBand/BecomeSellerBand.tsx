@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 const STATS = [
-	{ value: '12.8k', label: 'Active vendors' },
+	{ value: '12.8k', label: 'Active sellers' },
 	{ value: '1.4M', label: 'Monthly shoppers' },
 	{ value: '97%', label: 'On-time delivery' },
 ];
@@ -67,7 +67,7 @@ export const BecomeSellerBand = () => (
 					</div>
 				</div>
 
-				{/* Right — vendor dashboard mockup card */}
+				{/* Right — seller dashboard mockup card */}
 				<div className="flex-shrink-0 w-full lg:w-[380px]">
 					<div className="bg-white rounded-2xl p-6 shadow-2xl relative">
 						{/* Floating chip */}

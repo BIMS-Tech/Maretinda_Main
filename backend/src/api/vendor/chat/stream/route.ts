@@ -1,13 +1,13 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { getChatService } from "../../../../services/chat"
 
-// GET /vendor/chat/stream  — SSE real-time stream for vendor
+// GET /seller/chat/stream  — SSE real-time stream for seller
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const chatService = getChatService(req.scope as any)
   const memberId = req.auth_context?.actor_id
 
-  const sellerId = await chatService.getVendorSellerId(memberId)
-  if (!sellerId) return res.status(403).json({ message: "Not a vendor" })
+  const sellerId = await chatService.getsellersellerId(memberId)
+  if (!sellerId) return res.status(403).json({ message: "Not a seller" })
 
   res.setHeader("Content-Type", "text/event-stream")
   res.setHeader("Cache-Control", "no-cache, no-transform")

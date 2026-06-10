@@ -11,8 +11,8 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 }
 
 /**
- * GET /vendor/promotions
- * List promotions belonging to the authenticated vendor via seller_promotion junction table.
+ * GET /seller/promotions
+ * List promotions belonging to the authenticated seller via seller_promotion junction table.
  */
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -56,14 +56,14 @@ export async function GET(
 
     res.status(200).json({ promotions, count, limit, offset })
   } catch (error: any) {
-    console.error("[VendorListPromotions] Error:", error)
+    console.error("[sellerListPromotions] Error:", error)
     res.status(500).json({ message: "Failed to list promotions", error: error.message })
   }
 }
 
 /**
- * POST /vendor/promotions
- * Create a new promotion for the authenticated vendor.
+ * POST /seller/promotions
+ * Create a new promotion for the authenticated seller.
  */
 export async function POST(
   req: AuthenticatedMedusaRequest,
@@ -97,7 +97,7 @@ export async function POST(
 
     res.status(201).json({ promotion })
   } catch (error: any) {
-    console.error("[VendorCreatePromotion] Error:", error)
+    console.error("[sellerCreatePromotion] Error:", error)
     res.status(500).json({ message: "Failed to create promotion", error: error.message })
   }
 }

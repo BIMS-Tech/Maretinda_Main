@@ -12,7 +12,7 @@ type HeroProps = {
 const FALLBACK = {
 	heading: 'Shop the Philippines. All in one place.',
 	subheading:
-		'From fresh palengke produce to fashion-forward finds — discover thousands of trusted local vendors, with fast nationwide delivery and cash on delivery available.',
+		'From fresh palengke produce to fashion-forward finds — discover thousands of trusted local sellers, with fast nationwide delivery and cash on delivery available.',
 	badge: 'New season · Pampanga local',
 	featured_product_name: 'Filipiniana Sundress',
 	featured_product_category: 'Fashion · Summer Drop',
@@ -22,7 +22,7 @@ const FALLBACK = {
 	featured_product_sold_this_week: 247,
 	featured_product_link: '/categories',
 	featured_product_image: '/images/featured-products/fashion.png',
-	vendors_count: '12,800+',
+	sellers_count: '12,800+',
 	welcome_code: 'HELLOMRTD',
 	welcome_label: '₱200 off',
 	welcome_min_order: '₱1,500',
@@ -73,7 +73,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const productLink = s.featured_product_link || FALLBACK.featured_product_link
 	const productImage = s.featured_product_image || FALLBACK.featured_product_image
 	// Live count from DB takes priority; admin override next; then fallback
-	const vendorsCount = liveSellersCount || s.vendors_count || FALLBACK.vendors_count
+	const sellersCount = liveSellersCount || s.sellers_count || FALLBACK.sellers_count
 
 	// Welcome promo card values
 	const welcomeCode = wp?.code || FALLBACK.welcome_code
@@ -156,7 +156,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#7FA8C9' }} />
 									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#D98AA1' }} />
 								</div>
-								<span><b className="text-[#1a1a1a]">{vendorsCount}</b> sellers</span>
+								<span><b className="text-[#1a1a1a]">{sellersCount}</b> sellers</span>
 							</div>
 						</div>
 					</div>

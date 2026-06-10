@@ -10,7 +10,7 @@ import {
 import { fetchQuery } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory } from "../../lib/query-key-factory"
-import { StoreVendor, TeamMemberProps } from "../../types/user"
+import { Storeseller, TeamMemberProps } from "../../types/user"
 
 const USERS_QUERY_KEY = "users" as const
 const usersQueryKeys = {
@@ -23,14 +23,14 @@ export const useMe = (
     HttpTypes.AdminUserResponse,
     FetchError,
     HttpTypes.AdminUserResponse & {
-      seller: StoreVendor
+      seller: Storeseller
     },
     QueryKey
   >
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery("/vendor/sellers/me", {
+      fetchQuery("/seller/sellers/me", {
         method: "GET",
         query: {
           fields:
@@ -51,13 +51,13 @@ export const useUpdateMe = (
   options?: UseMutationOptions<
     HttpTypes.AdminUserResponse,
     FetchError,
-    StoreVendor,
+    Storeseller,
     QueryKey
   >
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery("/vendor/sellers/me", {
+      fetchQuery("/seller/sellers/me", {
         method: "POST",
         body,
       }),
@@ -86,13 +86,13 @@ export const useUpdateBankInfo = (
   options?: UseMutationOptions<
     HttpTypes.AdminUserResponse,
     FetchError,
-    Partial<StoreVendor>,
+    Partial<Storeseller>,
     QueryKey
   >
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery("/vendor/sellers/me/bank-info", {
+      fetchQuery("/seller/sellers/me/bank-info", {
         method: "POST",
         body,
       }),
@@ -114,7 +114,7 @@ export const useUpdateBankInfo = (
 export const useOnboarding = () => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/sellers/me/onboarding", {
+      fetchQuery("/seller/sellers/me/onboarding", {
         method: "GET",
       }),
     queryKey: ["onboarding"],
@@ -130,7 +130,7 @@ export const useOnboarding = () => {
 export const useUpdateOnboarding = () => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery("/vendor/sellers/me/onboarding", {
+      fetchQuery("/seller/sellers/me/onboarding", {
         method: "POST",
         body: {},
       }),
@@ -158,7 +158,7 @@ export const useUserMe = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/me`, {
+      fetchQuery(`/seller/me`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -173,7 +173,7 @@ export const useStatistics = ({ from, to }: { from: string; to: string }) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
       fetchQuery(
-        `/vendor/statistics?time_from=${from}T00:00:00Z&time_to=${to}T23:59:59Z`,
+        `/seller/statistics?time_from=${from}T00:00:00Z&time_to=${to}T23:59:59Z`,
         {
           method: "GET",
         }
@@ -201,7 +201,7 @@ export const useUser = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/members/${id}`, {
+      fetchQuery(`/seller/members/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -226,7 +226,7 @@ export const useUsers = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/members", {
+      fetchQuery("/seller/members", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -254,7 +254,7 @@ export const useUpdateUser = (
 ) => {
   return useMutation({
     mutationFn: (body) =>
-      fetchQuery(`/vendor/members/${id}`, {
+      fetchQuery(`/seller/members/${id}`, {
         method: "POST",
         body,
       }),
@@ -287,7 +287,7 @@ export const useDeleteUser = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/members/${id}`, {
+      fetchQuery(`/seller/members/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {

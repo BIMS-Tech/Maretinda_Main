@@ -46,10 +46,10 @@ export const translations = {
 			collectionsLabel: 'Curated for you',
 			collectionsHeading: 'Featured collections',
 			viewAllCollections: 'View all collections →',
-			vendorsLabel: 'Made in the Philippines',
-			vendorsHeading: 'Top local vendors',
-			vendorsBrowse: 'Browse all vendors →',
-			vendorVisitShop: 'Visit shop',
+			sellersLabel: 'Made in the Philippines',
+			sellersHeading: 'Top local sellers',
+			sellersBrowse: 'Browse all sellers →',
+			sellerVisitShop: 'Visit shop',
 			loadMore: 'Load more products',
 			viewAll: 'View all',
 		},
@@ -80,7 +80,7 @@ export const translations = {
 			exploreProducts: 'Explore products',
 		},
 
-		// ── Seller / Vendor ───────────────────────────────────
+		// ── Seller / seller ───────────────────────────────────
 		seller: {
 			activeSeller: 'Active seller',
 			joined: 'Joined',
@@ -93,9 +93,9 @@ export const translations = {
 		becomeSeller: {
 			label: 'Earn on your own terms',
 			heading: 'Sell to millions of Filipino shoppers',
-			desc: 'Join thousands of local vendors already growing their business on Maretinda.',
+			desc: 'Join thousands of local sellers already growing their business on Maretinda.',
 			startSelling: 'Start selling — it\'s free',
-			activeVendors: 'Active vendors',
+			activesellers: 'Active sellers',
 			customerReach: 'Customer reach',
 			avgMonthly: 'Avg. monthly sales',
 		},
@@ -108,15 +108,15 @@ export const translations = {
 			fastDeliveryDesc: 'Metro Manila 1–3 days. All provinces within 7 days via LBC, J&T, and Ninja Van.',
 			securePayment: 'Secure Payment',
 			securePaymentDesc: 'GCash, Maya, Visa/Mastercard, COD. All transactions encrypted end-to-end.',
-			localVendors: '100% Local Vendors',
-			localVendorsDesc: 'Every seller is a verified Filipino business — from home-based bakers to established brands.',
+			localsellers: '100% Local sellers',
+			localsellersDesc: 'Every seller is a verified Filipino business — from home-based bakers to established brands.',
 		},
 
 		// ── Newsletter ────────────────────────────────────────
 		newsletter: {
 			label: 'Stay in the loop',
 			heading: 'Get the best deals first',
-			desc: 'Flash sale alerts, new vendor launches, and exclusive coupons — straight to your inbox.',
+			desc: 'Flash sale alerts, new seller launches, and exclusive coupons — straight to your inbox.',
 			placeholder: 'Enter your email address',
 			subscribe: 'Subscribe',
 			note: 'No spam. Unsubscribe anytime.',
@@ -258,10 +258,10 @@ export const translations = {
 			collectionsLabel: 'Para sa iyo',
 			collectionsHeading: 'Mga tampok na koleksyon',
 			viewAllCollections: 'Tingnan lahat ng koleksyon →',
-			vendorsLabel: 'Gawa sa Pilipinas',
-			vendorsHeading: 'Mga nangungunang lokal na vendor',
-			vendorsBrowse: 'Tingnan ang lahat ng vendor →',
-			vendorVisitShop: 'Bisitahin ang tindahan',
+			sellersLabel: 'Gawa sa Pilipinas',
+			sellersHeading: 'Mga nangungunang lokal na seller',
+			sellersBrowse: 'Tingnan ang lahat ng seller →',
+			sellerVisitShop: 'Bisitahin ang tindahan',
 			loadMore: 'Mag-load ng mga produkto',
 			viewAll: 'Tingnan lahat',
 		},
@@ -292,7 +292,7 @@ export const translations = {
 			exploreProducts: 'Tuklasin ang mga produkto',
 		},
 
-		// ── Seller / Vendor ───────────────────────────────────
+		// ── Seller / seller ───────────────────────────────────
 		seller: {
 			activeSeller: 'Aktibong nagbebenta',
 			joined: 'Sumali',
@@ -305,9 +305,9 @@ export const translations = {
 		becomeSeller: {
 			label: 'Kumita sa sarili mong kondisyon',
 			heading: 'Magbenta sa milyun-milyong mamimiling Pilipino',
-			desc: 'Sumali sa libu-libong lokal na vendor na lumalaki na ang negosyo sa Maretinda.',
+			desc: 'Sumali sa libu-libong lokal na seller na lumalaki na ang negosyo sa Maretinda.',
 			startSelling: 'Magsimulang magbenta — libre',
-			activeVendors: 'Aktibong mga vendor',
+			activesellers: 'Aktibong mga seller',
 			customerReach: 'Abot sa mga customer',
 			avgMonthly: 'Avg. buwanang benta',
 		},
@@ -320,15 +320,15 @@ export const translations = {
 			fastDeliveryDesc: 'Metro Manila 1–3 araw. Lahat ng probinsya sa loob ng 7 araw sa pamamagitan ng LBC, J&T, at Ninja Van.',
 			securePayment: 'Ligtas na Pagbabayad',
 			securePaymentDesc: 'GCash, Maya, Visa/Mastercard, COD. Lahat ng transaksyon ay naka-encrypt.',
-			localVendors: '100% Lokal na Vendor',
-			localVendorsDesc: 'Bawat nagbebenta ay isang verified na negosyong Pilipino — mula sa mga home-based na panadero hanggang sa mga kilalang brand.',
+			localsellers: '100% Lokal na seller',
+			localsellersDesc: 'Bawat nagbebenta ay isang verified na negosyong Pilipino — mula sa mga home-based na panadero hanggang sa mga kilalang brand.',
 		},
 
 		// ── Newsletter ────────────────────────────────────────
 		newsletter: {
 			label: 'Manatiling updated',
 			heading: 'Makuha ang pinakamahusay na deals muna',
-			desc: 'Mga alerto sa flash sale, bagong vendor, at eksklusibong kupon — diretso sa iyong inbox.',
+			desc: 'Mga alerto sa flash sale, bagong seller, at eksklusibong kupon — diretso sa iyong inbox.',
 			placeholder: 'Ilagay ang iyong email address',
 			subscribe: 'Mag-subscribe',
 			note: 'Walang spam. Mag-unsubscribe anumang oras.',

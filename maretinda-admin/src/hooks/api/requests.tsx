@@ -12,7 +12,7 @@ import type { AdminRequest, AdminReviewRequest } from "@custom-types/requests";
 
 export const requestsQueryKeys = queryKeysFactory("requests");
 
-export const useVendorRequests = (
+export const usesellerRequests = (
   query?: Record<string, string | number | undefined>,
   options?: Omit<
     UseQueryOptions<
@@ -40,7 +40,7 @@ export const useVendorRequests = (
   return { ...data, ...other };
 };
 
-export const useVendorRequest = (
+export const usesellerRequest = (
   id: string,
   options?: Omit<
     UseQueryOptions<unknown, Error, { request?: AdminRequest }, QueryKey>,

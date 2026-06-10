@@ -1,5 +1,5 @@
 /**
- * Image utility functions for Vendor Panel
+ * Image utility functions for seller Panel
  * Handles image URL processing and validation
  */
 

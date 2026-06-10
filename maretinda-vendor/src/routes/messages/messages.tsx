@@ -24,7 +24,7 @@ function formatTime(iso: string | null): string {
 }
 
 function partyLabel(conv: ChatConversation): string {
-  if (conv.type === "vendor_admin") return "Support Team"
+  if (conv.type === "seller_admin") return "Support Team"
   return conv.customer_id ? "Customer" : "Unknown"
 }
 
@@ -64,9 +64,9 @@ function ConvItem({
           <p className="text-ui-fg-subtle text-xs truncate mt-0.5">{conv.subject}</p>
         )}
       </div>
-      {conv.unread_vendor > 0 && (
+      {conv.unread_seller > 0 && (
         <Badge color="red" className="shrink-0 mt-0.5">
-          {conv.unread_vendor}
+          {conv.unread_seller}
         </Badge>
       )}
     </button>
@@ -163,7 +163,7 @@ function ChatPanel({ convId }: { convId: string }) {
           </div>
         ) : (
           messages.map((msg) => (
-            <MsgBubble key={msg.id} msg={msg} isOwn={msg.sender_role === "vendor"} />
+            <MsgBubble key={msg.id} msg={msg} isOwn={msg.sender_role === "seller"} />
           ))
         )}
         <div ref={bottomRef} />

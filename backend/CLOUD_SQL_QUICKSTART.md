@@ -368,7 +368,7 @@ After setup, verify:
 
 1. ✅ Set up environment variables for other services (Algolia, Resend, etc.)
 2. ✅ Configure GiyaPay payment gateway
-3. ✅ Test vendor bank information submission
+3. ✅ Test seller bank information submission
 4. ✅ Set up automated backups
 5. ✅ Configure monitoring and alerts
 6. ✅ Deploy to production environment

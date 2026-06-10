@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Vendor Panel Deployment Script
+# seller Panel Deployment Script
 set -e
 
 # Configuration
@@ -11,7 +11,7 @@ IMAGE_NAME="$REGION-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/$SERVICE_
 BACKEND_URL="https://maretindatest.medusajs.app"
 STOREFRONT_URL="https://your-storefront-url.com"
 
-echo "🚀 Deploying Vendor Panel to Google Cloud Run"
+echo "🚀 Deploying seller Panel to Google Cloud Run"
 echo "Project: $PROJECT_ID"
 echo "Service: $SERVICE_NAME"
 echo "Region: $REGION"

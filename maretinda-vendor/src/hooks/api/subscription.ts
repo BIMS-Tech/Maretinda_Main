@@ -10,9 +10,9 @@ export interface SubscriptionPlan {
   status: "active" | "inactive"
 }
 
-export interface VendorSubscription {
+export interface sellersubscription {
   id: string
-  vendor_id: string
+  seller_id: string
   plan_id: string | null
   plan_name: string
   price: number
@@ -26,7 +26,7 @@ export interface VendorSubscription {
 
 export interface SubscriptionStatusResponse {
   has_subscription: boolean
-  subscription: VendorSubscription | null
+  subscription: sellersubscription | null
   plan: SubscriptionPlan | null
 }
 
@@ -40,18 +40,18 @@ export interface CheckoutResponse {
 
 export interface ActivateResponse {
   success: boolean
-  subscription: VendorSubscription
+  subscription: sellersubscription
   plan: SubscriptionPlan
   already_activated?: boolean
 }
 
-const SUBSCRIPTION_KEY = ["vendor-subscription"] as const
+const SUBSCRIPTION_KEY = ["seller-subscription"] as const
 const PLANS_KEY = ["subscription-plans"] as const
 
 export const useSubscriptionStatus = () => {
   return useQuery<SubscriptionStatusResponse>({
     queryKey: SUBSCRIPTION_KEY,
-    queryFn: () => fetchQuery("/vendor/subscription/status", { method: "GET" }),
+    queryFn: () => fetchQuery("/seller/subscription/status", { method: "GET" }),
     staleTime: 1000 * 60 * 5,
   })
 }
@@ -59,7 +59,7 @@ export const useSubscriptionStatus = () => {
 export const useSubscriptionPlans = () => {
   return useQuery<{ plans: SubscriptionPlan[] }>({
     queryKey: PLANS_KEY,
-    queryFn: () => fetchQuery("/vendor/subscription/plans", { method: "GET" }),
+    queryFn: () => fetchQuery("/seller/subscription/plans", { method: "GET" }),
     staleTime: 1000 * 60 * 10,
   })
 }
@@ -72,7 +72,7 @@ export const useSubscriptionCheckout = () => {
     { plan_name: string; billing_period: "monthly" | "yearly" }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/subscription/checkout", {
+      fetchQuery("/seller/subscription/checkout", {
         method: "POST",
         body: payload,
       }),
@@ -90,7 +90,7 @@ export const useActivateSubscription = () => {
     { order_id: string; refno: string; nonce: string; timestamp: string; amount: string; signature: string }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/subscription/activate", {
+      fetchQuery("/seller/subscription/activate", {
         method: "POST",
         body: payload,
       }),

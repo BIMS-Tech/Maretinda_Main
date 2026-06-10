@@ -8,7 +8,7 @@ import { formatDate } from "@lib/date";
 
 import type { AdminRequest } from "@custom-types/requests";
 
-import { useVendorRequests } from "@hooks/api/requests";
+import { usesellerRequests } from "@hooks/api/requests";
 
 import {
   FilterRequests,
@@ -34,7 +34,7 @@ export const RequestProductCategoryList = () => {
 
   const [currentFilter, setCurrentFilter] = useState<FilterState>("");
 
-  const { requests, isLoading, refetch, count } = useVendorRequests({
+  const { requests, isLoading, refetch, count } = usesellerRequests({
     offset: currentPage * PAGE_SIZE,
     limit: PAGE_SIZE,
     type: "product_category",

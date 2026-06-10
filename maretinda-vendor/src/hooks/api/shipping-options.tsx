@@ -30,7 +30,7 @@ export const useShippingOption = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/shipping-options/${id}`, {
+      fetchQuery(`/seller/shipping-options/${id}`, {
         method: "GET",
         query,
       }),
@@ -55,7 +55,7 @@ export const useShippingOptions = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/shipping-options", {
+      fetchQuery("/seller/shipping-options", {
         method: "GET",
         query,
       }),
@@ -75,7 +75,7 @@ export const useCreateShippingOptions = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/shipping-options", {
+      fetchQuery("/seller/shipping-options", {
         method: "POST",
         body: payload,
       }),
@@ -103,13 +103,13 @@ export const useUpdateShippingOptions = (
   return useMutation({
     mutationFn: (payload) => {
       if (payload.name) {
-        return fetchQuery(`/vendor/shipping-options/${id}`, {
+        return fetchQuery(`/seller/shipping-options/${id}`, {
           method: "POST",
           body: payload,
         })
       }
 
-      return fetchQuery(`/vendor/shipping-options/${id}`, {
+      return fetchQuery(`/seller/shipping-options/${id}`, {
         method: "POST",
         body: {
           prices: payload.prices?.map((item) => ({
@@ -142,7 +142,7 @@ export const useDeleteShippingOption = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/shipping-options/${optionId}`, {
+      fetchQuery(`/seller/shipping-options/${optionId}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {

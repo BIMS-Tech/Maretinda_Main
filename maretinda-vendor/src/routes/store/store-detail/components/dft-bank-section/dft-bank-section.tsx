@@ -1,9 +1,9 @@
 import { Container, Heading, Text, Badge } from "@medusajs/ui"
-import { StoreVendor } from "../../../../../types/user"
+import { Storeseller } from "../../../../../types/user"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Pencil } from "@medusajs/icons"
 
-export const DftBankSection = ({ seller }: { seller: StoreVendor }) => {
+export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
   // Check if settlement information is complete - these are the minimum required fields
   const bankName = seller.bank_name || seller.dft_bank_name || ""
   const accountNumber = seller.account_number || seller.dft_account_number || ""

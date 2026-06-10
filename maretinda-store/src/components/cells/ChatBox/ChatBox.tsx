@@ -14,7 +14,7 @@ interface ChatMessage {
 	id: string
 	conversation_id: string
 	sender_id: string
-	sender_role: 'vendor' | 'customer' | 'admin'
+	sender_role: 'seller' | 'customer' | 'admin'
 	sender_name: string
 	body: string
 	read_at: string | null
@@ -81,7 +81,7 @@ export function ChatBox({
 	useEffect(() => {
 		chatFetch<{ conversation: ChatConversation }>('/api/chat', {
 			method: 'POST',
-			body: JSON.stringify({ vendor_id: sellerId, subject }),
+			body: JSON.stringify({ seller_id: sellerId, subject }),
 		})
 			.then((data) => {
 				setConv(data.conversation)

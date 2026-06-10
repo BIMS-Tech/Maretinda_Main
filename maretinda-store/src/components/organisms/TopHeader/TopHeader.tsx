@@ -165,7 +165,7 @@ const TopHeaderBanner: React.FC = () => {
 
 				{/* RIGHT */}
 				<div className="flex items-center gap-4 flex-shrink-0">
-					<Link href={`/${locale}/become-vendor`} className="hidden sm:inline text-white/80 hover:text-white transition-colors whitespace-nowrap">
+					<Link href={`/${locale}/become-seller`} className="hidden sm:inline text-white/80 hover:text-white transition-colors whitespace-nowrap">
 						{s.sellOn}
 					</Link>
 

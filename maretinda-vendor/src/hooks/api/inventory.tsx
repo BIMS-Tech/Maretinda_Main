@@ -38,7 +38,7 @@ export const useInventoryItems = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/inventory-items", {
+      fetchQuery("/seller/inventory-items", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -74,7 +74,7 @@ export const useInventoryItem = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/inventory-items/${id}`, {
+      fetchQuery(`/seller/inventory-items/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -115,7 +115,7 @@ export const useUpdateInventoryItem = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminUpdateInventoryItem) =>
-      fetchQuery(`/vendor/inventory-items/${id}`, {
+      fetchQuery(`/seller/inventory-items/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -167,7 +167,7 @@ export const useDeleteInventoryItemLevel = (
   return useMutation({
     mutationFn: () =>
       fetchQuery(
-        `/vendor/inventory-items/${inventoryItemId}/location-levels/${locationId}`,
+        `/seller/inventory-items/${inventoryItemId}/location-levels/${locationId}`,
         { method: "DELETE" }
       ),
     onSuccess: (data, variables, context) => {
@@ -204,7 +204,7 @@ export const useInventoryItemLevels = (
   const { data, ...rest } = useQuery({
     queryFn: () =>
       fetchQuery(
-        `/vendor/inventory-items/${inventoryItemId!}/location-levels`,
+        `/seller/inventory-items/${inventoryItemId!}/location-levels`,
         {
           method: "GET",
           query: query as {
@@ -231,7 +231,7 @@ export const useUpdateInventoryLevel = (
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminUpdateInventoryLevel) =>
       fetchQuery(
-        `/vendor/inventory-items/${inventoryItemId}/location-levels/${locationId}`,
+        `/seller/inventory-items/${inventoryItemId}/location-levels/${locationId}`,
         { method: "POST", body: payload }
       ),
     onSuccess: (data, variables, context) => {
@@ -261,7 +261,7 @@ export const useBatchInventoryItemLocationLevels = (
   return useMutation({
     mutationFn: (payload) =>
       fetchQuery(
-        `/vendor/inventory-items/${inventoryItemId}/location-levels/batch`,
+        `/seller/inventory-items/${inventoryItemId}/location-levels/batch`,
         {
           method: "POST",
           body: payload,
@@ -292,7 +292,7 @@ export const useBatchInventoryItemsLocationLevels = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/inventory-items/location-levels/batch", {
+      fetchQuery("/seller/inventory-items/location-levels/batch", {
         method: "POST",
         body: payload,
       }),

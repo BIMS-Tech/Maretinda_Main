@@ -6,7 +6,7 @@ import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
  * Delete a review
- * Admin can delete reviews based on vendor request
+ * Admin can delete reviews based on seller request
  */
 export async function DELETE(
   req: AuthenticatedMedusaRequest,

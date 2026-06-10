@@ -81,7 +81,7 @@ export default async function FlashSalePage({
 				className="w-full py-10 lg:py-14 relative overflow-hidden"
 				style={{ background: 'linear-gradient(135deg, #1A0A2E 0%, #2D1654 60%, #C0392B 100%)' }}
 			>
-				{/* Vendor-supplied banner image as blended background */}
+				{/* seller-supplied banner image as blended background */}
 				{sale.banner_image && (
 					// eslint-disable-next-line @next/next/no-img-element
 					<img

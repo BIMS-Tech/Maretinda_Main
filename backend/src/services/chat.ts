@@ -6,12 +6,12 @@ import crypto from "crypto"
 export interface ChatConversation {
   id: string
   type: string
-  vendor_id: string | null
+  seller_id: string | null
   customer_id: string | null
   subject: string | null
   status: string
   last_message_at: string | null
-  unread_vendor: number
+  unread_seller: number
   unread_customer: number
   unread_admin: number
   created_at: string
@@ -29,7 +29,7 @@ export interface ChatMessage {
   created_at: string
 }
 
-type SenderRole = "vendor" | "customer" | "admin"
+type SenderRole = "seller" | "customer" | "admin"
 
 // ─── Module-level singleton ────────────────────────────────────────────────────
 
@@ -102,7 +102,7 @@ export class ChatService {
   // ─── Conversations ────────────────────────────────────────────────────
 
   async getConversations(filters: {
-    vendor_id?: string
+    seller_id?: string
     customer_id?: string
     is_admin?: boolean
     limit?: number
@@ -115,7 +115,7 @@ export class ChatService {
       let base = this.knex("chat_conversation")
 
       if (!is_admin) {
-        if (filters.vendor_id) base = base.where("vendor_id", filters.vendor_id)
+        if (filters.seller_id) base = base.where("seller_id", filters.seller_id)
         if (filters.customer_id) base = base.where("customer_id", filters.customer_id)
       }
 
@@ -123,10 +123,10 @@ export class ChatService {
       const rows = await base.clone()
         .select(
           "chat_conversation.*",
-          this.knex.raw(`COALESCE(s.name, 'Vendor') as vendor_name`),
+          this.knex.raw(`COALESCE(s.name, 'seller') as seller_name`),
           this.knex.raw(`COALESCE(NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), c.email, 'Customer') as customer_name`)
         )
-        .leftJoin("seller as s", "s.id", "chat_conversation.vendor_id")
+        .leftJoin("seller as s", "s.id", "chat_conversation.seller_id")
         .leftJoin("customer as c", "c.id", "chat_conversation.customer_id")
         .orderByRaw("chat_conversation.last_message_at desc nulls last")
         .orderBy("chat_conversation.created_at", "desc")
@@ -151,12 +151,12 @@ export class ChatService {
   }
 
   async getOrCreateConversation(
-    vendorId: string,
+    sellerId: string,
     customerId: string,
     subject?: string
   ): Promise<ChatConversation> {
     const existing = await this.knex("chat_conversation")
-      .where("vendor_id", vendorId)
+      .where("seller_id", sellerId)
       .where("customer_id", customerId)
       .where("status", "open")
       .first()
@@ -166,8 +166,8 @@ export class ChatService {
     const [row] = await this.knex("chat_conversation")
       .insert({
         id: this.generateId("chatconv"),
-        type: "vendor_customer",
-        vendor_id: vendorId,
+        type: "seller_customer",
+        seller_id: sellerId,
         customer_id: customerId,
         subject: subject || null,
         status: "open",
@@ -176,14 +176,14 @@ export class ChatService {
       })
       .returning("*")
 
-    this.pushEvent(vendorId, "new_conversation", row)
+    this.pushEvent(sellerId, "new_conversation", row)
     this.pushEvent("__admin__", "new_conversation", row)
 
     return row
   }
 
   async createAdminConversation(params: {
-    vendor_id?: string
+    seller_id?: string
     customer_id?: string
     subject?: string
     type: string
@@ -192,7 +192,7 @@ export class ChatService {
       .insert({
         id: this.generateId("chatconv"),
         type: params.type,
-        vendor_id: params.vendor_id || null,
+        seller_id: params.seller_id || null,
         customer_id: params.customer_id || null,
         subject: params.subject || null,
         status: "open",
@@ -201,7 +201,7 @@ export class ChatService {
       })
       .returning("*")
 
-    if (params.vendor_id) this.pushEvent(params.vendor_id, "new_conversation", row)
+    if (params.seller_id) this.pushEvent(params.seller_id, "new_conversation", row)
     if (params.customer_id) this.pushEvent(params.customer_id, "new_conversation", row)
 
     return row
@@ -266,15 +266,15 @@ export class ChatService {
       last_message_at: new Date(),
       updated_at: new Date(),
     }
-    if (sender_role !== "vendor") unreadUpdates.unread_vendor = this.knex.raw("unread_vendor + 1")
+    if (sender_role !== "seller") unreadUpdates.unread_seller = this.knex.raw("unread_seller + 1")
     if (sender_role !== "customer") unreadUpdates.unread_customer = this.knex.raw("unread_customer + 1")
     if (sender_role !== "admin") unreadUpdates.unread_admin = this.knex.raw("unread_admin + 1")
 
     await this.knex("chat_conversation").where("id", conversation_id).update(unreadUpdates)
 
     const eventPayload = { ...msg, conversation_id }
-    if (conv.vendor_id && sender_role !== "vendor") {
-      this.pushEvent(conv.vendor_id, "new_message", eventPayload)
+    if (conv.seller_id && sender_role !== "seller") {
+      this.pushEvent(conv.seller_id, "new_message", eventPayload)
     }
     if (conv.customer_id && sender_role !== "customer") {
       this.pushEvent(conv.customer_id, "new_message", eventPayload)
@@ -288,8 +288,8 @@ export class ChatService {
 
   async markRead(conversationId: string, role: SenderRole): Promise<void> {
     const field =
-      role === "vendor"
-        ? "unread_vendor"
+      role === "seller"
+        ? "unread_seller"
         : role === "customer"
         ? "unread_customer"
         : "unread_admin"
@@ -301,7 +301,7 @@ export class ChatService {
 
   // ─── Utility lookups ──────────────────────────────────────────────────
 
-  async getVendorSellerId(memberId: string): Promise<string | null> {
+  async getsellersellerId(memberId: string): Promise<string | null> {
     try {
       const result = await this.knex.raw(
         `SELECT seller_id FROM member WHERE id = ? LIMIT 1`,
@@ -313,15 +313,15 @@ export class ChatService {
     }
   }
 
-  async getVendorName(sellerId: string): Promise<string> {
+  async getsellerName(sellerId: string): Promise<string> {
     try {
       const result = await this.knex.raw(
         `SELECT name FROM seller WHERE id = ? LIMIT 1`,
         [sellerId]
       )
-      return result.rows?.[0]?.name || "Vendor"
+      return result.rows?.[0]?.name || "seller"
     } catch {
-      return "Vendor"
+      return "seller"
     }
   }
 
@@ -350,11 +350,11 @@ export class ChatService {
     }
   }
 
-  async getTotalUnreadVendor(vendorId: string): Promise<number> {
+  async getTotalUnreadseller(sellerId: string): Promise<number> {
     try {
       const result = await this.knex("chat_conversation")
-        .sum("unread_vendor as total")
-        .where("vendor_id", vendorId)
+        .sum("unread_seller as total")
+        .where("seller_id", sellerId)
         .where("status", "open")
       return Number(result[0]?.total ?? 0)
     } catch {

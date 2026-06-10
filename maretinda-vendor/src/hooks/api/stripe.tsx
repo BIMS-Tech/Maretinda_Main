@@ -14,7 +14,7 @@ export const stripeQueryKeys = queryKeysFactory(STRIPE_QUERY_KEY)
 export const useStripeAccount = () => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/payout-account", {
+      fetchQuery("/seller/payout-account", {
         method: "GET",
       }),
     queryKey: [STRIPE_QUERY_KEY, "account"],
@@ -28,7 +28,7 @@ export const useCreateStripeAccount = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/payout-account", {
+      fetchQuery("/seller/payout-account", {
         method: "POST",
         body: payload,
       }),
@@ -48,7 +48,7 @@ export const useCreateStripeOnboarding = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/payout-account/onboarding", {
+      fetchQuery("/seller/payout-account/onboarding", {
         method: "POST",
         body: payload,
       }),

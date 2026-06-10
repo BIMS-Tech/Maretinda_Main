@@ -522,7 +522,7 @@ const GiyaPayConfigPage = () => {
           {/* Filter bar */}
           <div className="flex flex-wrap gap-2 items-end mb-4">
             <Input
-              placeholder="Search ref # / order ID / vendor"
+              placeholder="Search ref # / order ID / seller"
               value={txSearch}
               onChange={(e) => setTxSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && applyTxFilters()}
@@ -590,7 +590,7 @@ const GiyaPayConfigPage = () => {
                   <Table.Row>
                     <Table.HeaderCell>Transaction Ref</Table.HeaderCell>
                     <Table.HeaderCell>Order ID</Table.HeaderCell>
-                    <Table.HeaderCell>Vendor</Table.HeaderCell>
+                    <Table.HeaderCell>seller</Table.HeaderCell>
                     <Table.HeaderCell>Amount</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
                     <Table.HeaderCell>Payment Method</Table.HeaderCell>
@@ -602,7 +602,7 @@ const GiyaPayConfigPage = () => {
                     <Table.Row key={transaction.id}>
                       <Table.Cell>{transaction.reference_number || '-'}</Table.Cell>
                       <Table.Cell>{transaction.order_id || '-'}</Table.Cell>
-                      <Table.Cell>{transaction.vendor_name || '-'}</Table.Cell>
+                      <Table.Cell>{transaction.seller_name || '-'}</Table.Cell>
                       <Table.Cell>{formatAmount(transaction.amount, transaction.currency)}</Table.Cell>
                       <Table.Cell>{getStatusBadge(transaction.status)}</Table.Cell>
                       <Table.Cell><GatewayLogo gateway={transaction.gateway} /></Table.Cell>

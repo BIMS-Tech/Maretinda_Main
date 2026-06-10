@@ -45,7 +45,7 @@ export const useOrder = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/orders/${id}`, {
+      fetchQuery(`/seller/orders/${id}`, {
         method: "GET",
         query,
       }),
@@ -102,7 +102,7 @@ export const useOrderPreview = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/orders/${id}`, {
+      fetchQuery(`/seller/orders/${id}`, {
         method: "GET",
         query,
       }),
@@ -128,7 +128,7 @@ export const useOrders = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/orders", {
+      fetchQuery("/seller/orders", {
         method: "GET",
         query: {
           ...(query as { [key: string]: string }),
@@ -168,7 +168,7 @@ export const useOrderChanges = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/orders/${id}/changes`, {
+      fetchQuery(`/seller/orders/${id}/changes`, {
         method: "GET",
       }),
     queryKey: ordersQueryKeys.changes(id),
@@ -193,7 +193,7 @@ export const useOrderLineItems = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: async () =>
-      fetchQuery(`/vendor/orders/${id}`, {
+      fetchQuery(`/seller/orders/${id}`, {
         method: "GET",
         query,
       }),
@@ -214,7 +214,7 @@ export const useCreateOrderFulfillment = (
 ) => {
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminCreateOrderFulfillment) =>
-      fetchQuery(`/vendor/orders/${orderId}/fulfillments`, {
+      fetchQuery(`/seller/orders/${orderId}/fulfillments`, {
         method: "POST",
         body: payload,
       }),
@@ -276,7 +276,7 @@ export const useCreateOrderShipment = (
   return useMutation({
     mutationFn: (payload: HttpTypes.AdminCreateOrderShipment) =>
       fetchQuery(
-        `/vendor/orders/${orderId}/fulfillments/${fulfillmentId}/shipments`,
+        `/seller/orders/${orderId}/fulfillments/${fulfillmentId}/shipments`,
         {
           method: "POST",
           body: payload,
@@ -309,7 +309,7 @@ export const useMarkOrderFulfillmentAsDelivered = (
   return useMutation({
     mutationFn: () =>
       fetchQuery(
-        `/vendor/orders/${orderId}/fulfillments/${fulfillmentId}/mark-as-delivered`,
+        `/seller/orders/${orderId}/fulfillments/${fulfillmentId}/mark-as-delivered`,
         {
           method: "POST",
         }
@@ -335,7 +335,7 @@ export const useCancelOrder = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/orders/${orderId}/cancel`, {
+      fetchQuery(`/seller/orders/${orderId}/cancel`, {
         method: "POST",
       }),
     onSuccess: (data: any, variables: any, context: any) => {
@@ -363,7 +363,7 @@ export const useCompleteOrder = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/orders/${orderId}/complete`, {
+      fetchQuery(`/seller/orders/${orderId}/complete`, {
         method: "POST",
       }),
     onSuccess: (data: any, variables: any, context: any) => {

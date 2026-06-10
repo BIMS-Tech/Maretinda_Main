@@ -7,7 +7,7 @@
  * Configuration:
  * - Runs daily at configurable time (default: 11:00 PM GMT+8)
  * - Transactions included must align with GiyaPay cut-off
- * - Routes transactions based on vendor bank:
+ * - Routes transactions based on seller bank:
  *   - Metrobank → TAMA
  *   - Others → DFT
  * 

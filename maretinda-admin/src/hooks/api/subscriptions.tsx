@@ -11,9 +11,9 @@ export interface SubscriptionPlan {
   status: 'active' | 'inactive'
 }
 
-export interface VendorSubscription {
+export interface sellersubscription {
   id: string
-  vendor_id: string
+  seller_id: string
   plan_name: string
   price: number
   billing_period: 'monthly' | 'yearly'
@@ -36,21 +36,21 @@ export const subscriptionQueryKeys = queryKeysFactory('subscriptions')
 export const subscriptionPlanQueryKeys = queryKeysFactory('subscription-plans')
 export const subscriptionConfigQueryKeys = queryKeysFactory('subscription-giyapay-config')
 
-// List all vendor subscriptions
+// List all seller subscriptions
 export const useAdminSubscriptions = (filters?: {
   status?: string
-  vendor_id?: string
+  seller_id?: string
   limit?: number
   offset?: number
 }) => {
   const query = new URLSearchParams()
   if (filters?.status) query.set('status', filters.status)
-  if (filters?.vendor_id) query.set('vendor_id', filters.vendor_id)
+  if (filters?.seller_id) query.set('seller_id', filters.seller_id)
   if (filters?.limit) query.set('limit', String(filters.limit))
   if (filters?.offset) query.set('offset', String(filters.offset))
   const qs = query.toString()
 
-  return useQuery<{ subscriptions: VendorSubscription[]; count: number; limit: number; offset: number }>({
+  return useQuery<{ subscriptions: sellersubscription[]; count: number; limit: number; offset: number }>({
     queryKey: subscriptionQueryKeys.list([filters]),
     queryFn: async () => {
       const result = await sdk.client.fetch(`/admin/subscriptions${qs ? `?${qs}` : ''}`, {
@@ -65,7 +65,7 @@ export const useAdminSubscriptions = (filters?: {
 // Activate / deactivate a subscription
 export const useUpdateSubscriptionStatus = () => {
   const qc = useQueryClient()
-  return useMutation<{ subscription: VendorSubscription }, Error, { id: string; status: 'active' | 'cancelled' }>({
+  return useMutation<{ subscription: sellersubscription }, Error, { id: string; status: 'active' | 'cancelled' }>({
     mutationFn: async ({ id, status }) => {
       const result = await sdk.client.fetch(`/admin/subscriptions/${id}`, {
         method: 'PATCH',
@@ -79,13 +79,13 @@ export const useUpdateSubscriptionStatus = () => {
   })
 }
 
-// Manually assign a plan to a vendor
+// Manually assign a plan to a seller
 export const useAdminAssignSubscription = () => {
   const qc = useQueryClient()
   return useMutation<
-    { subscription: VendorSubscription },
+    { subscription: sellersubscription },
     Error,
-    { vendor_id: string; plan_name: string; duration_days?: number }
+    { seller_id: string; plan_name: string; duration_days?: number }
   >({
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/subscriptions/assign', {

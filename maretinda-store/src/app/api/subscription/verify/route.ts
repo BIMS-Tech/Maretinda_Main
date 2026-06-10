@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * POST /api/subscription/verify
  *
  * Next.js API route — proxies to the Medusa backend's /giyapay/verify endpoint
- * specifically for vendor subscription payments (order_id starts with "vsub_").
+ * specifically for seller subscription payments (order_id starts with "vsub_").
  *
  * This keeps the merchant secret server-side (in Medusa backend) and out of the browser.
  */
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Safety guard — this route is ONLY for subscription payments (new vendor or renewal)
+    // Safety guard — this route is ONLY for subscription payments (new seller or renewal)
     const isSubscriptionPayment =
       String(order_id).startsWith('vsub_') || String(order_id).startsWith('vrenew_')
     if (!isSubscriptionPayment) {

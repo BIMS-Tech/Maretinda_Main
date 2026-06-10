@@ -35,7 +35,7 @@ const ALLOWED_TYPES = [
 
 // CORS headers
 const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.VENDOR_CORS || 'http://localhost:5173').split(',')
+  const allowedOrigins = (process.env.seller_CORS || 'http://localhost:5173').split(',')
   res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0].trim())
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -170,7 +170,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
           for (const file of files) {
             try {
               const buffer = fs.readFileSync(file.path)
-              const folder = isImageFile(file.mimetype) ? 'vendor-uploads/images' : 'vendor-uploads/documents'
+              const folder = isImageFile(file.mimetype) ? 'seller-uploads/images' : 'seller-uploads/documents'
               
               const result = await gcs.uploadFile(buffer, file.originalname, {
                 folder,

@@ -21,11 +21,11 @@ The "Invalid request: Unrecognized fields" error was caused by:
 - Exported from `src/models/index.ts`
 
 ### ✅ 3. Validation
-- Updated `src/api/vendor/sellers/me/validators.ts` - Changed from `.strict()` to `.passthrough()`
-- Updated `src/api/vendor/sellers/me/middlewares.ts` - Disabled automatic body validation
+- Updated `src/api/seller/sellers/me/validators.ts` - Changed from `.strict()` to `.passthrough()`
+- Updated `src/api/seller/sellers/me/middlewares.ts` - Disabled automatic body validation
 
 ### ✅ 4. Route Handler
-- `src/api/vendor/sellers/me/route.ts` already handles the fields correctly
+- `src/api/seller/sellers/me/route.ts` already handles the fields correctly
 
 ## How to Apply Changes
 
@@ -96,7 +96,7 @@ When the server starts, you should see:
 Make a POST request to update seller bank info:
 
 ```bash
-curl -X POST http://localhost:9000/vendor/sellers/me \
+curl -X POST http://localhost:9000/seller/sellers/me \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -132,14 +132,14 @@ Success (200):
 
 2. **Modified Files:**
    - `src/models/index.ts` - Export Seller model
-   - `src/api/vendor/sellers/me/validators.ts` - Changed to `.passthrough()`
-   - `src/api/vendor/sellers/me/middlewares.ts` - Added `validateBody = false`
+   - `src/api/seller/sellers/me/validators.ts` - Changed to `.passthrough()`
+   - `src/api/seller/sellers/me/middlewares.ts` - Added `validateBody = false`
    - `package.json` - Added `db:init` and `db:setup` scripts
 
 3. **Existing Files (Already Working):**
    - `src/loaders/settlement.ts` - Auto-creates fields on startup
    - `src/migrations/1734480000000_add_seller_bank_fields.ts` - Migration file
-   - `src/api/vendor/sellers/me/route.ts` - Route handler
+   - `src/api/seller/sellers/me/route.ts` - Route handler
 
 ## Troubleshooting
 

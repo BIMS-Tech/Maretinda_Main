@@ -10,9 +10,9 @@ export type OrderReturnRequestDTO = {
   customer_id: string
   customer_note: string
   shipping_option_id: string | null
-  vendor_reviewer_id: string | null
-  vendor_reviewer_note: string | null
-  vendor_review_date: Date | null
+  seller_reviewer_id: string | null
+  seller_reviewer_note: string | null
+  seller_review_date: Date | null
   admin_reviewer_id: string | null
   admin_reviewer_note: string | null
   admin_review_date: Date | null

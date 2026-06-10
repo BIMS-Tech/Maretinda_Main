@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Container, Heading, Table, Text, Badge } from "@medusajs/ui";
 
 import { useSellerApplications, type SellerApplication } from "@hooks/api/seller-applications";
-import { useVendorRequests } from "@hooks/api/requests";
+import { usesellerRequests } from "@hooks/api/requests";
 import type { AdminRequest } from "@custom-types/requests";
 import { RequestSellerDetail } from "./components/request-seller-detail";
 
@@ -53,7 +53,7 @@ export const RequestSellerList = () => {
   });
 
   // Legacy requests (fetch all — only ~6 exist)
-  const { requests: legacyRequests, isLoading: legacyLoading } = useVendorRequests({ type: "seller", limit: 200 }) as any;
+  const { requests: legacyRequests, isLoading: legacyLoading } = usesellerRequests({ type: "seller", limit: 200 }) as any;
 
   // Normalize legacy rows
   const legacyRows: LegacyRow[] = useMemo(() => {

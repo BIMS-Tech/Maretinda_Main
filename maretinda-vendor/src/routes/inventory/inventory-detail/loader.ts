@@ -9,7 +9,7 @@ const inventoryDetailQuery = (id: string) => ({
   queryKey: inventoryItemsQueryKeys.detail(id),
   queryFn: async () =>
     fetchQuery(
-      `/vendor/inventory-items/${id}?fields=${INVENTORY_DETAIL_FIELDS}`,
+      `/seller/inventory-items/${id}?fields=${INVENTORY_DETAIL_FIELDS}`,
       {
         method: "GET",
       }

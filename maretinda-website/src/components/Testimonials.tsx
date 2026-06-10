@@ -14,7 +14,7 @@ const testimonials: Testimonial[] = [
     quote:
       "I went from selling in tiangge on weekends to running a full online business. Maretinda's flash sales feature tripled my income in just 3 months!",
     name: "Maria Reyes",
-    role: "Fashion Vendor, Cebu City",
+    role: "Fashion seller, Cebu City",
     initials: "MR",
     avatarGradient: "linear-gradient(135deg,#432C63,#9B80D2)",
   },
@@ -62,13 +62,13 @@ export default function Testimonials() {
         {/* Header */}
         <div data-aos="fade-up" className="text-center mb-14">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-purple-mid bg-[rgba(92,62,136,.09)] border border-[rgba(92,62,136,.18)] px-3.5 py-1.5 rounded-full mb-4">
-            Vendor Stories
+            seller Stories
           </span>
           <h2
             className="font-display font-extrabold leading-tight"
             style={{ fontSize:"clamp(1.75rem,3vw,2.4rem)", letterSpacing:"-0.02em" }}
           >
-            Real Vendors, <span className="gradient-text">Real Results</span>
+            Real sellers, <span className="gradient-text">Real Results</span>
           </h2>
         </div>
 

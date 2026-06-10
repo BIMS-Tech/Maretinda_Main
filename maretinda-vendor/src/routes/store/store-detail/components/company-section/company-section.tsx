@@ -1,9 +1,9 @@
 import { Container, Heading, Text } from "@medusajs/ui"
-import { StoreVendor } from "../../../../../types/user"
+import { Storeseller } from "../../../../../types/user"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Pencil } from "@medusajs/icons"
 
-export const CompanySection = ({ seller }: { seller: StoreVendor }) => {
+export const CompanySection = ({ seller }: { seller: Storeseller }) => {
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">

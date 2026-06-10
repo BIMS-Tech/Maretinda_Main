@@ -18,7 +18,7 @@ async function sellerOwnsPromotion(pg: any, sellerId: string, promotionId: strin
 }
 
 /**
- * GET /vendor/promotions/:id/:ruleType
+ * GET /seller/promotions/:id/:ruleType
  * Get the rules of a promotion by rule type.
  * ruleType can be "rules", "target-rules", or "buy-rules".
  */
@@ -74,7 +74,7 @@ export async function GET(
 
     res.status(200).json({ rules })
   } catch (error: any) {
-    console.error("[VendorGetPromotionRules] Error:", error)
+    console.error("[sellerGetPromotionRules] Error:", error)
     res.status(500).json({ message: "Failed to retrieve promotion rules", error: error.message })
   }
 }

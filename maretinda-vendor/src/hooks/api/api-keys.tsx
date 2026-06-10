@@ -30,7 +30,7 @@ export const useApiKey = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/api-keys/${id}`, {
+      fetchQuery(`/seller/api-keys/${id}`, {
         method: "GET",
       }),
     queryKey: apiKeysQueryKeys.detail(id),
@@ -53,7 +53,7 @@ export const useApiKeys = (
   >
 ) => {
   const { data, ...rest } = useQuery({
-    queryFn: () => fetchQuery("/vendor/api-keys", { method: "GET" }),
+    queryFn: () => fetchQuery("/seller/api-keys", { method: "GET" }),
     queryKey: apiKeysQueryKeys.list(query),
     ...options,
   })
@@ -70,7 +70,7 @@ export const useCreateApiKey = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/api-keys", {
+      fetchQuery("/seller/api-keys", {
         method: "POST",
         body: payload,
       }),
@@ -138,7 +138,7 @@ export const useDeleteApiKey = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/api-keys/${id}`, {
+      fetchQuery(`/seller/api-keys/${id}`, {
         method: "DELETE",
       }),
     // mutationFn: () => sdk.admin.apiKey.delete(id),

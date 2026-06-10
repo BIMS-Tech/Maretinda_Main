@@ -53,16 +53,16 @@ class GiyaPayService extends MedusaService({}) {
           gateway VARCHAR(50) DEFAULT 'GCASH',
           description TEXT,
           payment_data JSONB,
-          vendor_id VARCHAR(255),
-          vendor_name VARCHAR(255),
+          seller_id VARCHAR(255),
+          seller_name VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `)
       
-      // Add vendor columns if they don't exist (for existing tables)
-      await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS vendor_id VARCHAR(255)`)
-      await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS vendor_name VARCHAR(255)`)
+      // Add seller columns if they don't exist (for existing tables)
+      await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS seller_id VARCHAR(255)`)
+      await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS seller_name VARCHAR(255)`)
       await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS cart_id VARCHAR(255)`)
       
       // Add enabled_methods column if it doesn't exist (for existing giyapay_config tables)
@@ -244,7 +244,7 @@ class GiyaPayService extends MedusaService({}) {
         reference_number: row.reference_number,
         order_id: row.order_id,
         cart_id: row.cart_id,
-        vendor_id: row.vendor_id,
+        seller_id: row.seller_id,
         amount: parseFloat(row.amount),
         currency: row.currency,
         status: row.status,
@@ -264,7 +264,7 @@ class GiyaPayService extends MedusaService({}) {
     referenceNumber: string
     orderId?: string
     cartId?: string
-    vendorId?: string
+    sellerId?: string
     amount: number
     currency?: string
     status?: string
@@ -281,14 +281,14 @@ class GiyaPayService extends MedusaService({}) {
       
       await manager.raw(`
         INSERT INTO giyapay_transaction (
-          id, reference_number, order_id, cart_id, vendor_id, amount, currency, status, gateway, description, payment_data, created_at, updated_at
+          id, reference_number, order_id, cart_id, seller_id, amount, currency, status, gateway, description, payment_data, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `, [
         transactionId,
         data.referenceNumber,
         data.orderId || null,
         data.cartId || null,
-        data.vendorId || null,
+        data.sellerId || null,
         data.amount,
         data.currency || 'PHP',
         data.status || 'PENDING',
@@ -299,14 +299,14 @@ class GiyaPayService extends MedusaService({}) {
         now
       ])
       
-      console.log('[GiyaPayService] Transaction created:', transactionId, 'for vendor:', data.vendorId || 'unknown')
+      console.log('[GiyaPayService] Transaction created:', transactionId, 'for seller:', data.sellerId || 'unknown')
       
       return {
         id: transactionId,
         referenceNumber: data.referenceNumber,
         orderId: data.orderId,
         cartId: data.cartId,
-        vendorId: data.vendorId,
+        sellerId: data.sellerId,
         amount: data.amount,
         currency: data.currency || 'PHP',
         status: data.status || 'PENDING',

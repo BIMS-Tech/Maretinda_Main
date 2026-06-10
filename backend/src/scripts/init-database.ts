@@ -121,7 +121,7 @@ async function initDatabase() {
           reference_number TEXT NOT NULL,
           order_id TEXT,
           cart_id TEXT,
-          vendor_id TEXT,
+          seller_id TEXT,
           amount NUMERIC NOT NULL,
           currency TEXT DEFAULT 'PHP',
           status TEXT DEFAULT 'PENDING',
@@ -163,7 +163,7 @@ async function initDatabase() {
       { table: 'seller', column: 'account_number', name: 'idx_seller_account_number' },
       { table: 'giyapay_transaction', column: 'reference_number', name: 'idx_giyapay_ref' },
       { table: 'giyapay_transaction', column: 'order_id', name: 'idx_giyapay_order' },
-      { table: 'giyapay_transaction', column: 'vendor_id', name: 'idx_giyapay_vendor' },
+      { table: 'giyapay_transaction', column: 'seller_id', name: 'idx_giyapay_seller' },
       { table: 'tama_generations', column: 'seller_id', name: 'idx_tama_seller' },
       { table: 'dft_generations', column: 'seller_id', name: 'idx_dft_seller' },
     ]

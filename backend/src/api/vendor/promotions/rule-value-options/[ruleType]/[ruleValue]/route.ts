@@ -10,10 +10,10 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 }
 
 /**
- * GET /vendor/promotions/rule-value-options/:ruleType/:ruleValue
+ * GET /seller/promotions/rule-value-options/:ruleType/:ruleValue
  * Return possible values for a given rule attribute.
  * - customer_group: fetch all customer groups
- * - product: fetch vendor's own products
+ * - product: fetch seller's own products
  * - country: return empty (rarely used)
  * - anything else: return empty
  */
@@ -102,7 +102,7 @@ export async function GET(
     // For country and any other values, return empty
     res.status(200).json({ values: [] })
   } catch (error: any) {
-    console.error("[VendorRuleValueOptions] Error:", error)
+    console.error("[sellerRuleValueOptions] Error:", error)
     res.status(500).json({ message: "Failed to retrieve rule value options", error: error.message })
   }
 }

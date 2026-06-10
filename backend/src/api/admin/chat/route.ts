@@ -19,21 +19,21 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   res.json({ conversations, count, unread })
 }
 
-// POST /admin/chat  — admin starts a conversation with vendor or customer
+// POST /admin/chat  — admin starts a conversation with seller or customer
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const chatService = getChatService(req.scope as any)
 
-  const { vendor_id, customer_id, subject, type } = req.body as {
-    vendor_id?: string
+  const { seller_id, customer_id, subject, type } = req.body as {
+    seller_id?: string
     customer_id?: string
     subject?: string
     type?: string
   }
 
-  const convType = type || (vendor_id ? "vendor_admin" : "customer_admin")
+  const convType = type || (seller_id ? "seller_admin" : "customer_admin")
 
   const conversation = await chatService.createAdminConversation({
-    vendor_id,
+    seller_id,
     customer_id,
     subject,
     type: convType,

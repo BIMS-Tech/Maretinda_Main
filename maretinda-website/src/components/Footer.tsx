@@ -15,8 +15,8 @@ const footerLinks = {
     { label: "API Docs", href: "#" },
     { label: "Changelog", href: "#" },
   ],
-  Vendors: [
-    { label: "Vendor Portal", href: "#" },
+  sellers: [
+    { label: "seller Portal", href: "#" },
     { label: "Success Stories", href: "#" },
     { label: "Help Center", href: "#" },
     { label: "Community", href: "#" },
@@ -33,7 +33,7 @@ const footerLinks = {
     { label: "Terms of Service", href: "#" },
     { label: "Privacy Policy", href: "#" },
     { label: "Cookie Policy", href: "#" },
-    { label: "Vendor Agreement", href: "#" },
+    { label: "seller Agreement", href: "#" },
   ],
 };
 
@@ -55,7 +55,7 @@ export default function Footer() {
           style={{ background:"linear-gradient(135deg,#2A1B3E,#432C63)", border:"1px solid rgba(155,128,210,.2)" }}
         >
           <div>
-            <h4 className="font-display font-bold text-white text-[17px] mb-1">Get vendor tips in your inbox</h4>
+            <h4 className="font-display font-bold text-white text-[17px] mb-1">Get seller tips in your inbox</h4>
             <p className="text-white/50 text-[13px]">Weekly insights on growing your online store in the Philippines.</p>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -90,7 +90,7 @@ export default function Footer() {
               />
             </div>
             <p className="text-white/40 text-[13.5px] leading-[1.7] mb-5 max-w-[230px]">
-              The Philippines&apos; most powerful platform for vendors to grow, sell, and succeed online.
+              The Philippines&apos; most powerful platform for sellers to grow, sell, and succeed online.
             </p>
 
             {/* Contact info */}

@@ -52,7 +52,7 @@ export const useRegions = (
   >
 ) => {
   const { data, ...rest } = useQuery({
-    queryFn: () => fetchQuery("/vendor/regions", { method: "GET", query }),
+    queryFn: () => fetchQuery("/seller/regions", { method: "GET", query }),
     queryKey: regionsQueryKeys.list(query),
     ...options,
   })

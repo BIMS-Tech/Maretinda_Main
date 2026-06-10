@@ -32,7 +32,7 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 		if (!groupedItems[sellerName]) {
 			groupedItems[sellerName] = [];
 		}
-		groupedItems[sellerName].push({ ...item, vendorName: sellerName });
+		groupedItems[sellerName].push({ ...item, sellerName: sellerName });
 	});
 
 	// Flatten all items
@@ -80,7 +80,7 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 									{item.title || item.subtitle}
 								</h3>
 								<p className="text-xs mb-2" style={{ color: '#6b7280' }}>
-									{item.vendorName}
+									{item.sellerName}
 								</p>
 								<div className="flex items-center justify-between">
 									<span className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>

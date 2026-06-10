@@ -40,13 +40,13 @@ export async function GET(
       )
     }
 
-    // Search filter (reference number, order id, or vendor name)
+    // Search filter (reference number, order id, or seller name)
     if (search) {
       const q = search.toLowerCase()
       transactions = transactions.filter((t: any) =>
         (t.reference_number || '').toLowerCase().includes(q) ||
         (t.order_id || '').toLowerCase().includes(q) ||
-        (t.vendor_name || '').toLowerCase().includes(q)
+        (t.seller_name || '').toLowerCase().includes(q)
       )
     }
 

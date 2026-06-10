@@ -8,7 +8,7 @@ import {
 
 import { sdk } from "../../lib/client";
 import { queryKeysFactory } from "../../lib/query-key-factory";
-import { VendorSeller } from "../../types";
+import { sellerseller } from "../../types";
 import { AdminCustomerGroup, AdminOrder, AdminProduct } from "@medusajs/types";
 import { OrderSet } from "../../types/order/common";
 
@@ -19,7 +19,7 @@ type SortableOrderFields = "display_id" | "created_at" | "updated_at";
 type SortableProductFields = "title" | "created_at" | "updated_at";
 type SortableCustomerGroupFields = "name" | "created_at" | "updated_at";
 
-const sortSellers = (sellers: VendorSeller[], order: string) => {
+const sortSellers = (sellers: sellerseller[], order: string) => {
   const field = order.startsWith("-")
     ? (order.slice(1) as SortableFields)
     : (order as SortableFields);
@@ -156,7 +156,7 @@ export const useSellers = (
     UseQueryOptions<
       Record<string, string | number>,
       Error,
-      { sellers: VendorSeller[] },
+      { sellers: sellerseller[] },
       QueryKey
     >,
     "queryFn" | "queryKey"
@@ -166,7 +166,7 @@ export const useSellers = (
   const { data, ...other } = useQuery<
     Record<string, string | number>,
     Error,
-    { sellers: VendorSeller[] }
+    { sellers: sellerseller[] }
   >({
     queryKey: sellerQueryKeys.list(),
     queryFn: () =>
@@ -218,7 +218,7 @@ export const useSellers = (
 };
 
 export const useSeller = (id: string) => {
-  return useQuery<{ seller: VendorSeller }, Error, { seller: VendorSeller }>({
+  return useQuery<{ seller: sellerseller }, Error, { seller: sellerseller }>({
     queryKey: sellerQueryKeys.detail(id),
     queryFn: () =>
       sdk.client.fetch(`/admin/sellers/${id}`, {

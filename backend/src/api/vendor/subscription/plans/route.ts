@@ -2,9 +2,9 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * GET /vendor/subscription/plans
+ * GET /seller/subscription/plans
  *
- * Returns all active subscription plans. Requires vendor JWT auth.
+ * Returns all active subscription plans. Requires seller JWT auth.
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {

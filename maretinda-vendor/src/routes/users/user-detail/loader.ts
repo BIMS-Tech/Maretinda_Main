@@ -6,7 +6,7 @@ import { queryClient } from "../../../lib/query-client"
 
 const userDetailQuery = (id: string) => ({
   queryKey: productsQueryKeys.detail(id),
-  queryFn: async () => fetchQuery(`/vendor/members/${id}`, { method: "GET" }),
+  queryFn: async () => fetchQuery(`/seller/members/${id}`, { method: "GET" }),
 })
 
 export const userLoader = async ({ params }: LoaderFunctionArgs) => {

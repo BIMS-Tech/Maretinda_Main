@@ -22,7 +22,7 @@ async function sellerOwnsPromotion(pg: any, sellerId: string, promotionId: strin
 }
 
 /**
- * GET /vendor/promotions/:id
+ * GET /seller/promotions/:id
  */
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -55,13 +55,13 @@ export async function GET(
 
     res.status(200).json({ promotion })
   } catch (error: any) {
-    console.error("[VendorGetPromotion] Error:", error)
+    console.error("[sellerGetPromotion] Error:", error)
     res.status(500).json({ message: "Failed to retrieve promotion", error: error.message })
   }
 }
 
 /**
- * POST /vendor/promotions/:id
+ * POST /seller/promotions/:id
  * Update a promotion after verifying ownership.
  */
 export async function POST(
@@ -95,13 +95,13 @@ export async function POST(
 
     res.status(200).json({ promotion })
   } catch (error: any) {
-    console.error("[VendorUpdatePromotion] Error:", error)
+    console.error("[sellerUpdatePromotion] Error:", error)
     res.status(500).json({ message: "Failed to update promotion", error: error.message })
   }
 }
 
 /**
- * DELETE /vendor/promotions/:id
+ * DELETE /seller/promotions/:id
  */
 export async function DELETE(
   req: AuthenticatedMedusaRequest,
@@ -131,7 +131,7 @@ export async function DELETE(
 
     res.status(200).json({ id, deleted: true })
   } catch (error: any) {
-    console.error("[VendorDeletePromotion] Error:", error)
+    console.error("[sellerDeletePromotion] Error:", error)
     res.status(500).json({ message: "Failed to delete promotion", error: error.message })
   }
 }

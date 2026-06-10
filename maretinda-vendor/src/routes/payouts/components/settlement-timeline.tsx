@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { fetchQuery } from "../../../lib/client"
 
 interface SettlementInfo {
-  vendor_id: string
+  seller_id: string
   current_date: string
   is_banking_day: boolean
   can_process_settlements_today: boolean
@@ -50,13 +50,13 @@ const useSettlementInfo = () => {
     queryKey: ["settlement-info"],
     queryFn: async (): Promise<{ settlement_info: SettlementInfo }> => {
       try {
-        return await fetchQuery("/vendor/settlement-info")
+        return await fetchQuery("/seller/settlement-info")
       } catch (error) {
         console.warn("Settlement Info API not available, using mock data:", error)
         // Return mock data
         return {
           settlement_info: {
-            vendor_id: "vendor_mock",
+            seller_id: "seller_mock",
             current_date: new Date().toISOString(),
             is_banking_day: new Date().getDay() >= 1 && new Date().getDay() <= 5,
             can_process_settlements_today: true,
@@ -64,7 +64,7 @@ const useSettlementInfo = () => {
             schedule: {
               description: "T+1/T+2 Settlement Schedule",
               t_plus_1: "Transactions are processed the next banking day",
-              t_plus_2: "Vendor accounts are credited on the second banking day",
+              t_plus_2: "seller accounts are credited on the second banking day",
               banking_days: "Monday to Friday, excluding Philippine bank holidays",
               weekend_rule: "Weekend transactions are processed on the following Monday",
               holiday_rule: "Holiday transactions are processed on the next banking day"

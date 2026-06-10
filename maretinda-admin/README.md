@@ -21,14 +21,14 @@ The Admin Panel is a pivotal component of the MercurJS ecosystem, designed to pr
 - Product Management: Add, edit, and organize products with ease.
 - Order Tracking: Monitor order statuses and manage fulfillment processes.
 - Store Customization: Update store details
-- Sellers: manage vendor accounts
-- Requests: accept or reject requests from vendors
+- Sellers: manage seller accounts
+- Requests: accept or reject requests from sellers
 - Attributes: manage global product attributes in the store
 - Commissions: manage and inspect commissions
 
 # Part of Mercur
 
-<a href="https://github.com/mercurjs/mercur">Mercur</a> is an open source marketplace platform that allows you to create high-quality experiences for shoppers and vendors while having the most popular Open Source commerce platform MedusaJS as a foundation.
+<a href="https://github.com/mercurjs/mercur">Mercur</a> is an open source marketplace platform that allows you to create high-quality experiences for shoppers and sellers while having the most popular Open Source commerce platform MedusaJS as a foundation.
 
 Mercur is a platform to start, customize, manage, and scale your marketplace for every business model with a modern technology stack.
 

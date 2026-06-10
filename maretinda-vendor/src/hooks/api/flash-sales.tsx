@@ -8,7 +8,7 @@ import {
 import { sdk } from "../../lib/client"
 import { FlashSale, FlashSaleItem, FlashSaleStatus } from "../../lib/flash-sales"
 
-const FLASH_SALE_KEY = "vendor_flash_sales"
+const FLASH_SALE_KEY = "seller_flash_sales"
 
 export const flashSaleKeys = {
   all: [FLASH_SALE_KEY] as const,
@@ -29,11 +29,11 @@ async function fetchFlashSales(params: {
   }
   if (params.limit) query.set("limit", String(params.limit))
   if (params.offset) query.set("offset", String(params.offset))
-  return (sdk as any).client.fetch(`/vendor/flash-sales?${query}`)
+  return (sdk as any).client.fetch(`/seller/flash-sales?${query}`)
 }
 
 async function fetchFlashSale(id: string): Promise<{ flash_sale: FlashSale }> {
-  return (sdk as any).client.fetch(`/vendor/flash-sales/${id}`)
+  return (sdk as any).client.fetch(`/seller/flash-sales/${id}`)
 }
 
 export function useFlashSales(
@@ -68,7 +68,7 @@ export function useAddFlashSaleItem(
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (body: any) =>
-      (sdk as any).client.fetch(`/vendor/flash-sales/${flashSaleId}/items`, {
+      (sdk as any).client.fetch(`/seller/flash-sales/${flashSaleId}/items`, {
         method: "POST",
         body,
       }),
@@ -89,7 +89,7 @@ export function useUpdateFlashSaleItem(
   return useMutation({
     mutationFn: (body: any) =>
       (sdk as any).client.fetch(
-        `/vendor/flash-sales/${flashSaleId}/items/${itemId}`,
+        `/seller/flash-sales/${flashSaleId}/items/${itemId}`,
         { method: "PUT", body }
       ),
     onSuccess: (data, ...args) => {
@@ -108,7 +108,7 @@ export function useRemoveFlashSaleItem(
   return useMutation({
     mutationFn: (itemId: string) =>
       (sdk as any).client.fetch(
-        `/vendor/flash-sales/${flashSaleId}/items/${itemId}`,
+        `/seller/flash-sales/${flashSaleId}/items/${itemId}`,
         { method: "DELETE" }
       ),
     onSuccess: (data, ...args) => {

@@ -118,7 +118,7 @@ export const Login = () => {
               className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
               style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}
             >
-              Vendor
+              seller
             </span>
           </div>
         </div>
@@ -168,7 +168,7 @@ export const Login = () => {
             <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
             <span className="text-xl font-bold" style={{ color: "#6366f1" }}>Maretinda</span>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">
-              Vendor
+              seller
             </span>
           </div>
           <ThemeToggleButton />
@@ -179,10 +179,10 @@ export const Login = () => {
           <div className="mb-8">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-indigo-500/10 text-indigo-500">
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Vendor Portal
+              seller Portal
             </div>
             <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Welcome back</h2>
-            <p className="text-ui-fg-subtle text-sm">Sign in to your vendor account to manage your store</p>
+            <p className="text-ui-fg-subtle text-sm">Sign in to your seller account to manage your store</p>
           </div>
 
           {/* Form */}
@@ -207,7 +207,7 @@ export const Login = () => {
                             autoComplete="email"
                             {...field}
                             className="mt-1"
-                            placeholder="vendor@example.com"
+                            placeholder="seller@example.com"
                           />
                         </Form.Control>
                       </Form.Item>

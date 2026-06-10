@@ -25,15 +25,15 @@ async function getSellerId(req: AuthenticatedMedusaRequest, pg: any): Promise<st
 }
 
 async function getCredentials(pg: any, sellerId: string, providerId: string) {
-  return pg('vendor_shipping_credential')
+  return pg('seller_shipping_credential')
     .where({ seller_id: sellerId, provider: providerId })
     .whereNull('deleted_at')
     .first()
 }
 
 /**
- * GET /vendor/shipping-orders
- * List all shipping orders for the vendor.
+ * GET /seller/shipping-orders
+ * List all shipping orders for the seller.
  */
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
   try {
@@ -43,7 +43,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     const { provider, status, medusa_order_id, limit = '20', offset = '0' } = req.query as Record<string, string>
 
-    let query = pg('vendor_shipping_order')
+    let query = pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
       .orderBy('created_at', 'desc')
@@ -56,7 +56,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     const orders = await query
 
-    const countQuery = pg('vendor_shipping_order')
+    const countQuery = pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
       .count('id as count')
@@ -66,7 +66,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     const [{ count }] = await countQuery
 
     // Simple analytics summary
-    const allOrders = await pg('vendor_shipping_order')
+    const allOrders = await pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
       .select('status', 'amount')
@@ -86,7 +86,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 }
 
 /**
- * POST /vendor/shipping-orders
+ * POST /seller/shipping-orders
  * Actions: create-order | cancel-order | get-waybill
  */
 export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
@@ -143,7 +143,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           const trackingNumber = nvResponse.tracking_number as string
           const shippingOrderId = `vso_${randomUUID().replace(/-/g, '')}`
 
-          await pg('vendor_shipping_order').insert({
+          await pg('seller_shipping_order').insert({
             id: shippingOrderId,
             seller_id: sellerId,
             medusa_order_id: orderData.medusa_order_id,
@@ -175,7 +175,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       case 'cancel-order': {
         if (!orderId) return res.status(400).json({ message: 'orderId is required' })
 
-        const shippingOrder = await pg('vendor_shipping_order')
+        const shippingOrder = await pg('seller_shipping_order')
           .where({ id: orderId, seller_id: sellerId })
           .whereNull('deleted_at')
           .first()
@@ -201,7 +201,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
             creds.sandbox as boolean
           )
 
-          await pg('vendor_shipping_order')
+          await pg('seller_shipping_order')
             .where({ id: orderId })
             .update({ status: 'cancelled', provider_response: JSON.stringify(nvResponse), updated_at: new Date() })
 
@@ -209,7 +209,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         }
 
         // Generic cancel for other providers
-        await pg('vendor_shipping_order')
+        await pg('seller_shipping_order')
           .where({ id: orderId })
           .update({ status: 'cancelled', updated_at: new Date() })
 
@@ -219,7 +219,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       case 'get-waybill': {
         if (!orderId) return res.status(400).json({ message: 'orderId is required' })
 
-        const shippingOrder = await pg('vendor_shipping_order')
+        const shippingOrder = await pg('seller_shipping_order')
           .where({ id: orderId, seller_id: sellerId })
           .whereNull('deleted_at')
           .first()

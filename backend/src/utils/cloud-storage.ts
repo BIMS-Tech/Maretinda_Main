@@ -4,7 +4,7 @@
  * To enable:
  * 1. Install AWS SDK: npm install @aws-sdk/client-s3
  * 2. Configure environment variables
- * 3. Import and use in uploads-vendor/route.ts
+ * 3. Import and use in uploads-seller/route.ts
  */
 
 // Uncomment to use:
@@ -214,7 +214,7 @@ export const createStorageService = (): CloudStorageService => {
 }
 
 /**
- * Usage in uploads-vendor/route.ts:
+ * Usage in uploads-seller/route.ts:
  * 
  * import { createStorageService } from '../../utils/cloud-storage'
  * 

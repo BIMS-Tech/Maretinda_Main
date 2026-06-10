@@ -5,10 +5,10 @@ import {
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
- * @oas [get] /vendor/product-tags
- * operationId: "VendorListProductTags"
+ * @oas [get] /seller/product-tags
+ * operationId: "sellerListProductTags"
  * summary: "List Product Tags"
- * description: "Retrieves a list of product tags available for vendors."
+ * description: "Retrieves a list of product tags available for sellers."
  * x-authenticated: true
  */
 export const GET = async (
@@ -18,7 +18,7 @@ export const GET = async (
   try {
     // Check if scope and query are available
     if (!req.scope) {
-      console.error('[Vendor Product Tags] Request scope is undefined')
+      console.error('[seller Product Tags] Request scope is undefined')
       return res.json({
         product_tags: [],
         count: 0,
@@ -30,7 +30,7 @@ export const GET = async (
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
     
     if (!query) {
-      console.error('[Vendor Product Tags] Query service not available')
+      console.error('[seller Product Tags] Query service not available')
       return res.json({
         product_tags: [],
         count: 0,
@@ -53,7 +53,7 @@ export const GET = async (
       limit: metadata?.take || 1000
     })
   } catch (error) {
-    console.error('[Vendor Product Tags] Error fetching product tags:', error)
+    console.error('[seller Product Tags] Error fetching product tags:', error)
     
     // Return empty list on error
     res.json({

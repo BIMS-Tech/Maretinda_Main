@@ -5,7 +5,7 @@ import {
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
- * Get ALL reviews for vendor (seller reviews + product reviews)
+ * Get ALL reviews for seller (seller reviews + product reviews)
  */
 export const GET = async (
   req: AuthenticatedMedusaRequest,
@@ -127,7 +127,7 @@ export const GET = async (
       limit: allReviews.length
     })
   } catch (error) {
-    console.error('[Vendor Reviews] Error:', error)
+    console.error('[seller Reviews] Error:', error)
     res.status(500).json({
       message: 'Failed to fetch reviews',
       error: error instanceof Error ? error.message : 'Unknown error',

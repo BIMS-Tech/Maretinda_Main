@@ -13,11 +13,11 @@ export type OrderReturnRequestStatus =
   | "escalated"
   | "canceled";
 
-export type VendorUpdateOrderReturnRequestDTO = {
+export type sellerUpdateOrderReturnRequestDTO = {
   id: string;
-  vendor_reviewer_id: string;
-  vendor_reviewer_note: string;
-  vendor_review_date: Date;
+  seller_reviewer_id: string;
+  seller_reviewer_note: string;
+  seller_review_date: Date;
   status: OrderReturnRequestStatus;
   location_id?: string;
 };

@@ -121,10 +121,10 @@ export const Home = () => {
   const subCount = subData?.count
 
   const sellerList = sellers ?? []
-  const activeVendors = sellerList.filter((s) => s.store_status === "ACTIVE").length
-  const inactiveVendors = sellerList.filter((s) => s.store_status === "INACTIVE").length
-  const suspendedVendors = sellerList.filter((s) => s.store_status === "SUSPENDED").length
-  const totalVendors = sellerList.length
+  const activesellers = sellerList.filter((s) => s.store_status === "ACTIVE").length
+  const inactivesellers = sellerList.filter((s) => s.store_status === "INACTIVE").length
+  const suspendedsellers = sellerList.filter((s) => s.store_status === "SUSPENDED").length
+  const totalsellers = sellerList.length
 
   const orderList = orders ?? []
   const pendingFulfillment = orderList.filter(
@@ -175,9 +175,9 @@ export const Home = () => {
         />
         <StatCard
           icon={BuildingStorefront}
-          label="Vendors"
-          value={totalVendors || "—"}
-          sub={`${activeVendors} active`}
+          label="sellers"
+          value={totalsellers || "—"}
+          sub={`${activesellers} active`}
           color="bg-emerald-500"
           href="/sellers"
         />
@@ -192,7 +192,7 @@ export const Home = () => {
           icon={CreditCard}
           label="Active Subscriptions"
           value={subCount ?? "—"}
-          sub="Vendor plans"
+          sub="seller plans"
           color="bg-rose-500"
           href="/subscriptions"
         />
@@ -208,7 +208,7 @@ export const Home = () => {
                 Recent Orders
               </Heading>
               <Text size="small" className="text-ui-fg-muted">
-                Latest 10 orders across all vendors
+                Latest 10 orders across all sellers
               </Text>
             </div>
             <Link
@@ -300,35 +300,35 @@ export const Home = () => {
           </div>
         </Container>
 
-        {/* Right column: Vendor + Order breakdown */}
+        {/* Right column: seller + Order breakdown */}
         <div className="flex flex-col gap-4">
-          {/* Vendor Status */}
+          {/* seller Status */}
           <Container className="divide-y p-0">
             <div className="px-5 py-4">
               <Heading level="h2" className="text-base font-semibold">
-                Vendor Overview
+                seller Overview
               </Heading>
               <Text size="small" className="text-ui-fg-muted">
-                {totalVendors} total vendors
+                {totalsellers} total sellers
               </Text>
             </div>
             <div className="px-5 py-4 flex flex-col gap-3">
               <MiniBar
                 label="Active"
-                value={activeVendors}
-                max={totalVendors}
+                value={activesellers}
+                max={totalsellers}
                 color="bg-emerald-500"
               />
               <MiniBar
                 label="Inactive"
-                value={inactiveVendors}
-                max={totalVendors}
+                value={inactivesellers}
+                max={totalsellers}
                 color="bg-gray-400"
               />
               <MiniBar
                 label="Suspended"
-                value={suspendedVendors}
-                max={totalVendors}
+                value={suspendedsellers}
+                max={totalsellers}
                 color="bg-red-400"
               />
             </div>
@@ -337,7 +337,7 @@ export const Home = () => {
                 to="/sellers"
                 className="text-xs text-blue-600 hover:underline font-medium"
               >
-                Manage vendors →
+                Manage sellers →
               </Link>
             </div>
           </Container>
@@ -450,9 +450,9 @@ export const Home = () => {
           </div>
           <div className="px-5 py-4 text-center">
             <p className="text-2xl font-bold text-ui-fg-base">
-              {totalVendors || "—"}
+              {totalsellers || "—"}
             </p>
-            <p className="text-xs text-ui-fg-muted mt-1">Total Vendors</p>
+            <p className="text-xs text-ui-fg-muted mt-1">Total sellers</p>
           </div>
           <div className="px-5 py-4 text-center">
             <p className="text-2xl font-bold text-ui-fg-base">

@@ -13,11 +13,11 @@ async function getSellerIdFromMember(req: any): Promise<string | null> {
 }
 
 /**
- * POST /vendor/campaigns/:id/promotions/batch
+ * POST /seller/campaigns/:id/promotions/batch
  * Body: { add?: string[], remove?: string[] }
  *
- * Allows a vendor to link or unlink their own promotions to a campaign.
- * Only allows adding promotions that belong to the authenticated vendor.
+ * Allows a seller to link or unlink their own promotions to a campaign.
+ * Only allows adding promotions that belong to the authenticated seller.
  */
 export async function POST(
   req: AuthenticatedMedusaRequest,
@@ -39,7 +39,7 @@ export async function POST(
     const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const promotionModule = req.scope.resolve(Modules.PROMOTION)
 
-    // Verify all promotions being added belong to this vendor
+    // Verify all promotions being added belong to this seller
     if (add.length > 0) {
       const owned = await pg.raw(
         `SELECT promotion_id FROM seller_seller_promotion_promotion WHERE deleted_at IS NULL AND seller_id = ? AND promotion_id = ANY(?)`,
@@ -76,7 +76,7 @@ export async function POST(
 
     res.status(200).json({ campaign })
   } catch (error: any) {
-    console.error("[VendorCampaignPromotionsBatch] POST error:", error.message)
+    console.error("[sellerCampaignPromotionsBatch] POST error:", error.message)
     res.status(500).json({
       message: "Failed to update campaign promotions",
       error: error.message,

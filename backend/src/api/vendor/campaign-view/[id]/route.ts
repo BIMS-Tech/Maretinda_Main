@@ -2,10 +2,10 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 
 /**
- * GET /vendor/campaign-view/:id
+ * GET /seller/campaign-view/:id
  *
- * Vendor-accessible campaign detail endpoint that bypasses the mercurjs
- * ownership check on /vendor/campaigns/:id. Any authenticated vendor
+ * seller-accessible campaign detail endpoint that bypasses the mercurjs
+ * ownership check on /seller/campaigns/:id. Any authenticated seller
  * member can view any platform campaign so they can add their own
  * promotions to it.
  */
@@ -14,7 +14,7 @@ export async function GET(
   res: MedusaResponse
 ): Promise<void> {
   try {
-    // Verify caller is a valid vendor member with a seller
+    // Verify caller is a valid seller member with a seller
     const memberId = req.auth_context?.actor_id
     if (!memberId) {
       res.status(401).json({ message: "Unauthorized" })
@@ -49,7 +49,7 @@ export async function GET(
       res.status(404).json({ message: "Campaign not found" })
       return
     }
-    console.error("[VendorCampaignView] Error:", error?.message)
+    console.error("[sellerCampaignView] Error:", error?.message)
     res.status(500).json({ message: "Failed to retrieve campaign" })
   }
 }

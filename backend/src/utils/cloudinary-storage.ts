@@ -80,7 +80,7 @@ class CloudinaryService {
             folder: options.folder || this.config.folder || 'uploads',
             public_id: this.sanitizeFilename(filename),
             resource_type: 'image',
-            tags: options.tags || ['vendor-upload'],
+            tags: options.tags || ['seller-upload'],
             context: options.context,
             transformation: options.transformation || [
               { width: 2048, height: 2048, crop: 'limit' },
@@ -235,7 +235,7 @@ export const createCloudinaryService = (): CloudinaryService | null => {
     cloudName,
     apiKey,
     apiSecret,
-    folder: process.env.CLOUDINARY_FOLDER || 'vendor-uploads'
+    folder: process.env.CLOUDINARY_FOLDER || 'seller-uploads'
   })
 }
 

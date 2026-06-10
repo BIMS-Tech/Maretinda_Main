@@ -27,7 +27,7 @@ export const useCreateShippingProfile = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/shipping-profiles", {
+      fetchQuery("/seller/shipping-profiles", {
         method: "POST",
         body: payload,
       }),
@@ -57,7 +57,7 @@ export const useShippingProfile = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery(`/vendor/shipping-profiles/${id}`, {
+      fetchQuery(`/seller/shipping-profiles/${id}`, {
         method: "GET",
         query,
       }),
@@ -91,7 +91,7 @@ export const useShippingProfiles = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/shipping-profiles", {
+      fetchQuery("/seller/shipping-profiles", {
         method: "GET",
       }),
     queryKey: shippingProfileQueryKeys.list(query),
@@ -115,7 +115,7 @@ export const useUpdateShippingProfile = (
 ) => {
   const { data, ...rest } = useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/shipping-profiles/${id}`, {
+      fetchQuery(`/seller/shipping-profiles/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -145,7 +145,7 @@ export const useDeleteShippingProfile = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/shipping-profiles/${id}`, {
+      fetchQuery(`/seller/shipping-profiles/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {

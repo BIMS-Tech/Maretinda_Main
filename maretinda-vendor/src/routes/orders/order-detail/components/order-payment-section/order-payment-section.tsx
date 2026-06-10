@@ -31,7 +31,7 @@ export const OrderPaymentSection = ({ order }: OrderPaymentSectionProps) => {
 
 const Header = ({ order }: { order: any }) => {
   const { t } = useTranslation()
-  // COD orders have captured_amount = 0 (or null/undefined) because the vendor
+  // COD orders have captured_amount = 0 (or null/undefined) because the seller
   // hasn't physically collected cash yet. Online payments set captured_amount > 0.
   const splitPayment = order?.split_order_payment
   const isCOD = splitPayment != null && Number(splitPayment.captured_amount ?? 0) === 0
@@ -74,7 +74,7 @@ const Actions = ({ order }: { order: HttpTypes.AdminOrder }) => {
         onClick={async () => {
           setIsPending(true)
           try {
-            await fetchQuery(`/vendor/orders/${order.id}/capture`, { method: "POST" })
+            await fetchQuery(`/seller/orders/${order.id}/capture`, { method: "POST" })
             toast.success((t as any)("orders.payment.captured"))
           } catch (e: any) {
             toast.error(e?.message ?? "Failed to capture payment")

@@ -4,8 +4,8 @@ SELECT
   gt.reference_number,
   gt.status,
   gt.amount,
-  gt.vendor_id,
-  s.name as vendor_name,
+  gt.seller_id,
+  s.name as seller_name,
   s.dft_bank_name,
   s.dft_swift_code,
   s.dft_account_number,
@@ -13,6 +13,6 @@ SELECT
   s.dft_beneficiary_address,
   s.dft_bank_address
 FROM giyapay_transaction gt
-LEFT JOIN seller s ON s.id = gt.vendor_id
+LEFT JOIN seller s ON s.id = gt.seller_id
 ORDER BY gt.created_at DESC
 LIMIT 5;

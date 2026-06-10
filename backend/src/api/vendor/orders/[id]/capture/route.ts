@@ -2,9 +2,9 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * POST /vendor/orders/:id/capture
+ * POST /seller/orders/:id/capture
  *
- * Vendor-initiated manual capture for COD (pp_system_default) orders.
+ * seller-initiated manual capture for COD (pp_system_default) orders.
  * Updates payment and split_order_payment directly via Knex to avoid
  * triggering PaymentEvents.CAPTURED, which would fire the reset subscriber
  * and undo the capture.

@@ -4,12 +4,12 @@ import SubscriptionService from "../../../services/subscription"
 
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
   try {
-    const { status, vendor_id, limit, offset } = req.query as any
+    const { status, seller_id, limit, offset } = req.query as any
 
     const service = new SubscriptionService(req.scope)
     const result = await service.listAll({
       status: status || undefined,
-      vendor_id: vendor_id || undefined,
+      seller_id: seller_id || undefined,
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0,
     })
@@ -18,15 +18,15 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
     let enriched = result.subscriptions
     try {
       const db = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-      const vendorIds = [...new Set(result.subscriptions.map((s: any) => s.vendor_id))]
-      if (vendorIds.length > 0) {
-        const sellers = await db("seller").whereIn("id", vendorIds).select("id", "name", "email")
+      const sellerIds = [...new Set(result.subscriptions.map((s: any) => s.seller_id))]
+      if (sellerIds.length > 0) {
+        const sellers = await db("seller").whereIn("id", sellerIds).select("id", "name", "email")
         const sellerMap: Record<string, { name: string; email: string }> = {}
         for (const s of sellers) sellerMap[s.id] = { name: s.name, email: s.email }
         enriched = result.subscriptions.map((sub: any) => ({
           ...sub,
-          seller_name: sellerMap[sub.vendor_id]?.name || null,
-          seller_email: sellerMap[sub.vendor_id]?.email || null,
+          seller_name: sellerMap[sub.seller_id]?.name || null,
+          seller_email: sellerMap[sub.seller_id]?.email || null,
         }))
       }
     } catch {

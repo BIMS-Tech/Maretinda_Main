@@ -7,7 +7,7 @@ import {
 	Hero,
 	HomeCategories,
 	NewsletterSection,
-	TopVendorsSection,
+	TopsellersSection,
 	TrendingNowSection,
 	TrustSection,
 } from '@/components/sections';
@@ -16,10 +16,10 @@ import { getHeroContent } from '@/lib/data/hero';
 
 export const metadata: Metadata = {
 	description:
-		'Welcome to Maretinda! From fresh groceries to latest fashion - discover everything you need from trusted local vendors in the Philippines.',
+		'Welcome to Maretinda! From fresh groceries to latest fashion - discover everything you need from trusted local sellers in the Philippines.',
 	openGraph: {
 		description:
-			'From fresh groceries to latest fashion - discover everything you need from trusted local vendors. Multi-category marketplace for the Philippines.',
+			'From fresh groceries to latest fashion - discover everything you need from trusted local sellers. Multi-category marketplace for the Philippines.',
 		images: [
 			{
 				alt: 'Maretinda - Your Complete Marketplace',
@@ -57,8 +57,8 @@ export default async function Home({
 						label: 'Become a Seller',
 						path:
 							process.env.NEXT_PUBLIC_ALGOLIA_ID === 'UO3C5Y8NHX'
-								? 'https://vendor-sandbox.vercel.app/'
-								: 'https://testvendor.maretinda.com/login',
+								? 'https://seller-sandbox.vercel.app/'
+								: 'https://testseller.maretinda.com/login',
 					},
 				]}
 				heroContent={heroContent}
@@ -79,8 +79,8 @@ export default async function Home({
 			{/* 5. Featured Collections — editorial 12-col grid */}
 			<FeaturedCollectionsSection />
 
-			{/* 6. Top Vendors — 4-card vendor grid */}
-			<TopVendorsSection />
+			{/* 6. Top sellers — 4-card seller grid */}
+			<TopsellersSection />
 
 			{/* 7. Become a Seller CTA band */}
 			<BecomeSellerBand />

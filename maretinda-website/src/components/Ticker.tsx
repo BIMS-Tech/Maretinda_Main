@@ -1,10 +1,10 @@
 import { FiStar, FiZap, FiPackage, FiUsers, FiMapPin, FiShoppingBag } from "react-icons/fi";
 
 const items = [
-  { icon: FiShoppingBag, text: "2,500+ Active Vendors" },
+  { icon: FiShoppingBag, text: "2,500+ Active sellers" },
   { icon: FiPackage,     text: "180,000+ Products Listed" },
   { icon: FiZap,         text: "₱2.5B+ in Sales Processed" },
-  { icon: FiStar,        text: "4.9 / 5 Vendor Satisfaction" },
+  { icon: FiStar,        text: "4.9 / 5 seller Satisfaction" },
   { icon: FiZap,         text: "99.9% Platform Uptime" },
   { icon: FiMapPin,      text: "Serving All Philippine Regions" },
   { icon: FiUsers,       text: "520,000+ Happy Customers" },

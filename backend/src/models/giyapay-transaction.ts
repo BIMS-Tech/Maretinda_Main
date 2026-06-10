@@ -5,7 +5,7 @@ const GiyaPayTransaction = model.define("giyapay_transaction", {
   referenceNumber: model.text(),
   orderId: model.text().nullable(),
   cartId: model.text().nullable(),
-  vendorId: model.text().nullable(), // Seller/Vendor ID for settlement routing
+  sellerId: model.text().nullable(), // Seller/seller ID for settlement routing
   amount: model.bigNumber(),
   currency: model.text().default("PHP"),
   status: model.enum(["PENDING", "SUCCESS", "FAILED", "CANCELLED"]).default("PENDING"),

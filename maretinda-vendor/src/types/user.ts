@@ -9,7 +9,7 @@ export interface Review {
   reference: string
 }
 
-export interface StoreVendor {
+export interface Storeseller {
   id?: string
   name?: string
   phone?: string

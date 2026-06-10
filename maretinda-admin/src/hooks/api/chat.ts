@@ -5,12 +5,12 @@ import { backendUrl, sdk } from "../../lib/client/client"
 export interface ChatConversation {
   id: string
   type: string
-  vendor_id: string | null
+  seller_id: string | null
   customer_id: string | null
   subject: string | null
   status: string
   last_message_at: string | null
-  unread_vendor: number
+  unread_seller: number
   unread_customer: number
   unread_admin: number
   created_at: string
@@ -21,7 +21,7 @@ export interface ChatMessage {
   id: string
   conversation_id: string
   sender_id: string
-  sender_role: "vendor" | "customer" | "admin"
+  sender_role: "seller" | "customer" | "admin"
   sender_name: string
   body: string
   read_at: string | null
@@ -87,7 +87,7 @@ export const useCreateConversation = () => {
   return useMutation<
     { conversation: ChatConversation },
     Error,
-    { vendor_id?: string; customer_id?: string; subject?: string; type?: string }
+    { seller_id?: string; customer_id?: string; subject?: string; type?: string }
   >({
     mutationFn: (payload) =>
       adminFetch("/admin/chat", { method: "POST", body: JSON.stringify(payload) }),

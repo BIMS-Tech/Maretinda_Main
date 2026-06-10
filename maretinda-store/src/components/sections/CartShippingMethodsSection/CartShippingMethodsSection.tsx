@@ -220,7 +220,7 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 									return (
 										<div className="mb-6" key={key}>
 											<h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>
-												Vendor : {groupedBySellerId[key][0].seller_name || 'Local Clothing'}
+												seller : {groupedBySellerId[key][0].seller_name || 'Local Clothing'}
 											</h3>
 											<Listbox
 												onChange={(value) => {

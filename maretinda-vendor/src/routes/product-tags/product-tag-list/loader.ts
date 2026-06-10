@@ -8,7 +8,7 @@ import { queryClient } from "../../../lib/query-client"
 const productTagListQuery = (query?: HttpTypes.AdminProductTagListParams) => ({
   queryKey: productTagsQueryKeys.list(query),
   queryFn: async () =>
-    fetchQuery("/vendor/product-tags", {
+    fetchQuery("/seller/product-tags", {
       method: "GET",
       query: query as { [key: string]: string | number },
     }),

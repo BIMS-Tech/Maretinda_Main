@@ -57,11 +57,11 @@ export default async function UserPage() {
 					<div className="flex flex-col lg:flex-row lg:items-center justify-between lg:px-7 w-full gap-5 lg:gap-10">
 						<div className="flex flex-col justify-between gap-1">
 							<h4 className="text-xl !font-semibold">
-								Become a Vendor
+								Become a seller
 							</h4>
 							<p>
-								Vendors can sell products and manage a store
-								with a vendor dashboard.
+								sellers can sell products and manage a store
+								with a seller dashboard.
 							</p>
 						</div>
 						<Button className="rounded-sm bg-action text-action-on-primary !font-medium h-[40px] w-fit min-w-[129px] text-[13px] px-3.5">

@@ -26,7 +26,7 @@ function toRuleType(ruleType: string): RuleType {
 }
 
 /**
- * POST /vendor/promotions/:id/:ruleType/batch
+ * POST /seller/promotions/:id/:ruleType/batch
  * Batch add/update/remove rules on a promotion.
  * Body: { create: [], update: [], delete: [] }
  */
@@ -79,7 +79,7 @@ export async function POST(
 
     res.status(200).json({ promotion: updatedPromotion, result })
   } catch (error: any) {
-    console.error("[VendorBatchPromotionRules] Error:", error)
+    console.error("[sellerBatchPromotionRules] Error:", error)
     res.status(500).json({ message: "Failed to batch update promotion rules", error: error.message })
   }
 }

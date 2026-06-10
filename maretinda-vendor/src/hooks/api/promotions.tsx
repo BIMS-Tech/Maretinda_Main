@@ -48,7 +48,7 @@ export const usePromotion = (
   const { data, ...rest } = useQuery({
     queryKey: promotionsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/vendor/promotions/${id}`, {
+      fetchQuery(`/seller/promotions/${id}`, {
         method: "GET",
         query: { fields: "+status" },
       }),
@@ -82,7 +82,7 @@ export const usePromotionRules = (
   const { data, ...rest } = useQuery({
     queryKey: promotionsQueryKeys.listRules(id, ruleType, query),
     queryFn: async () =>
-      fetchQuery(`/vendor/promotions/${id}/${ruleType}`, {
+      fetchQuery(`/seller/promotions/${id}/${ruleType}`, {
         method: "GET",
         query: query as {
           [key: string]: string | number
@@ -109,7 +109,7 @@ export const usePromotions = (
   const { data, ...rest } = useQuery({
     queryKey: promotionsQueryKeys.list(query),
     queryFn: async () =>
-      fetchQuery("/vendor/promotions", {
+      fetchQuery("/seller/promotions", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -135,7 +135,7 @@ export const usePromotionRuleAttributes = (
   const { data, ...rest } = useQuery({
     queryKey: promotionsQueryKeys.listRuleAttributes(ruleType, promotionType),
     queryFn: async () =>
-      fetchQuery(`/vendor/promotions/rule-attribute-options/${ruleType}`, {
+      fetchQuery(`/seller/promotions/rule-attribute-options/${ruleType}`, {
         method: "GET",
         query: {
           promotion_type: promotionType as string,
@@ -169,7 +169,7 @@ export const usePromotionRuleValues = (
     ),
     queryFn: async () =>
       await fetchQuery(
-        `/vendor/promotions/rule-value-options/${ruleType}/${ruleValue}`,
+        `/seller/promotions/rule-value-options/${ruleType}/${ruleValue}`,
         {
           method: "GET",
           query: {
@@ -195,7 +195,7 @@ export const useDeletePromotion = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/promotions/${id}`, {
+      fetchQuery(`/seller/promotions/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -221,7 +221,7 @@ export const useCreatePromotion = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/promotions", {
+      fetchQuery("/seller/promotions", {
         method: "POST",
         body: payload,
       }),
@@ -248,7 +248,7 @@ export const useUpdatePromotion = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/promotions/${id}`, {
+      fetchQuery(`/seller/promotions/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -274,7 +274,7 @@ export const usePromotionAddRules = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/promotions/${id}/${ruleType}/batch`, {
+      fetchQuery(`/seller/promotions/${id}/${ruleType}/batch`, {
         method: "POST",
         body: { create: payload.rules },
       }),
@@ -300,7 +300,7 @@ export const usePromotionRemoveRules = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/promotions/${id}/${ruleType}/batch`, {
+      fetchQuery(`/seller/promotions/${id}/${ruleType}/batch`, {
         method: "POST",
         body: { delete: payload.rules },
       }),
@@ -327,7 +327,7 @@ export const usePromotionUpdateRules = (
   return useMutation({
     mutationFn: async (payload) => {
       const { rules } = await fetchQuery(
-        `/vendor/promotions/${id}/${ruleType}`,
+        `/seller/promotions/${id}/${ruleType}`,
         {
           method: "GET",
         }
@@ -335,12 +335,12 @@ export const usePromotionUpdateRules = (
 
       const rulesIds = rules.map((rule: any) => rule.id)
       console.log("rules", rulesIds)
-      await fetchQuery(`/vendor/promotions/${id}/${ruleType}/batch`, {
+      await fetchQuery(`/seller/promotions/${id}/${ruleType}/batch`, {
         method: "POST",
         body: { delete: rulesIds },
       })
 
-      return fetchQuery(`/vendor/promotions/${id}/${ruleType}/batch`, {
+      return fetchQuery(`/seller/promotions/${id}/${ruleType}/batch`, {
         method: "POST",
         body: {
           create: payload.rules.map((rule) => ({

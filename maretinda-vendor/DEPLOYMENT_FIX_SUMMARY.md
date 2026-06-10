@@ -1,4 +1,4 @@
-# Vendor Panel Deployment Fix Summary
+# seller Panel Deployment Fix Summary
 
 ## Issues Fixed
 
@@ -41,20 +41,20 @@
 ### Option 1: Using Dockerfile (Recommended)
 
 ```bash
-cd vendor-panel
+cd seller-panel
 
 # Build and deploy using the script
 ./deploy.sh
 
 # Or manually
-docker build -t vendor-panel .
-docker run -p 3000:3000 vendor-panel
+docker build -t seller-panel .
+docker run -p 3000:3000 seller-panel
 ```
 
 ### Option 2: Using Cloud Build
 
 ```bash
-cd vendor-panel
+cd seller-panel
 
 # Submit to Cloud Build
 gcloud builds submit --config cloudbuild.yaml
@@ -66,14 +66,14 @@ git push origin main
 ### Option 3: Using Buildpacks (Now Fixed)
 
 ```bash
-cd vendor-panel
+cd seller-panel
 
 # Make sure yarn.lock is regenerated with Yarn v1
 rm yarn.lock
 yarn install
 
 # Deploy using buildpacks
-gcloud run deploy vendor-panel \
+gcloud run deploy seller-panel \
   --source . \
   --region europe-west1 \
   --allow-unauthenticated
@@ -98,10 +98,10 @@ NODE_ENV=production
 docker build \
   --build-arg VITE_MEDUSA_BACKEND_URL="https://maretindatest.medusajs.app" \
   --build-arg VITE_MEDUSA_STOREFRONT_URL="https://your-storefront-url.com" \
-  -t vendor-panel .
+  -t seller-panel .
 
 # Run locally
-docker run -p 3000:3000 vendor-panel
+docker run -p 3000:3000 seller-panel
 
 # Visit http://localhost:3000
 ```
@@ -110,7 +110,7 @@ docker run -p 3000:3000 vendor-panel
 
 1. **Regenerate yarn.lock** (if using buildpacks):
    ```bash
-   cd vendor-panel
+   cd seller-panel
    rm yarn.lock
    yarn install
    git add yarn.lock package.json
@@ -118,7 +118,7 @@ docker run -p 3000:3000 vendor-panel
    ```
 
 2. **Update Cloud Build trigger** (if needed):
-   - Point to `vendor-panel/cloudbuild.yaml`
+   - Point to `seller-panel/cloudbuild.yaml`
    - Set substitution variables for backend/storefront URLs
 
 3. **Deploy**:
@@ -136,7 +136,7 @@ docker run -p 3000:3000 vendor-panel
 ### If deployment succeeds but app doesn't work:
 1. Check environment variables are set correctly
 2. Verify backend URL is accessible from Cloud Run
-3. Check logs: `gcloud run logs read vendor-panel --region=europe-west1`
+3. Check logs: `gcloud run logs read seller-panel --region=europe-west1`
 
 ### Common Errors:
 - **"Module not found"**: Rebuild with `yarn install --frozen-lockfile`

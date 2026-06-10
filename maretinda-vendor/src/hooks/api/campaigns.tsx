@@ -31,7 +31,7 @@ export const useCampaign = (
   const { data, ...rest } = useQuery({
     queryKey: campaignsQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/vendor/campaign-view/${id}`, {
+      fetchQuery(`/seller/campaign-view/${id}`, {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -55,7 +55,7 @@ export const useCampaigns = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/campaigns", {
+      fetchQuery("/seller/campaigns", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -75,7 +75,7 @@ export const useCreateCampaign = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/campaigns", {
+      fetchQuery("/seller/campaigns", {
         method: "POST",
         body: payload,
       }),
@@ -99,7 +99,7 @@ export const useUpdateCampaign = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/campaigns/${id}`, {
+      fetchQuery(`/seller/campaigns/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -133,7 +133,7 @@ export const useDeleteCampaign = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/campaigns/${id}`, {
+      fetchQuery(`/seller/campaigns/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -160,7 +160,7 @@ export const useAddOrRemoveCampaignPromotions = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/campaigns/${id}/promotions/batch`, {
+      fetchQuery(`/seller/campaigns/${id}/promotions/batch`, {
         method: "POST",
         body: payload,
       }),

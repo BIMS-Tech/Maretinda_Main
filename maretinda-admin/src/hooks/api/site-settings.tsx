@@ -14,7 +14,7 @@ export interface HeroSettings {
   featured_product_sold_this_week: number
   featured_product_link: string
   featured_product_image: string
-  vendors_count: string
+  sellers_count: string
   // sidebar promo card controls
   welcome_promo_code: string
   featured_campaign_id: string

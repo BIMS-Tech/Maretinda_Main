@@ -9,7 +9,7 @@ import {
   useRouteModal,
 } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
-import { useCreateVendorRequest } from "../../../../../hooks/api"
+import { useCreatesellerRequest } from "../../../../../hooks/api"
 
 const ProductTagCreateSchema = z.object({
   value: z.string().min(1),
@@ -26,7 +26,7 @@ export const ProductTagCreateForm = () => {
     resolver: zodResolver(ProductTagCreateSchema),
   })
 
-  const { mutateAsync, isPending } = useCreateVendorRequest()
+  const { mutateAsync, isPending } = useCreatesellerRequest()
 
   const handleSubmit = form.handleSubmit(async (data) => {
     await mutateAsync(

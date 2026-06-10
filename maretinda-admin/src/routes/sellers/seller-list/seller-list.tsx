@@ -17,7 +17,7 @@ import { validateEmail } from "@lib/validate-email";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 
-import type { VendorSeller } from "@custom-types/seller";
+import type { sellerseller } from "@custom-types/seller";
 
 import { ActionsButton } from "@components/common/actions-button";
 import { _DataTable } from "@components/table/data-table";
@@ -33,7 +33,7 @@ import { useDataTable } from "@hooks/use-data-table";
 
 const PAGE_SIZE = 10;
 
-type SellersProps = VendorSeller & { store_status: string };
+type SellersProps = sellerseller & { store_status: string };
 
 type SellersResponse = {
   sellers?: SellersProps[];
@@ -152,7 +152,7 @@ export const SellersList = () => {
   );
 };
 
-const columnHelper = createColumnHelper<VendorSeller>();
+const columnHelper = createColumnHelper<sellerseller>();
 
 const useColumns = () => {
   const dialog = usePrompt();

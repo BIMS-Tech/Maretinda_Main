@@ -51,7 +51,7 @@ const features: Feature[] = [
   },
   {
     icon: FiSmartphone,
-    title: "Mobile-First Vendor Panel",
+    title: "Mobile-First seller Panel",
     desc: "Manage your entire store from your phone. Process orders, update inventory, respond to customers — all from a beautifully designed mobile interface that's always with you.",
     tag: "Mobile",
     accent: "#A78BFA",
@@ -99,7 +99,7 @@ export default function Features() {
             Everything You Need to <span className="gradient-text">Dominate Online</span>
           </h2>
           <p className="text-[#6B6480] text-[15px] max-w-[500px] mx-auto leading-relaxed">
-            Powered by cutting-edge technology, designed with Filipino vendors in mind.
+            Powered by cutting-edge technology, designed with Filipino sellers in mind.
           </p>
         </div>
 

@@ -5,8 +5,8 @@ interface GiyaPayTransaction {
   id: string
   reference_number: string
   order_id: string
-  vendor_id: string
-  vendor_name: string
+  seller_id: string
+  seller_name: string
   amount: number
   currency: string
   status: 'PENDING' | 'SUCCESS' | 'FAILED' | 'CANCELLED'
@@ -29,7 +29,7 @@ interface GiyaPayTransactionsResponse {
   count: number
   page: number
   limit: number
-  vendor_id: string
+  seller_id: string
 }
 
 export interface GiyaPayFilters {
@@ -58,7 +58,7 @@ export const useGiyaPayTransactions = (filters: GiyaPayFilters = {}) => {
   return useQuery({
     queryKey: ["giyapay-transactions", page, limit, status, gateway, search, date_from, date_to],
     queryFn: async (): Promise<GiyaPayTransactionsResponse> => {
-      return await fetchQuery(`/vendor/giyapay/transactions`, {
+      return await fetchQuery(`/seller/giyapay/transactions`, {
         method: "GET",
         query,
       })

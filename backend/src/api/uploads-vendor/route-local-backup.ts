@@ -1,5 +1,5 @@
 /**
- * Vendor Upload with Google Cloud Storage
+ * seller Upload with Google Cloud Storage
  * 
  * Uses GCS for ALL files (images + documents)
  * 
@@ -53,7 +53,7 @@ const ALLOWED_TYPES = [
 
 // CORS headers
 const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.VENDOR_CORS || 'http://localhost:5173').split(',')
+  const allowedOrigins = (process.env.seller_CORS || 'http://localhost:5173').split(',')
   res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0].trim())
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -118,7 +118,7 @@ export async function POST(
     // 1. Verify authentication
     const auth = verifyAuth(req)
     if (!auth.valid) {
-      console.warn('[UPLOADS-VENDOR-GCS] Unauthorized access attempt')
+      console.warn('[UPLOADS-seller-GCS] Unauthorized access attempt')
       res.status(401).json({ 
         message: 'Unauthorized',
         error: auth.error 
@@ -126,7 +126,7 @@ export async function POST(
       return
     }
 
-    console.log(`[UPLOADS-VENDOR-GCS] Authenticated request from user: ${auth.userId}`)
+    console.log(`[UPLOADS-seller-GCS] Authenticated request from user: ${auth.userId}`)
     
     // 2. Check rate limit
     const rateLimit = checkRateLimit(`upload:${auth.userId}`, {
@@ -135,7 +135,7 @@ export async function POST(
     })
     
     if (!rateLimit.allowed) {
-      console.warn(`[UPLOADS-VENDOR-GCS] Rate limit exceeded for user: ${auth.userId}`)
+      console.warn(`[UPLOADS-seller-GCS] Rate limit exceeded for user: ${auth.userId}`)
       res.status(429).json({
         message: 'Too many uploads. Please try again later.',
         error: 'RATE_LIMIT_EXCEEDED',
@@ -148,7 +148,7 @@ export async function POST(
     const gcs = createGCSService()
     
     if (!gcs) {
-      console.error('[UPLOADS-VENDOR-GCS] GCS not configured')
+      console.error('[UPLOADS-seller-GCS] GCS not configured')
       res.status(500).json({
         message: 'Storage service not available',
         error: 'GCS_NOT_CONFIGURED'
@@ -161,7 +161,7 @@ export async function POST(
     
     uploadMiddleware(req as any, res as any, async (err) => {
       if (err) {
-        console.error('[UPLOADS-VENDOR-GCS] Upload error:', {
+        console.error('[UPLOADS-seller-GCS] Upload error:', {
           error: err.message,
           userId: auth.userId
         })
@@ -195,13 +195,13 @@ export async function POST(
       for (const file of files) {
         try {
           // Determine folder based on file type
-          let folder = 'vendor-uploads'
+          let folder = 'seller-uploads'
           if (isImageFile(file.mimetype)) {
-            folder = 'vendor-uploads/images'
+            folder = 'seller-uploads/images'
           } else if (isDocumentFile(file.mimetype)) {
-            folder = 'vendor-uploads/documents'
+            folder = 'seller-uploads/documents'
           } else if (isVideoFile(file.mimetype)) {
-            folder = 'vendor-uploads/videos'
+            folder = 'seller-uploads/videos'
           }
 
           // Upload to GCS
@@ -232,7 +232,7 @@ export async function POST(
               bucket: result.bucket
             })
 
-            console.log('[UPLOADS-VENDOR-GCS] File uploaded:', {
+            console.log('[UPLOADS-seller-GCS] File uploaded:', {
               fileName: result.fileName,
               size: file.size,
               type: file.mimetype
@@ -253,7 +253,7 @@ export async function POST(
 
       // 6. Log results
       const uploadDuration = Date.now() - startTime
-      console.log('[UPLOADS-VENDOR-GCS] Upload completed:', {
+      console.log('[UPLOADS-seller-GCS] Upload completed:', {
         userId: auth.userId,
         successful: uploadedFiles.length,
         failed: errors.length,
@@ -274,7 +274,7 @@ export async function POST(
     })
     
   } catch (error) {
-    console.error('[UPLOADS-VENDOR-GCS] Unexpected error:', error)
+    console.error('[UPLOADS-seller-GCS] Unexpected error:', error)
     res.status(500).json({ 
       message: 'Internal server error',
       error: 'SERVER_ERROR'

@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 import type { AdminRequest } from "@custom-types/requests";
 
-import { useVendorRequests } from "@hooks/api/requests";
+import { usesellerRequests } from "@hooks/api/requests";
 
 import {
   FilterRequests,
@@ -32,7 +32,7 @@ export const RequestProductUpdateList = () => {
 
   const [currentFilter, setCurrentFilter] = useState<FilterState>("");
 
-  const { requests, isLoading, count } = useVendorRequests({
+  const { requests, isLoading, count } = usesellerRequests({
     offset: currentPage * PAGE_SIZE,
     limit: PAGE_SIZE,
     type: "product_update",

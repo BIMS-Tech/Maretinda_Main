@@ -21,7 +21,7 @@ export default async function OrderConfirmedPage(props: Props) {
 	let order = null;
 	
 	if (isOrderSet) {
-		// For order sets (marketplace with multiple vendors), get the order set
+		// For order sets (marketplace with multiple sellers), get the order set
 		const orderSet = await retrieveOrderSet(params.id).catch(() => null);
 		
 		if (orderSet?.orders && orderSet.orders.length > 0) {
@@ -32,7 +32,7 @@ export default async function OrderConfirmedPage(props: Props) {
 			order.order_set = orderSet;
 		}
 	} else {
-		// Individual order (single vendor)
+		// Individual order (single seller)
 		order = await retrieveOrder(params.id).catch(() => null);
 	}
 

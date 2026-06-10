@@ -700,7 +700,7 @@ function StepBranding({
 // Main page
 // ---------------------------------------------------------------------------
 
-export default function BecomeVendorPage() {
+export default function BecomesellerPage() {
   const [data, setData] = useState<FormData>(INITIAL);
   const [stepIdx, setStepIdx] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -795,7 +795,7 @@ export default function BecomeVendorPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Application Submitted!</h2>
           <p className="text-gray-500 mb-2">
-            Thank you for applying to become a vendor on Maretinda.
+            Thank you for applying to become a seller on Maretinda.
           </p>
           <p className="text-gray-500 mb-6">
             Your request has been processed. We will review your application and activate your
@@ -819,14 +819,14 @@ export default function BecomeVendorPage() {
         {/* Compact header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">Vendor Registration</h1>
+            <h1 className="text-2xl font-extrabold text-gray-900">seller Registration</h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Step {stepIdx + 1} of {steps.length} — {currentStep?.label}
             </p>
           </div>
           <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
             <span className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-            Maretinda Vendor
+            Maretinda seller
           </span>
         </div>
 

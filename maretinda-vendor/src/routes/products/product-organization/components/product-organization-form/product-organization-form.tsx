@@ -41,7 +41,7 @@ export const ProductOrganizationForm = ({
   const categories = useComboboxData({
     queryKey: ["product_categories"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-categories", {
+      fetchQuery("/seller/product-categories", {
         method: "GET",
         query: params as Record<string, string | number>,
       }),
@@ -55,7 +55,7 @@ export const ProductOrganizationForm = ({
   const collections = useComboboxData({
     queryKey: ["product_collections"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-collections", {
+      fetchQuery("/seller/product-collections", {
         method: "GET",
         query: params as Record<string, string | number>,
       }),
@@ -69,7 +69,7 @@ export const ProductOrganizationForm = ({
   const types = useComboboxData({
     queryKey: ["product_types"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-types", {
+      fetchQuery("/seller/product-types", {
         method: "GET",
         query: params as { [key: string]: string | number },
       }),
@@ -83,7 +83,7 @@ export const ProductOrganizationForm = ({
   const tags = useComboboxData({
     queryKey: ["product_tags"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-tags", {
+      fetchQuery("/seller/product-tags", {
         method: "GET",
         query: params as { [key: string]: string | number },
       }),

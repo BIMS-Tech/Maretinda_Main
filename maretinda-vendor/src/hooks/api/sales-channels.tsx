@@ -54,7 +54,7 @@ export const useSalesChannels = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/sales-channels", {
+      fetchQuery("/seller/sales-channels", {
         method: "GET",
       }),
     queryKey: salesChannelsQueryKeys.list(query),

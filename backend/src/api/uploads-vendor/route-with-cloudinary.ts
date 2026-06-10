@@ -1,5 +1,5 @@
 /**
- * Enhanced Vendor Upload with Cloudinary Integration
+ * Enhanced seller Upload with Cloudinary Integration
  * 
  * This version routes:
  * - Images → Cloudinary (with CDN, optimization, transformations)
@@ -47,7 +47,7 @@ const ALLOWED_DOCUMENT_TYPES = [
 
 // Set CORS headers
 const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.VENDOR_CORS || 'http://localhost:5173').split(',')
+  const allowedOrigins = (process.env.seller_CORS || 'http://localhost:5173').split(',')
   res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0].trim())
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -117,7 +117,7 @@ export async function POST(
     // 1. Verify authentication
     const auth = verifyAuth(req)
     if (!auth.valid) {
-      console.warn('[UPLOADS-VENDOR] Unauthorized access attempt')
+      console.warn('[UPLOADS-seller] Unauthorized access attempt')
       res.status(401).json({ 
         message: 'Unauthorized',
         error: auth.error 
@@ -125,7 +125,7 @@ export async function POST(
       return
     }
 
-    console.log(`[UPLOADS-VENDOR] Authenticated request from user: ${auth.userId}`)
+    console.log(`[UPLOADS-seller] Authenticated request from user: ${auth.userId}`)
     
     // 2. Check rate limit
     const rateLimit = checkRateLimit(`upload:${auth.userId}`, {
@@ -134,7 +134,7 @@ export async function POST(
     })
     
     if (!rateLimit.allowed) {
-      console.warn(`[UPLOADS-VENDOR] Rate limit exceeded for user: ${auth.userId}`)
+      console.warn(`[UPLOADS-seller] Rate limit exceeded for user: ${auth.userId}`)
       res.status(429).json({
         message: 'Too many uploads. Please try again later.',
         error: 'RATE_LIMIT_EXCEEDED',
@@ -151,7 +151,7 @@ export async function POST(
     
     uploadMiddleware(req as any, res as any, async (err) => {
       if (err) {
-        console.error('[UPLOADS-VENDOR] Upload error:', {
+        console.error('[UPLOADS-seller] Upload error:', {
           error: err.message,
           userId: auth.userId
         })
@@ -191,8 +191,8 @@ export async function POST(
                 file.buffer,
                 file.originalname,
                 {
-                  folder: 'vendor-uploads',
-                  tags: ['vendor', auth.userId!],
+                  folder: 'seller-uploads',
+                  tags: ['seller', auth.userId!],
                   context: {
                     user_id: auth.userId!,
                     original_name: file.originalname
@@ -261,7 +261,7 @@ export async function POST(
 
       // 6. Log results
       const uploadDuration = Date.now() - startTime
-      console.log('[UPLOADS-VENDOR] Upload completed:', {
+      console.log('[UPLOADS-seller] Upload completed:', {
         userId: auth.userId,
         successful: uploadedFiles.length,
         failed: errors.length,
@@ -281,7 +281,7 @@ export async function POST(
     })
     
   } catch (error) {
-    console.error('[UPLOADS-VENDOR] Unexpected error:', error)
+    console.error('[UPLOADS-seller] Unexpected error:', error)
     res.status(500).json({ 
       message: 'Internal server error',
       error: 'SERVER_ERROR'

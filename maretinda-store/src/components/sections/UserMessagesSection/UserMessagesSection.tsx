@@ -7,14 +7,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 interface ChatConversation {
 	id: string
 	type: string
-	vendor_id: string | null
+	seller_id: string | null
 	customer_id: string | null
 	subject: string | null
 	status: string
 	last_message_at: string | null
 	unread_customer: number
 	created_at: string
-	vendor_name?: string
+	seller_name?: string
 	customer_name?: string
 }
 
@@ -22,7 +22,7 @@ interface ChatMessage {
 	id: string
 	conversation_id: string
 	sender_id: string
-	sender_role: 'vendor' | 'customer' | 'admin'
+	sender_role: 'seller' | 'customer' | 'admin'
 	sender_name: string
 	body: string
 	read_at: string | null
@@ -58,7 +58,7 @@ function formatTime(iso: string | null): string {
 
 function convLabel(conv: ChatConversation): string {
 	if (conv.type === 'customer_admin') return 'Support Team'
-	return conv.vendor_name || conv.subject || 'Vendor'
+	return conv.seller_name || conv.subject || 'seller'
 }
 
 function initials(name: string): string {
@@ -99,11 +99,11 @@ function EmojiPicker({ onSelect }: { onSelect: (e: string) => void }) {
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
-function Avatar({ name, role }: { name: string; role: 'vendor' | 'customer' | 'admin' }) {
+function Avatar({ name, role }: { name: string; role: 'seller' | 'customer' | 'admin' }) {
 	const bg =
 		role === 'admin'
 			? 'bg-orange-500'
-			: role === 'vendor'
+			: role === 'seller'
 			? 'bg-[#5c3882]'
 			: 'bg-gray-700'
 	return (

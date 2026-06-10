@@ -5,12 +5,12 @@ import { fetchQuery, backendUrl } from "../../lib/client/client"
 export interface ChatConversation {
   id: string
   type: string
-  vendor_id: string | null
+  seller_id: string | null
   customer_id: string | null
   subject: string | null
   status: string
   last_message_at: string | null
-  unread_vendor: number
+  unread_seller: number
   unread_customer: number
   unread_admin: number
   created_at: string
@@ -21,7 +21,7 @@ export interface ChatMessage {
   id: string
   conversation_id: string
   sender_id: string
-  sender_role: "vendor" | "customer" | "admin"
+  sender_role: "seller" | "customer" | "admin"
   sender_name: string
   body: string
   read_at: string | null
@@ -30,8 +30,8 @@ export interface ChatMessage {
 
 export const useChatConversations = () => {
   return useQuery<{ conversations: ChatConversation[]; count: number; unread: number }>({
-    queryKey: ["vendor-chat-conversations"],
-    queryFn: () => fetchQuery("/vendor/chat", { method: "GET" }),
+    queryKey: ["seller-chat-conversations"],
+    queryFn: () => fetchQuery("/seller/chat", { method: "GET" }),
     staleTime: 1000 * 30,
     refetchInterval: 1000 * 30,
   })
@@ -39,8 +39,8 @@ export const useChatConversations = () => {
 
 export const useChatMessages = (conversationId: string | null) => {
   return useQuery<{ conversation: ChatConversation; messages: ChatMessage[]; count: number }>({
-    queryKey: ["vendor-chat-messages", conversationId],
-    queryFn: () => fetchQuery(`/vendor/chat/${conversationId}`, { method: "GET" }),
+    queryKey: ["seller-chat-messages", conversationId],
+    queryFn: () => fetchQuery(`/seller/chat/${conversationId}`, { method: "GET" }),
     enabled: !!conversationId,
     staleTime: 0,
   })
@@ -50,13 +50,13 @@ export const useSendMessage = (conversationId: string) => {
   const qc = useQueryClient()
   return useMutation<{ message: ChatMessage }, Error, { body: string }>({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/chat/${conversationId}/message`, {
+      fetchQuery(`/seller/chat/${conversationId}/message`, {
         method: "POST",
         body: payload,
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["vendor-chat-messages", conversationId] })
-      qc.invalidateQueries({ queryKey: ["vendor-chat-conversations"] })
+      qc.invalidateQueries({ queryKey: ["seller-chat-messages", conversationId] })
+      qc.invalidateQueries({ queryKey: ["seller-chat-conversations"] })
     },
   })
 }
@@ -65,9 +65,9 @@ export const useMarkRead = () => {
   const qc = useQueryClient()
   return useMutation<{ success: boolean }, Error, string>({
     mutationFn: (conversationId) =>
-      fetchQuery(`/vendor/chat/${conversationId}/read`, { method: "POST" }),
+      fetchQuery(`/seller/chat/${conversationId}/read`, { method: "POST" }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["vendor-chat-conversations"] })
+      qc.invalidateQueries({ queryKey: ["seller-chat-conversations"] })
     },
   })
 }
@@ -87,7 +87,7 @@ export function useChatSSE() {
 
     const connect = async () => {
       try {
-        const res = await fetch(`${backendUrl}/vendor/chat/stream`, {
+        const res = await fetch(`${backendUrl}/seller/chat/stream`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         })
@@ -119,7 +119,7 @@ export function useChatSSE() {
               const parsed = JSON.parse(data)
               if (eventName === "new_message") {
                 qc.setQueryData(
-                  ["vendor-chat-messages", parsed.conversation_id],
+                  ["seller-chat-messages", parsed.conversation_id],
                   (old: any) => {
                     if (!old) return old
                     const exists = old.messages.some((m: ChatMessage) => m.id === parsed.id)
@@ -127,10 +127,10 @@ export function useChatSSE() {
                     return { ...old, messages: [...old.messages, parsed] }
                   }
                 )
-                qc.invalidateQueries({ queryKey: ["vendor-chat-conversations"] })
+                qc.invalidateQueries({ queryKey: ["seller-chat-conversations"] })
               }
               if (eventName === "new_conversation") {
-                qc.invalidateQueries({ queryKey: ["vendor-chat-conversations"] })
+                qc.invalidateQueries({ queryKey: ["seller-chat-conversations"] })
               }
             } catch { /* ignore malformed SSE */ }
           }

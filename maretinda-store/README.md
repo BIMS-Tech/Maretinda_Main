@@ -22,7 +22,7 @@ for <a href="https://github.com/mercurjs/mercur">Mercur</a> - Open Source Market
 
 ## B2C Storefront for Marketplace
 
-Customizable storefront designed for B2C with all elements including browsing and buying products across multiple vendors at once.
+Customizable storefront designed for B2C with all elements including browsing and buying products across multiple sellers at once.
 
 Ready to go:
 
@@ -31,12 +31,12 @@ Ready to go:
 - Product Page
 - Shopping Cart
 - Seller Page
-- Selling Hub - Moved to external <a href="https://github.com/mercurjs/vendor-panel">VendorPanel</a>
+- Selling Hub - Moved to external <a href="https://github.com/mercurjs/seller-panel">sellerPanel</a>
 - Wishlist
 
 # Part of Mercur
 
-<a href="https://github.com/mercurjs/mercur">Mercur</a> is an open source marketplace platform that allows you to create high-quality experiences for shoppers and vendors while having the most popular Open Source commerce platform MedusaJS as a foundation.
+<a href="https://github.com/mercurjs/mercur">Mercur</a> is an open source marketplace platform that allows you to create high-quality experiences for shoppers and sellers while having the most popular Open Source commerce platform MedusaJS as a foundation.
 
 Mercur is a platform to start, customize, manage, and scale your marketplace for every business model with a modern technology stack.
 

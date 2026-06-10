@@ -30,7 +30,7 @@ export const useProductTag = (
   const { data, ...rest } = useQuery({
     queryKey: productTagsQueryKeys.detail(id, query),
     queryFn: async () =>
-      fetchQuery(`/vendor/product-tags/${id}`, {
+      fetchQuery(`/seller/product-tags/${id}`, {
         method: "GET",
       }),
     ...options,
@@ -54,7 +54,7 @@ export const useProductTags = (
   const { data, ...rest } = useQuery({
     queryKey: productTagsQueryKeys.list(query),
     queryFn: async () =>
-      fetchQuery("/vendor/product-tags", {
+      fetchQuery("/seller/product-tags", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -73,7 +73,7 @@ export const useCreateProductTag = (
 ) => {
   return useMutation({
     mutationFn: async (body) =>
-      fetchQuery("/vendor/product-tags", {
+      fetchQuery("/seller/product-tags", {
         method: "POST",
         body,
       }),

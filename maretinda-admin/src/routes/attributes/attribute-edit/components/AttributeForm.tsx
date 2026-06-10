@@ -215,7 +215,7 @@ export const AttributeForm = ({
                 Yes, this is a required attribute
               </Label>
               <Text className="text-ui-fg-subtle text-xs mt-1">
-                If checked, vendors must set a value to this attribute.
+                If checked, sellers must set a value to this attribute.
               </Text>
             </div>
           </div>
@@ -327,7 +327,7 @@ export const AttributeForm = ({
 
       {form.watch("ui_component") === AttributeUIComponent.SELECT && (
         <InlineTip label="Tip" variant="info">
-          When creating Single Select vendor will be able to choose only one
+          When creating Single Select seller will be able to choose only one
           value. This type of attribute will be good for product specifications.
         </InlineTip>
       )}

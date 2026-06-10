@@ -3,9 +3,9 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import SubscriptionService from "../../../../services/subscription"
 
 /**
- * GET /vendor/subscription/status
+ * GET /seller/subscription/status
  *
- * Returns the current vendor subscription record.
+ * Returns the current seller subscription record.
  * Billing and renewal are managed by GiyaPay — this is read-only status.
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void> {
@@ -25,7 +25,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
 
     const member = await pgConnection("member").where("id", memberId).first()
     if (!member?.seller_id) {
-      res.status(403).json({ message: "Not a vendor" })
+      res.status(403).json({ message: "Not a seller" })
       return
     }
 

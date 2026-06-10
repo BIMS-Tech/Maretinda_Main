@@ -1,7 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import FlashSaleService, { CreateFlashSaleItemInput } from "../../../../../services/flash-sale"
 
-/** POST /vendor/flash-sales/:id/items — apply a product to this platform flash sale */
+/** POST /seller/flash-sales/:id/items — apply a product to this platform flash sale */
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   try {
     const sellerId = (req as any).auth_context?.actor_id

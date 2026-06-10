@@ -50,7 +50,7 @@ export const useProductTypes = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/product-types", {
+      fetchQuery("/seller/product-types", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -70,7 +70,7 @@ export const useCreateProductType = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/requests", {
+      fetchQuery("/seller/requests", {
         method: "POST",
         body: {
           request: {

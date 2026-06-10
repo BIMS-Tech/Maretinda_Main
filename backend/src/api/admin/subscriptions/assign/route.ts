@@ -4,12 +4,12 @@ import SubscriptionService from "../../../../services/subscription"
 /**
  * POST /admin/subscriptions/assign
  *
- * Manually assign a subscription plan to a vendor.
- * Cancels any existing active subscription for that vendor first.
+ * Manually assign a subscription plan to a seller.
+ * Cancels any existing active subscription for that seller first.
  *
  * Request body:
  * {
- *   "vendor_id": "seller_...",
+ *   "seller_id": "seller_...",
  *   "plan_name": "Managed",
  *   "duration_days": 30   // optional, default 30
  * }
@@ -18,7 +18,7 @@ import SubscriptionService from "../../../../services/subscription"
  * {
  *   "subscription": {
  *     "id": "vsub_...",
- *     "vendor_id": "seller_...",
+ *     "seller_id": "seller_...",
  *     "plan_name": "Managed",
  *     "status": "active",
  *     ...
@@ -27,10 +27,10 @@ import SubscriptionService from "../../../../services/subscription"
  */
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
   try {
-    const { vendor_id, plan_name, duration_days } = req.body as any
+    const { seller_id, plan_name, duration_days } = req.body as any
 
-    if (!vendor_id || typeof vendor_id !== "string") {
-      res.status(400).json({ message: "vendor_id is required" })
+    if (!seller_id || typeof seller_id !== "string") {
+      res.status(400).json({ message: "seller_id is required" })
       return
     }
     if (!plan_name || typeof plan_name !== "string") {
@@ -39,7 +39,7 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     }
 
     const service = new SubscriptionService(req.scope)
-    const subscription = await service.adminAssign(vendor_id, plan_name, duration_days ? Number(duration_days) : 30)
+    const subscription = await service.adminAssign(seller_id, plan_name, duration_days ? Number(duration_days) : 30)
 
     res.status(201).json({ subscription })
   } catch (error) {

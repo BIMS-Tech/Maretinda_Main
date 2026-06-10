@@ -30,21 +30,21 @@ class SubscriptionService {
     return db("subscription_plan").where("name", name).where("status", "active").first()
   }
 
-  async getActiveSubscription(vendorId: string): Promise<any | null> {
+  async getActiveSubscription(sellerId: string): Promise<any | null> {
     const db = this.getDb()
-    return db("vendor_subscription")
-      .where("vendor_id", vendorId)
+    return db("seller_subscription")
+      .where("seller_id", sellerId)
       .where("status", "active")
       .orderBy("created_at", "desc")
       .first()
   }
 
-  async getSubscriptionStatus(vendorId: string): Promise<{
+  async getSubscriptionStatus(sellerId: string): Promise<{
     has_subscription: boolean
     subscription: any | null
     plan: any | null
   }> {
-    const subscription = await this.getActiveSubscription(vendorId)
+    const subscription = await this.getActiveSubscription(sellerId)
     if (!subscription) {
       return { has_subscription: false, subscription: null, plan: null }
     }
@@ -53,7 +53,7 @@ class SubscriptionService {
   }
 
   // Admin: list all subscriptions with optional filters
-  async listAll(filters?: { status?: string; vendor_id?: string; limit?: number; offset?: number }): Promise<{
+  async listAll(filters?: { status?: string; seller_id?: string; limit?: number; offset?: number }): Promise<{
     subscriptions: any[]
     count: number
   }> {
@@ -63,9 +63,9 @@ class SubscriptionService {
 
     // Build a base query without ORDER BY so the count clone doesn't carry it
     // (PostgreSQL requires ORDER BY columns to appear in GROUP BY for aggregate queries)
-    let baseQuery = db("vendor_subscription")
+    let baseQuery = db("seller_subscription")
     if (filters?.status) baseQuery = baseQuery.where("status", filters.status)
-    if (filters?.vendor_id) baseQuery = baseQuery.where("vendor_id", filters.vendor_id)
+    if (filters?.seller_id) baseQuery = baseQuery.where("seller_id", filters.seller_id)
 
     const [subscriptions, countResult] = await Promise.all([
       baseQuery.clone().orderBy("created_at", "desc").limit(limit).offset(offset),
@@ -76,14 +76,14 @@ class SubscriptionService {
   }
 
   // Admin: manually assign a plan (e.g. complimentary access); sets end_date since GiyaPay won't manage it
-  async adminAssign(vendorId: string, planName: string, durationDays: number = 30): Promise<any> {
+  async adminAssign(sellerId: string, planName: string, durationDays: number = 30): Promise<any> {
     const db = this.getDb()
 
     const plan = await this.getPlanByName(planName)
     if (!plan) throw new Error(`Plan "${planName}" not found.`)
 
-    await db("vendor_subscription")
-      .where("vendor_id", vendorId)
+    await db("seller_subscription")
+      .where("seller_id", sellerId)
       .where("status", "active")
       .update({ status: "cancelled", updated_at: new Date() })
 
@@ -91,10 +91,10 @@ class SubscriptionService {
     const endDate = new Date(startDate)
     endDate.setDate(endDate.getDate() + durationDays)
 
-    const [subscription] = await db("vendor_subscription")
+    const [subscription] = await db("seller_subscription")
       .insert({
         id: generateId("vsub"),
-        vendor_id: vendorId,
+        seller_id: sellerId,
         plan_name: plan.name,
         price: plan.price,
         start_date: startDate,
@@ -112,7 +112,7 @@ class SubscriptionService {
 
   async adminDeactivate(subscriptionId: string): Promise<any> {
     const db = this.getDb()
-    const [updated] = await db("vendor_subscription")
+    const [updated] = await db("seller_subscription")
       .where("id", subscriptionId)
       .update({ status: "cancelled", updated_at: new Date() })
       .returning("*")
@@ -156,7 +156,7 @@ class SubscriptionService {
 
   async setStatus(subscriptionId: string, status: "active" | "cancelled"): Promise<any> {
     const db = this.getDb()
-    const [updated] = await db("vendor_subscription")
+    const [updated] = await db("seller_subscription")
       .where("id", subscriptionId)
       .update({ status, updated_at: new Date() })
       .returning("*")
@@ -165,7 +165,7 @@ class SubscriptionService {
   }
 
   async renewSubscription(params: {
-    vendorId: string
+    sellerId: string
     planName: string
     billingPeriod: "monthly" | "yearly"
     price: number
@@ -175,8 +175,8 @@ class SubscriptionService {
     const db = this.getDb()
 
     // Cancel any existing active subscription
-    await db("vendor_subscription")
-      .where("vendor_id", params.vendorId)
+    await db("seller_subscription")
+      .where("seller_id", params.sellerId)
       .where("status", "active")
       .update({ status: "cancelled", updated_at: new Date() })
 
@@ -188,10 +188,10 @@ class SubscriptionService {
       endDate.setMonth(endDate.getMonth() + 1)
     }
 
-    const [subscription] = await db("vendor_subscription")
+    const [subscription] = await db("seller_subscription")
       .insert({
         id: generateId("vsub"),
-        vendor_id: params.vendorId,
+        seller_id: params.sellerId,
         plan_id: params.planId || null,
         plan_name: params.planName,
         price: params.price,

@@ -22,7 +22,7 @@ const StarIcon = () => (
 	</svg>
 );
 
-export const TopVendorsSection = async () => {
+export const TopsellersSection = async () => {
 	const { sellers } = await listSellers({ limit: 8 });
 	if (!sellers?.length) return null;
 
@@ -32,15 +32,15 @@ export const TopVendorsSection = async () => {
 				{/* Header */}
 				<div className="flex items-end justify-between mb-7 lg:mb-8 flex-wrap gap-4">
 					<div>
-						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}><HomeText k="vendorsLabel" /></div>
-						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}><HomeText k="vendorsHeading" /></h2>
+						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}><HomeText k="sellersLabel" /></div>
+						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}><HomeText k="sellersHeading" /></h2>
 					</div>
 					<Link href="/sellers" className="text-[13px] font-bold flex items-center gap-1.5 hover:underline" style={{ color: '#432C63' }}>
-						<HomeText k="vendorsBrowse" />
+						<HomeText k="sellersBrowse" />
 					</Link>
 				</div>
 
-				{/* Vendor cards */}
+				{/* seller cards */}
 				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 					{sellers.map((seller: SellerProps, i: number) => {
 						const bannerBg = BANNER_COLORS[i % BANNER_COLORS.length];
@@ -106,7 +106,7 @@ export const TopVendorsSection = async () => {
 										className="mt-3 w-full h-9 rounded-full text-[12px] font-bold transition-colors border hover:border-[#432C63] hover:text-[#432C63]"
 										style={{ backgroundColor: '#FAF8F5', borderColor: '#EDEAE3', color: '#1B1B1B' }}
 									>
-										<HomeText k="vendorVisitShop" />
+										<HomeText k="sellerVisitShop" />
 									</button>
 								</div>
 							</Link>

@@ -200,7 +200,7 @@ export async function POST(
         invalid_count: invalidTransactions.length,
         validation_errors: invalidTransactions.length > 0 ? invalidTransactions.map(inv => ({
           transaction_id: inv.transaction.id,
-          vendor_name: inv.transaction.vendor_name,
+          seller_name: inv.transaction.seller_name,
           errors: inv.errors
         })) : []
       }

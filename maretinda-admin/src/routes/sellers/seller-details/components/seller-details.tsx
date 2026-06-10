@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import type { AdminCustomerGroupListResponse } from "@custom-types/customer-group";
 import type { AdminOrderListResponse } from "@custom-types/order";
-import type { VendorSeller } from "@custom-types/seller";
+import type { sellerseller } from "@custom-types/seller";
 
 import {
   useSeller,
@@ -89,7 +89,7 @@ export const SellerDetails = () => {
 
   return (
     <>
-      <SellerGeneralSection seller={data?.seller as VendorSeller} />
+      <SellerGeneralSection seller={data?.seller as sellerseller} />
       <SellerOrdersSection seller_orders={orders as AdminOrderListResponse} />
       <SellerProductsSection
         seller_products={products as AdminProductListResponse}

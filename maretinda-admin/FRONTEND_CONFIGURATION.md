@@ -159,9 +159,9 @@ Storefront URL: http://localhost:8000
 
 ## 🔧 Other Frontend Apps
 
-### Vendor Panel
+### seller Panel
 
-Create `/vendor-panel/.env`:
+Create `/seller-panel/.env`:
 ```env
 VITE_MEDUSA_BACKEND_URL=http://localhost:9000
 VITE_MEDUSA_STOREFRONT_URL=http://localhost:8000
@@ -301,7 +301,7 @@ VITE_MEDUSA_BASE=/
 VITE_MEDUSA_B2B_PANEL=false
 ```
 
-### vendor-panel/.env
+### seller-panel/.env
 ```env
 VITE_MEDUSA_BACKEND_URL=http://localhost:9000
 VITE_MEDUSA_STOREFRONT_URL=http://localhost:8000
@@ -318,7 +318,7 @@ NEXT_PUBLIC_STOREFRONT_URL=http://localhost:8000
 DATABASE_URL=postgresql://user:pass@host:5432/medusa
 STORE_CORS=http://localhost:3000,http://localhost:8000
 ADMIN_CORS=http://localhost:3001,http://localhost:7001
-VENDOR_CORS=http://localhost:3002,http://localhost:5173
+seller_CORS=http://localhost:3002,http://localhost:5173
 AUTH_CORS=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:5173,http://localhost:8000
 JWT_SECRET=supersecret
 COOKIE_SECRET=supersecret

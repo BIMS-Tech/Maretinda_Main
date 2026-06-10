@@ -135,7 +135,7 @@ export const PayoutsList = () => {
           <div className="mt-4 p-4 bg-ui-bg-subtle rounded-lg">
             <Text size="small" className="text-ui-fg-subtle">
               You need to set up a payout account to receive automated daily payouts. 
-              This account will be used to receive your vendor earnings.
+              This account will be used to receive your seller earnings.
             </Text>
             <Button
               variant="primary"

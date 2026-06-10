@@ -3,11 +3,11 @@ import { Button, Heading, Input, Label, Textarea, toast } from "@medusajs/ui";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
-import type { VendorSeller } from "@custom-types/seller";
+import type { sellerseller } from "@custom-types/seller";
 
 import { useUpdateSeller } from "@hooks/api/sellers";
 
-export const SellerEditForm = ({ seller }: { seller: VendorSeller }) => {
+export const SellerEditForm = ({ seller }: { seller: sellerseller }) => {
   const { mutate: updateSeller } = useUpdateSeller();
 
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export const SellerEditForm = ({ seller }: { seller: VendorSeller }) => {
     },
   });
 
-  const onSubmit = async (data: Partial<VendorSeller>) => {
+  const onSubmit = async (data: Partial<sellerseller>) => {
     if (!data.email?.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       toast.error("Invalid email address");
 

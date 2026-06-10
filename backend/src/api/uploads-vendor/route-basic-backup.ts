@@ -6,14 +6,14 @@ import { verify } from "jsonwebtoken"
 import { checkRateLimit } from "../../utils/rate-limiter"
 
 /**
- * Production-Grade Vendor Upload Endpoint
+ * Production-Grade seller Upload Endpoint
  * 
- * This endpoint is outside /vendor/* to avoid body parser middleware
+ * This endpoint is outside /seller/* to avoid body parser middleware
  * that would consume the multipart stream before multer can process it.
  * 
  * Features:
  * - Manual JWT authentication
- * - CORS support for vendor panel
+ * - CORS support for seller panel
  * - File validation (type, size)
  * - Secure file naming
  * - Error handling and logging
@@ -31,9 +31,9 @@ const ALLOWED_MIME_TYPES = [
   'image/svg+xml'
 ]
 
-// Set CORS headers for vendor panel
+// Set CORS headers for seller panel
 const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.VENDOR_CORS || 'http://localhost:5173').split(',')
+  const allowedOrigins = (process.env.seller_CORS || 'http://localhost:5173').split(',')
   res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0].trim())
   res.setHeader('Access-Control-Allow-Credentials', 'true')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
@@ -136,7 +136,7 @@ export async function POST(
     // 1. Verify authentication
     const auth = verifyAuth(req)
     if (!auth.valid) {
-      console.warn('[UPLOADS-VENDOR] Unauthorized access attempt')
+      console.warn('[UPLOADS-seller] Unauthorized access attempt')
       res.status(401).json({ 
         message: 'Unauthorized',
         error: auth.error 
@@ -144,7 +144,7 @@ export async function POST(
       return
     }
 
-    console.log(`[UPLOADS-VENDOR] Authenticated request from user: ${auth.userId}`)
+    console.log(`[UPLOADS-seller] Authenticated request from user: ${auth.userId}`)
     
     // 2. Check rate limit (10 uploads per minute per user)
     const rateLimit = checkRateLimit(`upload:${auth.userId}`, {
@@ -153,7 +153,7 @@ export async function POST(
     })
     
     if (!rateLimit.allowed) {
-      console.warn(`[UPLOADS-VENDOR] Rate limit exceeded for user: ${auth.userId}`)
+      console.warn(`[UPLOADS-seller] Rate limit exceeded for user: ${auth.userId}`)
       res.status(429).json({
         message: 'Too many uploads. Please try again later.',
         error: 'RATE_LIMIT_EXCEEDED',
@@ -168,7 +168,7 @@ export async function POST(
     uploadMiddleware(req as any, res as any, (err) => {
       if (err) {
         // Handle multer errors
-        console.error('[UPLOADS-VENDOR] Upload error:', {
+        console.error('[UPLOADS-seller] Upload error:', {
           error: err.message,
           userId: auth.userId,
           timestamp: new Date().toISOString()
@@ -198,7 +198,7 @@ export async function POST(
       
       // 3. Validate files were uploaded
       if (!files || files.length === 0) {
-        console.warn('[UPLOADS-VENDOR] No files in request')
+        console.warn('[UPLOADS-seller] No files in request')
         return res.status(400).json({ 
           message: 'No files uploaded',
           error: 'NO_FILES'
@@ -207,7 +207,7 @@ export async function POST(
 
       // 4. Log successful uploads
       const uploadDuration = Date.now() - startTime
-      console.log('[UPLOADS-VENDOR] Upload successful:', {
+      console.log('[UPLOADS-seller] Upload successful:', {
         userId: auth.userId,
         fileCount: files.length,
         totalSize: files.reduce((sum, f) => sum + f.size, 0),
@@ -240,7 +240,7 @@ export async function POST(
     })
     
   } catch (error) {
-    console.error('[UPLOADS-VENDOR] Unexpected error:', error)
+    console.error('[UPLOADS-seller] Unexpected error:', error)
     res.status(500).json({ 
       message: 'Internal server error',
       error: 'SERVER_ERROR'

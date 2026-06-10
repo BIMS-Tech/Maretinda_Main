@@ -8,7 +8,7 @@ import { DEFAULT_FIELDS } from "./constants"
 const orderDetailQuery = (id: string) => ({
   queryKey: ordersQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/vendor/orders/${id}`, {
+    fetchQuery(`/seller/orders/${id}`, {
       method: "GET",
       query: { fields: DEFAULT_FIELDS },
     }),

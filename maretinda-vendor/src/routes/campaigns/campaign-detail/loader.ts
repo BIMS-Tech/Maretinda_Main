@@ -7,7 +7,7 @@ import { queryClient } from "../../../lib/query-client"
 const campaignDetailQuery = (id: string) => ({
   queryKey: campaignsQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/vendor/campaign-view/${id}`, {
+    fetchQuery(`/seller/campaign-view/${id}`, {
       method: "GET",
     }),
 })

@@ -9,11 +9,11 @@ import { useSearchParams, useRouter, useParams } from 'next/navigation';
 //  1. CUSTOMER PRODUCT PURCHASE  — order_id does NOT start with "vsub_" or "vrenew_"
 //     → verifies signature + completes cart → redirects to order confirmed
 //
-//  2. NEW VENDOR SUBSCRIPTION    — order_id starts with "vsub_"
-//     → verifies signature + records transaction → redirects to /become-vendor/register
+//  2. NEW seller SUBSCRIPTION    — order_id starts with "vsub_"
+//     → verifies signature + records transaction → redirects to /become-seller/register
 //
-//  3. VENDOR SUBSCRIPTION RENEWAL — order_id starts with "vrenew_"
-//     → verifies signature + activates renewal → redirects to vendor panel
+//  3. seller SUBSCRIPTION RENEWAL — order_id starts with "vrenew_"
+//     → verifies signature + activates renewal → redirects to seller panel
 // ---------------------------------------------------------------------------
 
 function SuccessContent() {
@@ -43,7 +43,7 @@ function SuccessContent() {
         }
 
         // ---------------------------------------------------------------
-        // FLOW 3: Vendor subscription renewal (from vendor panel)
+        // FLOW 3: seller subscription renewal (from seller panel)
         // ---------------------------------------------------------------
         if (orderId.startsWith('vrenew_')) {
           setMessage('Verifying renewal payment...');
@@ -81,16 +81,16 @@ function SuccessContent() {
           }
 
           setStatus('success');
-          setMessage('Subscription renewed! Redirecting to your vendor panel...');
+          setMessage('Subscription renewed! Redirecting to your seller panel...');
 
-          const vendorPanelUrl =
-            (typeof window !== 'undefined' && (window as any).__ENV__?.VITE_VENDOR_PANEL_URL) ||
-            process.env.NEXT_PUBLIC_VENDOR_PANEL_URL ||
+          const sellerPanelUrl =
+            (typeof window !== 'undefined' && (window as any).__ENV__?.VITE_seller_PANEL_URL) ||
+            process.env.NEXT_PUBLIC_seller_PANEL_URL ||
             '';
 
           setTimeout(() => {
-            if (vendorPanelUrl) {
-              window.location.href = `${vendorPanelUrl}/subscription?renewed=1`;
+            if (sellerPanelUrl) {
+              window.location.href = `${sellerPanelUrl}/subscription?renewed=1`;
             } else {
               router.push(`/${locale}`);
             }
@@ -100,7 +100,7 @@ function SuccessContent() {
         }
 
         // ---------------------------------------------------------------
-        // FLOW 2: New vendor subscription payment
+        // FLOW 2: New seller subscription payment
         // ---------------------------------------------------------------
         if (orderId.startsWith('vsub_')) {
           setMessage('Verifying subscription payment...');
@@ -125,11 +125,11 @@ function SuccessContent() {
           const planSlug = parts.slice(1, parts.length - 1).join('_');
 
           setStatus('success');
-          setMessage('Payment verified! Setting up your vendor account...');
+          setMessage('Payment verified! Setting up your seller account...');
 
-          // Redirect to the gated vendor registration form
+          // Redirect to the gated seller registration form
           setTimeout(() => {
-            router.push(`/${locale}/become-vendor/register?ref=${refno}&plan=${encodeURIComponent(planSlug)}&order=${encodeURIComponent(orderId)}`);
+            router.push(`/${locale}/become-seller/register?ref=${refno}&plan=${encodeURIComponent(planSlug)}&order=${encodeURIComponent(orderId)}`);
           }, 1200);
 
           return;
@@ -216,7 +216,7 @@ function SuccessContent() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Issue</h2>
               <p className="text-gray-600">{message}</p>
               <button
-                onClick={() => router.push(`/${locale}/become-vendor`)}
+                onClick={() => router.push(`/${locale}/become-seller`)}
                 className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Try Again

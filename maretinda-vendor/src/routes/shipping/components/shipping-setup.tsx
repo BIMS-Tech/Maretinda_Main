@@ -81,7 +81,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 // ── Provider Status badge ────────────────────────────────────────────────────
 function StatusChip({ provider }: { provider: any }) {
-  if (!provider.hasVendorCredentials)
+  if (!provider.hassellerCredentials)
     return <span className="text-xs text-ui-fg-muted">Not configured</span>
   if (!provider.isEnabled)
     return <span className="text-xs text-ui-tag-orange-text font-medium">Saved – not enabled</span>
@@ -398,13 +398,13 @@ function ProviderDrawer({
                     variant="secondary"
                     onClick={handleTest}
                     isLoading={configure.isPending}
-                    disabled={!provider.hasVendorCredentials}
-                    title={!provider.hasVendorCredentials ? 'Save credentials first' : undefined}
+                    disabled={!provider.hassellerCredentials}
+                    title={!provider.hassellerCredentials ? 'Save credentials first' : undefined}
                   >
                     Test connection
                   </Button>
                 </div>
-                {!provider.hasVendorCredentials && (
+                {!provider.hassellerCredentials && (
                   <p className="ml-8 mt-2 text-xs text-ui-fg-muted">
                     Save your credentials first, then test the connection.
                   </p>
@@ -462,19 +462,19 @@ function ProviderCard({
       {/* Actions */}
       <div className="flex gap-2 mt-auto pt-2 border-t border-ui-border-base">
         <Button
-          variant={provider.hasVendorCredentials ? 'secondary' : 'primary'}
+          variant={provider.hassellerCredentials ? 'secondary' : 'primary'}
           size="small"
           className="flex-1"
           onClick={onOpen}
         >
-          {provider.hasVendorCredentials ? (
+          {provider.hassellerCredentials ? (
             <><CogSixTooth className="h-3.5 w-3.5 mr-1" /> Configure</>
           ) : (
             '+ Setup'
           )}
         </Button>
 
-        {provider.hasVendorCredentials && (
+        {provider.hassellerCredentials && (
           <div className="relative">
             <Button
               variant="secondary"
@@ -535,7 +535,7 @@ export const ShippingSetup = () => {
   const [openProvider, setOpenProvider] = useState<any>(null)
 
   const providers: any[] = data?.providers ?? []
-  const configured = providers.filter((p) => p.hasVendorCredentials).length
+  const configured = providers.filter((p) => p.hassellerCredentials).length
   const enabled = providers.filter((p) => p.isEnabled).length
 
   const handleAction = async (action: string, providerId: string, name: string) => {

@@ -24,7 +24,7 @@ const DEFAULTS: HeroSettings = {
   featured_product_sold_this_week: 247,
   featured_product_link: "/categories",
   featured_product_image: "/images/featured-products/fashion.png",
-  vendors_count: "12,800+",
+  sellers_count: "12,800+",
   welcome_promo_code: "",
   featured_campaign_id: "",
 }
@@ -246,9 +246,9 @@ export const StoreFront = () => {
           </FieldRow>
           <FieldRow label="Sellers count" hint='Shown as "X+ sellers" in the hero'>
             <Input
-              value={form.vendors_count}
-              onChange={(e) => set("vendors_count", e.target.value)}
-              placeholder={DEFAULTS.vendors_count}
+              value={form.sellers_count}
+              onChange={(e) => set("sellers_count", e.target.value)}
+              placeholder={DEFAULTS.sellers_count}
             />
           </FieldRow>
         </div>

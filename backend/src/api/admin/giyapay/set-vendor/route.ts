@@ -2,10 +2,10 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
- * @oas [post] /admin/giyapay/set-vendor
- * operationId: "AdminSetGiyaPayVendor"
- * summary: "Manually Set Vendor for GiyaPay Transactions"
- * description: "Manually update vendor_id for GiyaPay transactions"
+ * @oas [post] /admin/giyapay/set-seller
+ * operationId: "AdminSetGiyaPayseller"
+ * summary: "Manually Set seller for GiyaPay Transactions"
+ * description: "Manually update seller_id for GiyaPay transactions"
  * x-authenticated: true
  * requestBody:
  *   required: true
@@ -14,7 +14,7 @@ import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
  *       schema:
  *         type: object
  *         properties:
- *           vendor_id:
+ *           seller_id:
  *             type: string
  *           transaction_ids:
  *             type: array
@@ -31,12 +31,12 @@ export async function POST(
   res: MedusaResponse
 ): Promise<void> {
   try {
-    const { vendor_id, transaction_ids } = req.body as any
+    const { seller_id, transaction_ids } = req.body as any
 
-    if (!vendor_id) {
+    if (!seller_id) {
       res.status(400).json({
         success: false,
-        message: 'vendor_id is required'
+        message: 'seller_id is required'
       })
       return
     }
@@ -59,20 +59,20 @@ export async function POST(
     if (!transaction_ids || transaction_ids.length === 0) {
       const updateQuery = `
         UPDATE giyapay_transaction
-        SET vendor_id = ?, updated_at = NOW()
-        WHERE vendor_id IS NULL
+        SET seller_id = ?, updated_at = NOW()
+        WHERE seller_id IS NULL
       `
-      await pgConnection.raw(updateQuery, [vendor_id])
+      await pgConnection.raw(updateQuery, [seller_id])
       
-      const countQuery = `SELECT COUNT(*) as count FROM giyapay_transaction WHERE vendor_id = ?`
-      const countResult = await pgConnection.raw(countQuery, [vendor_id])
+      const countQuery = `SELECT COUNT(*) as count FROM giyapay_transaction WHERE seller_id = ?`
+      const countResult = await pgConnection.raw(countQuery, [seller_id])
       const count = (countResult?.rows?.[0] || countResult?.[0] || {}).count || 0
 
-      console.log(`[GiyaPay Set Vendor] Updated ALL transactions with vendor ${vendor_id}`)
+      console.log(`[GiyaPay Set seller] Updated ALL transactions with seller ${seller_id}`)
       
       res.status(200).json({
         success: true,
-        message: `Updated all transactions with vendor ${vendor_id}`,
+        message: `Updated all transactions with seller ${seller_id}`,
         updated_count: parseInt(count)
       })
     } else {
@@ -80,12 +80,12 @@ export async function POST(
       const placeholders = transaction_ids.map(() => '?').join(',')
       const updateQuery = `
         UPDATE giyapay_transaction
-        SET vendor_id = ?, updated_at = NOW()
+        SET seller_id = ?, updated_at = NOW()
         WHERE id IN (${placeholders})
       `
-      await pgConnection.raw(updateQuery, [vendor_id, ...transaction_ids])
+      await pgConnection.raw(updateQuery, [seller_id, ...transaction_ids])
 
-      console.log(`[GiyaPay Set Vendor] Updated ${transaction_ids.length} transactions with vendor ${vendor_id}`)
+      console.log(`[GiyaPay Set seller] Updated ${transaction_ids.length} transactions with seller ${seller_id}`)
       
       res.status(200).json({
         success: true,
@@ -95,20 +95,20 @@ export async function POST(
     }
 
   } catch (error) {
-    console.error('[GiyaPay Set Vendor] Error:', error)
+    console.error('[GiyaPay Set seller] Error:', error)
     res.status(500).json({
       success: false,
-      message: 'Failed to set vendor',
+      message: 'Failed to set seller',
       error: error instanceof Error ? error.message : 'Unknown error'
     })
   }
 }
 
 /**
- * @oas [get] /admin/giyapay/set-vendor
+ * @oas [get] /admin/giyapay/set-seller
  * operationId: "AdminListSellers"
  * summary: "List Available Sellers"
- * description: "Get list of sellers to choose vendor_id"
+ * description: "Get list of sellers to choose seller_id"
  * x-authenticated: true
  * responses:
  *   "200":
@@ -140,7 +140,7 @@ export async function GET(
     const sellers = sellersResult?.rows || sellersResult || []
 
     const txnsQuery = `
-      SELECT id, reference_number, order_id, vendor_id, created_at 
+      SELECT id, reference_number, order_id, seller_id, created_at 
       FROM giyapay_transaction 
       ORDER BY created_at DESC 
       LIMIT 10
@@ -154,7 +154,7 @@ export async function GET(
     })
 
   } catch (error) {
-    console.error('[GiyaPay Set Vendor] Error:', error)
+    console.error('[GiyaPay Set seller] Error:', error)
     res.status(500).json({
       message: 'Failed to list sellers',
       error: error instanceof Error ? error.message : 'Unknown error'

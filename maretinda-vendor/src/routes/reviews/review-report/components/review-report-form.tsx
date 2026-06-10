@@ -5,7 +5,7 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button, Heading, Select, Textarea, toast } from "@medusajs/ui"
 import { useParams } from "react-router-dom"
-import { useCreateVendorRequest, useUpdateRequest } from "../../../../hooks/api"
+import { useCreatesellerRequest, useUpdateRequest } from "../../../../hooks/api"
 
 const reasonList = [
   "The review comment is not true",
@@ -43,7 +43,7 @@ export const ReviewReportForm = ({ request }: { request?: any }) => {
     resolver: zodResolver(ReviewReplySchema),
   })
 
-  const { mutateAsync: createRequest, isPending } = useCreateVendorRequest()
+  const { mutateAsync: createRequest, isPending } = useCreatesellerRequest()
   const { mutateAsync: updateRequest, isPending: isUpdating } =
     useUpdateRequest(id!)
 

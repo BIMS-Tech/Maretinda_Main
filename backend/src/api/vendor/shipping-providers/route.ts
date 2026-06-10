@@ -117,8 +117,8 @@ async function getSellerId(req: AuthenticatedMedusaRequest, pg: any): Promise<st
 }
 
 /**
- * GET /vendor/shipping-providers
- * Returns the list of available providers + the vendor's configured status for each.
+ * GET /seller/shipping-providers
+ * Returns the list of available providers + the seller's configured status for each.
  */
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
   try {
@@ -127,7 +127,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     if (!sellerId) return res.status(403).json({ message: 'Seller not found' })
 
     // Load all credentials for this seller
-    const credentials = await pg('vendor_shipping_credential')
+    const credentials = await pg('seller_shipping_credential')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
       .select('provider', 'is_enabled', 'is_default', 'country_code', 'updated_at')
@@ -138,7 +138,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       const cred = credMap.get(p.providerId)
       return {
         ...p,
-        hasVendorCredentials: !!cred,
+        hassellerCredentials: !!cred,
         isEnabled: cred?.is_enabled ?? false,
         isDefault: cred?.is_default ?? false,
         credentialsLastUsed: cred?.updated_at ?? null,
@@ -150,8 +150,8 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     res.json({
       providers,
-      vendorConfig: {
-        vendorId: sellerId,
+      sellerConfig: {
+        sellerId: sellerId,
         enabledProviders,
         defaultProvider,
         preferences: {
@@ -160,7 +160,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
           blacklistedProviders: [],
         },
         billingConfig: {
-          paymentMethod: 'vendor-direct',
+          paymentMethod: 'seller-direct',
           costMarkup: 0,
           handlingFee: 0,
         },
@@ -173,7 +173,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 }
 
 /**
- * POST /vendor/shipping-providers
+ * POST /seller/shipping-providers
  * Actions: save-credentials | test-credentials | enable | disable | set-default | remove
  */
 export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
@@ -197,7 +197,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       return res.status(400).json({ message: `Unknown provider: ${providerId}` })
     }
 
-    const existing = await pg('vendor_shipping_credential')
+    const existing = await pg('seller_shipping_credential')
       .where({ seller_id: sellerId, provider: providerId })
       .whereNull('deleted_at')
       .first()
@@ -218,11 +218,11 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         }
 
         if (existing) {
-          await pg('vendor_shipping_credential')
+          await pg('seller_shipping_credential')
             .where({ id: existing.id })
             .update({ credentials: JSON.stringify(stored), country_code, updated_at: new Date() })
         } else {
-          await pg('vendor_shipping_credential').insert({
+          await pg('seller_shipping_credential').insert({
             id: `vsc_${randomUUID().replace(/-/g, '')}`,
             seller_id: sellerId,
             provider: providerId,
@@ -258,7 +258,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       case 'enable': {
         if (!existing) return res.status(400).json({ message: 'Save credentials first' })
-        await pg('vendor_shipping_credential')
+        await pg('seller_shipping_credential')
           .where({ id: existing.id })
           .update({ is_enabled: true, updated_at: new Date() })
         return res.json({ success: true, message: `${knownProvider.name} enabled` })
@@ -266,7 +266,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       case 'disable': {
         if (!existing) return res.status(400).json({ message: 'Provider not configured' })
-        await pg('vendor_shipping_credential')
+        await pg('seller_shipping_credential')
           .where({ id: existing.id })
           .update({ is_enabled: false, is_default: false, updated_at: new Date() })
         return res.json({ success: true, message: `${knownProvider.name} disabled` })
@@ -275,10 +275,10 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       case 'set-default': {
         if (!existing?.is_enabled) return res.status(400).json({ message: 'Enable the provider first' })
         // Unset all other defaults for this seller
-        await pg('vendor_shipping_credential')
+        await pg('seller_shipping_credential')
           .where({ seller_id: sellerId })
           .update({ is_default: false, updated_at: new Date() })
-        await pg('vendor_shipping_credential')
+        await pg('seller_shipping_credential')
           .where({ id: existing.id })
           .update({ is_default: true, updated_at: new Date() })
         return res.json({ success: true, message: `${knownProvider.name} set as default` })
@@ -286,7 +286,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       case 'remove': {
         if (!existing) return res.status(400).json({ message: 'Provider not configured' })
-        await pg('vendor_shipping_credential')
+        await pg('seller_shipping_credential')
           .where({ id: existing.id })
           .update({ deleted_at: new Date() })
         return res.json({ success: true, message: 'Provider credentials removed' })

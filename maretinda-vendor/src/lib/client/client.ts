@@ -19,7 +19,7 @@ export const importProductsQuery = async (file: File) => {
   const formData = new FormData()
   formData.append("file", file)
 
-  return await fetch(`${backendUrl}/vendor/products/import`, {
+  return await fetch(`${backendUrl}/seller/products/import`, {
     method: "POST",
     body: formData,
     headers: {
@@ -38,12 +38,12 @@ export const uploadFilesQuery = async (files: any[]) => {
     formData.append("files", file)
   }
 
-  // Upload directly to Google Cloud Storage via /uploads-vendor
+  // Upload directly to Google Cloud Storage via /uploads-seller
   try {
     console.log('[Upload] 📤 Uploading', files.length, 'files to Google Cloud Storage...')
     const uploadStart = Date.now()
     
-    const response = await fetch(`${backendUrl}/uploads-vendor`, {
+    const response = await fetch(`${backendUrl}/uploads-seller`, {
       method: "POST",
       body: formData,
       headers: {

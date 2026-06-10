@@ -104,7 +104,7 @@ export default function Hero() {
             style={{ fontSize: "clamp(1rem, 1.6vw, 1.125rem)", maxWidth: 580 }}
           >
             Maretinda is the Philippines&apos; most powerful e-commerce platform —
-            built to help vendors launch, scale, and dominate the digital market
+            built to help sellers launch, scale, and dominate the digital market
             with tools that actually deliver results.
           </p>
 
@@ -153,7 +153,7 @@ export default function Hero() {
               ))}
             </div>
             <p className="text-white/60 text-[14px]">
-              <strong className="text-white font-semibold">2,500+</strong> vendors already growing
+              <strong className="text-white font-semibold">2,500+</strong> sellers already growing
             </p>
           </div>
         </div>

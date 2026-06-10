@@ -1,6 +1,6 @@
 /**
  * Centralized Image Configuration
- * Used across all panels (storefront, admin, vendor)
+ * Used across all panels (storefront, admin, seller)
  */
 
 export interface ImageConfig {

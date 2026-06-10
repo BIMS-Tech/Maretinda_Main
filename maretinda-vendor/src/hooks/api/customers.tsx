@@ -33,7 +33,7 @@ export const useCustomer = (
   const { data, ...rest } = useQuery({
     queryKey: customersQueryKeys.detail(id),
     queryFn: async () =>
-      fetchQuery(`/vendor/customers/${id}`, {
+      fetchQuery(`/seller/customers/${id}`, {
         method: "GET",
         query,
       }),
@@ -62,7 +62,7 @@ export const useCustomers = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/customers", {
+      fetchQuery("/seller/customers", {
         method: "GET",
         query: query as { [key: string]: string | number },
       }),
@@ -158,7 +158,7 @@ export const useBatchCustomerCustomerGroups = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/customers/${id}/customer-groups`, {
+      fetchQuery(`/seller/customers/${id}/customer-groups`, {
         method: "POST",
         body: payload,
       }),
@@ -200,7 +200,7 @@ export const useCustomerOrders = (
   const { data, ...rest } = useQuery({
     queryKey: [CUSTOMERS_QUERY_KEY, id, "orders"],
     queryFn: async () =>
-      fetchQuery(`/vendor/customers/${id}/orders`, {
+      fetchQuery(`/seller/customers/${id}/orders`, {
         method: "GET",
         query,
       }),

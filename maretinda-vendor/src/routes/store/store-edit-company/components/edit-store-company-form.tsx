@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form"
 import { RouteDrawer, useRouteModal } from "../../../../components/modals"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { StoreVendor } from "../../../../types/user"
+import { Storeseller } from "../../../../types/user"
 import { KeyboundForm } from "../../../../components/utilities/keybound-form"
 import { Form } from "../../../../components/common/form"
 import { Button, Input, toast } from "@medusajs/ui"
@@ -16,7 +16,7 @@ const EditStoreSchema = z.object({
   tax_id: z.string().optional(),
 })
 
-export const EditStoreCompanyForm = ({ seller }: { seller: StoreVendor }) => {
+export const EditStoreCompanyForm = ({ seller }: { seller: Storeseller }) => {
   const { handleSuccess } = useRouteModal()
 
   const form = useForm<z.infer<typeof EditStoreSchema>>({

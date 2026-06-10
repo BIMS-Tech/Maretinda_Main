@@ -2,7 +2,7 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /**
- * GET /admin/vendor-overview
+ * GET /admin/seller-overview
  *
  * Admin endpoint — returns all sellers with their subscription status
  * and the GiyaPay payment transaction that activated their account.
@@ -14,11 +14,11 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
  *
  * Sample response:
  * {
- *   "vendors": [
+ *   "sellers": [
  *     {
  *       "seller_id": "seller_...",
  *       "seller_name": "My Store",
- *       "email": "vendor@example.com",
+ *       "email": "seller@example.com",
  *       "subscription": {
  *         "id": "vsub_...",
  *         "plan_name": "Boost",
@@ -56,33 +56,33 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
     }
 
     // Base query: all sellers
-    let subQuery = pgConnection("vendor_subscription as vs")
+    let subQuery = pgConnection("seller_subscription as vs")
       .select("vs.*")
       .orderBy("vs.created_at", "desc")
 
     if (status) subQuery = subQuery.where("vs.status", status)
 
     const subscriptions: any[] = await subQuery.limit(limit).offset(offset)
-    const [{ count }] = await pgConnection("vendor_subscription").count("id as count")
+    const [{ count }] = await pgConnection("seller_subscription").count("id as count")
 
     const now = new Date()
 
-    const vendors = await Promise.all(
+    const sellers = await Promise.all(
       subscriptions.map(async (sub) => {
         // Seller info
-        const seller = await pgConnection("seller").where("id", sub.vendor_id).first()
+        const seller = await pgConnection("seller").where("id", sub.seller_id).first()
 
         // Payment transaction that matches this subscription
         const payment = await pgConnection("giyapay_transaction")
-          .where("vendor_id", sub.vendor_id)
+          .where("seller_id", sub.seller_id)
           .where("reference_number", sub.payment_reference)
           .first()
           .catch(() => null)
 
-        // Fallback: any vsub_ payment linked to this vendor
+        // Fallback: any vsub_ payment linked to this seller
         const fallbackPayment = !payment
           ? await pgConnection("giyapay_transaction")
-              .where("vendor_id", sub.vendor_id)
+              .where("seller_id", sub.seller_id)
               .whereLike("order_id", "vsub_%")
               .orderBy("created_at", "desc")
               .first()
@@ -97,7 +97,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
         const daysRemaining = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)))
 
         return {
-          seller_id: sub.vendor_id,
+          seller_id: sub.seller_id,
           seller_name: seller?.name || null,
           seller_email: seller?.email || null,
           subscription: {
@@ -125,9 +125,9 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse):
       })
     )
 
-    res.status(200).json({ vendors, count: Number(count), limit, offset })
+    res.status(200).json({ sellers, count: Number(count), limit, offset })
   } catch (error) {
-    console.error("[Admin VendorOverview] Error:", error)
-    res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch vendor overview" })
+    console.error("[Admin sellerOverview] Error:", error)
+    res.status(500).json({ message: error instanceof Error ? error.message : "Failed to fetch seller overview" })
   }
 }

@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       const orderData = await completeResponse.json();
       
       // Handle mercur marketplace order_set response
-      // The response contains an order_set with multiple orders (one per vendor)
+      // The response contains an order_set with multiple orders (one per seller)
       let finalOrderId = cartIdToComplete; // fallback
       let orderSetId = null;
       

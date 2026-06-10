@@ -26,13 +26,13 @@ function formatTime(iso: string | null): string {
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  vendor_customer: "Customer ↔ Vendor",
-  vendor_admin: "Vendor ↔ Support",
+  seller_customer: "Customer ↔ seller",
+  seller_admin: "seller ↔ Support",
   customer_admin: "Customer ↔ Support",
 }
 
 function typeColor(type: string) {
-  if (type === "vendor_admin") return "orange"
+  if (type === "seller_admin") return "orange"
   if (type === "customer_admin") return "blue"
   return "grey"
 }
@@ -57,7 +57,7 @@ function ConvRow({
     >
       <div className="w-8 h-8 rounded-full bg-ui-button-neutral flex items-center justify-center shrink-0">
         <span className="text-xs font-semibold text-ui-fg-on-color">
-          {conv.type === "vendor_admin" ? "V" : conv.type === "customer_admin" ? "C" : "VC"}
+          {conv.type === "seller_admin" ? "V" : conv.type === "customer_admin" ? "C" : "VC"}
         </span>
       </div>
       <div className="flex-1 min-w-0">
@@ -83,21 +83,21 @@ function ConvRow({
 
 function MsgBubble({ msg }: { msg: ChatMessage }) {
   const isAdmin = msg.sender_role === "admin"
-  const isVendor = msg.sender_role === "vendor"
+  const isseller = msg.sender_role === "seller"
 
   return (
     <div className={`flex ${isAdmin ? "justify-end" : "justify-start"} mb-3`}>
       <div className={`max-w-[72%] flex flex-col ${isAdmin ? "items-end" : "items-start"}`}>
         <span className={`text-xs mb-1 font-medium ${
-          isAdmin ? "text-ui-fg-interactive" : isVendor ? "text-orange-600" : "text-ui-fg-muted"
+          isAdmin ? "text-ui-fg-interactive" : isseller ? "text-orange-600" : "text-ui-fg-muted"
         }`}>
-          {isAdmin ? "You (Support)" : isVendor ? `Vendor — ${msg.sender_name}` : `Customer — ${msg.sender_name}`}
+          {isAdmin ? "You (Support)" : isseller ? `seller — ${msg.sender_name}` : `Customer — ${msg.sender_name}`}
         </span>
         <div
           className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words ${
             isAdmin
               ? "bg-ui-button-inverted text-ui-fg-on-inverted rounded-tr-sm"
-              : isVendor
+              : isseller
               ? "bg-orange-50 text-orange-900 border border-orange-200 rounded-tl-sm"
               : "bg-ui-bg-subtle text-ui-fg-base border border-ui-border-base rounded-tl-sm"
           }`}
@@ -212,7 +212,7 @@ function ChatPanel({ convId }: { convId: string }) {
 // ─── New Conversation Modal ───────────────────────────────────────────────────
 
 function NewConvForm({ onClose }: { onClose: () => void }) {
-  const [type, setType] = useState<"vendor_admin" | "customer_admin">("vendor_admin")
+  const [type, setType] = useState<"seller_admin" | "customer_admin">("seller_admin")
   const [partyId, setPartyId] = useState("")
   const [subject, setSubject] = useState("")
   const create = useCreateConversation()
@@ -221,7 +221,7 @@ function NewConvForm({ onClose }: { onClose: () => void }) {
     if (!partyId.trim()) return
     create.mutate(
       {
-        vendor_id: type === "vendor_admin" ? partyId.trim() : undefined,
+        seller_id: type === "seller_admin" ? partyId.trim() : undefined,
         customer_id: type === "customer_admin" ? partyId.trim() : undefined,
         subject: subject.trim() || undefined,
         type,
@@ -239,11 +239,11 @@ function NewConvForm({ onClose }: { onClose: () => void }) {
           <Text size="small" className="text-ui-fg-subtle mb-2 font-medium">Type</Text>
           <div className="flex gap-2">
             <Button
-              variant={type === "vendor_admin" ? "primary" : "secondary"}
+              variant={type === "seller_admin" ? "primary" : "secondary"}
               size="small"
-              onClick={() => setType("vendor_admin")}
+              onClick={() => setType("seller_admin")}
             >
-              Contact Vendor
+              Contact seller
             </Button>
             <Button
               variant={type === "customer_admin" ? "primary" : "secondary"}
@@ -257,10 +257,10 @@ function NewConvForm({ onClose }: { onClose: () => void }) {
 
         <div>
           <Text size="small" className="text-ui-fg-subtle mb-1 font-medium">
-            {type === "vendor_admin" ? "Seller ID" : "Customer ID"}
+            {type === "seller_admin" ? "Seller ID" : "Customer ID"}
           </Text>
           <Input
-            placeholder={type === "vendor_admin" ? "seller_xxx" : "cus_xxx"}
+            placeholder={type === "seller_admin" ? "seller_xxx" : "cus_xxx"}
             value={partyId}
             onChange={(e) => setPartyId(e.target.value)}
           />

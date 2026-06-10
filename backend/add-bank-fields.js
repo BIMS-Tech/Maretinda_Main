@@ -41,7 +41,7 @@ async function addBankFields() {
     `)
     
     console.log('✅ Successfully added bank fields to seller table!')
-    console.log('✅ You can now save bank settings in the vendor panel.')
+    console.log('✅ You can now save bank settings in the seller panel.')
     console.log('✅ Please restart your backend server for changes to take effect.')
     
     await client.end()

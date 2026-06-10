@@ -12,7 +12,7 @@ export const CartItemsProducts = ({
 	delete_item = true,
 	change_quantity = true,
 }: {
-	products: (HttpTypes.StoreCartLineItem & { vendorName?: string })[];
+	products: (HttpTypes.StoreCartLineItem & { sellerName?: string })[];
 	currency_code: string;
 	delete_item?: boolean;
 	change_quantity?: boolean;
@@ -82,11 +82,11 @@ export const CartItemsProducts = ({
 											{product.title || product.subtitle}
 										</h3>
 									</LocalizedClientLink>
-									{product.vendorName && (
+									{product.sellerName && (
 										<p className="text-xs text-[#999]">
-											Vendor:{' '}
+											seller:{' '}
 											<span className="font-semibold text-black">
-												{product.vendorName}
+												{product.sellerName}
 											</span>
 										</p>
 									)}

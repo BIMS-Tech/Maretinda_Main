@@ -28,10 +28,10 @@ When the backend starts (`npm run dev` or `yarn dev`), the following loaders run
 - Registers DFT file generator service
 - Creates `dft_generation` table automatically
 
-### 2. **Custom Vendor API Route**
+### 2. **Custom seller API Route**
 
-Created `/vendor/sellers/me` route to handle seller profile updates with new bank fields:
-- Location: `backend/src/api/vendor/sellers/me/route.ts`
+Created `/seller/sellers/me` route to handle seller profile updates with new bank fields:
+- Location: `backend/src/api/seller/sellers/me/route.ts`
 - Handles both GET and PUT requests
 - Supports all new settlement fields
 
@@ -132,11 +132,11 @@ Stores DFT file generation records:
    )
    ```
 
-### If vendor panel save fails:
+### If seller panel save fails:
 
 1. **Check the custom API route exists**:
    ```bash
-   ls backend/src/api/vendor/sellers/me/route.ts
+   ls backend/src/api/seller/sellers/me/route.ts
    ```
 
 2. **Restart backend** to load the new route:
@@ -147,9 +147,9 @@ Stores DFT file generation records:
 
 3. **Check backend logs** when saving:
    ```
-   [VendorUpdateSeller] Updating seller: seller_xxxxx
-   [VendorUpdateSeller] Fields being updated: [...]
-   [VendorUpdateSeller] ✅ Successfully updated seller
+   [sellerUpdateSeller] Updating seller: seller_xxxxx
+   [sellerUpdateSeller] Fields being updated: [...]
+   [sellerUpdateSeller] ✅ Successfully updated seller
    ```
 
 ---
@@ -162,7 +162,7 @@ Stores DFT file generation records:
 4. ✅ `tama_generation` table created (if not exist)
 5. ✅ `dft_generation` table created (if not exist)
 6. ✅ Services registered and ready
-7. ✅ Vendor panel can save bank settings
+7. ✅ seller panel can save bank settings
 8. ✅ Admin panel can view/generate reports
 
 ---
@@ -176,7 +176,7 @@ Stores DFT file generation records:
 - ✅ `backend/src/loaders/tama.ts` (UPDATED)
 - ✅ `backend/src/loaders/dft.ts` (UPDATED)
 - ✅ `backend/src/loaders/index.ts` (UPDATED)
-- ✅ `backend/src/api/vendor/sellers/me/route.ts` (NEW)
+- ✅ `backend/src/api/seller/sellers/me/route.ts` (NEW)
 
 ### Safe for Production:
 - Uses `IF NOT EXISTS` clauses
@@ -198,8 +198,8 @@ psql $DATABASE_URL -c "\dt *generation*"
 # Check backend is running
 curl http://localhost:9000/health
 
-# Check if custom vendor route works
-curl -X GET http://localhost:9000/vendor/sellers/me \
+# Check if custom seller route works
+curl -X GET http://localhost:9000/seller/sellers/me \
   -H "Cookie: your-session-cookie"
 ```
 

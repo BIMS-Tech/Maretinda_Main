@@ -2,10 +2,10 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
- * @oas [post] /admin/giyapay/backfill-vendors
- * operationId: "AdminBackfillGiyaPayVendors"
- * summary: "Backfill Vendor IDs for GiyaPay Transactions"
- * description: "Updates existing GiyaPay transactions with vendor_id from their orders"
+ * @oas [post] /admin/giyapay/backfill-sellers
+ * operationId: "AdminBackfillGiyaPaysellers"
+ * summary: "Backfill seller IDs for GiyaPay Transactions"
+ * description: "Updates existing GiyaPay transactions with seller_id from their orders"
  * x-authenticated: true
  * responses:
  *   "200":
@@ -32,9 +32,9 @@ export async function POST(
       return
     }
 
-    console.log('[GiyaPay Backfill] Starting vendor_id backfill...')
+    console.log('[GiyaPay Backfill] Starting seller_id backfill...')
 
-    // Get all transactions without vendor_id
+    // Get all transactions without seller_id
     const transactionsQuery = `
       SELECT 
         gt.id,
@@ -42,7 +42,7 @@ export async function POST(
         gt.order_id,
         gt.cart_id
       FROM giyapay_transaction gt
-      WHERE gt.vendor_id IS NULL
+      WHERE gt.seller_id IS NULL
         AND gt.order_id IS NOT NULL
       ORDER BY gt.created_at DESC
     `
@@ -50,14 +50,14 @@ export async function POST(
     const transactionResults = await pgConnection.raw(transactionsQuery)
     const transactions = transactionResults?.rows || transactionResults || []
     
-    console.log(`[GiyaPay Backfill] Found ${transactions.length} transactions without vendor_id`)
+    console.log(`[GiyaPay Backfill] Found ${transactions.length} transactions without seller_id`)
 
     let updated = 0
     let failed = 0
 
     for (const txn of transactions) {
       try {
-        let vendorId = null
+        let sellerId = null
 
         // First, let's discover the order structure
         console.log(`[GiyaPay Backfill] 🔍 Inspecting order ${txn.order_id}...`)
@@ -82,33 +82,33 @@ export async function POST(
             metadata: order.order_metadata
           })
           
-          // Strategy 1: Try sales_channel_id as vendor_id
+          // Strategy 1: Try sales_channel_id as seller_id
           if (order.sales_channel_id) {
             const sellerCheckQuery = `SELECT id FROM seller WHERE id = ? LIMIT 1`
             const sellerResults = await pgConnection.raw(sellerCheckQuery, [order.sales_channel_id])
             const sellerRows = sellerResults?.rows || sellerResults || []
             
             if (sellerRows.length > 0) {
-              vendorId = order.sales_channel_id
-              console.log(`[GiyaPay Backfill] ✅ Found vendor via sales_channel_id: ${vendorId}`)
+              sellerId = order.sales_channel_id
+              console.log(`[GiyaPay Backfill] ✅ Found seller via sales_channel_id: ${sellerId}`)
             }
           }
           
           // Strategy 2: Try to get from order metadata
-          if (!vendorId && order.order_metadata) {
+          if (!sellerId && order.order_metadata) {
             const metadata = typeof order.order_metadata === 'string' 
               ? JSON.parse(order.order_metadata) 
               : order.order_metadata
             
-            if (metadata?.owner_id || metadata?.vendor_id || metadata?.seller_id) {
-              vendorId = metadata.owner_id || metadata.vendor_id || metadata.seller_id
-              console.log(`[GiyaPay Backfill] ✅ Found vendor via order metadata: ${vendorId}`)
+            if (metadata?.owner_id || metadata?.seller_id || metadata?.seller_id) {
+              sellerId = metadata.owner_id || metadata.seller_id || metadata.seller_id
+              console.log(`[GiyaPay Backfill] ✅ Found seller via order metadata: ${sellerId}`)
             }
           }
         }
 
         // Strategy 3: Try to get line items and check their metadata
-        if (!vendorId) {
+        if (!sellerId) {
           const lineItemsQuery = `
             SELECT 
               id,
@@ -129,26 +129,26 @@ export async function POST(
                 ? JSON.parse(line.metadata) 
                 : line.metadata
               
-              if (metadata?.owner_id || metadata?.vendor_id || metadata?.seller_id) {
-                vendorId = metadata.owner_id || metadata.vendor_id || metadata.seller_id
-                console.log(`[GiyaPay Backfill] ✅ Found vendor via line item metadata: ${vendorId}`)
+              if (metadata?.owner_id || metadata?.seller_id || metadata?.seller_id) {
+                sellerId = metadata.owner_id || metadata.seller_id || metadata.seller_id
+                console.log(`[GiyaPay Backfill] ✅ Found seller via line item metadata: ${sellerId}`)
                 break
               }
             }
           }
         }
         
-        if (vendorId) {
+        if (sellerId) {
           // Update the transaction
           await pgConnection.raw(
-            'UPDATE giyapay_transaction SET vendor_id = ?, updated_at = NOW() WHERE id = ?',
-            [vendorId, txn.id]
+            'UPDATE giyapay_transaction SET seller_id = ?, updated_at = NOW() WHERE id = ?',
+            [sellerId, txn.id]
           )
           
-          console.log(`[GiyaPay Backfill] ✅ Updated transaction ${txn.id} with vendor ${vendorId}`)
+          console.log(`[GiyaPay Backfill] ✅ Updated transaction ${txn.id} with seller ${sellerId}`)
           updated++
         } else {
-          console.log(`[GiyaPay Backfill] ⚠️ No vendor found for order ${txn.order_id}`)
+          console.log(`[GiyaPay Backfill] ⚠️ No seller found for order ${txn.order_id}`)
           failed++
         }
       } catch (error) {
@@ -165,7 +165,7 @@ export async function POST(
 
     res.status(200).json({
       success: true,
-      message: 'Vendor ID backfill completed',
+      message: 'seller ID backfill completed',
       total: transactions.length,
       updated,
       failed
@@ -175,7 +175,7 @@ export async function POST(
     console.error('[GiyaPay Backfill] Error:', error)
     res.status(500).json({
       success: false,
-      message: 'Failed to backfill vendor IDs',
+      message: 'Failed to backfill seller IDs',
       error: error instanceof Error ? error.message : 'Unknown error'
     })
   }

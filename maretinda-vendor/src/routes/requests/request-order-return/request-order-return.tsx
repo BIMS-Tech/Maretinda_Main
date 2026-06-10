@@ -17,7 +17,7 @@ export function RequestOrderReturn() {
   const form = useForm({
     defaultValues: {
       status: order_return_request?.status,
-      vendor_reviewer_note: order_return_request?.vendor_reviewer_note || "",
+      seller_reviewer_note: order_return_request?.seller_reviewer_note || "",
     },
   })
 
@@ -79,11 +79,11 @@ export function RequestOrderReturn() {
             />
             <Form.Field
               control={form.control}
-              name="vendor_reviewer_note"
+              name="seller_reviewer_note"
               render={({ field }) => {
                 return (
                   <Form.Item className="mt-4">
-                    <Form.Label>Vendor Reviewer Note</Form.Label>
+                    <Form.Label>seller Reviewer Note</Form.Label>
                     <Form.Control>
                       <Textarea {...field} rows={4} />
                     </Form.Control>

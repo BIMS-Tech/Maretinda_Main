@@ -51,8 +51,8 @@ DATABASE_URL=postgresql://user:password@host:5432/medusa
 # CORS Configuration
 STORE_CORS=https://yourdomain.com,https://www.yourdomain.com
 ADMIN_CORS=https://admin.yourdomain.com
-VENDOR_CORS=https://vendor.yourdomain.com
-AUTH_CORS=https://yourdomain.com,https://admin.yourdomain.com,https://vendor.yourdomain.com
+seller_CORS=https://seller.yourdomain.com
+AUTH_CORS=https://yourdomain.com,https://admin.yourdomain.com,https://seller.yourdomain.com
 
 # Security Secrets (generate strong values)
 JWT_SECRET=your-random-jwt-secret-min-32-chars

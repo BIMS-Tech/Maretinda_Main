@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
  * POST /api/subscription/activate-renewal
  *
  * Next.js API route that proxies the renewal activation to Medusa backend.
- * Called by the store's GiyaPay success page after a vendor renewal payment.
+ * Called by the store's GiyaPay success page after a seller renewal payment.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     if (!String(order_id).startsWith('vrenew_')) {
       return NextResponse.json(
-        { success: false, message: 'Not a vendor renewal payment' },
+        { success: false, message: 'Not a seller renewal payment' },
         { status: 400 }
       )
     }

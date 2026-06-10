@@ -189,8 +189,8 @@ class FlashSaleService {
     return { flash_sales: result.rows || [], count: total }
   }
 
-  /** List events visible to a vendor, with their application counts */
-  async listForVendor(sellerId: string, filters: { limit?: number; offset?: number } = {}): Promise<{ flash_sales: any[]; count: number }> {
+  /** List events visible to a seller, with their application counts */
+  async listForseller(sellerId: string, filters: { limit?: number; offset?: number } = {}): Promise<{ flash_sales: any[]; count: number }> {
     const { limit = 20, offset = 0 } = filters
 
     const countResult = await this.pgConnection.raw(

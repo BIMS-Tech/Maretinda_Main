@@ -39,7 +39,7 @@ const dmSerif = DM_Serif_Display({
 export const metadata: Metadata = {
 	description:
 		process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
-		'Maretinda - From fresh groceries to latest fashion, discover everything you need from trusted local vendors',
+		'Maretinda - From fresh groceries to latest fashion, discover everything you need from trusted local sellers',
 	icons: {
 		icon: '/logo-m-2.png',
 	},

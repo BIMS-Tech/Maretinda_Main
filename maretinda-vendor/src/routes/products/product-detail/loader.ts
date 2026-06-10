@@ -10,7 +10,7 @@ const productDetailQuery = (id: string) => ({
     fields: PRODUCT_DETAIL_FIELDS,
   }),
   queryFn: async () =>
-    fetchQuery(`/vendor/products/${id}`, {
+    fetchQuery(`/seller/products/${id}`, {
       method: "GET",
       query: {
         fields: "*variants.inventory_items,*categories",

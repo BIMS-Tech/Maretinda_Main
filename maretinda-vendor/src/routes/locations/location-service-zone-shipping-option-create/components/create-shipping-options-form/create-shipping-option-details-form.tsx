@@ -41,7 +41,7 @@ export const CreateShippingOptionDetailsForm = ({
 
   const shippingProfiles = useComboboxData({
     queryFn: () =>
-      fetchQuery(`/vendor/shipping-profiles`, {
+      fetchQuery(`/seller/shipping-profiles`, {
         method: "GET",
       }),
     queryKey: ["shipping_profiles"],

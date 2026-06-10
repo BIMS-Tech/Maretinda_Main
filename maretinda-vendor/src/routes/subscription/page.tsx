@@ -618,7 +618,7 @@ export const SubscriptionPage = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Subscription</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage your Maretinda vendor subscription. Payments are processed via GiyaPay.
+            Manage your Maretinda seller subscription. Payments are processed via GiyaPay.
           </p>
         </div>
 

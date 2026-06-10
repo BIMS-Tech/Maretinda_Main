@@ -76,9 +76,9 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
             </Container>
           </fieldset>
           <fieldset className="mt-2">
-            <legend className="mb-2">Vendor response</legend>
+            <legend className="mb-2">seller response</legend>
             <Container>
-              <Text>{request.vendor_reviewer_note || "-"}</Text>
+              <Text>{request.seller_reviewer_note || "-"}</Text>
             </Container>
           </fieldset>
           <fieldset className="mt-2">
@@ -102,7 +102,7 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
               <Text className="font-semibold">Request information</Text>
             </div>
             <Text>{`Submitted on ${formatDate(request.created_at)}`}</Text>
-            <Text>{`Escalated on ${formatDate(request.vendor_reviewer_date)}`}</Text>
+            <Text>{`Escalated on ${formatDate(request.seller_reviewer_date)}`}</Text>
             {request.admin_reviewer_id && (
               <Text>{`Reviewed on ${formatDate(request.admin_reviewer_date)}`}</Text>
             )}

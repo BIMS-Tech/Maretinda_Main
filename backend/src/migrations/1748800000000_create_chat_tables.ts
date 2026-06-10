@@ -5,13 +5,13 @@ export class Migration1748800000000 extends Migration {
     this.addSql(`
       CREATE TABLE IF NOT EXISTS "chat_conversation" (
         "id"              text        NOT NULL,
-        "type"            text        NOT NULL DEFAULT 'vendor_customer',
-        "vendor_id"       text        NULL,
+        "type"            text        NOT NULL DEFAULT 'seller_customer',
+        "seller_id"       text        NULL,
         "customer_id"     text        NULL,
         "subject"         text        NULL,
         "status"          text        NOT NULL DEFAULT 'open',
         "last_message_at" timestamptz NULL,
-        "unread_vendor"   integer     NOT NULL DEFAULT 0,
+        "unread_seller"   integer     NOT NULL DEFAULT 0,
         "unread_customer" integer     NOT NULL DEFAULT 0,
         "unread_admin"    integer     NOT NULL DEFAULT 0,
         "created_at"      timestamptz NOT NULL DEFAULT now(),
@@ -20,7 +20,7 @@ export class Migration1748800000000 extends Migration {
       );
     `)
 
-    this.addSql(`CREATE INDEX IF NOT EXISTS "chat_conv_vendor_id_idx"       ON "chat_conversation" ("vendor_id");`)
+    this.addSql(`CREATE INDEX IF NOT EXISTS "chat_conv_seller_id_idx"       ON "chat_conversation" ("seller_id");`)
     this.addSql(`CREATE INDEX IF NOT EXISTS "chat_conv_customer_id_idx"     ON "chat_conversation" ("customer_id");`)
     this.addSql(`CREATE INDEX IF NOT EXISTS "chat_conv_last_msg_idx"        ON "chat_conversation" ("last_message_at" DESC NULLS LAST);`)
     this.addSql(`CREATE INDEX IF NOT EXISTS "chat_conv_status_idx"          ON "chat_conversation" ("status");`)

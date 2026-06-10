@@ -6,7 +6,7 @@ import { queryClient } from "../../../lib/query-client"
 const reviewDetailQuery = (id: string) => ({
   queryKey: reviewsQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/vendor/sellers/me/review/${id}`, {
+    fetchQuery(`/seller/sellers/me/review/${id}`, {
       method: "GET",
       query: { fields: "*customer, reference" },
     }),

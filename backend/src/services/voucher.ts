@@ -38,7 +38,7 @@ export default class VoucherService {
   /**
    * List all promotions that are:
    * - status = "active"
-   * - metadata.is_public = true  (admin sets this; vendor promotions are always public)
+   * - metadata.is_public = true  (admin sets this; seller promotions are always public)
    *
    * Optionally filter to a single seller with seller_id param.
    */

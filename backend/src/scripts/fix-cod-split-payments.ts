@@ -7,11 +7,11 @@ import * as dotenv from 'dotenv'
  * The @mercurjs/b2c-core subscriber `split-payment-payment-captured` fires on
  * every PaymentEvents.CAPTURED — including pp_system_default auto-captures for
  * COD orders — and incorrectly marks split_order_payment.captured_amount to the
- * full order total. This script resets those records so the vendor panel shows
+ * full order total. This script resets those records so the seller panel shows
  * "Awaiting" instead of "Captured" for COD orders.
  *
  * Safe to run multiple times (idempotent). Does NOT affect orders where the
- * vendor has already used the capture button, since those are reset by the
+ * seller has already used the capture button, since those are reset by the
  * ongoing reset-cod-split-payment subscriber.
  *
  * Usage: npm run fix:cod
@@ -90,7 +90,7 @@ async function fixCodSplitPayments() {
 
     console.log(`\nReset ${affected.length} COD split order payment(s) to captured_amount = 0, status = pending.`)
     console.log(`Reset ${uniquePaymentIds.length} COD payment record(s) to status = authorized.`)
-    console.log('Done! Vendor panel will now show the correct status for these COD orders.')
+    console.log('Done! seller panel will now show the correct status for these COD orders.')
 
   } catch (err) {
     console.error('Error fixing COD split payments:', err)

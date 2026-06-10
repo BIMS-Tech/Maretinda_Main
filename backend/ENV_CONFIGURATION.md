@@ -40,8 +40,8 @@ STORE_CORS=http://localhost:3000,http://localhost:8000,https://yourdomain.com
 # Admin Panel URLs
 ADMIN_CORS=http://localhost:3001,http://localhost:7001,https://admin.yourdomain.com
 
-# Vendor Panel URLs
-VENDOR_CORS=http://localhost:3002,http://localhost:5173,https://vendor.yourdomain.com
+# seller Panel URLs
+seller_CORS=http://localhost:3002,http://localhost:5173,https://seller.yourdomain.com
 
 # Auth CORS (combine all)
 AUTH_CORS=http://localhost:3000,http://localhost:3001,http://localhost:3002
@@ -195,7 +195,7 @@ cat > .env << 'EOF'
 DATABASE_URL=postgresql://medusa_user:YOUR_APP_PASSWORD@127.0.0.1:5432/medusa
 STORE_CORS=http://localhost:3000
 ADMIN_CORS=http://localhost:3001
-VENDOR_CORS=http://localhost:5173
+seller_CORS=http://localhost:5173
 AUTH_CORS=http://localhost:3000,http://localhost:3001,http://localhost:5173
 JWT_SECRET=supersecret
 COOKIE_SECRET=supersecret

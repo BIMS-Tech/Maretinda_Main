@@ -1,10 +1,10 @@
 import { z } from "zod"
 
 /**
- * Extended VendorUpdateSeller validator that includes bank/settlement fields
+ * Extended sellerUpdateSeller validator that includes bank/settlement fields
  * Overrides the default Mercur validator to allow our custom fields
  */
-export const VendorUpdateSeller = z
+export const sellerUpdateSeller = z
   .object({
     // Standard seller fields
     name: z

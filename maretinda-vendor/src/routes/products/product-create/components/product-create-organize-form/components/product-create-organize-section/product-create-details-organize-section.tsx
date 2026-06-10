@@ -22,7 +22,7 @@ export const ProductCreateOrganizationSection = ({
   const collections = useComboboxData({
     queryKey: ["product_collections"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-collections", {
+      fetchQuery("/seller/product-collections", {
         method: "GET",
         query: params,
       }),
@@ -36,7 +36,7 @@ export const ProductCreateOrganizationSection = ({
   const types = useComboboxData({
     queryKey: ["product_types", "creating"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-types", {
+      fetchQuery("/seller/product-types", {
         method: "GET",
         query: params,
       }),
@@ -50,7 +50,7 @@ export const ProductCreateOrganizationSection = ({
   const tags = useComboboxData({
     queryKey: ["product_tags", "creating"],
     queryFn: (params) =>
-      fetchQuery("/vendor/product-tags", {
+      fetchQuery("/seller/product-tags", {
         method: "GET",
         query: params,
       }),

@@ -82,7 +82,7 @@ Tracks DFT file generation history (same structure as TAMA):
 - `reference_number` - GiyaPay reference
 - `order_id` - Medusa order ID
 - `cart_id` - Cart ID
-- `vendor_id` - Seller/vendor ID
+- `seller_id` - Seller/seller ID
 - `amount` - Transaction amount
 - `currency` - Currency code (default: PHP)
 - `status` - Transaction status
@@ -105,7 +105,7 @@ The following indexes are created for optimal query performance:
 - `idx_seller_account_number` - Seller account lookup
 - `idx_giyapay_ref` - GiyaPay reference number lookup
 - `idx_giyapay_order` - GiyaPay order lookup
-- `idx_giyapay_vendor` - Vendor-specific transactions
+- `idx_giyapay_seller` - seller-specific transactions
 - `idx_tama_seller` - TAMA generations by seller
 - `idx_dft_seller` - DFT generations by seller
 
@@ -246,8 +246,8 @@ npm run seed
 - **Migration:** `src/migrations/1734480000000_add_seller_bank_fields.ts` - Database migration
 - **Loader:** `src/loaders/settlement.ts` - Auto-initialization on startup
 - **Setup Script:** `src/scripts/init-database.ts` - Manual initialization script
-- **Validator:** `src/api/vendor/sellers/me/validators.ts` - Request validation
-- **Route:** `src/api/vendor/sellers/me/route.ts` - API endpoint
+- **Validator:** `src/api/seller/sellers/me/validators.ts` - Request validation
+- **Route:** `src/api/seller/sellers/me/route.ts` - API endpoint
 
 ## Support
 
@@ -261,7 +261,7 @@ If you encounter issues not covered here, check:
 
 After database setup:
 1. ✅ Configure GiyaPay credentials in admin panel
-2. ✅ Test vendor bank information submission
+2. ✅ Test seller bank information submission
 3. ✅ Generate test TAMA/DFT files
 4. ✅ Verify settlement reports work correctly
 

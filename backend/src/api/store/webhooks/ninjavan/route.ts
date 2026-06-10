@@ -57,7 +57,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const internalStatus = STATUS_MAP[event] ?? STATUS_MAP[status] ?? 'unknown'
 
     // Find matching shipping order
-    const shippingOrder = await pg('vendor_shipping_order')
+    const shippingOrder = await pg('seller_shipping_order')
       .where({ tracking_number: tracking_id })
       .whereNull('deleted_at')
       .first()
@@ -72,7 +72,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const existingEvents: any[] = shippingOrder.webhook_events ?? []
     existingEvents.push({ event, status, timestamp, raw: payload })
 
-    await pg('vendor_shipping_order')
+    await pg('seller_shipping_order')
       .where({ id: shippingOrder.id })
       .update({
         status: internalStatus,

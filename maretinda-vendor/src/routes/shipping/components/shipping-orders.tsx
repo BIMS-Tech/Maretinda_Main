@@ -121,7 +121,7 @@ const EMPTY_FORM: ShipmentForm = {
 
 async function downloadWaybill(orderId: string, trackingNumber: string) {
   const bearer = window.localStorage.getItem('medusa_auth_token') || ''
-  const response = await fetch(`${backendUrl}/vendor/shipping-orders`, {
+  const response = await fetch(`${backendUrl}/seller/shipping-orders`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${bearer}`,

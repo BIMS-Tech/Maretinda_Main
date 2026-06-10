@@ -3,10 +3,10 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
 import SubscriptionService from "../../../../services/subscription"
 
-function getVendorPanelUrl(): string {
+function getsellerPanelUrl(): string {
   return (
-    process.env.VENDOR_PANEL_URL ||
-    process.env.VENDOR_CORS?.split(",")[0] ||
+    process.env.seller_PANEL_URL ||
+    process.env.seller_CORS?.split(",")[0] ||
     "http://localhost:7001"
   ).replace(/\/$/, "")
 }
@@ -39,10 +39,10 @@ async function getMerchantSecret(scope: any): Promise<string | null> {
 }
 
 /**
- * POST /vendor/subscription/activate
+ * POST /seller/subscription/activate
  *
- * Called by the vendor panel after GiyaPay redirects back on payment success.
- * Verifies the GiyaPay signature, then creates an active vendor_subscription.
+ * Called by the seller panel after GiyaPay redirects back on payment success.
+ * Verifies the GiyaPay signature, then creates an active seller_subscription.
  *
  * Body: { order_id, refno, nonce, timestamp, amount, signature }
  */
@@ -73,13 +73,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       pgConnection = (req.scope as any).__pg_connection__ || (req.scope as any).pgConnection
     }
 
-    // Resolve vendor_id from member
+    // Resolve seller_id from member
     const member = await pgConnection("member").where("id", memberId).first()
     if (!member?.seller_id) {
-      res.status(403).json({ message: "Not a vendor" })
+      res.status(403).json({ message: "Not a seller" })
       return
     }
-    const vendorId = member.seller_id
+    const sellerId = member.seller_id
 
     // Get merchant secret
     const merchantSecret = await getMerchantSecret(req.scope)
@@ -89,8 +89,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     // Verify GiyaPay signature:
-    // sha512("{vendorPanelUrl}/subscription?nonce={nonce}&order_id={order_id}&refno={refno}&timestamp={timestamp}&amount={amount}" + merchantSecret)
-    const successCallbackUrl = `${getVendorPanelUrl()}/subscription`
+    // sha512("{sellerPanelUrl}/subscription?nonce={nonce}&order_id={order_id}&refno={refno}&timestamp={timestamp}&amount={amount}" + merchantSecret)
+    const successCallbackUrl = `${getsellerPanelUrl()}/subscription`
     const urlWithoutSignature = `${successCallbackUrl}?nonce=${nonce}&order_id=${order_id}&refno=${refno}&timestamp=${timestamp}&amount=${amount}`
     const expectedSignature = crypto.createHash("sha512").update(urlWithoutSignature + merchantSecret).digest("hex")
 
@@ -101,7 +101,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
 
     // Idempotency: if already activated by this payment reference, return the existing subscription
-    const existingByRef = await pgConnection("vendor_subscription")
+    const existingByRef = await pgConnection("seller_subscription")
       .where("payment_reference", refno)
       .first()
     if (existingByRef) {
@@ -110,17 +110,17 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // Parse order_id: vrenew_{planSlug}_{billing}_{vendorId}_{timestamp}
+    // Parse order_id: vrenew_{planSlug}_{billing}_{sellerId}_{timestamp}
     // planSlug has no underscores (Foundation/Boost/Managed are single words)
     const match = String(order_id).match(/^vrenew_([^_]+)_(monthly|yearly)_(.+)_(\d{10,})$/)
     if (!match) {
       res.status(400).json({ message: "Could not parse order ID" })
       return
     }
-    const [, planSlug, billingPeriod, orderVendorId] = match
+    const [, planSlug, billingPeriod, ordersellerId] = match
 
-    if (orderVendorId !== vendorId) {
-      res.status(403).json({ message: "Order does not belong to this vendor" })
+    if (ordersellerId !== sellerId) {
+      res.status(403).json({ message: "Order does not belong to this seller" })
       return
     }
 
@@ -143,7 +143,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
 
     const subscriptionService = new SubscriptionService(req.scope)
     const subscription = await subscriptionService.renewSubscription({
-      vendorId,
+      sellerId,
       planName: plan.name,
       billingPeriod: billingPeriod as "monthly" | "yearly",
       price,
@@ -151,7 +151,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       planId: plan.id,
     })
 
-    console.log(`[Subscription Activate] Activated ${plan.name} (${billingPeriod}) for vendor ${vendorId}, ref: ${refno}`)
+    console.log(`[Subscription Activate] Activated ${plan.name} (${billingPeriod}) for seller ${sellerId}, ref: ${refno}`)
 
     res.status(200).json({ success: true, subscription, plan })
   } catch (error) {

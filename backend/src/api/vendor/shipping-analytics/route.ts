@@ -24,7 +24,7 @@ function getPeriodStart(period: string): Date {
 }
 
 /**
- * GET /vendor/shipping-analytics
+ * GET /seller/shipping-analytics
  */
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
   try {
@@ -35,7 +35,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     const { period = '30d', provider_id } = req.query as { period?: string; provider_id?: string }
     const since = getPeriodStart(period)
 
-    let query = pg('vendor_shipping_order')
+    let query = pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
       .where('created_at', '>=', since)

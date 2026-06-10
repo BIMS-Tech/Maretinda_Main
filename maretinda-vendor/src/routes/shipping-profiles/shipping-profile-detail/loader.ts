@@ -7,7 +7,7 @@ import { queryClient } from "../../../lib/query-client"
 const shippingProfileQuery = (id: string) => ({
   queryKey: shippingProfileQueryKeys.detail(id),
   queryFn: async () =>
-    fetchQuery(`/vendor/shipping-profiles/${id}`, {
+    fetchQuery(`/seller/shipping-profiles/${id}`, {
       method: "GET",
     }),
 })

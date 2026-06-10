@@ -9,7 +9,7 @@ import { ContainerRegistrationKeys, Modules, PaymentEvents } from "@medusajs/fra
  * every PaymentEvents.CAPTURED (including pp_system_default auto-captures) and
  * marks both the core `payment` record and `split_order_payment` as captured.
  * This subscriber runs 600ms later to undo that for COD orders — resetting both
- * tables so the vendor panel shows "Awaiting" until cash is physically collected.
+ * tables so the seller panel shows "Awaiting" until cash is physically collected.
  */
 export default async function resetCodSplitPayment({
   event,

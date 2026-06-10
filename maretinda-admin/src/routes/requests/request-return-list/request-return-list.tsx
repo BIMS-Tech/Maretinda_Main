@@ -91,7 +91,7 @@ export const OrderReturnRequestsPage = () => {
                   <Table.Cell>
                     <div className="flex items-center gap-2">
                       <History />
-                      {formatDate(request.vendor_reviewer_date)}
+                      {formatDate(request.seller_reviewer_date)}
                     </div>
                   </Table.Cell>
                   <Table.Cell>

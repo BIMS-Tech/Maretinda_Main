@@ -34,7 +34,7 @@ export const useCustomerGroup = (
   const { data, ...rest } = useQuery({
     queryKey: customerGroupsQueryKeys.detail(id, query),
     queryFn: async () =>
-      fetchQuery(`/vendor/customer-groups/${id}`, {
+      fetchQuery(`/seller/customer-groups/${id}`, {
         method: "GET",
         query,
       }),
@@ -61,7 +61,7 @@ export const useCustomerGroups = (
 ) => {
   const { data, ...rest } = useQuery({
     queryFn: () =>
-      fetchQuery("/vendor/customer-groups", {
+      fetchQuery("/seller/customer-groups", {
         method: "GET",
       }),
     queryKey: customerGroupsQueryKeys.list(query),
@@ -95,7 +95,7 @@ export const useCreateCustomerGroup = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/customer-groups", {
+      fetchQuery("/seller/customer-groups", {
         method: "POST",
         body: payload,
       }),
@@ -119,7 +119,7 @@ export const useUpdateCustomerGroup = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/customer-groups/${id}`, {
+      fetchQuery(`/seller/customer-groups/${id}`, {
         method: "POST",
         body: payload,
       }),
@@ -147,7 +147,7 @@ export const useDeleteCustomerGroup = (
 ) => {
   return useMutation({
     mutationFn: () =>
-      fetchQuery(`/vendor/customer-groups/${id}`, {
+      fetchQuery(`/seller/customer-groups/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -173,7 +173,7 @@ export const useDeleteCustomerGroupLazy = (
 ) => {
   return useMutation({
     mutationFn: ({ id }) =>
-      fetchQuery(`/vendor/customer-groups/${id}`, {
+      fetchQuery(`/seller/customer-groups/${id}`, {
         method: "DELETE",
       }),
     onSuccess: (data, variables, context) => {
@@ -200,7 +200,7 @@ export const useAddCustomersToGroup = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/customer-groups/${id}/customers`, {
+      fetchQuery(`/seller/customer-groups/${id}/customers`, {
         method: "POST",
         body: { add: payload },
       }),
@@ -231,7 +231,7 @@ export const useRemoveCustomersFromGroup = (
 ) => {
   return useMutation({
     mutationFn: (payload) =>
-      fetchQuery(`/vendor/customer-groups/${id}/customers`, {
+      fetchQuery(`/seller/customer-groups/${id}/customers`, {
         method: "POST",
         body: { remove: payload },
       }),

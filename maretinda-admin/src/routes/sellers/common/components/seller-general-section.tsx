@@ -3,14 +3,14 @@ import { Container, Divider, Heading, Text, usePrompt } from "@medusajs/ui";
 
 import { useNavigate } from "react-router-dom";
 
-import type { VendorSeller } from "@custom-types/seller";
+import type { sellerseller } from "@custom-types/seller";
 
 import { ActionsButton } from "@components/common/actions-button";
 import { SellerStatusBadge } from "@components/common/seller-status-badge";
 
 import { useUpdateSeller } from "@hooks/api/sellers";
 
-export const SellerGeneralSection = ({ seller }: { seller: VendorSeller }) => {
+export const SellerGeneralSection = ({ seller }: { seller: sellerseller }) => {
   const navigate = useNavigate();
 
   const { mutateAsync: suspendSeller } = useUpdateSeller();

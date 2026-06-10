@@ -6,7 +6,7 @@ import { FiShoppingBag, FiPackage, FiUsers, FiMapPin } from "react-icons/fi";
 interface StatItem { icon: typeof FiShoppingBag; target: number; label: string; suffix?: string; format?: "k" | "plain" }
 
 const stats: StatItem[] = [
-  { icon: FiShoppingBag, target: 2500,   label: "Active Vendors",   suffix: "+", format: "plain" },
+  { icon: FiShoppingBag, target: 2500,   label: "Active sellers",   suffix: "+", format: "plain" },
   { icon: FiPackage,     target: 180,     label: "Products Listed",  suffix: "K+", format: "plain" },
   { icon: FiUsers,       target: 520,     label: "Happy Customers",  suffix: "K+", format: "plain" },
   { icon: FiMapPin,      target: 81,      label: "Provinces Served", format: "plain" },

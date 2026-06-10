@@ -81,7 +81,7 @@ export default async function seedMarketplaceData({ container }: ExecArgs) {
 
   logger.info('=== Finished ===')
   logger.info(`Publishable api key: ${apiKey.token}`)
-  logger.info(`Vendor panel access:`)
+  logger.info(`seller panel access:`)
   logger.info(`email: seller@mercurjs.com`)
   logger.info(`pass: secret`)
 }

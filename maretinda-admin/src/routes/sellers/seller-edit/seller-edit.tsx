@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 
-import type { VendorSeller } from "@custom-types/seller";
+import type { sellerseller } from "@custom-types/seller";
 
 import { RouteDrawer } from "@components/modals";
 
@@ -26,7 +26,7 @@ export const SellerEdit = () => {
           <RouteDrawer.Title>Edit seller</RouteDrawer.Title>
         </RouteDrawer.Header>
         <RouteDrawer.Body>
-          <SellerEditForm seller={data?.seller as unknown as VendorSeller} />
+          <SellerEditForm seller={data?.seller as unknown as sellerseller} />
         </RouteDrawer.Body>
       </RouteDrawer>
     </>
