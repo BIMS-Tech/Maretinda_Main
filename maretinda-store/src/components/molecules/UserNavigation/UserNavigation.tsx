@@ -21,6 +21,69 @@ import {
 	StarIcon,
 } from '@/icons/navigation';
 
+function VoucherIcon({ size = 18 }: { size?: number }) {
+	return (
+		<svg
+			aria-hidden="true"
+			fill="none"
+			height={size}
+			viewBox="0 0 18 18"
+			width={size}
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path
+				d="M11.25 2.25H6.75C5.50736 2.25 4.5 3.25736 4.5 4.5V5.25C5.32843 5.25 6 5.92157 6 6.75C6 7.57843 5.32843 8.25 4.5 8.25V9C4.5 10.2426 5.50736 11.25 6.75 11.25H11.25C12.4926 11.25 13.5 10.2426 13.5 9V8.25C12.6716 8.25 12 7.57843 12 6.75C12 5.92157 12.6716 5.25 13.5 5.25V4.5C13.5 3.25736 12.4926 2.25 11.25 2.25Z"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M7.5 6.75H7.50833"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.75"
+			/>
+			<path
+				d="M10.5 6.75H10.5083"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.75"
+			/>
+			<path
+				d="M2.25 7.5H3"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M2.25 10.5H3"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M15 7.5H15.75"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.5"
+			/>
+			<path
+				d="M15 10.5H15.75"
+				stroke="currentColor"
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				strokeWidth="1.5"
+			/>
+		</svg>
+	);
+}
+
 const navigationItems = [
 	{
 		href: '/user',
@@ -59,7 +122,7 @@ const navigationItems = [
 	},
 	{
 		href: '/user/vouchers',
-		icon: <span className="text-base leading-none">🎟️</span>,
+		icon: <VoucherIcon />,
 		label: 'My Vouchers',
 	},
 ];
@@ -76,7 +139,9 @@ export const UserNavigation = ({
 		if (!user) return;
 		fetch('/api/chat')
 			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => { if (data?.unread) setUnreadCount(Number(data.unread)); })
+			.then((data) => {
+				if (data?.unread) setUnreadCount(Number(data.unread));
+			})
 			.catch(() => {});
 	}, [user]);
 
@@ -88,30 +153,30 @@ export const UserNavigation = ({
 	}
 
 	return (
-		<div className="h-min rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-black/[0.07] bg-white">
+		<div className="h-min rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(67,44,99,0.12)] border border-[#432C63]/[0.08] bg-white">
 			{/* Profile header */}
-			<div className="bg-brandPurple px-6 py-8 flex flex-col items-center gap-3">
+			<div className="bg-[#432C63] px-6 py-7 flex flex-col items-center gap-3">
 				<div className="relative">
 					<Avatar
-						className="rounded-full h-16 w-16 ring-[3px] ring-white/30"
+						className="rounded-full h-16 w-16 ring-[3px] ring-white/25"
 						initials={user?.first_name?.[0]?.toUpperCase() ?? 'U'}
 						size="large"
 						src={'/talkjs-placeholder.jpg'}
 					/>
-					<span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 bg-green-400 rounded-full border-2 border-brandPurple" />
+					<span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 bg-emerald-400 rounded-full border-2 border-[#432C63]" />
 				</div>
 				<div className="text-center">
-					<p className="text-white/60 text-[11px] font-medium tracking-widest uppercase">
+					<p className="text-white/50 text-[10.5px] font-semibold tracking-[0.18em] uppercase">
 						My Account
 					</p>
-					<h2 className="text-white text-[17px] font-semibold leading-snug mt-0.5">
+					<h2 className="text-white text-[16px] font-bold leading-snug mt-1">
 						{user?.first_name} {user?.last_name}
 					</h2>
 				</div>
 			</div>
 
 			{/* Navigation items */}
-			<div className="px-3 pt-4 pb-2">
+			<div className="px-3 pt-3 pb-1">
 				{navigationItems.map((item) => (
 					<NavigationItem
 						active={pathAfterPH === item.href}
@@ -131,7 +196,7 @@ export const UserNavigation = ({
 			</div>
 
 			{/* Footer: settings + logout */}
-			<div className="border-t border-black/[0.07] mx-3 px-0 py-3">
+			<div className="border-t border-[#432C63]/[0.08] mx-3 px-0 py-2.5">
 				<NavigationItem
 					active={pathAfterPH === '/user/settings'}
 					href={'/user/settings'}
@@ -139,7 +204,10 @@ export const UserNavigation = ({
 					<SettingIcon />
 					<span className="flex-1">Settings</span>
 				</NavigationItem>
-				<LogoutButton className="w-full text-left text-[#4b5563] label-md !font-medium capitalize px-4 py-2.5 my-1 flex items-center gap-3 rounded-lg transition-colors duration-150 hover:bg-red-50 hover:text-red-500" isSidebar />
+				<LogoutButton
+					className="w-full text-left text-[#432C63]/60 label-md !font-medium capitalize px-4 py-2.5 my-0.5 flex items-center gap-3 rounded-lg transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+					isSidebar
+				/>
 			</div>
 		</div>
 	);

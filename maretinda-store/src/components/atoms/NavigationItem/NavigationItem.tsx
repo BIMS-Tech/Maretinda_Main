@@ -14,8 +14,8 @@ export const NavigationItem: React.FC<NavigationItemProps> = ({
 }) => (
 	<LocalizedClientLink
 		className={cn(
-			'relative label-md !font-medium capitalize w-full px-4 py-2.5 my-1 flex items-center justify-start rounded-lg gap-3 transition-colors duration-150 text-[#4b5563] hover:bg-brandPurpleLighten hover:text-brandPurple',
-			active && 'bg-brandPurpleLight text-white hover:bg-brandPurpleLight hover:text-white',
+			'relative label-md !font-medium capitalize w-full px-4 py-2.5 my-0.5 flex items-center justify-start rounded-lg gap-3 transition-colors duration-150 text-[#432C63]/70 hover:bg-[#F0EBF8] hover:text-[#432C63]',
+			active && 'bg-[#432C63] text-white hover:bg-[#432C63] hover:text-white',
 			className,
 		)}
 		href={href}

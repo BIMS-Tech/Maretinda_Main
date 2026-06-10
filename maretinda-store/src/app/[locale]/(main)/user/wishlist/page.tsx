@@ -53,9 +53,9 @@ export default async function Wishlist() {
 				) : (
 					<div className="flex flex-col gap-6">
 						<p className="font-medium text-[#a0a0a0] text-sm">
-							{count} listings
+							{count} {count === 1 ? 'listing' : 'listings'}
 						</p>
-						<div className="flex flex-wrap max-md:justify-center gap-6">
+						<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
 							{wishlist?.[0].products?.map((product) => (
 								<WishlistItem
 									key={product.id}
