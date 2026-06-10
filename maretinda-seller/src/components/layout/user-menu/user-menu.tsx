@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next"
 import { Skeleton } from "../../common/skeleton"
 
 import { useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useLogout, useUserMe } from "../../../hooks/api"
 import { queryClient } from "../../../lib/query-client"
 import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
@@ -186,18 +186,14 @@ const ThemeToggle = () => {
 
 const Logout = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
 
   const { mutateAsync: logoutMutation } = useLogout()
 
   const handleLogout = async () => {
     await logoutMutation(undefined, {
       onSuccess: () => {
-        /**
-         * When the user logs out, we want to clear the query cache
-         */
         queryClient.clear()
-        navigate("/login")
+        window.location.href = "/login"
       },
     })
   }
@@ -290,12 +286,9 @@ const GlobalKeybindsModal = (props: {
 }
 
 const UserItem = () => {
-  const { t } = useTranslation()
   const { member, isPending, isError, error } = useUserMe()
 
   const displayName = member?.name || member?.email || ""
-
-  const fallback = displayName ? displayName[0].toUpperCase() : null
   const avatar = member?.photo || ""
 
   if (isPending) {
