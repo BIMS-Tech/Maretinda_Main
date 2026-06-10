@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { VoucherPromotion } from '@/lib/data/vouchers'
 import { getMyVouchers } from '@/lib/data/vouchers'
 
@@ -49,17 +50,17 @@ export default function VoucherPicker({
 		return false
 	})
 
-	return (
+	return createPortal(
 		<>
 			{/* Backdrop */}
 			<div
 				ref={overlayRef}
-				className="fixed inset-0 z-50 bg-black/40"
+				className="fixed inset-0 z-[9998] bg-black/40"
 				onClick={onClose}
 			/>
 
-			{/* Drawer (Shopee-style bottom sheet on mobile, right panel on desktop) */}
-			<div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white flex flex-col shadow-2xl">
+			{/* Drawer */}
+			<div className="fixed inset-y-0 right-0 z-[9999] w-full max-w-md bg-white flex flex-col shadow-2xl">
 				{/* Header */}
 				<div
 					className="flex items-center justify-between px-5 py-4 border-b"
@@ -222,7 +223,8 @@ export default function VoucherPicker({
 					</button>
 				</div>
 			</div>
-		</>
+		</>,
+		document.body,
 	)
 }
 
