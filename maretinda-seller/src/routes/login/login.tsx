@@ -96,7 +96,7 @@ export const Login = () => {
   return (
     <div className="min-h-dvh w-dvw flex">
 
-      {/* Left panel — vendor brand */}
+      {/* Left panel — seller brand */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden"
         style={{ backgroundColor: "#432C63" }}
@@ -116,7 +116,7 @@ export const Login = () => {
               className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
               style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}
             >
-              Vendor
+              Seller
             </span>
           </div>
         </div>
@@ -168,7 +168,7 @@ export const Login = () => {
             <MaretindaFlower color="#432C63" size={28} />
             <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>
-              Vendor
+              Seller
             </span>
           </div>
           <ThemeToggleButton />
@@ -182,10 +182,10 @@ export const Login = () => {
               style={{ background: "#F2ECF8", color: "#432C63" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Vendor Portal
+              Seller Portal
             </div>
             <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Welcome back</h2>
-            <p className="text-ui-fg-subtle text-sm">Sign in to your vendor account to manage your store</p>
+            <p className="text-ui-fg-subtle text-sm">Sign in to your seller account to manage your store</p>
           </div>
 
           {/* Form */}
@@ -206,7 +206,7 @@ export const Login = () => {
                           {t("fields.email")}
                         </Form.Label>
                         <Form.Control>
-                          <Input autoComplete="email" {...field} className="mt-1" placeholder="vendor@example.com" />
+                          <Input autoComplete="email" {...field} className="mt-1" placeholder="seller@example.com" />
                         </Form.Control>
                       </Form.Item>
                     )}
