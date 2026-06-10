@@ -368,7 +368,7 @@ function StepBusiness({ data, set }: { data: FormData; set: <K extends keyof For
 function StepSignatory({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-2 text-xs text-indigo-400">
+      <div className="rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "rgba(67,44,99,0.3)", background: "rgba(67,44,99,0.08)", color: "#432C63" }}>
         Authorized signatory for <strong>{data.form_of_organization}</strong>
       </div>
       <div className="grid grid-cols-3 gap-3">
@@ -485,18 +485,23 @@ function StepNav({ steps, current }: { steps: { id: string; label: string }[]; c
     <div className="flex items-center overflow-x-auto pb-1 mb-5">
       {steps.map((s, i) => (
         <div key={s.id} className="flex items-center shrink-0">
-          <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap transition-colors ${
-            i === current ? "bg-indigo-600 text-white" : i < current ? "text-indigo-500" : "text-ui-fg-muted"
-          }`}>
-            <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold ${
-              i === current ? "bg-white/20" : i < current ? "bg-indigo-500/20" : "bg-ui-bg-subtle"
-            }`}>
+          <div
+            className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap transition-colors"
+            style={{
+              backgroundColor: i === current ? "#432C63" : "transparent",
+              color: i === current ? "white" : i < current ? "#432C63" : undefined,
+            }}
+          >
+            <span
+              className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold bg-ui-bg-subtle"
+              style={i === current ? { background: "rgba(255,255,255,0.2)" } : i < current ? { background: "rgba(67,44,99,0.15)" } : undefined}
+            >
               {i < current ? "✓" : i + 1}
             </span>
             <span className={i !== current ? "hidden xl:inline" : ""}>{s.label}</span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`h-px w-3 shrink-0 ${i < current ? "bg-indigo-500/40" : "bg-ui-border-base"}`} />
+            <div className="h-px w-3 shrink-0 bg-ui-border-base" style={i < current ? { backgroundColor: "rgba(67,44,99,0.3)" } : undefined} />
           )}
         </div>
       ))}
@@ -576,20 +581,20 @@ export const Register = () => {
     return (
       <div className="min-h-dvh w-dvw flex items-center justify-center bg-ui-bg-base px-6">
         <div className="w-full max-w-[400px] text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-indigo-500/10">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "#F2ECF8" }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4L19 7" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 13l4 4L19 7" stroke="#432C63" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-ui-fg-base mb-2">Registration submitted!</h2>
           <p className="text-ui-fg-subtle text-sm leading-relaxed mb-8">
-            Thank you for applying to become a seller on Maretinda. Your application is under review.
+            Thank you for applying to become a vendor on Maretinda. Your application is under review.
             You will receive an email once your account is activated.
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold"
-            style={{ background: "linear-gradient(135deg, #312e81 0%, #6366f1 100%)" }}
+            className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: "#432C63" }}
           >
             Back to Sign In
           </Link>
@@ -602,22 +607,21 @@ export const Register = () => {
   return (
     <div className="min-h-dvh w-dvw flex">
 
-      {/* Left panel — fixed dark branding (matches login.tsx) */}
+      {/* Left panel — vendor brand */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden flex-shrink-0"
-        style={{ background: "linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%)" }}
+        style={{ backgroundColor: "#432C63" }}
       >
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full" style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }} />
-          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full" style={{ background: "radial-gradient(circle, #6366f1 0%, transparent 70%)" }} />
-          <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full" style={{ background: "radial-gradient(circle, #a5b4fc 0%, transparent 70%)" }} />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
         </div>
 
         <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo-m.png" alt="Maretinda" className="w-10 h-10 brightness-200" />
+          <MaretindaFlower color="white" size={40} />
           <div>
             <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.2)", color: "#c7d2fe" }}>seller</span>
+            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>Vendor</span>
           </div>
         </div>
 
@@ -625,19 +629,23 @@ export const Register = () => {
           <h1 className="text-white text-4xl font-bold leading-tight mb-4">
             Start selling<br />on Maretinda<br />today
           </h1>
-          <p className="text-indigo-200 text-base leading-relaxed max-w-xs">
+          <p className="text-white/70 text-base leading-relaxed max-w-xs">
             Join our growing marketplace and reach thousands of customers across the Philippines.
           </p>
-          <div className="mt-10 flex flex-col gap-3">
+          <div className="mt-10 flex flex-col gap-4">
             {[
-              { icon: <CheckCircle />, label: "Free to register & get started" },
-              { icon: <RocketLaunch />, label: "Quick onboarding process" },
-              { icon: <GlobeEurope />, label: "Reach customers nationwide" },
-              { icon: <CurrencyDollar />, label: "Fast & secure payouts" },
-            ].map(({ icon, label }) => (
+              "Free to register & get started",
+              "Quick onboarding process",
+              "Reach customers nationwide",
+              "Fast & secure payouts",
+            ].map(label => (
               <div key={label} className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full text-white flex-shrink-0" style={{ background: "rgba(255,255,255,0.15)" }}>{icon}</span>
-                <span className="text-indigo-100 text-sm">{label}</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 text-white/90" style={{ background: "rgba(255,255,255,0.18)" }}>
+                  <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span className="text-white/80 text-sm">{label}</span>
               </div>
             ))}
           </div>
@@ -645,14 +653,14 @@ export const Register = () => {
 
         {/* Step progress */}
         <div className="relative z-10">
-          <p className="text-indigo-300 text-xs mb-2">Step {stepIdx + 1} of {steps.length}</p>
+          <p className="text-white/50 text-xs mb-2">Step {stepIdx + 1} of {steps.length}</p>
           <div className="flex gap-1 mb-2">
             {steps.map((_, i) => (
               <div key={i} className={`h-1 rounded-full flex-1 transition-all duration-300 ${i <= stepIdx ? "bg-white" : "bg-white/20"}`} />
             ))}
           </div>
           <p className="text-white text-sm font-semibold">{currentStep?.label}</p>
-          <p className="text-indigo-300 text-xs mt-3">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
+          <p className="text-white/40 text-xs mt-3">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
         </div>
       </div>
 
@@ -663,9 +671,9 @@ export const Register = () => {
           {/* Mobile logo + theme toggle row */}
           <div className="flex items-center justify-between mb-6">
             <div className="lg:hidden flex items-center gap-2">
-              <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
-              <span className="text-xl font-bold" style={{ color: "#6366f1" }}>Maretinda</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">seller</span>
+              <MaretindaFlower color="#432C63" size={28} />
+              <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>Vendor</span>
             </div>
             <div className="ml-auto">
               <ThemeToggleButton />
@@ -674,11 +682,11 @@ export const Register = () => {
 
           {/* Header */}
           <div className="mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4 bg-indigo-500/10 text-indigo-500">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4" style={{ background: "#F2ECF8", color: "#432C63" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              seller Registration
+              Vendor Registration
             </div>
-            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your seller account</h2>
+            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your vendor account</h2>
             <p className="text-ui-fg-subtle text-sm">Step {stepIdx + 1} of {steps.length} — {currentStep?.label}</p>
           </div>
 
@@ -689,14 +697,14 @@ export const Register = () => {
           <div className="w-full bg-ui-bg-subtle rounded-full h-1 mb-6">
             <div
               className="h-1 rounded-full transition-all duration-300"
-              style={{ background: "linear-gradient(135deg, #312e81 0%, #6366f1 100%)", width: `${Math.round(((stepIdx + 1) / steps.length) * 100)}%` }}
+              style={{ backgroundColor: "#432C63", width: `${Math.round(((stepIdx + 1) / steps.length) * 100)}%` }}
             />
           </div>
 
           {/* Step card */}
           <div className="bg-ui-bg-subtle rounded-xl border border-ui-border-base p-6 mb-4">
             <h3 className="text-sm font-semibold text-ui-fg-base mb-5">
-              <span className="text-indigo-500">{stepIdx + 1}.</span> {currentStep?.label}
+              <span style={{ color: "#432C63" }}>{stepIdx + 1}.</span> {currentStep?.label}
             </h3>
 
             {currentStep?.id === "merchant" && <StepMerchant data={data} set={set} />}
@@ -729,8 +737,8 @@ export const Register = () => {
                 type="button"
                 onClick={() => { if (canNext()) { setStepIdx(i => i + 1); setError("") } }}
                 disabled={!canNext()}
-                className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-40 transition-all"
-                style={{ background: "linear-gradient(135deg, #312e81 0%, #6366f1 100%)" }}
+                className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-40 transition-all hover:opacity-90"
+                style={{ backgroundColor: "#432C63" }}
               >
                 Continue →
               </button>
@@ -739,8 +747,8 @@ export const Register = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting || !canNext()}
-                className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-60 transition-all"
-                style={{ background: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)" }}
+                className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-60 transition-all hover:opacity-90"
+                style={{ backgroundColor: "#432C63" }}
               >
                 {submitting ? "Submitting…" : "Submit Application"}
               </button>
@@ -750,7 +758,7 @@ export const Register = () => {
           <div className="mt-6 text-center">
             <span className="text-ui-fg-subtle text-sm">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium text-indigo-500 hover:text-indigo-400 transition-colors">Sign In</Link>
+              <Link to="/login" className="font-medium hover:opacity-80 transition-colors" style={{ color: "#432C63" }}>Sign In</Link>
             </span>
           </div>
         </div>

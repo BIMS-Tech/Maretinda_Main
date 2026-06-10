@@ -15,6 +15,21 @@ const LoginSchema = z.object({
   password: z.string(),
 })
 
+function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+      {[45, 135, 225, 315].map(angle => (
+        <path
+          key={angle}
+          d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
+          fill={color}
+          transform={`rotate(${angle},16,16)`}
+        />
+      ))}
+    </svg>
+  )
+}
+
 export const Login = () => {
   const { t } = useTranslation()
   const location = useLocation()
@@ -25,10 +40,7 @@ export const Login = () => {
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   })
 
   const { mutateAsync, isPending } = useSignInWithEmailPass()
@@ -40,17 +52,11 @@ export const Login = () => {
         onError: (error) => {
           if (isFetchError(error)) {
             if (error.status === 401) {
-              form.setError("email", {
-                type: "manual",
-                message: error.message,
-              })
+              form.setError("email", { type: "manual", message: error.message })
               return
             }
           }
-          form.setError("root.serverError", {
-            type: "manual",
-            message: error.message,
-          })
+          form.setError("root.serverError", { type: "manual", message: error.message })
         },
         onSuccess: () => {
           navigate(from, { replace: true })
@@ -66,31 +72,30 @@ export const Login = () => {
 
   return (
     <div className="min-h-dvh w-dvw flex">
-      {/* Left panel — branding */}
+
+      {/* Left panel — admin dark theme */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden"
-        style={{ background: "linear-gradient(145deg, #2d1b69 0%, #4c1d95 40%, #6b21a8 100%)" }}
+        style={{ backgroundColor: "#1A1A1A" }}
       >
-        {/* Background decoration */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute -top-32 -left-32 w-96 h-96 rounded-full"
-            style={{ background: "radial-gradient(circle, #a855f7 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-80 h-80 rounded-full"
-            style={{ background: "radial-gradient(circle, #7c3aed 0%, transparent 70%)" }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
-            style={{ background: "radial-gradient(circle, #9333ea 0%, transparent 70%)" }}
-          />
+        {/* Subtle accent circles */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-[0.07]" style={{ backgroundColor: "#432C63" }} />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-[0.07]" style={{ backgroundColor: "#432C63" }} />
         </div>
 
         {/* Logo */}
         <div className="relative z-10 flex items-center gap-3">
-          <img src="/logo-m.png" alt="Maretinda" className="w-10 h-10 brightness-200" />
-          <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
+          <MaretindaFlower color="white" size={40} />
+          <div>
+            <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
+            <span
+              className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: "#432C63", color: "white" }}
+            >
+              Admin
+            </span>
+          </div>
         </div>
 
         {/* Center content */}
@@ -100,24 +105,27 @@ export const Login = () => {
             marketplace<br />
             with ease
           </h1>
-          <p className="text-purple-200 text-base leading-relaxed max-w-xs">
-            Complete control over your orders, products, sellers, and settlements — all in one place.
+          <p className="text-white/50 text-base leading-relaxed max-w-xs">
+            Complete control over orders, products, vendors, and settlements — all in one place.
           </p>
 
-          <div className="mt-10 flex flex-col gap-3">
+          <div className="mt-10 flex flex-col gap-4">
             {[
-              { icon: "📦", label: "Order & product management" },
-              { icon: "🏪", label: "seller & seller oversight" },
-              { icon: "💳", label: "Payments & settlements" },
-            ].map(({ icon, label }) => (
+              "Order & product management",
+              "Vendor & seller oversight",
+              "Payments & settlements",
+              "Platform analytics",
+            ].map(label => (
               <div key={label} className="flex items-center gap-3">
                 <span
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-sm"
-                  style={{ background: "rgba(255,255,255,0.15)" }}
+                  className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: "#432C63" }}
                 >
-                  {icon}
+                  <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </span>
-                <span className="text-purple-100 text-sm">{label}</span>
+                <span className="text-white/60 text-sm">{label}</span>
               </div>
             ))}
           </div>
@@ -125,16 +133,17 @@ export const Login = () => {
 
         {/* Bottom */}
         <div className="relative z-10">
-          <p className="text-purple-300 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
+          <p className="text-white/25 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
         </div>
       </div>
 
-      {/* Right panel — login form */}
+      {/* Right panel — clean white */}
       <div className="flex-1 flex flex-col items-center justify-center bg-white px-6 py-12">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
-          <img src="/logo-m.png" alt="Maretinda" className="w-8 h-8" />
-          <span className="text-xl font-bold" style={{ color: "#4c1d95" }}>Maretinda</span>
+          <MaretindaFlower color="#432C63" size={28} />
+          <span className="text-xl font-bold text-gray-900">Maretinda</span>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ backgroundColor: "#1A1A1A", color: "white" }}>Admin</span>
         </div>
 
         <div className="w-full max-w-[360px]">
@@ -142,9 +151,9 @@ export const Login = () => {
           <div className="mb-8">
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
-              style={{ background: "#f3e8ff", color: "#7c3aed" }}
+              style={{ backgroundColor: "#1A1A1A", color: "white" }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
               Admin Portal
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
@@ -203,26 +212,18 @@ export const Login = () => {
 
                 {validationError && (
                   <div className="text-center">
-                    <Hint className="inline-flex" variant="error">
-                      {validationError}
-                    </Hint>
+                    <Hint className="inline-flex" variant="error">{validationError}</Hint>
                   </div>
                 )}
                 {serverError && (
-                  <Alert
-                    className="bg-ui-bg-base items-center p-2"
-                    dismissible
-                    variant="error"
-                  >
-                    {serverError}
-                  </Alert>
+                  <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">{serverError}</Alert>
                 )}
 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1"
-                  style={{ background: "linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)" }}
+                  className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1 hover:opacity-90"
+                  style={{ backgroundColor: "#1A1A1A" }}
                 >
                   {isPending ? "Signing in…" : t("actions.continueWithEmail")}
                 </button>
@@ -243,7 +244,7 @@ export const Login = () => {
                     key="reset-password-link"
                     to="/reset-password"
                     className="font-medium transition-colors hover:opacity-80"
-                    style={{ color: "#7c3aed" }}
+                    style={{ color: "#432C63" }}
                   />,
                 ]}
               />
