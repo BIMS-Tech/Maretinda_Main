@@ -2,12 +2,9 @@ import type { HttpTypes } from '@medusajs/types';
 
 import {
 	ProductAdditionalAttributes,
-	// ProductDetailsFooter,
 	ProductDetailsHeader,
 	ProductDetailsSeller,
-	// ProductDetailsShipping,
 	ProductFreeDeliveryDetails,
-	// ProductPageDetails,
 	ProductReturnDeliveryDetails,
 } from '@/components/cells';
 import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
@@ -37,15 +34,13 @@ export const ProductDetails = async ({
 		try {
 			const response = await getUserWishlists();
 			wishlist = response.wishlists;
-		} catch (error) {
-			console.warn('Failed to fetch wishlist:', error);
-			// Continue without wishlist data instead of crashing
+		} catch {
 			wishlist = [];
 		}
 	}
 
 	return (
-		<div>
+		<div className="flex flex-col gap-5">
 			<ProductDetailsHeader
 				flashSaleItem={flashSaleItem ?? null}
 				locale={locale}
@@ -53,23 +48,17 @@ export const ProductDetails = async ({
 				user={user}
 				wishlist={wishlist}
 			/>
+
 			<ProductDetailsSeller product={product} seller={seller} user={user} />
 
-			<div className="accordion-multiple mt-5">
+			<div className="flex flex-col gap-2.5">
 				<ProductFreeDeliveryDetails />
 				<ProductReturnDeliveryDetails />
 			</div>
 
-			{/* <ProductPageDetails details={product?.description || ''} /> */}
 			<ProductAdditionalAttributes
 				attributes={product?.attribute_values || []}
 			/>
-			{/* <ProductDetailsShipping /> */}
-
-			{/* <ProductDetailsFooter
-				posted={product?.created_at}
-				tags={product?.tags || []}
-			/> */}
 		</div>
 	);
 };

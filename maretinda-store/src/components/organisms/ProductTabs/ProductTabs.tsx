@@ -1,15 +1,23 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { Tabs } from '@medusajs/ui';
 import { useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import type { AdditionalAttributeProps } from '@/types/product';
 import type { SellerProps } from '@/types/seller';
 
 import ProductTabDetails from '../ProductTabContent/ProductTabDetails';
 import ProductTabRating from '../ProductTabContent/ProductTabRating';
 import ProductTabShipping from '../ProductTabContent/ProductTabShipping';
+
+const TABS = [
+	{ id: 'details', label: 'Product Details' },
+	{ id: 'rating', label: 'Ratings & Reviews' },
+	{ id: 'shipping', label: 'Shipping & Returns' },
+] as const;
+
+type TabId = (typeof TABS)[number]['id'];
 
 export const ProductTabs = ({
 	product,
@@ -21,37 +29,43 @@ export const ProductTabs = ({
 	};
 	seller: SellerProps;
 }) => {
-	const [value, setValue] = useState('details');
+	const [value, setValue] = useState<TabId>('details');
+
 	return (
-		<div className="w-full flex flex-col mt-20">
-			<Tabs
-				className="product-details-tab"
-				onValueChange={setValue}
-				value={value}
-			>
-				<Tabs.List className="justify-around">
-					<Tabs.Trigger className="" value="details">
-						Product Details
-					</Tabs.Trigger>
-					<Tabs.Trigger className="" value="rating">
-						Rating & Reviews
-					</Tabs.Trigger>
-					<Tabs.Trigger className="" value="shipping">
-						Shipping & Returns
-					</Tabs.Trigger>
-				</Tabs.List>
-				<div className="mt-10">
-					<Tabs.Content value="details">
-						<ProductTabDetails product={product} />
-					</Tabs.Content>
-					<Tabs.Content value="rating">
-						<ProductTabRating product={product} />
-					</Tabs.Content>
-					<Tabs.Content value="shipping">
-						<ProductTabShipping product={product} />
-					</Tabs.Content>
+		<div className="w-full mt-12">
+			{/* Tab bar */}
+			<div className="border-b border-black/[0.09]">
+				<div className="flex gap-0 overflow-x-auto">
+					{TABS.map((tab) => (
+						<button
+							key={tab.id}
+							type="button"
+							onClick={() => setValue(tab.id)}
+							className={cn(
+								'shrink-0 px-5 py-3.5 text-[14px] font-semibold transition-all duration-200 border-b-2 -mb-px whitespace-nowrap',
+								value === tab.id
+									? 'border-[#432C63] text-[#432C63]'
+									: 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300',
+							)}
+						>
+							{tab.label}
+						</button>
+					))}
 				</div>
-			</Tabs>
+			</div>
+
+			{/* Tab content */}
+			<div className="mt-8">
+				{value === 'details' && (
+					<ProductTabDetails product={product} />
+				)}
+				{value === 'rating' && (
+					<ProductTabRating product={product} />
+				)}
+				{value === 'shipping' && (
+					<ProductTabShipping product={product} />
+				)}
+			</div>
 		</div>
 	);
 };

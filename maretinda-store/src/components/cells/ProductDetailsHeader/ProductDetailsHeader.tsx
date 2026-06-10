@@ -27,7 +27,6 @@ const optionsAsKeymap = (
 			varopt: HttpTypes.StoreProductOptionValue,
 		) => {
 			acc[varopt.option?.title.toLowerCase() || ''] = varopt.value;
-
 			return acc;
 		},
 		{},
@@ -53,23 +52,23 @@ export const ProductDetailsHeader = ({
 	const { allSearchParams } = useGetAllSearchParams();
 	const router = useRouter();
 
-	// Calculate real product ratings
-	const productReviews = product.reviews?.filter((rev: any) => rev !== null && rev.reference === 'product') || [];
+	const productReviews =
+		product.reviews?.filter(
+			(rev: any) => rev !== null && rev.reference === 'product',
+		) || [];
 	const reviewCount = productReviews.length;
-	const averageRating = reviewCount > 0
-		? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviewCount
-		: 0;
+	const averageRating =
+		reviewCount > 0
+			? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+				reviewCount
+			: 0;
 
-	const { cheapestVariant } = getProductPrice({
-		product,
-	});
-	// set default variant
+	const { cheapestVariant } = getProductPrice({ product });
 	const selectedVariant = {
 		...optionsAsKeymap(cheapestVariant.options ?? null),
 		...allSearchParams,
 	};
 
-	// get selected variant id
 	const variantId =
 		product.variants?.find(({ options }: { options: any }) =>
 			options?.every((option: any) =>
@@ -79,27 +78,18 @@ export const ProductDetailsHeader = ({
 			),
 		)?.id || '';
 
-	// get variant price
-	const { variantPrice } = getProductPrice({
-		product,
-		variantId,
-	});
+	const { variantPrice } = getProductPrice({ product, variantId });
 
-	// add the selected variant to the cart
 	const handleAddToCart = async () => {
 		if (!variantId) return null;
-
-		// Check if user is authenticated
 		if (!user) {
 			const currentPath =
 				window.location.pathname + window.location.search;
 			router.push(`/user?returnTo=${encodeURIComponent(currentPath)}`);
 			return;
 		}
-
 		setIsAdding(true);
 		setError(null);
-
 		try {
 			if (flashSaleItem) {
 				await addFlashSaleItemToCart({
@@ -109,27 +99,20 @@ export const ProductDetailsHeader = ({
 					flashSaleItemId: flashSaleItem.id,
 				});
 			} else {
-				await addToCart({
-					countryCode: locale,
-					quantity,
-					variantId,
-				});
+				await addToCart({ countryCode: locale, quantity, variantId });
 			}
 		} catch (err) {
 			setError((err as Error).message);
 		}
-
 		setIsAdding(false);
 	};
 
 	const variantStock =
 		product.variants?.find(({ id }) => id === variantId)
 			?.inventory_quantity || 0;
-
-	const variantHasPrice = product.variants?.find(({ id }) => id === variantId)
-		?.calculated_price
-		? true
-		: false;
+	const variantHasPrice = !!product.variants?.find(
+		({ id }) => id === variantId,
+	)?.calculated_price;
 
 	const originalPrice = Number.parseInt(
 		variantPrice?.original_price as string,
@@ -139,154 +122,177 @@ export const ProductDetailsHeader = ({
 		variantPrice?.calculated_price as string,
 		10,
 	);
-
 	const discount = ((originalPrice - calculatedPrice) / originalPrice) * 100;
 
-	// Flash sale: compute sale price from original numeric price
-	const basePriceNumber = variantPrice?.original_price_number as number | undefined
-	const flashSalePrice = flashSaleItem && basePriceNumber && basePriceNumber > 0
-		? flashSaleItem.discount_type === 'percentage'
-			? Math.round(basePriceNumber * (1 - flashSaleItem.discount_value / 100))
-			: Math.max(0, Math.round(basePriceNumber - flashSaleItem.discount_value))
-		: null
-	const flashSaleDiscountPct = flashSaleItem?.discount_type === 'percentage'
-		? flashSaleItem.discount_value
-		: basePriceNumber && flashSalePrice !== null
-			? Math.round(((basePriceNumber - flashSalePrice) / basePriceNumber) * 100)
-			: null
+	const basePriceNumber = variantPrice?.original_price_number as
+		| number
+		| undefined;
+	const flashSalePrice =
+		flashSaleItem && basePriceNumber && basePriceNumber > 0
+			? flashSaleItem.discount_type === 'percentage'
+				? Math.round(
+						basePriceNumber * (1 - flashSaleItem.discount_value / 100),
+					)
+				: Math.max(
+						0,
+						Math.round(basePriceNumber - flashSaleItem.discount_value),
+					)
+			: null;
+	const flashSaleDiscountPct =
+		flashSaleItem?.discount_type === 'percentage'
+			? flashSaleItem.discount_value
+			: basePriceNumber && flashSalePrice !== null
+				? Math.round(
+						((basePriceNumber - flashSalePrice) / basePriceNumber) * 100,
+					)
+				: null;
+
+	const inStock = variantStock > 0;
 
 	return (
-		<div className="">
-			<div className="flex justify-between">
-				<div>
-					<h2 className="label-md text-secondary">
-						{/* {product?.brand || "No brand"} */}
-					</h2>
-				<h1 className="heading-lg text-primary font-lora !font-bold">
+		<div className="flex flex-col gap-5">
+			{/* Title + Rating */}
+			<div className="flex flex-col gap-2">
+				<h1 className="heading-lg text-primary font-lora !font-bold leading-tight">
 					{product.title}
 				</h1>
-				{reviewCount > 0 && (
-					<div className="flex items-center gap-2 my-2">
-						<StarRating rate={averageRating} starSize={16} />
-						<span className="text-md text-black/60 !font-medium">
-							<span className="text-black">{averageRating.toFixed(1)}/</span>5
-							{' '}({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+				{reviewCount > 0 ? (
+					<div className="flex items-center gap-2">
+						<StarRating rate={averageRating} starSize={14} />
+						<span className="text-[13px] font-bold text-[#432C63]">
+							{averageRating.toFixed(1)}
+						</span>
+						<span className="text-[13px] text-gray-400">
+							({reviewCount}{' '}
+							{reviewCount === 1 ? 'review' : 'reviews'})
 						</span>
 					</div>
+				) : (
+					<span className="text-[12.5px] text-gray-400">
+						No reviews yet
+					</span>
 				)}
-					{/* Flash sale banner */}
-				{flashSaleItem && flashSalePrice !== null && (
-						<div className="mt-3 mb-1 flex flex-wrap items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
-							<div className="flex items-center gap-1.5 text-red-600 font-semibold text-[13px]">
-								<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-									<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
-								</svg>
-								Flash Sale
-								{flashSaleDiscountPct !== null && (
-									<span className="ml-1 rounded-md bg-red-600 text-white text-[11px] font-extrabold px-1.5 py-0.5">
-										-{flashSaleDiscountPct}%
-									</span>
-								)}
-							</div>
-							<FlashSaleCountdown endsAt={flashSaleItem.ends_at} />
-						</div>
-					)}
+			</div>
 
-					<div className="mt-2 flex gap-2 items-center">
-						{flashSalePrice !== null ? (
-							<>
-								<span
-									className={cn(
-										'heading-md !font-bold text-red-600',
-										variantStock < 1 && 'line-through',
-									)}
-								>
-									₱{flashSalePrice.toLocaleString()}
-								</span>
-								<span className="heading-md line-through text-black/30 !font-bold">
-									{variantPrice?.original_price}
-								</span>
-							</>
-						) : (
-							<>
-								<span
-									className={cn(
-										'heading-md text-primary !font-bold',
-										variantStock < 1 && 'line-through',
-									)}
-								>
-									{variantPrice?.calculated_price}
-								</span>
-								{variantPrice?.calculated_price_number !==
-									variantPrice?.original_price_number && (
-									<span className="heading-md line-through text-black/30 !font-bold">
-										{variantPrice?.original_price}
-									</span>
-								)}
-							</>
+			{/* Flash sale banner */}
+			{flashSaleItem && flashSalePrice !== null && (
+				<div className="flex flex-wrap items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5">
+					<div className="flex items-center gap-1.5 text-red-600 font-semibold text-[13px]">
+						<svg
+							width="13"
+							height="13"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+						>
+							<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
+						</svg>
+						Flash Sale
+						{flashSaleDiscountPct !== null && (
+							<span className="ml-1 rounded-md bg-red-600 text-white text-[11px] font-extrabold px-1.5 py-0.5">
+								-{flashSaleDiscountPct}%
+							</span>
 						)}
-						<div
+					</div>
+					<FlashSaleCountdown endsAt={flashSaleItem.ends_at} />
+				</div>
+			)}
+
+			{/* Price + Stock */}
+			<div className="flex items-center flex-wrap gap-2.5">
+				{flashSalePrice !== null ? (
+					<>
+						<span
 							className={cn(
-								'flex items-center justify-center gap-3 ml-2',
-								(discount > 0 || flashSalePrice !== null) && 'ml-6',
+								'heading-md !font-bold text-red-600',
+								variantStock < 1 && 'line-through',
 							)}
 						>
-							{flashSalePrice === null && discount > 0 && <Tag value={discount} />}
-							<div className="h-3.5 w-[1px] bg-black" />
-							{variantStock > 0 ? (
-								<span className="text-[#00FF66] text-base">
-									In Stock
-								</span>
-							) : (
-								<span className="text-red-400 text-base">
-									Out of Stock
-								</span>
+							₱{flashSalePrice.toLocaleString()}
+						</span>
+						<span className="heading-md line-through text-black/30 !font-bold">
+							{variantPrice?.original_price}
+						</span>
+					</>
+				) : (
+					<>
+						<span
+							className={cn(
+								'heading-md text-primary !font-bold',
+								variantStock < 1 && 'line-through',
 							)}
-						</div>
-					</div>
-					<div
-						className="text-base text-black/60 mt-4"
-						dangerouslySetInnerHTML={{
-							__html: product.description || '',
-						}}
+						>
+							{variantPrice?.calculated_price}
+						</span>
+						{variantPrice?.calculated_price_number !==
+							variantPrice?.original_price_number && (
+							<span className="heading-md line-through text-black/30 !font-bold">
+								{variantPrice?.original_price}
+							</span>
+						)}
+					</>
+				)}
+				{flashSalePrice === null && discount > 0 && (
+					<Tag value={discount} />
+				)}
+				<div className="h-4 w-px bg-black/20 mx-0.5" />
+				<div className="flex items-center gap-1.5">
+					<span
+						className={cn(
+							'w-2 h-2 rounded-full',
+							inStock ? 'bg-emerald-400' : 'bg-red-400',
+						)}
 					/>
+					<span
+						className={cn(
+							'text-[13px] font-semibold',
+							inStock ? 'text-emerald-600' : 'text-red-500',
+						)}
+					>
+						{inStock ? 'In Stock' : 'Out of Stock'}
+					</span>
 				</div>
 			</div>
 
-			<div className="h-[1px] my-5 w-full bg-black/10" />
+			{/* Description */}
+			{product.description && (
+				<div
+					className="text-[14px] text-gray-500 leading-relaxed"
+					dangerouslySetInnerHTML={{ __html: product.description }}
+				/>
+			)}
 
-			{/* Product Variants */}
+			{/* Divider */}
+			<div className="h-px w-full bg-black/[0.08]" />
+
+			{/* Variants */}
 			<ProductVariants
 				product={product}
 				selectedVariant={selectedVariant}
 			/>
 
-			<div className="flex items-center justify-between gap-4 mb-5">
+			{/* Quantity + Add to Cart + Wishlist */}
+			<div className="flex items-center gap-3">
 				<UpdateItemQuantityButton
 					isProductPage
 					quantity={quantity}
 					setQuantity={setQuantity}
 				/>
-				{/* Add to Cart */}
 				<Button
-					className="w-full uppercase py-3 flex justify-center !font-normal !text-black"
+					className="flex-1 uppercase py-3 flex justify-center !font-semibold text-[13.5px] tracking-wide"
 					disabled={isAdding || !variantStock || !variantHasPrice}
 					loading={isAdding}
 					onClick={handleAddToCart}
 					size="large"
 				>
 					{variantStock && variantHasPrice
-						? 'ADD TO CART'
-						: 'OUT OF STOCK'}
+						? 'Add to Cart'
+						: 'Out of Stock'}
 				</Button>
-				<div>
-					{/* Add to Wishlist */}
-					<WishlistButton
-						productId={product.id}
-						user={user}
-						wishlist={wishlist}
-					/>
-				</div>
+				<WishlistButton
+					productId={product.id}
+					user={user}
+					wishlist={wishlist}
+				/>
 			</div>
 
 			{error && (

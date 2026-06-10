@@ -39,11 +39,12 @@ export const ProductDetailsPage = async ({
 
 	return (
 		<>
-			<div className="flex flex-col md:flex-row gap-5 lg:gap-14">
-				<div className="md:w-1/2 ">
+			{/* Hero: gallery + product info */}
+			<div className="flex flex-col md:flex-row gap-8 lg:gap-14">
+				<div className="md:w-[46%]">
 					<ProductGallery images={prod?.images || []} />
 				</div>
-				<div className="md:w-1/2 ">
+				<div className="md:w-[54%]">
 					<ProductDetails
 						flashSaleItem={flashSaleItem}
 						locale={locale}
@@ -52,8 +53,12 @@ export const ProductDetailsPage = async ({
 					/>
 				</div>
 			</div>
+
+			{/* Tabs: details, reviews, shipping */}
 			<ProductTabs product={prod} seller={seller} />
-			<div className="my-8 mt-16">
+
+			{/* People Also Buy */}
+			<div className="mt-14 mb-8">
 				<HomeProductSection
 					heading="People Also Buy"
 					locale={locale}

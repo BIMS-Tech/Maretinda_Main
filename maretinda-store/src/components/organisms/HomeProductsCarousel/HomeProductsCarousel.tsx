@@ -36,43 +36,47 @@ export const HomeProductsCarousel = async ({
 		try {
 			const response = await getUserWishlists();
 			wishlist = response.wishlists;
-		} catch (error) {
-			console.warn('Failed to fetch wishlist:', error);
+		} catch {
 			wishlist = [];
 		}
 	}
 
-	if (!products.length && !sellerProducts.length) return null;
+	const source = sellerProducts.length ? sellerProducts : products;
+
+	if (!source.length) return null;
 
 	return (
 		<div className="flex justify-center w-full">
 			<Carousel
 				align="start"
-				items={(sellerProducts.length ? sellerProducts : products).map(
-					(product) => (
-						<ProductCard
-							api_product={
-								home
-									? (product as HttpTypes.StoreProduct)
-									: products.find((p) => {
-											const { cheapestPrice } =
-												getProductPrice({
-													product: p,
-												});
-											return (
-												cheapestPrice &&
-												p.id === product.id &&
-												Boolean(cheapestPrice)
-											);
-										})
-							}
+				items={source.map((product) => {
+					const apiProd = home
+						? (product as HttpTypes.StoreProduct)
+						: (products.find((p) => {
+								const { cheapestPrice } = getProductPrice({
+									product: p,
+								});
+								return (
+									cheapestPrice &&
+									p.id === product.id &&
+									Boolean(cheapestPrice)
+								);
+							}) ?? (product as HttpTypes.StoreProduct));
+
+					return (
+						<div
 							key={product.id}
-							product={product}
-							user={user}
-							wishlist={wishlist}
-						/>
-					),
-				)}
+							className="flex-[0_0_72%] sm:flex-[0_0_50%] md:flex-[0_0_34%] lg:flex-[0_0_25%] min-w-0 px-2"
+						>
+							<ProductCard
+								api_product={apiProd as HttpTypes.StoreProduct}
+								product={apiProd as HttpTypes.StoreProduct}
+								user={user}
+								wishlist={wishlist}
+							/>
+						</div>
+					);
+				})}
 			/>
 		</div>
 	);

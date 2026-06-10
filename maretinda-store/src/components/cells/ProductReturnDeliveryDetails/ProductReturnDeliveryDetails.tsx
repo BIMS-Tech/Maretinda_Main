@@ -1,29 +1,30 @@
-import { ProductPageAccordionMultiple } from '@/components/molecules';
-import { ReturnIcon2 } from '@/icons';
-
 export const ProductReturnDeliveryDetails = () => {
 	return (
-		<ProductPageAccordionMultiple
-			defaultOpen={false}
-			heading="Return Delivery"
-			icon={<ReturnIcon2 />}
-		>
-			<div className="product-details">
-				<ul>
-					<li>
-						Free standard shipping on all orders within the
-						continental U.S. Expedited shipping options are
-						available at an additional cost. Orders typically ship
-						within 3-5 business days.
-					</li>
-					<li>
-						We offer a 30-day return policy. If you are not
-						completely satisfied with your purchase, you can return
-						the chair for a full refund or exchange, provided it is
-						in its original condition and packaging.
-					</li>
-				</ul>
+		<div className="flex items-start gap-3.5 px-4 py-3.5 rounded-xl border border-black/[0.07] bg-white">
+			<div className="mt-0.5 shrink-0 text-[#432C63]">
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1.8"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				>
+					<polyline points="1 4 1 10 7 10" />
+					<path d="M3.51 15a9 9 0 1 0 .49-4.89" />
+				</svg>
 			</div>
-		</ProductPageAccordionMultiple>
+			<div>
+				<p className="text-[13.5px] font-semibold text-gray-800">
+					30-Day Returns
+				</p>
+				<p className="text-[12.5px] text-gray-500 mt-0.5 leading-relaxed">
+					Not satisfied? Return in original condition for a full
+					refund or exchange.
+				</p>
+			</div>
+		</div>
 	);
 };
