@@ -67,16 +67,28 @@ export default class VoucherService {
       return true
     })
 
-    // Fetch collected status for this customer
+    // Fetch collected status and first-order eligibility for this customer
     const collectedMap: Map<string, CustomerVoucher> = new Map()
+    let customerHasOrders = false
     if (customerId) {
       const collected = await this.listCollectedVouchers(customerId)
       collected.forEach((cv) => collectedMap.set(cv.promotion_id, cv))
+
+      const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const orderCheck = await knex.raw(
+        `SELECT 1 FROM "order" WHERE customer_id = ? AND status NOT IN ('canceled', 'archived') LIMIT 1`,
+        [customerId]
+      )
+      customerHasOrders = orderCheck.rows.length > 0
     }
 
-    return visible.map((p: any) =>
-      this.formatPromotion(p, collectedMap.get(p.id))
-    )
+    return visible
+      .filter((p: any) => {
+        // Hide first_order_only vouchers from customers who have previous orders
+        if (p.metadata?.first_order_only && customerId && customerHasOrders) return false
+        return true
+      })
+      .map((p: any) => this.formatPromotion(p, collectedMap.get(p.id)))
   }
 
   /** Ensure the customer_voucher table exists (idempotent, called before any table access) */
@@ -121,7 +133,7 @@ export default class VoucherService {
 
     const promotions = await promotionService.listPromotions(
       { id: promotionIds },
-      { take: promotionIds.length }
+      { take: promotionIds.length, relations: ["application_method", "rules", "rules.values"] }
     )
 
     const promoMap = new Map(promotions.map((p: any) => [p.id, p]))
@@ -156,6 +168,21 @@ export default class VoucherService {
     if (!promotion) throw new Error("Promotion not found")
     if ((promotion as any).status !== "active") {
       throw new Error("This voucher is no longer available")
+    }
+    if ((promotion as any).ends_at && new Date((promotion as any).ends_at) < new Date()) {
+      throw new Error("This voucher has expired")
+    }
+
+    // First-order-only vouchers: block customers who have already placed an order
+    if ((promotion as any).metadata?.first_order_only) {
+      const knexCheck = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const orderCheck = await knexCheck.raw(
+        `SELECT 1 FROM "order" WHERE customer_id = ? AND status NOT IN ('canceled', 'archived') LIMIT 1`,
+        [customerId]
+      )
+      if (orderCheck.rows.length > 0) {
+        throw new Error("This voucher is only for first-time buyers")
+      }
     }
 
     const knex = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)

@@ -149,10 +149,12 @@ export const CreatePromotionForm = () => {
 
       const adminDescription = (data as any).metadata_description
       const adminIsPublic = (data as any).metadata_is_public
+      const adminFirstOrderOnly = (data as any).metadata_first_order_only
       const metadataPayload = {
         scope: "platform",
         ...(adminDescription ? { description: adminDescription } : {}),
         is_public: adminIsPublic ? true : false,
+        first_order_only: adminFirstOrderOnly ? true : false,
       }
 
       createPromotion(
@@ -648,6 +650,23 @@ export const CreatePromotionForm = () => {
                         type="checkbox"
                         className="h-4 w-4 rounded"
                         {...form.register("metadata_is_public" as any)}
+                      />
+                    </div>
+                  </Form.Item>
+
+                  {/* First order only — restrict to customers with no previous orders */}
+                  <Form.Item>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Form.Label>First-Time Buyers Only</Form.Label>
+                        <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                          When enabled, only customers who have never placed an order can collect and use this voucher.
+                        </Text>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded"
+                        {...form.register("metadata_first_order_only" as any)}
                       />
                     </div>
                   </Form.Item>

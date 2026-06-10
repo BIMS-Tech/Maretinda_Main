@@ -17,6 +17,7 @@ import {
 } from "../../../../../lib/data/currencies"
 import { SwitchBox } from "../../../../../components/common/switch-box"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { sdk } from "../../../../../lib/client"
 
 type EditPromotionFormProps = {
   promotion: AdminPromotion
@@ -31,6 +32,7 @@ const EditPromotionSchema = zod.object({
   value: zod.number().min(0).or(zod.string().min(1)),
   allocation: zod.enum(["each", "across"]),
   target_type: zod.enum(["order", "shipping_methods", "items"]),
+  first_order_only: zod.boolean().optional(),
 })
 
 export const EditPromotionDetailsForm = ({
@@ -49,6 +51,7 @@ export const EditPromotionDetailsForm = ({
       allocation: promotion.application_method!.allocation,
       value_type: promotion.application_method!.type,
       target_type: promotion.application_method!.target_type,
+      first_order_only: !!(promotion as any).metadata?.first_order_only,
     },
     resolver: zodResolver(EditPromotionSchema),
   })
@@ -83,7 +86,21 @@ export const EditPromotionDetailsForm = ({
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
+          try {
+            const existingMeta = (promotion as any).metadata || {}
+            await sdk.client.fetch(`/admin/promotions/${promotion.id}/metadata`, {
+              method: "POST",
+              body: {
+                metadata: {
+                  ...existingMeta,
+                  first_order_only: data.first_order_only ? true : false,
+                },
+              },
+            })
+          } catch {
+            // non-fatal
+          }
           handleSuccess()
         },
       }
@@ -372,6 +389,29 @@ export const EditPromotionDetailsForm = ({
               </>
             )}
           </div>
+
+          <Form.Field
+            control={form.control}
+            name="first_order_only"
+            render={({ field }) => (
+              <Form.Item>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Form.Label>First-Time Buyers Only</Form.Label>
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      Only customers who have never placed an order can collect and use this voucher.
+                    </Text>
+                  </div>
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded"
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                </div>
+              </Form.Item>
+            )}
+          />
         </RouteDrawer.Body>
 
         <RouteDrawer.Footer>
