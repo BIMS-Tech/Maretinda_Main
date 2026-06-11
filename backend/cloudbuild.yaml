@@ -47,6 +47,7 @@ steps:
       - '--image=us-central1-docker.pkg.dev/maretinda-test/cloud-run-source-deploy/maretinda-backend:latest'
       - '--region=us-central1'
       - '--platform=managed'
+      - '--update-secrets=MESHY_API_KEY=MESHY_API_KEY:latest'
       - '--quiet'
 
 images:

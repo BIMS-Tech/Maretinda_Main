@@ -13,7 +13,6 @@ import { useUpdateShippingOptions } from "../../../../../hooks/api/shipping-opti
 import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { fetchQuery } from "../../../../../lib/client"
 import {
-  getShippingProfileName,
   isOptionEnabledInStore,
 } from "../../../../../lib/shipping-options"
 import {
@@ -57,10 +56,12 @@ export const EditShippingOptionForm = ({
     queryKey: ["shipping_profiles"],
     getOptions: (data) =>
       (data ?? [])
-        .filter((profile: any) => profile?.shipping_profile?.id)
+        .filter((profile: any) => profile?.id)
         .map((profile: any) => ({
-          label: getShippingProfileName(profile.shipping_profile.name),
-          value: profile.shipping_profile.id,
+          label: profile.name?.includes(":")
+            ? profile.name.split(":")[1]
+            : profile.name || profile.id,
+          value: profile.id,
         })),
     defaultValue: shippingOption.shipping_profile_id,
   })

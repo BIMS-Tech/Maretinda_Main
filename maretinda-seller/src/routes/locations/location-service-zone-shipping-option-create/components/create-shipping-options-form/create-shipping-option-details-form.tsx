@@ -47,12 +47,12 @@ export const CreateShippingOptionDetailsForm = ({
     queryKey: ["shipping_profiles"],
     getOptions: (data) =>
       (data.shipping_profiles || [])
-        .filter((profile: any) => profile?.shipping_profile?.id)
+        .filter((profile: any) => profile?.id)
         .map((profile: any) => ({
-          label: profile.shipping_profile.name?.includes(":")
-            ? profile.shipping_profile.name.split(":")[1]
-            : profile.shipping_profile.name || profile.shipping_profile.id,
-          value: profile.shipping_profile.id,
+          label: profile.name?.includes(":")
+            ? profile.name.split(":")[1]
+            : profile.name || profile.id,
+          value: profile.id,
         })),
   })
 
