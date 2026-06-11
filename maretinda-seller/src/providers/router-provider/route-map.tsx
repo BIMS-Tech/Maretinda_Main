@@ -337,6 +337,11 @@ export const RouteMap: RouteObject[] = [
                           import("../../routes/products/product-media"),
                       },
                       {
+                        path: "3d-model",
+                        lazy: () =>
+                          import("../../routes/products/product-3d-model"),
+                      },
+                      {
                         path: "prices",
                         lazy: () =>
                           import("../../routes/products/product-prices"),
