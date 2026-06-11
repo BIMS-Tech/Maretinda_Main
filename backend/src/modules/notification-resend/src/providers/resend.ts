@@ -3,7 +3,7 @@ import {
 } from "@medusajs/framework/utils"
 import { NotificationTypes } from "@medusajs/types"
 import { Resend } from "resend"
-import { buyerNewOrderTemplate, buyerAccountCreatedTemplate, passwordResetTemplate } from "../templates"
+import { buyerNewOrderTemplate, buyerAccountCreatedTemplate, passwordResetTemplate, sellerNewOrderTemplate } from "../templates"
 
 interface MaretindaResendOptions {
   api_key?: string
@@ -64,6 +64,9 @@ export class MaretindaResendProvider extends AbstractNotificationProviderService
     } else if (template === "passwordResetEmailTemplate") {
       html = passwordResetTemplate(templateData)
       subject = content?.subject || "Reset Your Password"
+    } else if (template === "sellerNewOrderEmailTemplate") {
+      html = sellerNewOrderTemplate(templateData)
+      subject = content?.subject || `New Order #${(templateData as any)?.order?.display_id || ""} Received`
     } else {
       console.warn(`[notification-resend] Unknown template: ${template}, using fallback`)
       html = this.fallbackTemplate(templateData)

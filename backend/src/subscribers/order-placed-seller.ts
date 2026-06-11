@@ -13,6 +13,11 @@ const storefrontUrl = () =>
   process.env.STORE_URL ||
   "https://your-storefront.com"
 
+const vendorUrl = () =>
+  process.env.VENDOR_URL ||
+  process.env.STOREFRONT_URL ||
+  "https://your-storefront.com"
+
 /** Get distinct sellers for given product IDs. Uses Query API first, falls back to raw SQL if needed. */
 async function getSellersForProductIds(
   container: any,
@@ -88,6 +93,7 @@ export default async function orderPlacedSellerHandler({
     const store = stores[0]
     const storeName = store?.name || "Maretinda Marketplace"
     const baseUrl = storefrontUrl()
+    const vendorBaseUrl = vendorUrl()
 
     const productIds = (order as any).items?.map((i: any) => i.product_id).filter(Boolean) || []
     if (productIds.length === 0) {
@@ -145,6 +151,7 @@ export default async function orderPlacedSellerHandler({
               order: orderForTemplate,
               store_name: storeName,
               storefront_url: baseUrl,
+              vendor_url: vendorBaseUrl,
             },
           },
         })
