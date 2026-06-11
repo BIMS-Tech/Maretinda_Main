@@ -100,6 +100,8 @@ const ProductsListing = ({
 		items: [
 			{ label: 'Default', value: 'products' },
 			{ label: 'Average rating', value: 'products_rating_desc' },
+			{ label: 'Price: low to high', value: 'products_price_asc' },
+			{ label: 'Price: high to low', value: 'products_price_desc' },
 		],
 	});
 	const { items, results } = useHits();
