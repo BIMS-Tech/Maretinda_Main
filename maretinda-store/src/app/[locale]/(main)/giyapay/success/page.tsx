@@ -10,7 +10,7 @@ import { useSearchParams, useRouter, useParams } from 'next/navigation';
 //     → verifies signature + completes cart → redirects to order confirmed
 //
 //  2. NEW seller SUBSCRIPTION    — order_id starts with "vsub_"
-//     → verifies signature + records transaction → redirects to /become-seller/register
+//     → verifies signature + records transaction → redirects to /become-vendor/register
 //
 //  3. seller SUBSCRIPTION RENEWAL — order_id starts with "vrenew_"
 //     → verifies signature + activates renewal → redirects to seller panel
@@ -129,7 +129,7 @@ function SuccessContent() {
 
           // Redirect to the gated seller registration form
           setTimeout(() => {
-            router.push(`/${locale}/become-seller/register?ref=${refno}&plan=${encodeURIComponent(planSlug)}&order=${encodeURIComponent(orderId)}`);
+            router.push(`/${locale}/become-vendor/register?ref=${refno}&plan=${encodeURIComponent(planSlug)}&order=${encodeURIComponent(orderId)}`);
           }, 1200);
 
           return;
@@ -216,7 +216,7 @@ function SuccessContent() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Issue</h2>
               <p className="text-gray-600">{message}</p>
               <button
-                onClick={() => router.push(`/${locale}/become-seller`)}
+                onClick={() => router.push(`/${locale}/become-vendor`)}
                 className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Try Again

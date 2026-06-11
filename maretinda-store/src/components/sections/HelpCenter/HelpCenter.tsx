@@ -183,7 +183,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 	selling: [
 		{
 			q: 'How do I become a seller on Maretinda?',
-			a: 'Click "Sell on Maretinda" in the header or visit /become-seller. Register your shop, upload a valid government ID, and agree to the Seller Terms. Approval takes 1–2 business days.',
+			a: 'Click "Sell on Maretinda" in the header or visit /become-vendor. Register your shop, upload a valid government ID, and agree to the Seller Terms. Approval takes 1–2 business days.',
 		},
 		{
 			q: 'What fees does Maretinda charge sellers?',
@@ -407,7 +407,7 @@ export const HelpCenter = () => {
 						{ label: s.trackMyOrder, href: '/user/orders', icon: '📦' },
 						{ label: s.requestReturn, href: '/user/orders', icon: '↩️' },
 						{ label: s.refundPolicy, href: '/refund-policy', icon: '💸' },
-						{ label: s.becomeSeller, href: '/become-seller', icon: '🏪' },
+						{ label: s.becomeSeller, href: '/become-vendor', icon: '🏪' },
 					].map(({ label, href, icon }) => (
 						<Link
 							key={label}

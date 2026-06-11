@@ -40,7 +40,7 @@ const RESPONSES: Record<string, BotResponse> = {
 	},
 	seller: {
 		text: 'Becoming a Maretinda seller is free! Register your shop, upload a valid ID, and you\'ll be approved within 1–2 business days. We charge 5% commission per sale — no listing fees.',
-		links: [{ label: 'Start selling', href: '/become-seller' }],
+		links: [{ label: 'Start selling', href: '/become-vendor' }],
 	},
 	password: {
 		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',

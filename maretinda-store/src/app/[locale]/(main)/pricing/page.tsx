@@ -118,7 +118,7 @@ function PlanCard({
 
       <div className="space-y-2">
         <Link
-          href={`/${locale}/become-seller?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
+          href={`/${locale}/become-vendor?plan=${encodeURIComponent(plan.name)}&billing=${billing}`}
           className={`block w-full rounded-xl px-4 py-3 text-center text-sm font-semibold transition-colors ${
             isPopular
               ? 'bg-indigo-600 text-white hover:bg-indigo-700'

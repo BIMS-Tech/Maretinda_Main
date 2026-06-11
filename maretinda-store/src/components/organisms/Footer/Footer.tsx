@@ -10,9 +10,9 @@ const SHOP_LINKS = [
 ];
 
 const SELL_LINKS = [
-	{ label: 'Start selling', href: '/become-seller/register' },
-	{ label: 'Seller dashboard', href: '/become-seller' },
-	{ label: 'How it works', href: '/become-seller' },
+	{ label: 'Start selling', href: '/become-vendor/register' },
+	{ label: 'Seller dashboard', href: '/become-vendor' },
+	{ label: 'How it works', href: '/become-vendor' },
 	{ label: 'Fees & pricing', href: '/pricing' },
 	{ label: 'Seller blog', href: '#' },
 ];

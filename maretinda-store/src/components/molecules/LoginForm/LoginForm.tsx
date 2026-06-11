@@ -60,12 +60,20 @@ const Form = () => {
 	const searchParams = useSearchParams();
 
 	const googleError = searchParams.get('error');
-	const googleErrorMessage =
-		googleError === 'email_exists'
-			? 'An account with this email already exists. Please sign in with your email and password.'
-			: googleError
-				? 'Google sign-in failed. Please try again.'
-				: null;
+	const googleErrorMessages: Record<string, string> = {
+		email_exists: 'An account with this email already exists. Please sign in with your email and password.',
+		auth_failed: 'Google sign-in failed: the backend could not verify the authorization code. Check GOOGLE_CALLBACK_URL in backend .env matches what is registered in Google Console.',
+		no_token: 'Google sign-in failed: no token was returned by the backend.',
+		link_failed: 'Google sign-in failed: could not link your Google account to an existing account.',
+		link_no_token: 'Google sign-in failed: account linked but no token returned.',
+		customer_create_failed: 'Google sign-in failed: could not create your customer account.',
+		server_error: 'Google sign-in failed: an unexpected server error occurred.',
+		google_auth_failed: 'Google sign-in was cancelled or denied.',
+		missing_params: 'Google sign-in failed: missing authorization code or state.',
+	};
+	const googleErrorMessage = googleError
+		? (googleErrorMessages[googleError] ?? `Google sign-in failed (${googleError}). Please try again.`)
+		: null;
 
 	const [loadingState, setLoadingState] = useState<LoadingState>(null);
 	const [serverError, setServerError] = useState<string | null>(null);
