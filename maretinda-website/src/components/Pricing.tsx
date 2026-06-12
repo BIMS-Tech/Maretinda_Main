@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { FiCheck, FiMinus, FiArrowRight, FiSun, FiTrendingUp, FiAward } from "react-icons/fi";
+import { FiCheck, FiMinus, FiArrowRight, FiSun, FiTrendingUp, FiAward, FiClock } from "react-icons/fi";
 
-interface PlanFeature { text: string; included: boolean }
+interface PlanFeature { text: string; included: boolean; comingSoon?: boolean }
 interface Plan {
   icon: typeof FiSun;
+  tier: string;
   name: string;
   tagline: string;
   monthlyPrice: number;
@@ -14,13 +15,13 @@ interface Plan {
   cta: string;
   style: "outline" | "cta" | "primary";
   featured?: boolean;
-  accentColor?: string;
 }
 
 const plans: Plan[] = [
   {
     icon: FiSun,
-    name: "Starter",
+    tier: "Starter",
+    name: "Foundation",
     tagline: "Perfect to get started",
     monthlyPrice: 499,
     annualPrice: 399,
@@ -29,46 +30,45 @@ const plans: Plan[] = [
     features: [
       { text: "Up to 50 products", included: true },
       { text: "Basic analytics dashboard", included: true },
-      { text: "Standard storefront theme", included: true },
+      { text: "Standard storefront", included: true },
       { text: "1 staff account", included: true },
-      { text: "Email support", included: true },
       { text: "GiyaPay payments", included: true },
       { text: "Inventory management", included: true },
-      { text: "2.5% transaction fee", included: true },
+      { text: "Email support", included: true },
       { text: "Flash sales & vouchers", included: false },
       { text: "Subscription products", included: false },
       { text: "Dedicated account manager", included: false },
-      { text: "API access", included: false },
+      { text: "3D Model Generation", included: false },
     ],
   },
   {
     icon: FiTrendingUp,
-    name: "Growth",
+    tier: "Growth",
+    name: "Boost",
     tagline: "For scaling businesses",
     monthlyPrice: 1499,
     annualPrice: 1199,
     cta: "Start Growing Now",
     style: "cta",
     featured: true,
-    accentColor: "#FFC533",
     features: [
       { text: "Up to 500 products", included: true },
       { text: "Advanced analytics & reports", included: true },
-      { text: "Custom storefront themes", included: true },
+      { text: "Standard storefront", included: true },
       { text: "5 staff accounts", included: true },
-      { text: "Priority email & live chat", included: true },
-      { text: "All payment methods", included: true },
+      { text: "GiyaPay payments", included: true },
       { text: "Smart inventory + alerts", included: true },
-      { text: "1.5% transaction fee", included: true },
+      { text: "Priority email & live chat", included: true },
       { text: "Flash sales & vouchers", included: true },
       { text: "Subscription products", included: true },
       { text: "Dedicated account manager", included: false },
-      { text: "API access", included: false },
+      { text: "3D Model Generation", included: false },
     ],
   },
   {
     icon: FiAward,
-    name: "Enterprise",
+    tier: "Premium",
+    name: "Managed",
     tagline: "For high-volume brands",
     monthlyPrice: 3999,
     annualPrice: 3199,
@@ -77,16 +77,15 @@ const plans: Plan[] = [
     features: [
       { text: "Unlimited products", included: true },
       { text: "Full analytics suite + exports", included: true },
-      { text: "Fully custom storefront", included: true },
-      { text: "Unlimited staff accounts", included: true },
-      { text: "Dedicated account manager", included: true },
-      { text: "All payment methods + custom", included: true },
+      { text: "Standard storefront", included: true },
+      { text: "15 staff accounts", included: true },
+      { text: "GiyaPay payments", included: true },
       { text: "Advanced inventory + forecasting", included: true },
-      { text: "0.8% transaction fee", included: true },
+      { text: "Dedicated account manager", included: true },
       { text: "Flash sales & vouchers", included: true },
       { text: "Subscription products", included: true },
-      { text: "API access & integrations", included: true },
       { text: "99.9% SLA guarantee", included: true },
+      { text: "3D Model Generation", included: true, comingSoon: true },
     ],
   },
 ];
@@ -107,10 +106,10 @@ export default function Pricing() {
         {/* Header */}
         <div data-aos="fade-up" className="text-center mb-9">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-purple-mid bg-[rgba(92,62,136,.09)] border border-[rgba(92,62,136,.18)] px-3.5 py-1.5 rounded-full mb-4">
-            seller Plans
+            Vendor Plans
           </span>
           <h2
-            className="font-display font-extrabold leading-tight mb-3"
+            className="font-display font-bold leading-tight mb-3"
             style={{ fontSize:"clamp(1.75rem,3vw,2.4rem)", letterSpacing:"-0.02em" }}
           >
             Simple, Transparent <span className="gradient-text">Pricing</span>
@@ -185,7 +184,13 @@ export default function Pricing() {
                     <Icon size={19} style={{ color: plan.featured ? "#FFC533" : "#432C63" }} />
                   </div>
 
-                  <h3 className="font-display font-extrabold text-[20px] mb-0.5"
+                  {/* Tier label */}
+                  <p className="text-[11px] font-bold uppercase tracking-widest mb-1"
+                    style={{ color: plan.featured ? "rgba(255,197,51,.7)" : "#9B80D2" }}>
+                    {plan.tier}
+                  </p>
+
+                  <h3 className="font-display font-bold text-[22px] mb-0.5"
                     style={{ color: plan.featured ? "white" : "#1A1228" }}>
                     {plan.name}
                   </h3>
@@ -196,7 +201,7 @@ export default function Pricing() {
                   <div className="flex items-end gap-0.5 leading-none">
                     <span className="text-[20px] font-bold pb-1.5" style={{ color: plan.featured ? "#FFC533" : "#432C63" }}>₱</span>
                     <span
-                      className="font-display font-extrabold"
+                      className="font-display font-bold"
                       style={{ fontSize:"clamp(2.5rem,4vw,3.25rem)", letterSpacing:"-0.03em", color: plan.featured ? "white" : "#1A1228" }}
                     >
                       {price.toLocaleString("en-PH")}
@@ -221,14 +226,30 @@ export default function Pricing() {
                     <div key={f.text} className="flex items-start gap-2.5 text-[13.5px]">
                       <span
                         className="w-4.5 h-4.5 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center"
-                        style={{ background: f.included ? "rgba(23,163,74,.1)" : "rgba(163,163,163,.1)" }}
+                        style={{
+                          background: f.comingSoon
+                            ? "rgba(255,197,51,.15)"
+                            : f.included
+                              ? "rgba(23,163,74,.1)"
+                              : "rgba(163,163,163,.1)",
+                        }}
                       >
-                        {f.included
-                          ? <FiCheck size={10} style={{ color:"#17A34A" }} />
-                          : <FiMinus size={10} style={{ color:"#C4C4C4" }} />
+                        {f.comingSoon
+                          ? <FiClock size={10} style={{ color:"#F2B230" }} />
+                          : f.included
+                            ? <FiCheck size={10} style={{ color:"#17A34A" }} />
+                            : <FiMinus size={10} style={{ color:"#C4C4C4" }} />
                         }
                       </span>
-                      <span style={{ color: f.included ? "#2C2840" : "#C4C4C4" }}>{f.text}</span>
+                      <span style={{ color: f.included ? "#2C2840" : "#C4C4C4" }}>
+                        {f.text}
+                        {f.comingSoon && (
+                          <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full align-middle"
+                            style={{ background:"rgba(255,197,51,.18)", color:"#B8860B" }}>
+                            Soon
+                          </span>
+                        )}
+                      </span>
                     </div>
                   ))}
 

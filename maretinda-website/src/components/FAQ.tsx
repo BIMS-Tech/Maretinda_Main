@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: "What payment methods are supported?",
-    a: "We support all major Filipino payment methods through our GiyaPay integration: GCash, Maya (PayMaya), BPI, BDO, UnionBank, credit/debit cards (Visa, Mastercard), and over-the-counter payments at 7-Eleven and other payment centers nationwide.",
+    a: "All vendors on Maretinda process payments through GiyaPay — our integrated payment gateway. GiyaPay supports GCash, Maya (PayMaya), BPI, BDO, UnionBank, credit/debit cards (Visa, Mastercard), and over-the-counter payments at 7-Eleven and other payment centers nationwide. The same gateway and rates apply across all plans.",
   },
   {
     q: "How long does it take to set up my store?",
@@ -22,11 +22,11 @@ const faqs = [
   },
   {
     q: "Can I upgrade or downgrade my plan anytime?",
-    a: "Yes! You can upgrade or downgrade your plan at any time from your seller dashboard. When you upgrade, you'll be charged the prorated difference. When you downgrade, the credit will be applied to your next billing cycle. No penalties, no hassle.",
+    a: "Yes! You can upgrade or downgrade your plan at any time from your vendor dashboard. When you upgrade, you'll be charged the prorated difference. When you downgrade, the credit will be applied to your next billing cycle. No penalties, no hassle.",
   },
   {
-    q: "What is a transaction fee and how is it calculated?",
-    a: "A transaction fee is a small percentage of each sale: 2.5% on Starter, 1.5% on Growth, and just 0.8% on Enterprise. The more you grow with us, the less you pay per transaction — it's our way of rewarding your success.",
+    q: "Are there transaction fees?",
+    a: "Yes, a standard platform transaction fee applies to every sale across all plans. The rate is the same regardless of which plan you're on — there's no tiered pricing for transaction fees. This keeps things transparent and fair for every vendor on Maretinda.",
   },
   {
     q: "Is there a free trial?",

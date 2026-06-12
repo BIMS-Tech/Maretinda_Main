@@ -45,7 +45,7 @@ const features: Feature[] = [
   {
     icon: FiCreditCard,
     title: "GiyaPay Integration",
-    desc: "Accept GCash, Maya, bank transfers, and credit cards seamlessly. Filipino payment methods, natively supported.",
+    desc: "Every vendor on Maretinda is powered by GiyaPay — accept GCash, Maya, bank transfers, and credit cards seamlessly. One unified gateway, same great rates for all.",
     tag: "Payments",
     accent: "#60A5FA",
   },
