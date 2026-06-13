@@ -717,6 +717,14 @@ export const RouteMap: RouteObject[] = [
             ],
           },
           {
+            path: "/subscription-products",
+            errorElement: <ErrorBoundary />,
+            handle: {
+              breadcrumb: () => "Subscription Products",
+            },
+            lazy: () => import("../../routes/subscription-products"),
+          },
+          {
             path: "/collections",
             errorElement: <ErrorBoundary />,
             handle: {

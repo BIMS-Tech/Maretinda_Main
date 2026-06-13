@@ -1,4 +1,5 @@
 import {
+  ArrowPath,
   Bolt,
   Buildings,
   ChevronDownMini,
@@ -189,6 +190,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <Bolt />,
       label: "Flash Sales",
       to: "/flash-sales",
+    },
+    {
+      icon: <ArrowPath />,
+      label: "Subscription Products",
+      to: "/subscription-products",
     },
     {
       icon: <ReceiptPercent />,
