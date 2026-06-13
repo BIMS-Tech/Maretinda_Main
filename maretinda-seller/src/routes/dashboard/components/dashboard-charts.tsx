@@ -168,13 +168,19 @@ export const DashboardCharts = ({
   notFulfilledOrders,
   fulfilledOrders,
   reviewsToReply,
+  analyticsLevel = "full",
+  canExport = false,
 }: {
   notFulfilledOrders: number
   fulfilledOrders: number
   reviewsToReply: any
+  analyticsLevel?: "basic" | "advanced" | "full"
+  canExport?: boolean
 }) => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [activeLines, setActiveLines] = useState(["orders", "customers"])
+  const [activeLines, setActiveLines] = useState(
+    analyticsLevel === "basic" ? ["orders"] : ["orders", "customers"]
+  )
   const { data: chatData } = useChatConversations()
   const unreadMessages = { length: chatData?.unread ?? 0 }
 
@@ -321,38 +327,66 @@ export const DashboardCharts = ({
           <div>
             <Heading>Performance Analytics</Heading>
             <Text className="text-ui-fg-subtle" size="small">
-              Orders and customer activity over time
+              {analyticsLevel === "basic"
+                ? "Orders over the last 7 days"
+                : "Orders and customer activity over time"}
             </Text>
           </div>
-          <Popover>
-            <Popover.Trigger asChild>
-              <Button variant="secondary" size="small">
-                <CalendarMini />
-                {from ? (
-                  to ? (
-                    <>
-                      {format(from, "MMM dd")} — {format(to, "MMM dd, yyyy")}
-                    </>
-                  ) : (
-                    format(from, "MMM dd, yyyy")
-                  )
-                ) : (
-                  "Pick a date"
-                )}
+          <div className="flex items-center gap-2">
+            {canExport && (
+              <Button
+                variant="secondary"
+                size="small"
+                onClick={() => {
+                  const rows = [
+                    ["Date", "Orders", "Customers"],
+                    ...chartData.map((d) => [d.date, d.orders, d.customers]),
+                  ]
+                  const csv = rows.map((r) => r.join(",")).join("\n")
+                  const blob = new Blob([csv], { type: "text/csv" })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement("a")
+                  a.href = url
+                  a.download = `analytics-${format(new Date(), "yyyy-MM-dd")}.csv`
+                  a.click()
+                  URL.revokeObjectURL(url)
+                }}
+              >
+                Export CSV
               </Button>
-            </Popover.Trigger>
-            <Popover.Content>
-              <Calendar
-                mode="range"
-                selected={{ from, to }}
-                onSelect={(range) =>
-                  range && updateDateRange(`${range.from}`, `${range.to}`)
-                }
-                numberOfMonths={2}
-                defaultMonth={from}
-              />
-            </Popover.Content>
-          </Popover>
+            )}
+            {analyticsLevel !== "basic" && (
+              <Popover>
+                <Popover.Trigger asChild>
+                  <Button variant="secondary" size="small">
+                    <CalendarMini />
+                    {from ? (
+                      to ? (
+                        <>
+                          {format(from, "MMM dd")} — {format(to, "MMM dd, yyyy")}
+                        </>
+                      ) : (
+                        format(from, "MMM dd, yyyy")
+                      )
+                    ) : (
+                      "Pick a date"
+                    )}
+                  </Button>
+                </Popover.Trigger>
+                <Popover.Content>
+                  <Calendar
+                    mode="range"
+                    selected={{ from, to }}
+                    onSelect={(range) =>
+                      range && updateDateRange(`${range.from}`, `${range.to}`)
+                    }
+                    numberOfMonths={2}
+                    defaultMonth={from}
+                  />
+                </Popover.Content>
+              </Popover>
+            )}
+          </div>
         </div>
 
         <div className="relative px-6 py-4 grid grid-cols-1 lg:grid-cols-4 gap-4">
@@ -404,7 +438,10 @@ export const DashboardCharts = ({
           </div>
 
           <div className="flex flex-col gap-3">
-            {(["orders", "customers"] as const).map((key) => (
+            {(analyticsLevel === "basic"
+              ? (["orders"] as const)
+              : (["orders", "customers"] as const)
+            ).map((key) => (
               <button
                 key={key}
                 onClick={() => toggleLine(key)}
@@ -429,12 +466,21 @@ export const DashboardCharts = ({
                 <p className="text-xs text-ui-fg-muted">In date range</p>
               </button>
             ))}
+            {analyticsLevel === "basic" && (
+              <div className="p-4 border border-dashed border-ui-border-base rounded-xl flex flex-col items-start opacity-60">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="h-3 w-3 rounded-full bg-violet-500" />
+                  <span className="text-sm font-semibold text-ui-fg-muted">Customers</span>
+                </div>
+                <p className="text-xs text-ui-fg-muted mt-1">Upgrade to Boost</p>
+              </div>
+            )}
           </div>
         </div>
       </Container>
 
       {/* Bottom section: Recent Orders + Order Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className={`grid grid-cols-1 gap-4 ${analyticsLevel !== "basic" ? "lg:grid-cols-3" : ""}`}>
         {/* Recent Orders */}
         <Container className="divide-y p-0 lg:col-span-2">
           <div className="flex items-center justify-between px-6 py-4">
@@ -519,8 +565,8 @@ export const DashboardCharts = ({
           </div>
         </Container>
 
-        {/* Right: Order breakdown + Review summary */}
-        <div className="flex flex-col gap-4">
+        {/* Right: Order breakdown + Review summary (Boost+ only) */}
+        {analyticsLevel !== "basic" && <div className="flex flex-col gap-4">
           {/* Order Status Breakdown */}
           <Container className="divide-y p-0">
             <div className="px-5 py-4">
@@ -626,11 +672,11 @@ export const DashboardCharts = ({
               </Link>
             </div>
           </Container>
-        </div>
+        </div>}
       </div>
 
-      {/* Recent Payouts */}
-      {Array.isArray(payouts) && payouts.length > 0 && (
+      {/* Recent Payouts (Boost+ only) */}
+      {analyticsLevel !== "basic" && Array.isArray(payouts) && payouts.length > 0 && (
         <Container className="divide-y p-0">
           <div className="flex items-center justify-between px-6 py-4">
             <div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useOnboarding, useOrders } from "../../hooks/api"
+import { usePlanLimits } from "../../hooks/api/plan-limits"
 import { DashboardCharts } from "./components/dashboard-charts"
 import { DashboardOnboarding } from "./components/dashboard-onboarding"
 import { ChartSkeleton } from "./components/chart-skeleton"
@@ -10,6 +11,7 @@ export const Dashboard = () => {
   useEffect(() => setIsClient(true), [])
 
   const { onboarding, isError, error, isPending } = useOnboarding()
+  const { analyticsLevel, canExport } = usePlanLimits()
 
   const { orders, isPending: isPendingOrders } = useOrders()
   const { reviews, isPending: isPendingReviews } = useReviews()
@@ -41,7 +43,6 @@ export const Dashboard = () => {
     !onboarding?.products ||
     !onboarding?.locations_shipping ||
     !onboarding?.store_information
-    // !onboarding?.stripe_connect
   )
     return (
       <DashboardOnboarding
@@ -56,6 +57,8 @@ export const Dashboard = () => {
       notFulfilledOrders={notFulfilledOrders}
       fulfilledOrders={fulfilledOrders}
       reviewsToReply={reviewsToReply}
+      analyticsLevel={analyticsLevel}
+      canExport={canExport}
     />
   )
 }

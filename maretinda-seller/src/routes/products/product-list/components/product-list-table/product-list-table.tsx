@@ -1,5 +1,5 @@
 import { PencilSquare, Trash } from "@medusajs/icons"
-import { Button, Container, Heading, toast, usePrompt } from "@medusajs/ui"
+import { Button, Container, Heading, toast, Tooltip, usePrompt } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -18,6 +18,7 @@ import {
   useDeleteProduct,
   useProducts,
 } from "../../../../../hooks/api/products"
+import { usePlanLimits } from "../../../../../hooks/api/plan-limits"
 import { useProductTableColumns } from "../../../../../hooks/table/columns/use-product-table-columns"
 import { useProductTableFilters } from "../../../../../hooks/table/filters/use-product-table-filters"
 import { useProductTableQuery } from "../../../../../hooks/table/query/use-product-table-query"
@@ -57,6 +58,12 @@ export const ProductListTable = () => {
     }
   )
 
+  const { count: totalProductCount } = useProducts({ limit: 1 })
+  const { maxProducts } = usePlanLimits()
+  const atLimit = maxProducts !== -1 && (totalProductCount ?? 0) >= maxProducts
+  const nearLimit =
+    maxProducts !== -1 && (totalProductCount ?? 0) >= maxProducts * 0.8
+
   const offset = searchParams.offset || 0
 
   const processedProducts = (products as HttpTypes.AdminProduct[])?.slice(
@@ -85,7 +92,22 @@ export const ProductListTable = () => {
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">{t("products.domain")}</Heading>
+        <div className="flex items-center gap-3">
+          <Heading level="h2">{t("products.domain")}</Heading>
+          {maxProducts !== -1 && (
+            <span
+              className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                atLimit
+                  ? "bg-red-500/10 text-red-600"
+                  : nearLimit
+                  ? "bg-amber-500/10 text-amber-600"
+                  : "bg-ui-bg-subtle text-ui-fg-muted"
+              }`}
+            >
+              {totalProductCount ?? 0} / {maxProducts}
+            </span>
+          )}
+        </div>
         <div className="flex items-center justify-center gap-x-2">
           <Button size="small" variant="secondary" asChild>
             <Link to={`export${location.search}`}>{t("actions.export")}</Link>
@@ -93,9 +115,17 @@ export const ProductListTable = () => {
           <Button size="small" variant="secondary" asChild>
             <Link to="import">{t("actions.import")}</Link>
           </Button>
-          <Button size="small" variant="secondary" asChild>
-            <Link to="create">{t("actions.create")}</Link>
-          </Button>
+          {atLimit ? (
+            <Tooltip content={`You've reached your ${maxProducts}-product limit. Upgrade your plan to add more.`}>
+              <Button size="small" variant="secondary" disabled>
+                {t("actions.create")}
+              </Button>
+            </Tooltip>
+          ) : (
+            <Button size="small" variant="secondary" asChild>
+              <Link to="create">{t("actions.create")}</Link>
+            </Button>
+          )}
         </div>
       </div>
       <_DataTable

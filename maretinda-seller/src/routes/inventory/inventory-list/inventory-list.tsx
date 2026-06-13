@@ -1,6 +1,7 @@
 import { SingleColumnPage } from "../../../components/layout/pages"
 import { useDashboardExtension } from "../../../extensions"
 import { InventoryListTable } from "./components/inventory-list-table"
+import { InventorySmartPanel } from "./components/inventory-smart-panel"
 
 export const InventoryItemListTable = () => {
   const { getWidgets } = useDashboardExtension()
@@ -12,6 +13,7 @@ export const InventoryItemListTable = () => {
         before: getWidgets("inventory_item.list.before"),
       }}
     >
+      <InventorySmartPanel />
       <InventoryListTable />
     </SingleColumnPage>
   )

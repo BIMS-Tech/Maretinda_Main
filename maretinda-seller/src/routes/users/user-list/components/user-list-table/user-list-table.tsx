@@ -8,6 +8,7 @@ import { PencilSquare } from "@medusajs/icons"
 import { DataTable } from "../../../../../components/data-table"
 import { useDataTableDateFilters } from "../../../../../components/data-table/helpers/general/use-data-table-date-filters"
 import { useUsers } from "../../../../../hooks/api/users"
+import { usePlanLimits } from "../../../../../hooks/api/plan-limits"
 import { useQueryParams } from "../../../../../hooks/use-query-params"
 import { TeamMemberProps } from "../../../../../types/user"
 
@@ -27,6 +28,10 @@ export const UserListTable = () => {
     }
   )
 
+  const { maxStaff } = usePlanLimits()
+  const totalStaff = count ?? 0
+  const atStaffLimit = maxStaff !== -1 && totalStaff >= maxStaff
+
   const columns = useColumns()
   const filters = useFilters()
 
@@ -36,8 +41,20 @@ export const UserListTable = () => {
     throw error
   }
 
+  const inviteLabel =
+    maxStaff !== -1
+      ? `${t("users.invite")} (${totalStaff}/${maxStaff})`
+      : t("users.invite")
+
   return (
     <Container className="divide-y p-0">
+      {atStaffLimit && (
+        <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
+          <span className="text-xs text-amber-700 font-medium">
+            Staff account limit reached ({totalStaff}/{maxStaff}). Upgrade your plan to invite more team members.
+          </span>
+        </div>
+      )}
       <DataTable
         data={members}
         columns={columns}
@@ -49,8 +66,9 @@ export const UserListTable = () => {
         rowHref={(row) => `${row.id}`}
         isLoading={isPending}
         action={{
-          label: t("users.invite"),
+          label: inviteLabel,
           to: "invite",
+          disabled: atStaffLimit,
         }}
         emptyState={{
           empty: {

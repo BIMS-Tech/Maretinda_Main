@@ -32,6 +32,7 @@ import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { ImageAvatar } from "../../common/image-avatar"
 import { useSubscriptionStatus } from "../../../hooks/api/subscription"
+import { usePlanLimits } from "../../../hooks/api/plan-limits"
 import { useChatConversations } from "../../../hooks/api/chat"
 
 export const MainLayout = () => {
@@ -77,7 +78,12 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
             {subscriptionActive && <CoreRouteSection />}
             <ExtensionRouteSection subscriptionActive={subscriptionActive} />
           </div>
-          {subscriptionActive && <UtilitySection />}
+          {subscriptionActive && (
+          <>
+            <SupportWidget />
+            <UtilitySection />
+          </>
+        )}
         </div>
         <div className="bg-ui-bg-subtle sticky bottom-0">
           <UserSection />
@@ -373,6 +379,63 @@ const ExtensionRouteSection = ({ subscriptionActive }: { subscriptionActive: boo
           </RadixCollapsible.Content>
         </RadixCollapsible.Root>
       </div>
+    </div>
+  )
+}
+
+const SupportWidget = () => {
+  const { supportLevel, planName } = usePlanLimits()
+
+  if (!planName) return null
+
+  if (supportLevel === "dedicated") {
+    return (
+      <div className="mx-3 mb-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5">
+        <p className="text-xs font-semibold text-violet-800">Dedicated Account Manager</p>
+        <a
+          href="mailto:accounts@maretinda.com?subject=Account%20Manager%20Request"
+          className="mt-1 block text-xs text-violet-600 hover:underline"
+        >
+          Contact your manager →
+        </a>
+      </div>
+    )
+  }
+
+  if (supportLevel === "priority") {
+    return (
+      <div className="mx-3 mb-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
+        <p className="text-xs font-semibold text-blue-800">Priority Support</p>
+        <div className="mt-1 flex items-center gap-2">
+          <a
+            href="mailto:priority@maretinda.com?subject=Priority%20Support"
+            className="text-xs text-blue-600 hover:underline"
+          >
+            Email →
+          </a>
+          <span className="text-blue-300">|</span>
+          <a
+            href="https://maretinda.com/live-chat"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:underline"
+          >
+            Live Chat →
+          </a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-3 mb-2 rounded-lg border border-ui-border-base bg-ui-bg-subtle px-3 py-2.5">
+      <p className="text-xs font-semibold text-ui-fg-subtle">Email Support</p>
+      <a
+        href="mailto:support@maretinda.com"
+        className="mt-1 block text-xs text-ui-fg-muted hover:underline"
+      >
+        support@maretinda.com
+      </a>
     </div>
   )
 }
