@@ -28,21 +28,21 @@ export function sellerNewOrderTemplate(data: {
   const itemsHtml = items
     .map(
       (item, i) => `
-    <tr${i > 0 ? ' style="border-top:1px solid #E5E7EB;"' : ""}>
-      <td style="padding:14px 20px;">
+    <tr${i > 0 ? ' style="border-top:1px solid #F3F4F6;"' : ""}>
+      <td style="padding:16px 20px;">
         <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tr>
-            <td style="width:60px;vertical-align:top;">
+            <td style="width:64px;vertical-align:top;">
               ${
                 item.thumbnail
-                  ? `<img src="${item.thumbnail}" alt="${item.product_title || "Product"}" width="60" height="60" style="border-radius:4px;display:block;object-fit:cover;">`
-                  : `<div style="width:60px;height:60px;background:#E5E7EB;border-radius:4px;"></div>`
+                  ? `<img src="${item.thumbnail}" alt="${item.product_title || "Product"}" width="64" height="64" style="border-radius:8px;display:block;object-fit:cover;border:1px solid #F3F4F6;">`
+                  : `<div style="width:64px;height:64px;background:#F3F4F6;border-radius:8px;"></div>`
               }
             </td>
             <td style="padding-left:14px;vertical-align:top;">
-              <p style="margin:0;font-size:14px;font-weight:600;color:#111827;line-height:1.4;">${item.product_title || "Product"}</p>
-              ${item.variant_title ? `<p style="margin:3px 0 0;font-size:12px;color:#9CA3AF;">${item.variant_title}</p>` : ""}
-              <p style="margin:5px 0 0;font-size:12px;color:#6B7280;">Qty: ${item.quantity || 1}</p>
+              <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#111827;line-height:1.4;">${item.product_title || "Product"}</p>
+              ${item.variant_title ? `<p style="margin:0 0 4px;font-size:12px;color:#9CA3AF;">${item.variant_title}</p>` : ""}
+              <p style="margin:0;font-size:12px;color:#6B7280;">Qty: <strong style="color:#111827;">${item.quantity || 1}</strong></p>
             </td>
           </tr>
         </table>
@@ -57,81 +57,153 @@ export function sellerNewOrderTemplate(data: {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>New Order - ${storeName}</title>
+  <title>New Order Received &mdash; ${storeName}</title>
 </head>
-<body style="margin:0;padding:0;background:#F4F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F4F5F7;padding:32px 0;">
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F1F5F9;padding:40px 0;">
     <tr>
       <td align="center" style="padding:0 16px;">
-        <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+        <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;">
 
-          <!-- Header -->
+          <!-- Logo above card -->
           <tr>
-            <td style="background:#111827;padding:22px 40px;text-align:center;">
-              <p style="margin:0;font-size:22px;font-weight:700;color:#FACC15;letter-spacing:-0.3px;">${storeName}</p>
+            <td style="text-align:center;padding-bottom:24px;">
+              <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="40" style="display:inline-block;border:0;max-width:180px;">
             </td>
           </tr>
 
-          <!-- Intro -->
+          <!-- Card -->
           <tr>
-            <td style="padding:32px 40px 24px;">
-              <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">New Order Received</h1>
-              <p style="margin:0;font-size:15px;color:#6B7280;line-height:1.6;">Hi ${sellerName}, a customer has placed a new order containing your products. Please review the details below and prepare the items for shipment.</p>
-            </td>
-          </tr>
+            <td style="background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
 
-          <!-- Order Meta Box -->
-          <tr>
-            <td style="padding:0 40px 28px;">
-              <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:6px;">
+                <!-- Header banner -->
                 <tr>
-                  <td style="padding:16px 20px;">
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <td style="background:#111827;padding:32px 40px;text-align:center;">
+                    <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">New Order</p>
+                    <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">#${displayId}</p>
+                    <div style="width:40px;height:3px;background:#FACC15;margin:14px auto 0;border-radius:2px;"></div>
+                  </td>
+                </tr>
+
+                <!-- Alert badge -->
+                <tr>
+                  <td style="padding:32px 40px 0;text-align:center;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
-                        <td>
-                          <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;">Order Number</p>
-                          <p style="margin:4px 0 0;font-size:19px;font-weight:700;color:#111827;">#${displayId}</p>
-                        </td>
-                        <td style="text-align:right;">
-                          <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;">Customer</p>
-                          <p style="margin:4px 0 0;font-size:15px;font-weight:600;color:#111827;">${customerName}</p>
+                        <td style="background:#D1FAE5;border-radius:20px;padding:8px 20px;">
+                          <p style="margin:0;font-size:13px;font-weight:700;color:#065F46;">&#10003; &nbsp;Payment received &mdash; ready to fulfill</p>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
-              </table>
-            </td>
-          </tr>
 
-          <!-- Items -->
-          <tr>
-            <td style="padding:0 40px 28px;">
-              <p style="margin:0 0 10px;font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.6px;">Items to Fulfill</p>
-              <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;border:1px solid #E5E7EB;border-radius:6px;overflow:hidden;">
-                ${itemsHtml || `<tr><td style="padding:16px 20px;font-size:14px;color:#9CA3AF;">No items found</td></tr>`}
-              </table>
-            </td>
-          </tr>
-
-          <!-- CTA -->
-          <tr>
-            <td style="padding:0 40px 36px;">
-              <table cellpadding="0" cellspacing="0" role="presentation">
+                <!-- Greeting -->
                 <tr>
-                  <td style="background:#FACC15;border-radius:6px;">
-                    <a href="${vendorUrl}" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:#111827;text-decoration:none;">Manage Orders</a>
+                  <td style="padding:24px 40px 28px;">
+                    <h1 style="margin:0 0 12px;font-size:20px;font-weight:700;color:#111827;line-height:1.3;">Hi ${sellerName},</h1>
+                    <p style="margin:0;font-size:15px;color:#6B7280;line-height:1.75;">
+                      Great news &mdash; a customer has placed a new order containing your product(s). Please review the details below and prepare the items for shipment as soon as possible.
+                    </p>
                   </td>
                 </tr>
+
+                <!-- Order meta box -->
+                <tr>
+                  <td style="padding:0 40px 28px;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#111827;border-radius:10px;">
+                      <tr>
+                        <td style="padding:20px 24px;">
+                          <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                            <tr>
+                              <td>
+                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Order Number</p>
+                                <p style="margin:6px 0 0;font-size:22px;font-weight:800;color:#FACC15;">#${displayId}</p>
+                              </td>
+                              <td style="text-align:right;">
+                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Customer</p>
+                                <p style="margin:6px 0 0;font-size:16px;font-weight:700;color:#FFFFFF;">${customerName}</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Items heading -->
+                <tr>
+                  <td style="padding:0 40px 12px;">
+                    <p style="margin:0;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1.2px;">Items to Fulfill</p>
+                  </td>
+                </tr>
+
+                <!-- Items table -->
+                <tr>
+                  <td style="padding:0 40px 28px;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;">
+                      ${itemsHtml || `<tr><td style="padding:20px;font-size:14px;color:#9CA3AF;text-align:center;">No items found</td></tr>`}
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Action steps -->
+                <tr>
+                  <td style="padding:0 40px 28px;">
+                    <p style="margin:0 0 14px;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:1.2px;">Next Steps</p>
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                      <tr>
+                        <td style="padding:6px 0;vertical-align:top;width:24px;">
+                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">1</div>
+                        </td>
+                        <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
+                          Log in to your vendor dashboard and confirm the order
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;vertical-align:top;width:24px;">
+                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">2</div>
+                        </td>
+                        <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
+                          Pack the items securely and arrange for pickup or drop-off
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:6px 0;vertical-align:top;width:24px;">
+                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">3</div>
+                        </td>
+                        <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
+                          Mark the order as shipped and enter the tracking number
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- CTA -->
+                <tr>
+                  <td style="padding:0 40px 40px;text-align:center;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
+                      <tr>
+                        <td style="background:#FACC15;border-radius:10px;">
+                          <a href="${vendorUrl}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:700;color:#111827;text-decoration:none;letter-spacing:-0.2px;">Manage Orders &rarr;</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
               </table>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background:#F9FAFB;padding:24px 40px;text-align:center;border-top:1px solid #E5E7EB;">
-              <p style="margin:0;font-size:13px;color:#9CA3AF;">&copy; ${year} ${storeName}. All rights reserved.</p>
-              <p style="margin:8px 0 0;font-size:12px;color:#9CA3AF;">Powered by BIMS Technologies</p>
+            <td style="padding:24px 0;text-align:center;">
+              <p style="margin:0 0 4px;font-size:12px;color:#9CA3AF;">&copy; ${year} Maretinda. All rights reserved.</p>
+              <p style="margin:0;font-size:11px;color:#CBD5E1;">Powered by BIMS Technologies &middot; Philippines</p>
             </td>
           </tr>
 
