@@ -6,6 +6,8 @@ export interface SubscriptionPlan {
   name: string
   price: number
   yearly_price: number | null
+  yearly_discount_percent: number | null
+  trial_days: number
   features: Record<string, unknown> | null
   status: "active" | "inactive"
 }
@@ -19,6 +21,8 @@ export interface sellersubscription {
   billing_period: "monthly" | "yearly"
   start_date: string
   end_date: string | null
+  is_trial: boolean
+  trial_ends_at: string | null
   status: "active" | "expired" | "cancelled"
   payment_reference: string | null
   created_at: string
@@ -26,6 +30,7 @@ export interface sellersubscription {
 
 export interface SubscriptionStatusResponse {
   has_subscription: boolean
+  has_ever_subscribed: boolean
   subscription: sellersubscription | null
   plan: SubscriptionPlan | null
 }
@@ -72,13 +77,8 @@ export const useSubscriptionCheckout = () => {
     { plan_name: string; billing_period: "monthly" | "yearly" }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/subscription/checkout", {
-        method: "POST",
-        body: payload,
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY })
-    },
+      fetchQuery("/vendor/subscription/checkout", { method: "POST", body: payload }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY }),
   })
 }
 
@@ -90,12 +90,20 @@ export const useActivateSubscription = () => {
     { order_id: string; refno: string; nonce: string; timestamp: string; amount: string; signature: string }
   >({
     mutationFn: (payload) =>
-      fetchQuery("/vendor/subscription/activate", {
-        method: "POST",
-        body: payload,
-      }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY })
-    },
+      fetchQuery("/vendor/subscription/activate", { method: "POST", body: payload }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY }),
+  })
+}
+
+export const useStartTrial = () => {
+  const qc = useQueryClient()
+  return useMutation<
+    { success: boolean; subscription: sellersubscription },
+    Error,
+    { plan_name: string }
+  >({
+    mutationFn: (payload) =>
+      fetchQuery("/vendor/subscription/trial", { method: "POST", body: payload }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: SUBSCRIPTION_KEY }),
   })
 }

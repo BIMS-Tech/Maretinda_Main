@@ -38,8 +38,14 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
       return
     }
 
+    const { is_trial } = req.body as any
     const service = new SubscriptionService(req.scope)
-    const subscription = await service.adminAssign(seller_id, plan_name, duration_days ? Number(duration_days) : 30)
+    const subscription = await service.adminAssign(
+      seller_id,
+      plan_name,
+      duration_days ? Number(duration_days) : 30,
+      Boolean(is_trial)
+    )
 
     res.status(201).json({ subscription })
   } catch (error) {

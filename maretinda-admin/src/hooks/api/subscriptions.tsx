@@ -7,6 +7,8 @@ export interface SubscriptionPlan {
   name: string
   price: number
   yearly_price: number | null
+  yearly_discount_percent: number | null
+  trial_days: number
   features: Record<string, unknown> | null
   status: 'active' | 'inactive'
 }
@@ -19,9 +21,14 @@ export interface sellersubscription {
   billing_period: 'monthly' | 'yearly'
   start_date: string
   end_date: string
+  is_trial: boolean
+  trial_ends_at: string | null
   status: 'active' | 'expired' | 'cancelled'
   payment_reference: string | null
   created_at: string
+  // enriched by admin list endpoint
+  seller_name?: string
+  seller_email?: string
 }
 
 export interface SubscriptionGiyaPayConfig {
@@ -36,7 +43,6 @@ export const subscriptionQueryKeys = queryKeysFactory('subscriptions')
 export const subscriptionPlanQueryKeys = queryKeysFactory('subscription-plans')
 export const subscriptionConfigQueryKeys = queryKeysFactory('subscription-giyapay-config')
 
-// List all seller subscriptions
 export const useAdminSubscriptions = (filters?: {
   status?: string
   seller_id?: string
@@ -53,16 +59,13 @@ export const useAdminSubscriptions = (filters?: {
   return useQuery<{ subscriptions: sellersubscription[]; count: number; limit: number; offset: number }>({
     queryKey: subscriptionQueryKeys.list([filters]),
     queryFn: async () => {
-      const result = await sdk.client.fetch(`/admin/subscriptions${qs ? `?${qs}` : ''}`, {
-        method: 'GET',
-      })
+      const result = await sdk.client.fetch(`/admin/subscriptions${qs ? `?${qs}` : ''}`, { method: 'GET' })
       return result as any
     },
     staleTime: 30_000,
   })
 }
 
-// Activate / deactivate a subscription
 export const useUpdateSubscriptionStatus = () => {
   const qc = useQueryClient()
   return useMutation<{ subscription: sellersubscription }, Error, { id: string; status: 'active' | 'cancelled' }>({
@@ -73,19 +76,44 @@ export const useUpdateSubscriptionStatus = () => {
       })
       return result as any
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() }),
   })
 }
 
-// Manually assign a plan to a seller
+export const useAdminEndTrial = () => {
+  const qc = useQueryClient()
+  return useMutation<{ subscription: sellersubscription }, Error, { id: string }>({
+    mutationFn: async ({ id }) => {
+      const result = await sdk.client.fetch(`/admin/subscriptions/${id}`, {
+        method: 'PATCH',
+        body: { action: 'end_trial' } as any,
+      })
+      return result as any
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() }),
+  })
+}
+
+export const useAdminExtendTrial = () => {
+  const qc = useQueryClient()
+  return useMutation<{ subscription: sellersubscription }, Error, { id: string; days: number }>({
+    mutationFn: async ({ id, days }) => {
+      const result = await sdk.client.fetch(`/admin/subscriptions/${id}`, {
+        method: 'PATCH',
+        body: { action: 'extend_trial', days } as any,
+      })
+      return result as any
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() }),
+  })
+}
+
 export const useAdminAssignSubscription = () => {
   const qc = useQueryClient()
   return useMutation<
     { subscription: sellersubscription },
     Error,
-    { seller_id: string; plan_name: string; duration_days?: number }
+    { seller_id: string; plan_name: string; duration_days?: number; is_trial?: boolean }
   >({
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/subscriptions/assign', {
@@ -94,13 +122,10 @@ export const useAdminAssignSubscription = () => {
       })
       return result as any
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionQueryKeys.lists() }),
   })
 }
 
-// List all subscription plans (admin)
 export const useAdminSubscriptionPlans = () => {
   const { data, ...rest } = useQuery<{ plans: SubscriptionPlan[] }>({
     queryKey: subscriptionPlanQueryKeys.list([]),
@@ -113,13 +138,20 @@ export const useAdminSubscriptionPlans = () => {
   return { plans: data?.plans ?? [], ...rest }
 }
 
-// Update a subscription plan
 export const useUpdateSubscriptionPlan = () => {
   const qc = useQueryClient()
   return useMutation<
     { plan: SubscriptionPlan },
     Error,
-    { plan_id: string; price?: number; yearly_price?: number; features?: Record<string, unknown>; status?: 'active' | 'inactive' }
+    {
+      plan_id: string
+      price?: number
+      yearly_price?: number
+      yearly_discount_percent?: number
+      trial_days?: number
+      features?: Record<string, unknown>
+      status?: 'active' | 'inactive'
+    }
   >({
     mutationFn: async (payload) => {
       const result = await sdk.client.fetch('/admin/subscriptions/plans', {
@@ -128,13 +160,10 @@ export const useUpdateSubscriptionPlan = () => {
       })
       return result as any
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionPlanQueryKeys.lists() })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionPlanQueryKeys.lists() }),
   })
 }
 
-// Subscription-specific GiyaPay config
 export const useSubscriptionGiyaPayConfig = () => {
   const { data, ...rest } = useQuery<{ config: SubscriptionGiyaPayConfig | null }>({
     queryKey: subscriptionConfigQueryKeys.list(['config']),
@@ -161,8 +190,6 @@ export const useUpdateSubscriptionGiyaPayConfig = () => {
       })
       return result as any
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: subscriptionConfigQueryKeys.lists() })
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: subscriptionConfigQueryKeys.lists() }),
   })
 }

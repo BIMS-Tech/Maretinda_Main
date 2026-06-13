@@ -20,8 +20,10 @@ import {
   useUpdateSubscriptionGiyaPayConfig,
   useAdminSubscriptionPlans,
   useUpdateSubscriptionPlan,
+  useAdminEndTrial,
+  useAdminExtendTrial,
 } from "../../hooks/api/subscriptions"
-import type { SubscriptionPlan } from "../../hooks/api/subscriptions"
+import type { SubscriptionPlan, sellersubscription } from "../../hooks/api/subscriptions"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -104,22 +106,11 @@ function SubscriptionPaymentConfig() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
               <Label htmlFor="sub-merchant-id">Merchant ID</Label>
-              <Input
-                id="sub-merchant-id"
-                placeholder="Enter Merchant ID"
-                value={merchantId}
-                onChange={(e) => setMerchantId(e.target.value)}
-              />
+              <Input id="sub-merchant-id" placeholder="Enter Merchant ID" value={merchantId} onChange={(e) => setMerchantId(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="sub-merchant-secret">Merchant Secret</Label>
-              <Input
-                id="sub-merchant-secret"
-                type="password"
-                placeholder="Enter new secret (leave blank to keep existing)"
-                value={merchantSecret}
-                onChange={(e) => setMerchantSecret(e.target.value)}
-              />
+              <Input id="sub-merchant-secret" type="password" placeholder="Enter new secret (leave blank to keep existing)" value={merchantSecret} onChange={(e) => setMerchantSecret(e.target.value)} />
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -133,16 +124,8 @@ function SubscriptionPaymentConfig() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleSave} isLoading={update.isPending} size="small">
-              Save Config
-            </Button>
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={() => { setEditing(false); setMerchantSecret("") }}
-            >
-              Cancel
-            </Button>
+            <Button onClick={handleSave} isLoading={update.isPending} size="small">Save Config</Button>
+            <Button variant="secondary" size="small" onClick={() => { setEditing(false); setMerchantSecret("") }}>Cancel</Button>
           </div>
         </div>
       ) : config ? (
@@ -163,23 +146,43 @@ function SubscriptionPaymentConfig() {
           </div>
         </div>
       ) : (
-        <div className="px-6 py-4 text-sm text-ui-fg-subtle">
-          No subscription payment config set. Click Configure to add one.
-        </div>
+        <div className="px-6 py-4 text-sm text-ui-fg-subtle">No subscription payment config set. Click Configure to add one.</div>
       )}
     </Container>
   )
 }
 
 // ---------------------------------------------------------------------------
-// Plan edit row (inline editing)
+// Plan edit row (inline editing with trial days + discount)
 // ---------------------------------------------------------------------------
 function PlanRow({ plan }: { plan: SubscriptionPlan }) {
   const update = useUpdateSubscriptionPlan()
   const [editing, setEditing] = useState(false)
   const [price, setPrice] = useState(String(plan.price))
   const [yearlyPrice, setYearlyPrice] = useState(String(plan.yearly_price ?? ""))
+  const [discountPct, setDiscountPct] = useState(String(plan.yearly_discount_percent ?? ""))
+  const [trialDays, setTrialDays] = useState(String(plan.trial_days ?? 0))
   const [status, setStatus] = useState<"active" | "inactive">(plan.status)
+
+  // Auto-compute yearly price from discount when monthly price or discount changes
+  const handleDiscountChange = (val: string) => {
+    setDiscountPct(val)
+    const discount = parseFloat(val)
+    const monthly = parseFloat(price)
+    if (!isNaN(discount) && !isNaN(monthly) && discount >= 0 && discount < 100) {
+      setYearlyPrice(String(Math.round(monthly * 12 * (1 - discount / 100))))
+    }
+  }
+
+  // Auto-compute discount from yearly price
+  const handleYearlyPriceChange = (val: string) => {
+    setYearlyPrice(val)
+    const annual = parseFloat(val)
+    const monthly = parseFloat(price)
+    if (!isNaN(annual) && !isNaN(monthly) && monthly > 0) {
+      setDiscountPct(String(Math.round((1 - annual / (monthly * 12)) * 100)))
+    }
+  }
 
   const handleSave = async () => {
     try {
@@ -187,6 +190,8 @@ function PlanRow({ plan }: { plan: SubscriptionPlan }) {
         plan_id: plan.id,
         price: Number(price),
         yearly_price: yearlyPrice !== "" ? Number(yearlyPrice) : undefined,
+        yearly_discount_percent: discountPct !== "" ? Number(discountPct) : undefined,
+        trial_days: Number(trialDays),
         status,
       })
       toast.success(`Plan "${plan.name}" updated`)
@@ -199,6 +204,8 @@ function PlanRow({ plan }: { plan: SubscriptionPlan }) {
   const handleCancel = () => {
     setPrice(String(plan.price))
     setYearlyPrice(String(plan.yearly_price ?? ""))
+    setDiscountPct(String(plan.yearly_discount_percent ?? ""))
+    setTrialDays(String(plan.trial_days ?? 0))
     setStatus(plan.status)
     setEditing(false)
   }
@@ -208,46 +215,51 @@ function PlanRow({ plan }: { plan: SubscriptionPlan }) {
       <Table.Cell className="font-medium">{plan.name}</Table.Cell>
       <Table.Cell>
         {editing ? (
-          <Input
-            className="w-28"
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            min={0}
-          />
+          <Input className="w-28" type="number" value={price} onChange={(e) => setPrice(e.target.value)} min={0} />
         ) : (
           <span>₱{Number(plan.price).toLocaleString()}</span>
         )}
       </Table.Cell>
       <Table.Cell>
         {editing ? (
-          <Input
-            className="w-28"
-            type="number"
-            value={yearlyPrice}
-            onChange={(e) => setYearlyPrice(e.target.value)}
-            placeholder="e.g. 9990"
-            min={0}
-          />
+          <div className="flex gap-2 items-center">
+            <Input className="w-28" type="number" value={yearlyPrice} onChange={(e) => handleYearlyPriceChange(e.target.value)} placeholder="e.g. 4990" min={0} />
+            <span className="text-xs text-ui-fg-subtle">or</span>
+            <div className="flex items-center gap-1">
+              <Input className="w-16" type="number" value={discountPct} onChange={(e) => handleDiscountChange(e.target.value)} placeholder="%" min={0} max={99} />
+              <span className="text-xs text-ui-fg-subtle">% off</span>
+            </div>
+          </div>
         ) : (
-          <span>{plan.yearly_price ? `₱${Number(plan.yearly_price).toLocaleString()}` : "—"}</span>
+          <span>
+            {plan.yearly_price ? `₱${Number(plan.yearly_price).toLocaleString()}` : "—"}
+            {plan.yearly_discount_percent ? (
+              <span className="ml-1 text-xs text-green-600">({plan.yearly_discount_percent}% off)</span>
+            ) : null}
+          </span>
+        )}
+      </Table.Cell>
+      <Table.Cell>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <Input className="w-20" type="number" value={trialDays} onChange={(e) => setTrialDays(e.target.value)} min={0} />
+            <span className="text-xs text-ui-fg-subtle">days</span>
+          </div>
+        ) : (
+          <span>{plan.trial_days > 0 ? `${plan.trial_days} days` : "None"}</span>
         )}
       </Table.Cell>
       <Table.Cell>
         {editing ? (
           <Select value={status} onValueChange={(v) => setStatus(v as "active" | "inactive")}>
-            <Select.Trigger className="w-28">
-              <Select.Value />
-            </Select.Trigger>
+            <Select.Trigger className="w-28"><Select.Value /></Select.Trigger>
             <Select.Content>
               <Select.Item value="active">Active</Select.Item>
               <Select.Item value="inactive">Inactive</Select.Item>
             </Select.Content>
           </Select>
         ) : (
-          <StatusBadge color={plan.status === "active" ? "green" : "grey"} className="capitalize">
-            {plan.status}
-          </StatusBadge>
+          <StatusBadge color={plan.status === "active" ? "green" : "grey"} className="capitalize">{plan.status}</StatusBadge>
         )}
       </Table.Cell>
       <Table.Cell>
@@ -275,7 +287,7 @@ function PlansTab() {
       <div className="px-6 py-4">
         <Heading level="h2">Subscription Plans</Heading>
         <Text className="text-ui-fg-subtle" size="small">
-          Edit monthly/yearly prices and toggle plan visibility.
+          Edit monthly/yearly prices, yearly discount %, trial period, and plan visibility.
         </Text>
       </div>
       <Table>
@@ -283,20 +295,17 @@ function PlansTab() {
           <Table.Row>
             <Table.HeaderCell>Plan</Table.HeaderCell>
             <Table.HeaderCell>Monthly Price</Table.HeaderCell>
-            <Table.HeaderCell>Yearly Price</Table.HeaderCell>
+            <Table.HeaderCell>Yearly Price / Discount</Table.HeaderCell>
+            <Table.HeaderCell>Free Trial</Table.HeaderCell>
             <Table.HeaderCell>Status</Table.HeaderCell>
             <Table.HeaderCell>Actions</Table.HeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {isLoading ? (
-            <Table.Row>
-              <Table.Cell colSpan={5} className="text-center py-8 text-ui-fg-subtle">Loading…</Table.Cell>
-            </Table.Row>
+            <Table.Row><Table.Cell colSpan={6} className="text-center py-8 text-ui-fg-subtle">Loading…</Table.Cell></Table.Row>
           ) : plans.length === 0 ? (
-            <Table.Row>
-              <Table.Cell colSpan={5} className="text-center py-8 text-ui-fg-subtle">No plans found.</Table.Cell>
-            </Table.Row>
+            <Table.Row><Table.Cell colSpan={6} className="text-center py-8 text-ui-fg-subtle">No plans found.</Table.Cell></Table.Row>
           ) : (
             plans.map((plan) => <PlanRow key={plan.id} plan={plan} />)
           )}
@@ -307,27 +316,100 @@ function PlansTab() {
 }
 
 // ---------------------------------------------------------------------------
-// Manual assign modal — loads plans from API
+// Trial management modal
+// ---------------------------------------------------------------------------
+function TrialModal({ sub, onClose }: { sub: sellersubscription; onClose: () => void }) {
+  const endTrial = useAdminEndTrial()
+  const extendTrial = useAdminExtendTrial()
+  const [extendDays, setExtendDays] = useState(7)
+
+  const handleEnd = async () => {
+    try {
+      await endTrial.mutateAsync({ id: sub.id })
+      toast.success("Trial ended")
+      onClose()
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to end trial")
+    }
+  }
+
+  const handleExtend = async () => {
+    try {
+      await extendTrial.mutateAsync({ id: sub.id, days: extendDays })
+      toast.success(`Trial extended by ${extendDays} days`)
+      onClose()
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to extend trial")
+    }
+  }
+
+  const trialEnd = sub.trial_ends_at ? new Date(sub.trial_ends_at) : new Date(sub.end_date)
+  const daysLeft = Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000))
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+        <Heading level="h2" className="mb-1">Manage Trial</Heading>
+        <Text className="text-ui-fg-subtle mb-4" size="small">
+          {sub.seller_name || sub.seller_id} — {sub.plan_name} plan
+        </Text>
+
+        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-4 text-sm">
+          <p className="font-semibold text-amber-800">Trial Status</p>
+          <p className="text-amber-700 mt-0.5">
+            Ends: {trialEnd.toLocaleDateString()} ({daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining)
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div>
+            <Label>Extend trial by</Label>
+            <div className="flex gap-2 mt-1">
+              <Input type="number" value={extendDays} onChange={(e) => setExtendDays(Number(e.target.value))} min={1} className="w-24" />
+              <span className="self-center text-sm text-ui-fg-subtle">days</span>
+              <Button size="small" onClick={handleExtend} isLoading={extendTrial.isPending}>Extend</Button>
+            </div>
+          </div>
+
+          <div className="border-t border-ui-border-base pt-3">
+            <Button variant="danger" size="small" onClick={handleEnd} isLoading={endTrial.isPending}>
+              End Trial Now
+            </Button>
+            <Text className="text-ui-fg-subtle mt-1" size="xsmall">
+              This will immediately expire the seller's trial access.
+            </Text>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-5">
+          <Button variant="secondary" size="small" onClick={onClose}>Close</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Manual assign modal
 // ---------------------------------------------------------------------------
 function AssignModal({ onClose }: { onClose: () => void }) {
   const assign = useAdminAssignSubscription()
   const { plans, isLoading: plansLoading } = useAdminSubscriptionPlans()
-  const [sellerId, setsellerId] = useState("")
+  const [sellerId, setSellerId] = useState("")
   const [planName, setPlanName] = useState("")
   const [durationDays, setDurationDays] = useState(30)
+  const [isTrial, setIsTrial] = useState(false)
 
   useEffect(() => {
-    if (plans.length > 0 && !planName) {
-      setPlanName(plans[0].name)
-    }
+    if (plans.length > 0 && !planName) setPlanName(plans[0].name)
   }, [plans, planName])
 
   const handleSubmit = async () => {
-    if (!sellerId) { toast.error("seller ID is required"); return }
+    if (!sellerId) { toast.error("Seller ID is required"); return }
     if (!planName) { toast.error("Select a plan"); return }
     try {
-      await assign.mutateAsync({ seller_id: sellerId, plan_name: planName, duration_days: durationDays })
-      toast.success("Subscription assigned")
+      await assign.mutateAsync({ seller_id: sellerId, plan_name: planName, duration_days: durationDays, is_trial: isTrial })
+      toast.success(isTrial ? "Trial subscription assigned" : "Subscription assigned")
       onClose()
     } catch (err: any) {
       toast.error(err?.message || "Failed to assign subscription")
@@ -340,8 +422,8 @@ function AssignModal({ onClose }: { onClose: () => void }) {
         <Heading level="h2" className="mb-4">Manually Assign Subscription</Heading>
         <div className="flex flex-col gap-3">
           <div>
-            <Label htmlFor="assign-vid">seller ID (seller_…)</Label>
-            <Input id="assign-vid" value={sellerId} onChange={(e) => setsellerId(e.target.value)} placeholder="seller_..." />
+            <Label htmlFor="assign-vid">Seller ID</Label>
+            <Input id="assign-vid" value={sellerId} onChange={(e) => setSellerId(e.target.value)} placeholder="seller_..." />
           </div>
           <div>
             <Label htmlFor="assign-plan">Plan</Label>
@@ -349,9 +431,7 @@ function AssignModal({ onClose }: { onClose: () => void }) {
               <p className="text-sm text-ui-fg-subtle">Loading plans…</p>
             ) : (
               <Select value={planName} onValueChange={setPlanName}>
-                <Select.Trigger id="assign-plan">
-                  <Select.Value placeholder="Select a plan" />
-                </Select.Trigger>
+                <Select.Trigger id="assign-plan"><Select.Value placeholder="Select a plan" /></Select.Trigger>
                 <Select.Content>
                   {plans.map((p) => (
                     <Select.Item key={p.id} value={p.name}>
@@ -364,17 +444,22 @@ function AssignModal({ onClose }: { onClose: () => void }) {
           </div>
           <div>
             <Label htmlFor="assign-days">Duration (days)</Label>
-            <Input
-              id="assign-days"
-              type="number"
-              value={durationDays}
-              onChange={(e) => setDurationDays(Number(e.target.value))}
-              min={1}
-            />
+            <Input id="assign-days" type="number" value={durationDays} onChange={(e) => setDurationDays(Number(e.target.value))} min={1} />
           </div>
+          <div className="flex items-center gap-3">
+            <Switch checked={isTrial} onCheckedChange={setIsTrial} id="assign-trial" />
+            <Label htmlFor="assign-trial">Assign as Free Trial</Label>
+          </div>
+          {isTrial && (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+              Trial subscriptions have ₱0 price and are marked as trial for tracking. The seller will see a trial banner.
+            </div>
+          )}
         </div>
         <div className="flex gap-2 mt-5">
-          <Button onClick={handleSubmit} isLoading={assign.isPending} size="small">Assign</Button>
+          <Button onClick={handleSubmit} isLoading={assign.isPending} size="small">
+            {isTrial ? "Assign Trial" : "Assign"}
+          </Button>
           <Button variant="secondary" size="small" onClick={onClose}>Cancel</Button>
         </div>
       </div>
@@ -391,15 +476,16 @@ type Tab = "subscriptions" | "plans"
 export const SubscriptionsPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>("subscriptions")
   const [statusFilter, setStatusFilter] = useState("")
-  const [sellersearch, setsellersearch] = useState("")
+  const [sellerSearch, setSellerSearch] = useState("")
   const [page, setPage] = useState(0)
   const [showAssign, setShowAssign] = useState(false)
-  const [appliedsellerId, setAppliedsellerId] = useState("")
+  const [appliedSellerId, setAppliedSellerId] = useState("")
+  const [trialModal, setTrialModal] = useState<sellersubscription | null>(null)
   const limit = 20
 
   const { data, isLoading, refetch } = useAdminSubscriptions({
     status: statusFilter || undefined,
-    seller_id: appliedsellerId || undefined,
+    seller_id: appliedSellerId || undefined,
     limit,
     offset: page * limit,
   })
@@ -421,20 +507,17 @@ export const SubscriptionsPage = () => {
   return (
     <div className="flex flex-col gap-4 p-6">
       {showAssign && <AssignModal onClose={() => { setShowAssign(false); refetch() }} />}
+      {trialModal && <TrialModal sub={trialModal} onClose={() => { setTrialModal(null); refetch() }} />}
 
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <Heading>seller Subscriptions</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            Manage seller subscription plans and status.
-          </Text>
+          <Heading>Seller Subscriptions</Heading>
+          <Text className="text-ui-fg-subtle" size="small">Manage seller subscription plans and status.</Text>
         </div>
         <div className="flex gap-2">
           {activeTab === "subscriptions" && (
-            <Button size="small" onClick={() => setShowAssign(true)}>
-              Assign Plan
-            </Button>
+            <Button size="small" onClick={() => setShowAssign(true)}>Assign Plan</Button>
           )}
         </div>
       </div>
@@ -452,7 +535,7 @@ export const SubscriptionsPage = () => {
                 : "border-transparent text-ui-fg-subtle hover:text-ui-fg-base",
             ].join(" ")}
           >
-            {tab === "subscriptions" ? "seller Subscriptions" : "Plan Management"}
+            {tab === "subscriptions" ? "Seller Subscriptions" : "Plan Management"}
           </button>
         ))}
       </div>
@@ -469,9 +552,7 @@ export const SubscriptionsPage = () => {
             <div className="flex flex-col gap-1">
               <Label htmlFor="status-filter">Status</Label>
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === "all" ? "" : v); setPage(0) }}>
-                <Select.Trigger id="status-filter" className="w-36">
-                  <Select.Value placeholder="All statuses" />
-                </Select.Trigger>
+                <Select.Trigger id="status-filter" className="w-36"><Select.Value placeholder="All statuses" /></Select.Trigger>
                 <Select.Content>
                   <Select.Item value="all">All</Select.Item>
                   {STATUS_OPTIONS.filter(Boolean).map((s) => (
@@ -481,31 +562,19 @@ export const SubscriptionsPage = () => {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="seller-search">seller ID</Label>
+              <Label htmlFor="seller-search">Seller ID</Label>
               <div className="flex gap-2">
                 <Input
                   id="seller-search"
                   placeholder="seller_..."
-                  value={sellersearch}
-                  onChange={(e) => setsellersearch(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") { setAppliedsellerId(sellersearch); setPage(0) } }}
+                  value={sellerSearch}
+                  onChange={(e) => setSellerSearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { setAppliedSellerId(sellerSearch); setPage(0) } }}
                   className="w-52"
                 />
-                <Button
-                  size="small"
-                  variant="secondary"
-                  onClick={() => { setAppliedsellerId(sellersearch); setPage(0) }}
-                >
-                  Search
-                </Button>
-                {appliedsellerId && (
-                  <Button
-                    size="small"
-                    variant="secondary"
-                    onClick={() => { setsellersearch(""); setAppliedsellerId(""); setPage(0) }}
-                  >
-                    Clear
-                  </Button>
+                <Button size="small" variant="secondary" onClick={() => { setAppliedSellerId(sellerSearch); setPage(0) }}>Search</Button>
+                {appliedSellerId && (
+                  <Button size="small" variant="secondary" onClick={() => { setSellerSearch(""); setAppliedSellerId(""); setPage(0) }}>Clear</Button>
                 )}
               </div>
             </div>
@@ -516,12 +585,13 @@ export const SubscriptionsPage = () => {
             <Table>
               <Table.Header>
                 <Table.Row>
-                  <Table.HeaderCell>seller</Table.HeaderCell>
+                  <Table.HeaderCell>Seller</Table.HeaderCell>
                   <Table.HeaderCell>Plan</Table.HeaderCell>
                   <Table.HeaderCell>Billing</Table.HeaderCell>
                   <Table.HeaderCell>Price</Table.HeaderCell>
                   <Table.HeaderCell>Start</Table.HeaderCell>
                   <Table.HeaderCell>Expires</Table.HeaderCell>
+                  <Table.HeaderCell>Type</Table.HeaderCell>
                   <Table.HeaderCell>Status</Table.HeaderCell>
                   <Table.HeaderCell>Actions</Table.HeaderCell>
                 </Table.Row>
@@ -529,33 +599,31 @@ export const SubscriptionsPage = () => {
               <Table.Body>
                 {isLoading ? (
                   <Table.Row>
-                    <Table.Cell colSpan={8} className="text-center py-8 text-ui-fg-subtle">
-                      Loading…
-                    </Table.Cell>
+                    <Table.Cell colSpan={9} className="text-center py-8 text-ui-fg-subtle">Loading…</Table.Cell>
                   </Table.Row>
                 ) : subscriptions.length === 0 ? (
                   <Table.Row>
-                    <Table.Cell colSpan={8} className="text-center py-8 text-ui-fg-subtle">
-                      No subscriptions found.
-                    </Table.Cell>
+                    <Table.Cell colSpan={9} className="text-center py-8 text-ui-fg-subtle">No subscriptions found.</Table.Cell>
                   </Table.Row>
                 ) : (
-                  subscriptions.map((sub: any) => (
+                  subscriptions.map((sub: sellersubscription) => (
                     <Table.Row key={sub.id}>
                       <Table.Cell>
                         <div className="flex flex-col">
-                          {sub.seller_name ? (
-                            <span className="font-medium text-sm">{sub.seller_name}</span>
-                          ) : null}
-                          {sub.seller_email ? (
-                            <span className="text-xs text-ui-fg-subtle">{sub.seller_email}</span>
-                          ) : null}
+                          {sub.seller_name && <span className="font-medium text-sm">{sub.seller_name}</span>}
+                          {(sub as any).seller_email && <span className="text-xs text-ui-fg-subtle">{(sub as any).seller_email}</span>}
                           <span className="font-mono text-xs text-ui-fg-muted">{sub.seller_id}</span>
                         </div>
                       </Table.Cell>
                       <Table.Cell className="font-medium">{sub.plan_name}</Table.Cell>
                       <Table.Cell className="capitalize">{sub.billing_period || "monthly"}</Table.Cell>
-                      <Table.Cell>₱{Number(sub.price).toLocaleString()}</Table.Cell>
+                      <Table.Cell>
+                        {sub.is_trial ? (
+                          <span className="text-amber-600 font-medium">Free Trial</span>
+                        ) : (
+                          `₱${Number(sub.price).toLocaleString()}`
+                        )}
+                      </Table.Cell>
                       <Table.Cell>{formatDate(sub.start_date)}</Table.Cell>
                       <Table.Cell>
                         <span className={new Date(sub.end_date).getTime() < Date.now() + 7 * 86400000 ? "text-red-600 font-semibold" : ""}>
@@ -564,19 +632,31 @@ export const SubscriptionsPage = () => {
                         </span>
                       </Table.Cell>
                       <Table.Cell>
-                        <StatusBadge color={statusColor(sub.status)} className="capitalize">
-                          {sub.status}
-                        </StatusBadge>
+                        {sub.is_trial ? (
+                          <StatusBadge color="orange">Trial</StatusBadge>
+                        ) : (
+                          <StatusBadge color="grey">Paid</StatusBadge>
+                        )}
                       </Table.Cell>
                       <Table.Cell>
-                        <Button
-                          size="small"
-                          variant={sub.status === "active" ? "danger" : "secondary"}
-                          isLoading={updateStatus.isPending}
-                          onClick={() => handleToggle(sub.id, sub.status)}
-                        >
-                          {sub.status === "active" ? "Deactivate" : "Activate"}
-                        </Button>
+                        <StatusBadge color={statusColor(sub.status)} className="capitalize">{sub.status}</StatusBadge>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <div className="flex gap-2">
+                          {sub.is_trial && sub.status === "active" && (
+                            <Button size="small" variant="secondary" onClick={() => setTrialModal(sub)}>
+                              Manage Trial
+                            </Button>
+                          )}
+                          <Button
+                            size="small"
+                            variant={sub.status === "active" ? "danger" : "secondary"}
+                            isLoading={updateStatus.isPending}
+                            onClick={() => handleToggle(sub.id, sub.status)}
+                          >
+                            {sub.status === "active" ? "Deactivate" : "Activate"}
+                          </Button>
+                        </div>
                       </Table.Cell>
                     </Table.Row>
                   ))
@@ -591,23 +671,13 @@ export const SubscriptionsPage = () => {
                   {page * limit + 1}–{Math.min((page + 1) * limit, total)} of {total}
                 </span>
                 <div className="flex gap-2">
-                  <Button size="small" variant="secondary" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-                    Previous
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="secondary"
-                    disabled={(page + 1) * limit >= total}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
+                  <Button size="small" variant="secondary" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>Previous</Button>
+                  <Button size="small" variant="secondary" disabled={(page + 1) * limit >= total} onClick={() => setPage((p) => p + 1)}>Next</Button>
                 </div>
               </div>
             )}
           </Container>
 
-          {/* GiyaPay subscription config */}
           <SubscriptionPaymentConfig />
         </>
       )}
