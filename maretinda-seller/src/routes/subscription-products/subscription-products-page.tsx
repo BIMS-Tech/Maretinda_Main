@@ -5,7 +5,7 @@ const SubscriptionProductsPage = () => {
   return (
     <SingleColumnPage widgets={{ before: [], after: [] }}>
       <FeatureGate
-        requiredPlans={["Boost", "Managed"]}
+        requiredPlans={["Growth", "Premium"]}
         featureName="Subscription Products"
         description="Subscription Products lets you sell on a recurring basis — customers subscribe and get auto-charged weekly or monthly."
         comingSoon

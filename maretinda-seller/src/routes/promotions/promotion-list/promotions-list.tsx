@@ -14,7 +14,7 @@ export const PromotionsList = () => {
       }}
     >
       <FeatureGate
-        requiredPlans={["Boost", "Managed"]}
+        requiredPlans={["Growth", "Premium"]}
         featureName="Promotions & Vouchers"
         description="Promotions & Vouchers lets you create discount codes and campaigns to reward customers."
       >

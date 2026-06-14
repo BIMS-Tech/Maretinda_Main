@@ -472,7 +472,7 @@ export const DashboardCharts = ({
                   <span className="h-3 w-3 rounded-full bg-violet-500" />
                   <span className="text-sm font-semibold text-ui-fg-muted">Customers</span>
                 </div>
-                <p className="text-xs text-ui-fg-muted mt-1">Upgrade to Boost</p>
+                <p className="text-xs text-ui-fg-muted mt-1">Upgrade to Growth</p>
               </div>
             )}
           </div>
@@ -565,7 +565,7 @@ export const DashboardCharts = ({
           </div>
         </Container>
 
-        {/* Right: Order breakdown + Review summary (Boost+ only) */}
+        {/* Right: Order breakdown + Review summary (Growth+ only) */}
         {analyticsLevel !== "basic" && <div className="flex flex-col gap-4">
           {/* Order Status Breakdown */}
           <Container className="divide-y p-0">
@@ -675,7 +675,7 @@ export const DashboardCharts = ({
         </div>}
       </div>
 
-      {/* Recent Payouts (Boost+ only) */}
+      {/* Recent Payouts (Growth+ only) */}
       {analyticsLevel !== "basic" && Array.isArray(payouts) && payouts.length > 0 && (
         <Container className="divide-y p-0">
           <div className="flex items-center justify-between px-6 py-4">

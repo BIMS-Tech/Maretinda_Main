@@ -31,7 +31,7 @@ export const InventorySmartPanel = () => {
   if (inventoryLevel === "standard") {
     return (
       <FeatureGate
-        requiredPlans={["Boost", "Managed"]}
+        requiredPlans={["Growth", "Premium"]}
         featureName="Smart Inventory"
         description="Smart inventory alerts notify you when stock is running low so you can restock before selling out."
       />

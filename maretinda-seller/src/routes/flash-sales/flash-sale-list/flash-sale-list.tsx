@@ -15,7 +15,7 @@ export const FlashSaleList = () => {
       }}
     >
       <FeatureGate
-        requiredPlans={["Boost", "Managed"]}
+        requiredPlans={["Growth", "Premium"]}
         featureName="Flash Sales"
         description="Flash Sales lets you create time-limited discounts to drive traffic and boost conversions."
       >

@@ -1,9 +1,9 @@
 import { useSubscriptionStatus } from "./subscription"
 
 const STAFF_LIMITS: Record<string, number> = {
-  Foundation: 1,
-  Boost: 5,
-  Managed: 15,
+  Starter: 1,
+  Growth: 5,
+  Premium: 15,
 }
 
 export const usePlanLimits = () => {
@@ -18,25 +18,25 @@ export const usePlanLimits = () => {
   const maxStaff = planName ? (STAFF_LIMITS[planName] ?? -1) : -1
 
   const analyticsLevel: "basic" | "advanced" | "full" =
-    planName === "Foundation"
+    planName === "Starter"
       ? "basic"
-      : planName === "Boost"
+      : planName === "Growth"
       ? "advanced"
       : "full"
 
-  const canExport = planName === "Managed"
+  const canExport = planName === "Premium"
 
   const supportLevel: "email" | "priority" | "dedicated" =
-    planName === "Foundation"
+    planName === "Starter"
       ? "email"
-      : planName === "Boost"
+      : planName === "Growth"
       ? "priority"
       : "dedicated"
 
   const inventoryLevel: "standard" | "smart" | "advanced" =
-    planName === "Foundation"
+    planName === "Starter"
       ? "standard"
-      : planName === "Boost"
+      : planName === "Growth"
       ? "smart"
       : "advanced"
 

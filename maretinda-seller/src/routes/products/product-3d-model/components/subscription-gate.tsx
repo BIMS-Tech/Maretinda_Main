@@ -14,8 +14,8 @@ export const SubscriptionGate = ({ currentPlan }: SubscriptionGateProps) => {
       <div className="flex flex-col items-center gap-y-2 max-w-sm">
         <Heading level="h2">Premium Feature</Heading>
         <Text className="text-ui-fg-subtle">
-          3D Model Generation is available on <strong>Boost</strong> and{" "}
-          <strong>Managed</strong> subscription plans. Upgrade to bring your
+          3D Model Generation is available on <strong>Growth</strong> and{" "}
+          <strong>Premium</strong> subscription plans. Upgrade to bring your
           products to life with AI-generated 3D models.
         </Text>
         {currentPlan && (

@@ -8,7 +8,7 @@ type Product3DModelSectionProps = {
   product: HttpTypes.AdminProduct
 }
 
-const ELIGIBLE_PLANS = ["Boost", "Managed"]
+const ELIGIBLE_PLANS = ["Growth", "Premium"]
 
 export const Product3DModelSection = ({ product }: Product3DModelSectionProps) => {
   const { data: subData, isLoading: subLoading } = useSubscriptionStatus()
@@ -46,7 +46,7 @@ export const Product3DModelSection = ({ product }: Product3DModelSectionProps) =
             <div className="flex items-center gap-x-2">
               <span className="text-lg">🔒</span>
               <Text size="small" className="text-ui-fg-subtle">
-                Available on Boost and Managed plans
+                Available on Growth and Premium plans
               </Text>
             </div>
             <Button size="small" variant="secondary" asChild>

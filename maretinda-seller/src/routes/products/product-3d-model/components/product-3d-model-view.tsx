@@ -11,7 +11,7 @@ import { GenerateForm } from "./generate-form"
 import { ModelCard } from "./model-card"
 import { SubscriptionGate } from "./subscription-gate"
 
-const ELIGIBLE_PLANS = ["Boost", "Managed"]
+const ELIGIBLE_PLANS = ["Growth", "Premium"]
 
 type Product3DModelViewProps = {
   product: HttpTypes.AdminProduct
