@@ -87,7 +87,7 @@ export function useChatSSE() {
 
     const connect = async () => {
       try {
-        const res = await fetch(`${backendUrl}/seller/chat/stream`, {
+        const res = await fetch(`${backendUrl}/vendor/chat/stream`, {
           headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         })
