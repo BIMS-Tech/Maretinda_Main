@@ -1,3 +1,4 @@
+import { LockClosedSolid, RocketLaunch } from "@medusajs/icons"
 import { Button, Heading, Text } from "@medusajs/ui"
 import { Link } from "react-router-dom"
 import { useSubscriptionStatus } from "../../hooks/api/subscription"
@@ -31,8 +32,8 @@ export const FeatureGate = ({
   if (hasAccess && comingSoon) {
     return (
       <div className="flex flex-col items-center justify-center gap-y-6 py-16 px-8 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-subtle text-4xl">
-          🚀
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-subtle">
+          <RocketLaunch className="text-ui-fg-subtle h-8 w-8" />
         </div>
         <div className="flex flex-col items-center gap-y-2 max-w-sm">
           <Heading level="h2">{featureName} — Coming Soon</Heading>
@@ -51,8 +52,8 @@ export const FeatureGate = ({
 
   return (
     <div className="flex flex-col items-center justify-center gap-y-6 py-16 px-8 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-subtle text-4xl">
-        🔒
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-subtle">
+        <LockClosedSolid className="text-ui-fg-subtle h-8 w-8" />
       </div>
       <div className="flex flex-col items-center gap-y-2 max-w-sm">
         <Heading level="h2">Premium Feature</Heading>
