@@ -3,6 +3,19 @@ import { Button, Heading, Text } from "@medusajs/ui"
 import { Link } from "react-router-dom"
 import { useSubscriptionStatus } from "../../hooks/api/subscription"
 
+// Map legacy plan names (pre-migration) to current names so gates work
+// regardless of whether the DB migration has run on a given environment.
+const PLAN_ALIASES: Record<string, string> = {
+  Foundation: "Starter",
+  Boost: "Growth",
+  Managed: "Premium",
+}
+
+function normalizePlanName(name: string | null): string | null {
+  if (!name) return null
+  return PLAN_ALIASES[name] ?? name
+}
+
 interface FeatureGateProps {
   requiredPlans: string[]
   featureName: string
@@ -22,7 +35,8 @@ export const FeatureGate = ({
 
   if (isLoading) return null
 
-  const planName = data?.subscription?.plan_name ?? null
+  const rawPlanName = data?.subscription?.plan_name ?? null
+  const planName = normalizePlanName(rawPlanName)
   const hasAccess = planName !== null && requiredPlans.includes(planName)
 
   if (hasAccess && !comingSoon) {

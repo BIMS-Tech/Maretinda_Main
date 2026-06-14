@@ -9,10 +9,12 @@ type Product3DModelSectionProps = {
 }
 
 const ELIGIBLE_PLANS = ["Growth", "Premium"]
+const PLAN_ALIASES: Record<string, string> = { Foundation: "Starter", Boost: "Growth", Managed: "Premium" }
 
 export const Product3DModelSection = ({ product }: Product3DModelSectionProps) => {
   const { data: subData, isLoading: subLoading } = useSubscriptionStatus()
-  const planName = subData?.plan?.name ?? null
+  const rawPlan = subData?.plan?.name ?? null
+  const planName = rawPlan ? (PLAN_ALIASES[rawPlan] ?? rawPlan) : null
   const isEligible = planName ? ELIGIBLE_PLANS.includes(planName) : false
 
   const { data: modelsData } = useProduct3DModels(product.id)

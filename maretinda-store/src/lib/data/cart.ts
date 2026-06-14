@@ -332,20 +332,29 @@ export async function applyPromotions(codes: string[]) {
 
 	const headers = {
 		...(await getAuthHeaders()),
+		'Content-Type': 'application/json',
+		'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
 	};
 
-	return sdk.store.cart
-		.update(cartId, { promo_codes: codes }, {}, headers)
-		.then(async ({ cart }) => {
-			const cartCacheTag = await getCacheTag('carts');
-			revalidateTag(cartCacheTag);
+	const res = await fetch(
+		`${process.env.MEDUSA_BACKEND_URL}/store/carts/${cartId}/promotions`,
+		{
+			body: JSON.stringify({ promo_codes: codes }),
+			headers,
+			method: 'POST',
+		},
+	);
 
-			const applied = cart.promotions?.some((promotion: any) =>
-				codes.includes(promotion.code),
-			);
-			return applied;
-		})
-		.catch(medusaError);
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({ message: 'Failed to apply promotion' }));
+		throw new Error(err.message || 'Failed to apply promotion');
+	}
+
+	const { cart } = await res.json();
+	const cartCacheTag = await getCacheTag('carts');
+	revalidateTag(cartCacheTag);
+
+	return cart.promotions?.some((p: any) => codes.includes(p.code)) ?? false;
 }
 
 export async function removeShippingMethod(shippingMethodId: string) {

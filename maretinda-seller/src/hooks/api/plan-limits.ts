@@ -1,5 +1,11 @@
 import { useSubscriptionStatus } from "./subscription"
 
+const PLAN_ALIASES: Record<string, string> = {
+  Foundation: "Starter",
+  Boost: "Growth",
+  Managed: "Premium",
+}
+
 const STAFF_LIMITS: Record<string, number> = {
   Starter: 1,
   Growth: 5,
@@ -9,7 +15,8 @@ const STAFF_LIMITS: Record<string, number> = {
 export const usePlanLimits = () => {
   const { data, isLoading } = useSubscriptionStatus()
 
-  const planName = data?.subscription?.plan_name ?? null
+  const raw = data?.subscription?.plan_name ?? null
+  const planName = raw ? (PLAN_ALIASES[raw] ?? raw) : null
   const features = data?.plan?.features as Record<string, unknown> | null
 
   const maxProducts =

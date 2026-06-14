@@ -65,7 +65,9 @@ export default function CartPromotionCode({
 							style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}
 						>
 							<div className="flex items-center gap-2">
-								<span className="text-green-600 text-sm font-bold">✓</span>
+								<svg className="w-4 h-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+									<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+								</svg>
 								<code className="text-sm font-mono font-semibold text-green-700">
 									{promo.code}
 								</code>
@@ -91,7 +93,10 @@ export default function CartPromotionCode({
 				style={{ borderColor: '#d1d5db', color: '#432C63' }}
 			>
 				<div className="flex items-center gap-2">
-					<span className="text-base">🎟️</span>
+					<svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+						<path d="M3 9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a2 2 0 0 0 0-4V9Z" />
+						<path d="M14 7v10" strokeDasharray="2 2" />
+					</svg>
 					<span className="text-sm font-semibold">
 						{appliedCodes.length > 0
 							? `${appliedCodes.length} voucher${appliedCodes.length > 1 ? 's' : ''} applied`

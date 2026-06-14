@@ -12,6 +12,7 @@ import { ModelCard } from "./model-card"
 import { SubscriptionGate } from "./subscription-gate"
 
 const ELIGIBLE_PLANS = ["Growth", "Premium"]
+const PLAN_ALIASES: Record<string, string> = { Foundation: "Starter", Boost: "Growth", Managed: "Premium" }
 
 type Product3DModelViewProps = {
   product: HttpTypes.AdminProduct
@@ -25,7 +26,8 @@ export const Product3DModelView = ({ product }: Product3DModelViewProps) => {
   const deleteModel = useDelete3DModel(product.id)
   const setPrimary = useSetPrimary3DModel(product.id)
 
-  const planName = subData?.plan?.name ?? null
+  const rawPlan = subData?.plan?.name ?? null
+  const planName = rawPlan ? (PLAN_ALIASES[rawPlan] ?? rawPlan) : null
   const isEligible = planName ? ELIGIBLE_PLANS.includes(planName) : false
 
   const models = modelsData?.models ?? []
