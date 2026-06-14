@@ -38,7 +38,7 @@ interface FeatureRow {
 function buildFeatureRows(features: Record<string, unknown>): FeatureRow[] {
   const rows: FeatureRow[] = []
 
-  const products = features.max_products
+  const products = Number(features.max_products)
   rows.push({
     label: products === -1 ? "Unlimited products" : `Up to ${products} products`,
     value: true,
@@ -49,16 +49,18 @@ function buildFeatureRows(features: Record<string, unknown>): FeatureRow[] {
     analytics === "basic" ? "Basic analytics dashboard"
     : analytics === "advanced" ? "Advanced analytics & reports"
     : analytics === "premium" ? "Full analytics suite + exports"
-    : "Analytics"
+    : "Analytics dashboard"
   rows.push({ label: analyticsLabel, value: true })
 
   rows.push({ label: "Standard storefront", value: true })
 
-  const staff = features.staff_accounts as number | undefined
-  rows.push({
-    label: staff === 1 ? "1 staff account" : `${staff} staff accounts`,
-    value: true,
-  })
+  const staff = features.staff_accounts != null ? Number(features.staff_accounts) : null
+  if (staff != null && !isNaN(staff)) {
+    rows.push({
+      label: staff === 1 ? "1 staff account" : `${staff} staff accounts`,
+      value: true,
+    })
+  }
 
   rows.push({ label: "GiyaPay payments", value: true })
 
@@ -75,7 +77,7 @@ function buildFeatureRows(features: Record<string, unknown>): FeatureRow[] {
     support === "email" ? "Email support"
     : support === "priority" ? "Priority email & live chat"
     : support === "dedicated" ? "Dedicated account manager"
-    : "Support"
+    : "Email support"
   rows.push({ label: supportLabel, value: true })
 
   rows.push({ label: "Flash sales & vouchers", value: Boolean(features.flash_sales) })
@@ -138,7 +140,9 @@ function getPlanChangeType(plan: SubscriptionPlan, currentPlanName: string | nul
   if (plan.name === currentPlanName) return "renew"
   const currentPlan = plans.find(p => p.name === currentPlanName)
   if (!currentPlan) return "subscribe"
-  return plan.price > currentPlan.price ? "upgrade" : "downgrade"
+  // Coerce to Number — postgres numeric columns are returned as strings,
+  // and string comparison ("999" > "5999") would be wrong.
+  return Number(plan.price) > Number(currentPlan.price) ? "upgrade" : "downgrade"
 }
 
 // ---------------------------------------------------------------------------
@@ -407,15 +411,17 @@ function PlanCard({
   const changeType = getPlanChangeType(plan, currentPlanName, allPlans)
   const isPopular = meta.popular
 
-  const monthlyPrice = plan.price
-  const yearlyTotal = plan.yearly_price ?? Math.round(plan.price * 12 * 0.83)
+  const monthlyPrice = Number(plan.price)
+  const yearlyTotal = plan.yearly_price != null ? Number(plan.yearly_price) : Math.round(monthlyPrice * 12 * 0.83)
   const yearlyMonthly = Math.round(yearlyTotal / 12)
   const displayPrice = billing === "yearly" ? yearlyMonthly : monthlyPrice
 
-  const discountPct = plan.yearly_discount_percent
-    ?? (plan.yearly_price ? Math.round((1 - plan.yearly_price / (plan.price * 12)) * 100) : 17)
+  const discountPct = plan.yearly_discount_percent != null
+    ? Number(plan.yearly_discount_percent)
+    : (yearlyTotal && monthlyPrice ? Math.round((1 - yearlyTotal / (monthlyPrice * 12)) * 100) : 17)
 
-  const hasTrial = plan.trial_days > 0 && isEligibleForTrial && !currentPlanName
+  const trialDays = Number(plan.trial_days) || 0
+  const hasTrial = trialDays > 0 && isEligibleForTrial && !currentPlanName
 
   const features = plan.features ? buildFeatureRows(plan.features) : []
 
@@ -514,7 +520,7 @@ function PlanCard({
           )}
           {hasTrial && billing === "monthly" && (
             <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-violet-500/20 border border-violet-500/30 px-2.5 py-0.5">
-              <span className="text-[10px] text-violet-300 font-semibold">{plan.trial_days}-day free trial</span>
+              <span className="text-[10px] text-violet-300 font-semibold">{trialDays}-day free trial</span>
             </div>
           )}
         </div>
@@ -568,7 +574,7 @@ function PlanCard({
             onClick={() => onTrial(plan)}
             className="w-full rounded-xl px-4 py-2.5 text-xs font-semibold border border-white/10 text-gray-400 hover:text-white hover:border-white/20 transition-all disabled:opacity-50"
           >
-            Start {plan.trial_days}-day free trial
+            Start {trialDays}-day free trial
           </button>
         )}
       </div>
