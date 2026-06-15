@@ -59,35 +59,34 @@ function getPgConnection(req: AuthenticatedMedusaRequest): any {
  * Returns all providers with their current platform configuration status.
  */
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
+  let configMap = new Map<string, any>()
+
   try {
     const pg = getPgConnection(req)
-
     const rows = await pg('platform_shipping_provider')
       .whereNull('deleted_at')
       .select('provider_id', 'is_active', 'settings', 'created_at', 'updated_at')
-
-    const configMap = new Map<string, any>(rows.map((r: any) => [r.provider_id, r]))
-
-    const providers = PLATFORM_PROVIDERS.map((p) => {
-      const config = configMap.get(p.provider_id)
-      return {
-        ...p,
-        is_active: config?.is_active ?? false,
-        is_configured: !!config,
-        configured_at: config?.created_at ?? null,
-        last_updated: config?.updated_at ?? null,
-        settings: config?.settings ?? {},
-      }
-    })
-
-    res.json({
-      providers,
-      active_count: providers.filter((p) => p.is_active).length,
-    })
-  } catch (error) {
-    console.error('[Admin Shipping Providers GET]', error)
-    res.status(500).json({ message: 'Failed to load shipping providers' })
+    configMap = new Map<string, any>(rows.map((r: any) => [r.provider_id, r]))
+  } catch {
+    // Table may not exist yet (migration pending) — return static list with no config
   }
+
+  const providers = PLATFORM_PROVIDERS.map((p) => {
+    const config = configMap.get(p.provider_id)
+    return {
+      ...p,
+      is_active: config?.is_active ?? false,
+      is_configured: !!config,
+      configured_at: config?.created_at ?? null,
+      last_updated: config?.updated_at ?? null,
+      settings: config?.settings ?? {},
+    }
+  })
+
+  res.json({
+    providers,
+    active_count: providers.filter((p) => p.is_active).length,
+  })
 }
 
 /**

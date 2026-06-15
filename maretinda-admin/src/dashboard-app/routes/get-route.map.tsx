@@ -1966,7 +1966,7 @@ export function getRouteMap({
               handle: {
                 breadcrumb: () => "Shipping Carriers",
               },
-              lazy: () => import("../../routes/shipping-providers/shipping-providers"),
+              lazy: () => import("../../routes/shipping-providers"),
             },
             {
               path: "return-reasons",
