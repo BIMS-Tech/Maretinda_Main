@@ -12,11 +12,13 @@
  * configTemplate already defined in the vendor shipping-providers route.
  */
 
-// Base URL is configurable via env so the verified production endpoint can be
-// set without a code change. The default below is a placeholder and will fail
-// DNS resolution until the real Flying Tigers API host is provided.
-export const FLYINGTIGERS_BASE_URL =
-  process.env.FLYINGTIGERS_BASE_URL || 'https://api.flyingtigersexpress.com/v1'
+// Host root of the Flying Tigers Business API (no trailing slash, no path).
+// All endpoints live under `${FLYINGTIGERS_BASE_URL}/api/...`.
+// Set FLYINGTIGERS_BASE_URL to the exact host from the Business API portal
+// (e.g. the "servers" URL in their OpenAPI spec) — the default is a best guess.
+export const FLYINGTIGERS_BASE_URL = (
+  process.env.FLYINGTIGERS_BASE_URL || 'https://api.flyingtigers.express'
+).replace(/\/+$/, '')
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,12 +84,11 @@ export type FlyingTigersOrderResponse = {
 // ─── Auth Helper ──────────────────────────────────────────────────────────────
 
 function getAuthHeaders(apiKey: string, apiSecret: string): Record<string, string> {
-  // Flying Tigers portal issues fte_... API Key + API Secret
-  // Bearer token is the API Key; secret used for HMAC webhook verification
+  // Flying Tigers Business API authenticates via x-api-key + x-api-secret headers.
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`,
-    'X-API-Secret': apiSecret,
+    'x-api-key': apiKey,
+    'x-api-secret': apiSecret,
   }
 }
 
@@ -112,7 +113,7 @@ export async function getFlyingTigersRates(
   apiSecret: string,
   request: FlyingTigersRateRequest
 ): Promise<FlyingTigersRate[]> {
-  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/rates`, {
+  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/rates/quote`, {
     method: 'POST',
     headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify({
@@ -204,7 +205,7 @@ export async function createFlyingTigersOrder(
     },
   }
 
-  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders`, {
+  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/shipments`, {
     method: 'POST',
     headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify(body),
@@ -212,14 +213,17 @@ export async function createFlyingTigersOrder(
 
   const data = await handleResponse<any>(res, 'create order')
 
-  // VERIFY: response field names for tracking_no and order_id
+  // Response field names per FT Business API (best effort across spellings).
+  const trackingNo =
+    data.tracking_no ?? data.tracking_number ?? data.trackingNumber ?? data.waybill_no ?? ''
   return {
-    tracking_no: data.tracking_no ?? data.tracking_number ?? data.waybill_no ?? '',
-    order_id: data.order_id ?? data.id ?? data.booking_id ?? '',
+    tracking_no: trackingNo,
+    order_id: String(data.order_id ?? data.id ?? data.shipment_id ?? data.booking_id ?? ''),
     status: data.status ?? 'Pending Pickup',
-    estimated_delivery: data.estimated_delivery ?? '',
-    tracking_url: data.tracking_url
-      ?? `https://www.flyingtigersexpress.com/tracking?tracking_no=${data.tracking_no ?? data.tracking_number}`,
+    estimated_delivery: data.estimated_delivery ?? data.estimatedDelivery ?? '',
+    tracking_url:
+      data.tracking_url ??
+      `https://www.flyingtigers.express/tracking?tracking_no=${trackingNo}`,
   }
 }
 
@@ -237,12 +241,16 @@ export async function cancelFlyingTigersOrder(
   trackingNo: string,
   reason?: string
 ): Promise<{ success: boolean; message: string }> {
-  // VERIFY: cancel endpoint — some use DELETE /orders/{id}, others POST /orders/{id}/cancel
-  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/cancel`, {
-    method: 'POST',
-    headers: getAuthHeaders(apiKey, apiSecret),
-    body: JSON.stringify({ reason: reason ?? 'Cancelled by merchant' }),
-  })
+  // FT Business API: POST /api/shipments/{id}/cancel — {id} accepts the
+  // tracking number or the numeric shipment id (matched case-insensitively).
+  const res = await fetch(
+    `${FLYINGTIGERS_BASE_URL}/api/shipments/${encodeURIComponent(trackingNo)}/cancel`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(apiKey, apiSecret),
+      body: JSON.stringify({ reason: reason ?? 'Cancelled by merchant' }),
+    },
+  )
 
   const data = await handleResponse<any>(res, 'cancel order')
   return {
@@ -307,9 +315,10 @@ export async function trackFlyingTigersOrder(
   apiSecret: string,
   trackingNo: string
 ): Promise<{ status: string; events: any[] }> {
-  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/tracking`, {
-    headers: getAuthHeaders(apiKey, apiSecret),
-  })
+  const res = await fetch(
+    `${FLYINGTIGERS_BASE_URL}/api/tracking/${encodeURIComponent(trackingNo)}`,
+    { headers: getAuthHeaders(apiKey, apiSecret) },
+  )
   const data = await handleResponse<any>(res, 'track order')
   return {
     status: data.status ?? data.latest_status ?? 'unknown',
