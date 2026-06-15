@@ -4,10 +4,13 @@ import crypto from "crypto"
 import SubscriptionService from "../../../../services/subscription"
 
 function getsellerPanelUrl(): string {
+  // Must resolve identically to the checkout route's success_callback — the
+  // GiyaPay redirect signature is computed over this exact URL.
   return (
-    process.env.seller_PANEL_URL ||
-    process.env.seller_CORS?.split(",")[0] ||
-    "http://localhost:7001"
+    process.env.SELLER_PANEL_URL ||
+    process.env.SELLER_CORS?.split(",")[0] ||
+    process.env.VENDOR_CORS?.split(",")[0] ||
+    "http://localhost:5173"
   ).replace(/\/$/, "")
 }
 

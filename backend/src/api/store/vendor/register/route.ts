@@ -145,7 +145,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       res.status(201).json({
         success: true,
         message: "seller account created. You can now log in to your seller panel.",
-        seller_panel_url: process.env.seller_PANEL_URL || "",
+        seller_panel_url: process.env.SELLER_PANEL_URL || process.env.SELLER_CORS?.split(",")[0] || process.env.VENDOR_CORS?.split(",")[0] || "",
         deferred: true,
       })
       return

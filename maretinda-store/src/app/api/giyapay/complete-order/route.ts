@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
           amount,
           signature,
           payment_method: payment_method || 'GIYAPAY', // Pass the specific method
+          cart_id: cartIdToComplete, // Lets backend attribute the transaction to a seller at creation time
         }),
       });
 

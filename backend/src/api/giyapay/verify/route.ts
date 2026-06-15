@@ -3,11 +3,52 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
 import GiyaPayService from "../../../services/giyapay"
 
+/**
+ * Resolve the owning seller for a GiyaPay transaction from its cart (preferred)
+ * or order, mirroring the lookup in /giyapay/update-transaction. Returns null
+ * when it cannot be determined (e.g. subscription payments) so the transaction
+ * can still be recorded — update-transaction remains a fallback.
+ */
+async function resolveSeller(
+  scope: any,
+  cartId?: string,
+  orderId?: string
+): Promise<{ sellerId: string; sellerName: string } | null> {
+  try {
+    const db = scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+
+    let resolvedCartId = cartId
+    if (!resolvedCartId && orderId) {
+      const orderCart = await db.raw(
+        `SELECT cart_id FROM order_cart WHERE order_id = ? LIMIT 1`,
+        [orderId]
+      )
+      resolvedCartId = (orderCart?.rows || orderCart || [])[0]?.cart_id
+    }
+    if (!resolvedCartId) return null
+
+    const result = await db.raw(
+      `SELECT DISTINCT s.id AS seller_id, s.name AS seller_name
+         FROM cart_line_item cli
+         JOIN seller_seller_product_product ssp ON ssp.product_id = cli.product_id
+         JOIN seller s ON s.id = ssp.seller_id
+        WHERE cli.cart_id = ?
+        LIMIT 1`,
+      [resolvedCartId]
+    )
+    const row = (result?.rows || result || [])[0]
+    return row?.seller_id ? { sellerId: row.seller_id, sellerName: row.seller_name } : null
+  } catch (e) {
+    console.warn('[GiyaPay Verify] Could not resolve seller for transaction:', e)
+    return null
+  }
+}
+
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   try {
     console.log('[GiyaPay Verify] Verification request received')
 
-    const { nonce, order_id, refno, timestamp, amount, signature, payment_method } = req.body as any
+    const { nonce, order_id, refno, timestamp, amount, signature, payment_method, cart_id } = req.body as any
 
     if (!signature || !nonce || !refno || !order_id) {
       console.error('[GiyaPay Verify] Missing required parameters')
@@ -93,10 +134,20 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     // Record the transaction
     try {
       const amountInPesos = amount ? Number(amount) / 100 : 0
+
+      // Attribute the transaction to its seller at creation time so it shows up
+      // in the seller panel even if the follow-up update-transaction call never
+      // fires. Skipped for subscription payments (vrenew_/vsub_), which aren't
+      // seller-order transactions.
+      const seller = isSubscriptionPayment
+        ? null
+        : await resolveSeller(container, cart_id, order_id)
+
       await giyaPayService.createTransaction({
         referenceNumber: refno,
         orderId: order_id,
-        cartId: order_id,
+        cartId: cart_id || order_id,
+        sellerId: seller?.sellerId,
         amount: amountInPesos,
         currency: 'PHP',
         status: 'SUCCESS',
@@ -104,7 +155,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         description: `Payment for order ${order_id}`,
         paymentData: { nonce, timestamp, signature, payment_method },
       })
-      console.log('[GiyaPay Verify] Transaction saved for reference:', refno)
+      console.log('[GiyaPay Verify] Transaction saved for reference:', refno, seller ? `(seller ${seller.sellerId})` : '(no seller resolved)')
     } catch (txnError) {
       console.error('[GiyaPay Verify] Failed to save transaction (non-fatal):', txnError)
     }

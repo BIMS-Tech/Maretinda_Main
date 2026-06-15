@@ -105,9 +105,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const signature = crypto.createHash("sha512").update(signatureString).digest("hex")
 
     const sellerPanelUrl = (
-      process.env.seller_PANEL_URL ||
-      process.env.seller_CORS?.split(",")[0] ||
-      "http://localhost:7001"
+      process.env.SELLER_PANEL_URL ||
+      process.env.SELLER_CORS?.split(",")[0] ||
+      process.env.VENDOR_CORS?.split(",")[0] ||
+      "http://localhost:5173"
     ).replace(/\/$/, "")
 
     const checkoutUrl = config.sandboxMode
