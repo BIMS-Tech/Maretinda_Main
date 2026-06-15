@@ -38,6 +38,57 @@ async function getSellerId(req: AuthenticatedMedusaRequest, pg: any): Promise<st
   return member?.seller_id ?? null
 }
 
+/**
+ * Normalize an incoming address into a canonical shape.
+ * The seller panel sends `address`/`postcode`/`state`, while the carrier
+ * builders expect `address1`/`postal_code`/`province`/`state`. Accept all
+ * variants so a booking never fails on a naming mismatch.
+ */
+function normalizeAddress(a: any = {}) {
+  const address1 = a.address1 ?? a.address ?? a.address_1 ?? ''
+  const address2 = a.address2 ?? a.address_2 ?? undefined
+  const province = a.province ?? a.state ?? undefined
+  const postal = a.postal_code ?? a.postcode ?? ''
+  return {
+    name: a.name ?? '',
+    phone: a.phone ?? a.mobile ?? '',
+    email: a.email ?? undefined,
+    address1,
+    address2,
+    barangay: a.barangay ?? undefined,
+    city: a.city ?? '',
+    // expose both spellings so either builder works
+    state: province,
+    province,
+    postcode: postal,
+    postal_code: postal,
+    country: a.country ?? 'PH',
+  }
+}
+
+/** Normalize parcel dimensions/weight, accepting multiple field spellings. */
+function normalizeParcel(p: any = {}) {
+  const num = (...vals: any[]) => {
+    for (const v of vals) {
+      if (v !== undefined && v !== null && v !== '') {
+        const n = Number(v)
+        if (!Number.isNaN(n)) return n
+      }
+    }
+    return undefined
+  }
+  return {
+    weight_kg: num(p.weight_kg, p.weightKg, p.weight) ?? 1,
+    length_cm: num(p.length_cm, p.lengthCm, p.length),
+    width_cm: num(p.width_cm, p.widthCm, p.width),
+    height_cm: num(p.height_cm, p.heightCm, p.height),
+    description: p.description ?? undefined,
+    declared_value: num(p.declared_value, p.declaredValue),
+    is_cod: p.is_cod ?? p.isCod ?? false,
+    cod_amount: num(p.cod_amount, p.codAmount) ?? 0,
+  }
+}
+
 /** Load Maretinda's platform credentials for a given provider */
 async function getPlatformCredentials(pg: any, providerId: string) {
   const row = await pg('platform_shipping_provider')
@@ -144,11 +195,41 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           (creds.sandbox as boolean) ?? false
         )
 
+        const nvFrom = normalizeAddress(orderData.from)
+        const nvTo = normalizeAddress(orderData.to)
+        const nvParcel = normalizeParcel(orderData.parcel)
+
         const payload = buildNinjaVanOrderPayload({
           merchantOrderNumber: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
-          from: orderData.from,
-          to: orderData.to,
-          parcel: orderData.parcel,
+          from: {
+            name: nvFrom.name,
+            phone: nvFrom.phone,
+            email: nvFrom.email,
+            address1: nvFrom.address1,
+            address2: nvFrom.address2,
+            city: nvFrom.city,
+            state: nvFrom.state,
+            postcode: nvFrom.postcode,
+            country: nvFrom.country,
+          },
+          to: {
+            name: nvTo.name,
+            phone: nvTo.phone,
+            email: nvTo.email,
+            address1: nvTo.address1,
+            address2: nvTo.address2,
+            city: nvTo.city,
+            state: nvTo.state,
+            postcode: nvTo.postcode,
+            country: nvTo.country,
+          },
+          parcel: {
+            weightKg: nvParcel.weight_kg,
+            lengthCm: nvParcel.length_cm,
+            widthCm: nvParcel.width_cm,
+            heightCm: nvParcel.height_cm,
+            description: nvParcel.description,
+          },
           pickupDate: orderData.pickup_date ?? new Date(Date.now() + 86400000).toISOString().split('T')[0],
           serviceLevel: orderData.service_level ?? 'Standard',
         })
@@ -185,21 +266,47 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       // ── Flying Tigers ────────────────────────────────────────────────────
       if (providerId === 'flyingtigers') {
+        const ftFrom = normalizeAddress(orderData.from)
+        const ftTo = normalizeAddress(orderData.to)
+        const ftParcel = normalizeParcel(orderData.parcel)
+
         const ftPayload: FlyingTigersOrderPayload = {
           merchant_order_no: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
           service_type: orderData.service_level ?? 'Standard',
           pickup_date: orderData.pickup_date,
-          shipper: orderData.from,
-          consignee: orderData.to,
+          shipper: {
+            name: ftFrom.name,
+            phone: ftFrom.phone,
+            email: ftFrom.email,
+            address1: ftFrom.address1,
+            address2: ftFrom.address2,
+            barangay: ftFrom.barangay,
+            city: ftFrom.city,
+            province: ftFrom.province,
+            postal_code: ftFrom.postal_code,
+            country: ftFrom.country,
+          },
+          consignee: {
+            name: ftTo.name,
+            phone: ftTo.phone,
+            email: ftTo.email,
+            address1: ftTo.address1,
+            address2: ftTo.address2,
+            barangay: ftTo.barangay,
+            city: ftTo.city,
+            province: ftTo.province,
+            postal_code: ftTo.postal_code,
+            country: ftTo.country,
+          },
           parcel: {
-            weight_kg: orderData.parcel?.weight_kg ?? orderData.parcel?.weightKg ?? 1,
-            length_cm: orderData.parcel?.length_cm ?? orderData.parcel?.lengthCm,
-            width_cm: orderData.parcel?.width_cm ?? orderData.parcel?.widthCm,
-            height_cm: orderData.parcel?.height_cm ?? orderData.parcel?.heightCm,
-            description: orderData.parcel?.description,
-            declared_value: orderData.parcel?.declared_value,
-            is_cod: orderData.parcel?.is_cod ?? false,
-            cod_amount: orderData.parcel?.cod_amount ?? 0,
+            weight_kg: ftParcel.weight_kg,
+            length_cm: ftParcel.length_cm,
+            width_cm: ftParcel.width_cm,
+            height_cm: ftParcel.height_cm,
+            description: ftParcel.description,
+            declared_value: ftParcel.declared_value,
+            is_cod: ftParcel.is_cod,
+            cod_amount: ftParcel.cod_amount,
           },
         }
 

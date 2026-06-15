@@ -28,7 +28,7 @@ export const listCartShippingMethods = async (
 				next: { ...next, revalidate: 30 },
 				query: {
 					cart_id: cartId,
-					fields: '+service_zone.fulfllment_set.type,*service_zone.fulfillment_set.location.address',
+					fields: '+service_zone.fulfillment_set.type,*service_zone.fulfillment_set.location.address',
 				},
 			},
 		)
