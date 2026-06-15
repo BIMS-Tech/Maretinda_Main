@@ -4,6 +4,8 @@ import { Migration } from "@mikro-orm/migrations"
  * Platform-level shipping tables.
  * Maretinda manages ONE central account per carrier — no per-vendor credentials.
  * Vendors pick a carrier when creating a shipment; Maretinda's account handles billing.
+ *
+ * Depends on: 1743000000000_create_shipping_tables (seller_shipping_order must exist)
  */
 export class Migration1744000000000 extends Migration {
   async up(): Promise<void> {
@@ -37,7 +39,8 @@ export class Migration1744000000000 extends Migration {
       );
     `)
 
-    // Add calculated_rate and carrier_selection columns to existing shipping orders table
+    // Extra columns on seller_shipping_order for calculated rates
+    // (columns are included in 1743000000000 for fresh DB; this ALTER is a no-op there)
     this.addSql(`
       ALTER TABLE seller_shipping_order
         ADD COLUMN IF NOT EXISTS calculated_rate NUMERIC,

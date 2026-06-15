@@ -2,7 +2,7 @@ import { Migration } from "@mikro-orm/migrations"
 
 export class Migration1743000000000 extends Migration {
   async up(): Promise<void> {
-    // seller shipping credentials (per provider, per seller)
+    // Per-vendor shipping credentials (legacy — centralized model uses platform_shipping_provider)
     this.addSql(`
       CREATE TABLE IF NOT EXISTS seller_shipping_credential (
         id TEXT PRIMARY KEY,
@@ -21,7 +21,7 @@ export class Migration1743000000000 extends Migration {
       );
     `)
 
-    // Shipping orders created through third-party carriers
+    // Custom carrier shipping orders (NinjaVan / Flying Tigers bookings)
     this.addSql(`
       CREATE TABLE IF NOT EXISTS seller_shipping_order (
         id TEXT PRIMARY KEY,
@@ -42,6 +42,9 @@ export class Migration1743000000000 extends Migration {
         provider_request JSONB,
         provider_response JSONB,
         webhook_events JSONB DEFAULT '[]',
+        calculated_rate NUMERIC,
+        service_level TEXT DEFAULT 'Standard',
+        rate_currency TEXT DEFAULT 'PHP',
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         deleted_at TIMESTAMPTZ
@@ -61,6 +64,11 @@ export class Migration1743000000000 extends Migration {
     this.addSql(`
       CREATE INDEX IF NOT EXISTS idx_seller_shipping_order_medusa
         ON seller_shipping_order(medusa_order_id);
+    `)
+
+    this.addSql(`
+      CREATE INDEX IF NOT EXISTS idx_seller_shipping_order_tracking
+        ON seller_shipping_order(tracking_number);
     `)
   }
 
