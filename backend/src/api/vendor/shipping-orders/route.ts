@@ -1,3 +1,11 @@
+/**
+ * Vendor Shipping Orders
+ * Route: /vendor/shipping-orders
+ *
+ * Vendors create shipments through Maretinda's centralized carrier accounts.
+ * No per-vendor credentials needed — admin manages platform-level credentials.
+ */
+
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import { randomUUID } from 'crypto'
@@ -8,6 +16,12 @@ import {
   getNinjaVanWaybill,
   buildNinjaVanOrderPayload,
 } from '../../../services/ninjavan'
+import {
+  createFlyingTigersOrder,
+  cancelFlyingTigersOrder,
+  getFlyingTigersWaybill,
+  FlyingTigersOrderPayload,
+} from '../../../services/flyingtigers'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -24,16 +38,19 @@ async function getSellerId(req: AuthenticatedMedusaRequest, pg: any): Promise<st
   return member?.seller_id ?? null
 }
 
-async function getCredentials(pg: any, sellerId: string, providerId: string) {
-  return pg('seller_shipping_credential')
-    .where({ seller_id: sellerId, provider: providerId })
+/** Load Maretinda's platform credentials for a given provider */
+async function getPlatformCredentials(pg: any, providerId: string) {
+  const row = await pg('platform_shipping_provider')
+    .where({ provider_id: providerId, is_active: true })
     .whereNull('deleted_at')
     .first()
+  if (!row) throw new Error(`Carrier "${providerId}" is not configured or not active on this platform`)
+  return row.credentials as Record<string, unknown>
 }
 
 /**
- * GET /seller/shipping-orders
- * List all shipping orders for the seller.
+ * GET /vendor/shipping-orders
+ * List all shipping orders for this seller with analytics summary.
  */
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
   try {
@@ -56,26 +73,26 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     const orders = await query
 
-    const countQuery = pg('seller_shipping_order')
+    const [{ count }] = await pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
+      .modify((q: any) => { if (provider) q.where({ provider }); if (status) q.where({ status }) })
       .count('id as count')
-    if (provider) countQuery.where({ provider })
-    if (status) countQuery.where({ status })
 
-    const [{ count }] = await countQuery
-
-    // Simple analytics summary
     const allOrders = await pg('seller_shipping_order')
       .where({ seller_id: sellerId })
       .whereNull('deleted_at')
-      .select('status', 'amount')
+      .select('status', 'amount', 'provider')
 
     const summary = {
       totalOrders: allOrders.length,
       totalCost: allOrders.reduce((s: number, o: any) => s + (parseFloat(o.amount) || 0), 0),
       successfulDeliveries: allOrders.filter((o: any) => o.status === 'delivered').length,
-      pendingOrders: allOrders.filter((o: any) => ['pending', 'processing'].includes(o.status)).length,
+      pendingOrders: allOrders.filter((o: any) => ['pending', 'pending_pickup', 'processing'].includes(o.status)).length,
+      byProvider: allOrders.reduce((acc: Record<string, number>, o: any) => {
+        acc[o.provider] = (acc[o.provider] ?? 0) + 1
+        return acc
+      }, {}),
     }
 
     res.json({ orders, count: parseInt(String(count)), hasMore: parseInt(offset) + orders.length < parseInt(String(count)), summary })
@@ -86,7 +103,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 }
 
 /**
- * POST /seller/shipping-orders
+ * POST /vendor/shipping-orders
  * Actions: create-order | cancel-order | get-waybill
  */
 export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
@@ -99,163 +116,196 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       action: string
       orderId?: string
       providerId?: string
-      orderData?: Record<string, unknown>
+      orderData?: Record<string, any>
       reason?: string
     }
 
     if (!action) return res.status(400).json({ message: 'action is required' })
 
-    switch (action) {
-      case 'create-order': {
-        if (!providerId || !orderData) {
-          return res.status(400).json({ message: 'providerId and orderData are required' })
-        }
-
-        const credRow = await getCredentials(pg, sellerId, providerId)
-        if (!credRow) {
-          return res.status(400).json({ message: `No credentials configured for ${providerId}` })
-        }
-        if (!credRow.is_enabled) {
-          return res.status(400).json({ message: `${providerId} is not enabled` })
-        }
-
-        const creds = credRow.credentials as Record<string, unknown>
-
-        if (providerId === 'ninjavan') {
-          const token = await getNinjaVanToken(
-            creds.client_id as string,
-            creds.client_secret as string,
-            credRow.country_code ?? 'PH',
-            creds.sandbox as boolean
-          )
-
-          const payload = buildNinjaVanOrderPayload({
-            merchantOrderNumber: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
-            from: orderData.from as any,
-            to: orderData.to as any,
-            parcel: orderData.parcel as any,
-            pickupDate: (orderData.pickup_date as string) ?? new Date(Date.now() + 86400000).toISOString().split('T')[0],
-            serviceLevel: (orderData.service_level as any) ?? 'Standard',
-          })
-
-          const nvResponse = await createNinjaVanOrder(token, credRow.country_code ?? 'PH', payload, creds.sandbox as boolean)
-
-          const trackingNumber = nvResponse.tracking_number as string
-          const shippingOrderId = `vso_${randomUUID().replace(/-/g, '')}`
-
-          await pg('seller_shipping_order').insert({
-            id: shippingOrderId,
-            seller_id: sellerId,
-            medusa_order_id: orderData.medusa_order_id,
-            provider: 'ninjavan',
-            country_code: credRow.country_code ?? 'PH',
-            provider_order_id: trackingNumber,
-            tracking_number: trackingNumber,
-            tracking_url: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
-            status: 'pending_pickup',
-            from_details: JSON.stringify(orderData.from),
-            to_details: JSON.stringify(orderData.to),
-            parcel_details: JSON.stringify(orderData.parcel),
-            provider_request: JSON.stringify(payload),
-            provider_response: JSON.stringify(nvResponse),
-          })
-
-          return res.json({
-            success: true,
-            shippingOrderId,
-            trackingNumber,
-            trackingUrl: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
-            providerResponse: nvResponse,
-          })
-        }
-
-        return res.status(400).json({ message: `Order creation not yet supported for ${providerId}` })
+    // ── CREATE ORDER ──────────────────────────────────────────────────────────
+    if (action === 'create-order') {
+      if (!providerId || !orderData) {
+        return res.status(400).json({ message: 'providerId and orderData are required' })
       }
 
-      case 'cancel-order': {
-        if (!orderId) return res.status(400).json({ message: 'orderId is required' })
+      const creds = await getPlatformCredentials(pg, providerId).catch((err) => {
+        throw new Error(err.message)
+      })
 
-        const shippingOrder = await pg('seller_shipping_order')
-          .where({ id: orderId, seller_id: sellerId })
-          .whereNull('deleted_at')
-          .first()
+      const shippingOrderId = `vso_${randomUUID().replace(/-/g, '')}`
 
-        if (!shippingOrder) return res.status(404).json({ message: 'Shipping order not found' })
+      // ── Ninja Van ────────────────────────────────────────────────────────
+      if (providerId === 'ninjavan') {
+        const countryCode = (creds.country_code as string) ?? 'PH'
+        const token = await getNinjaVanToken(
+          creds.client_id as string,
+          creds.client_secret as string,
+          countryCode,
+          (creds.sandbox as boolean) ?? false
+        )
 
-        if (shippingOrder.provider === 'ninjavan') {
-          const credRow = await getCredentials(pg, sellerId, 'ninjavan')
-          if (!credRow) return res.status(400).json({ message: 'Ninja Van credentials not found' })
+        const payload = buildNinjaVanOrderPayload({
+          merchantOrderNumber: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
+          from: orderData.from,
+          to: orderData.to,
+          parcel: orderData.parcel,
+          pickupDate: orderData.pickup_date ?? new Date(Date.now() + 86400000).toISOString().split('T')[0],
+          serviceLevel: orderData.service_level ?? 'Standard',
+        })
 
-          const creds = credRow.credentials as Record<string, unknown>
-          const token = await getNinjaVanToken(
-            creds.client_id as string,
-            creds.client_secret as string,
-            shippingOrder.country_code ?? 'PH',
-            creds.sandbox as boolean
-          )
+        const nvResponse = await createNinjaVanOrder(token, countryCode, payload, (creds.sandbox as boolean) ?? false)
+        const trackingNumber = nvResponse.tracking_number as string
 
-          const nvResponse = await cancelNinjaVanOrder(
-            token,
-            shippingOrder.country_code ?? 'PH',
-            shippingOrder.tracking_number,
-            creds.sandbox as boolean
-          )
+        await pg('seller_shipping_order').insert({
+          id: shippingOrderId,
+          seller_id: sellerId,
+          medusa_order_id: orderData.medusa_order_id,
+          provider: 'ninjavan',
+          country_code: countryCode,
+          provider_order_id: trackingNumber,
+          tracking_number: trackingNumber,
+          tracking_url: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
+          status: 'pending_pickup',
+          service_level: orderData.service_level ?? 'Standard',
+          from_details: JSON.stringify(orderData.from),
+          to_details: JSON.stringify(orderData.to),
+          parcel_details: JSON.stringify(orderData.parcel),
+          provider_request: JSON.stringify(payload),
+          provider_response: JSON.stringify(nvResponse),
+        })
 
-          await pg('seller_shipping_order')
-            .where({ id: orderId })
-            .update({ status: 'cancelled', provider_response: JSON.stringify(nvResponse), updated_at: new Date() })
-
-          return res.json({ success: true, message: 'Order cancelled', providerResponse: nvResponse })
-        }
-
-        // Generic cancel for other providers
-        await pg('seller_shipping_order')
-          .where({ id: orderId })
-          .update({ status: 'cancelled', updated_at: new Date() })
-
-        return res.json({ success: true, message: 'Order marked as cancelled' })
+        return res.json({
+          success: true,
+          shippingOrderId,
+          trackingNumber,
+          trackingUrl: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
+          provider: 'ninjavan',
+        })
       }
 
-      case 'get-waybill': {
-        if (!orderId) return res.status(400).json({ message: 'orderId is required' })
-
-        const shippingOrder = await pg('seller_shipping_order')
-          .where({ id: orderId, seller_id: sellerId })
-          .whereNull('deleted_at')
-          .first()
-
-        if (!shippingOrder) return res.status(404).json({ message: 'Shipping order not found' })
-
-        if (shippingOrder.provider !== 'ninjavan') {
-          return res.status(400).json({ message: 'Waybill generation only supported for Ninja Van' })
+      // ── Flying Tigers ────────────────────────────────────────────────────
+      if (providerId === 'flyingtigers') {
+        const ftPayload: FlyingTigersOrderPayload = {
+          merchant_order_no: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
+          service_type: orderData.service_level ?? 'Standard',
+          pickup_date: orderData.pickup_date,
+          shipper: orderData.from,
+          consignee: orderData.to,
+          parcel: {
+            weight_kg: orderData.parcel?.weight_kg ?? orderData.parcel?.weightKg ?? 1,
+            length_cm: orderData.parcel?.length_cm ?? orderData.parcel?.lengthCm,
+            width_cm: orderData.parcel?.width_cm ?? orderData.parcel?.widthCm,
+            height_cm: orderData.parcel?.height_cm ?? orderData.parcel?.heightCm,
+            description: orderData.parcel?.description,
+            declared_value: orderData.parcel?.declared_value,
+            is_cod: orderData.parcel?.is_cod ?? false,
+            cod_amount: orderData.parcel?.cod_amount ?? 0,
+          },
         }
 
-        const credRow = await getCredentials(pg, sellerId, 'ninjavan')
-        if (!credRow) return res.status(400).json({ message: 'Ninja Van credentials not found' })
+        const ftResponse = await createFlyingTigersOrder(
+          creds.api_key as string,
+          creds.merchant_code as string,
+          ftPayload
+        )
 
-        const creds = credRow.credentials as Record<string, unknown>
+        await pg('seller_shipping_order').insert({
+          id: shippingOrderId,
+          seller_id: sellerId,
+          medusa_order_id: orderData.medusa_order_id,
+          provider: 'flyingtigers',
+          country_code: 'PH',
+          provider_order_id: ftResponse.order_id,
+          tracking_number: ftResponse.tracking_no,
+          tracking_url: ftResponse.tracking_url,
+          status: 'pending_pickup',
+          service_level: orderData.service_level ?? 'Standard',
+          from_details: JSON.stringify(orderData.from),
+          to_details: JSON.stringify(orderData.to),
+          parcel_details: JSON.stringify(orderData.parcel),
+          provider_request: JSON.stringify(ftPayload),
+          provider_response: JSON.stringify(ftResponse),
+        })
+
+        return res.json({
+          success: true,
+          shippingOrderId,
+          trackingNumber: ftResponse.tracking_no,
+          trackingUrl: ftResponse.tracking_url,
+          provider: 'flyingtigers',
+        })
+      }
+
+      return res.status(400).json({ message: `Order creation not supported for "${providerId}"` })
+    }
+
+    // ── CANCEL ORDER ──────────────────────────────────────────────────────────
+    if (action === 'cancel-order') {
+      if (!orderId) return res.status(400).json({ message: 'orderId is required' })
+
+      const shippingOrder = await pg('seller_shipping_order')
+        .where({ id: orderId, seller_id: sellerId })
+        .whereNull('deleted_at')
+        .first()
+      if (!shippingOrder) return res.status(404).json({ message: 'Shipping order not found' })
+
+      if (shippingOrder.provider === 'ninjavan') {
+        const creds = await getPlatformCredentials(pg, 'ninjavan')
         const token = await getNinjaVanToken(
           creds.client_id as string,
           creds.client_secret as string,
           shippingOrder.country_code ?? 'PH',
-          creds.sandbox as boolean
+          (creds.sandbox as boolean) ?? false
         )
-
-        const pdfBuffer = await getNinjaVanWaybill(
-          token,
-          shippingOrder.country_code ?? 'PH',
-          shippingOrder.tracking_number,
-          creds.sandbox as boolean
-        )
-
-        res.set('Content-Type', 'application/pdf')
-        res.set('Content-Disposition', `inline; filename="waybill-${shippingOrder.tracking_number}.pdf"`)
-        return res.send(pdfBuffer)
+        await cancelNinjaVanOrder(token, shippingOrder.country_code ?? 'PH', shippingOrder.tracking_number, (creds.sandbox as boolean) ?? false)
       }
 
-      default:
-        return res.status(400).json({ message: `Unknown action: ${action}` })
+      if (shippingOrder.provider === 'flyingtigers') {
+        const creds = await getPlatformCredentials(pg, 'flyingtigers')
+        await cancelFlyingTigersOrder(creds.api_key as string, creds.merchant_code as string, shippingOrder.tracking_number, reason)
+      }
+
+      await pg('seller_shipping_order')
+        .where({ id: orderId })
+        .update({ status: 'cancelled', updated_at: new Date() })
+
+      return res.json({ success: true, message: 'Shipping order cancelled' })
     }
+
+    // ── GET WAYBILL ───────────────────────────────────────────────────────────
+    if (action === 'get-waybill') {
+      if (!orderId) return res.status(400).json({ message: 'orderId is required' })
+
+      const shippingOrder = await pg('seller_shipping_order')
+        .where({ id: orderId, seller_id: sellerId })
+        .whereNull('deleted_at')
+        .first()
+      if (!shippingOrder) return res.status(404).json({ message: 'Shipping order not found' })
+
+      let pdfBuffer: Buffer
+
+      if (shippingOrder.provider === 'ninjavan') {
+        const creds = await getPlatformCredentials(pg, 'ninjavan')
+        const token = await getNinjaVanToken(
+          creds.client_id as string,
+          creds.client_secret as string,
+          shippingOrder.country_code ?? 'PH',
+          (creds.sandbox as boolean) ?? false
+        )
+        pdfBuffer = await getNinjaVanWaybill(token, shippingOrder.country_code ?? 'PH', shippingOrder.tracking_number, (creds.sandbox as boolean) ?? false)
+      } else if (shippingOrder.provider === 'flyingtigers') {
+        const creds = await getPlatformCredentials(pg, 'flyingtigers')
+        pdfBuffer = await getFlyingTigersWaybill(creds.api_key as string, creds.merchant_code as string, shippingOrder.tracking_number)
+      } else {
+        return res.status(400).json({ message: `Waybill not supported for provider: ${shippingOrder.provider}` })
+      }
+
+      res.set('Content-Type', 'application/pdf')
+      res.set('Content-Disposition', `inline; filename="waybill-${shippingOrder.tracking_number}.pdf"`)
+      return res.send(pdfBuffer)
+    }
+
+    return res.status(400).json({ message: `Unknown action: ${action}` })
   } catch (error) {
     console.error('[Shipping Orders POST]', error)
     res.status(500).json({ message: (error as Error).message || 'Internal error' })
