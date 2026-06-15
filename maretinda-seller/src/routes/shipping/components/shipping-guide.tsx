@@ -1,458 +1,271 @@
-import { Container, Heading, Text, Button, Badge } from "@medusajs/ui"
-import { ExternalLink, CheckCircle, Clock, AlertTriangle } from "@medusajs/icons"
+import { useQuery } from "@tanstack/react-query"
+import { Badge, Container, Heading, Text } from "@medusajs/ui"
+import {
+  CheckCircle,
+  ArrowRight,
+  Buildings,
+  TruckFast,
+  CogSixTooth,
+  InformationCircle,
+} from "@medusajs/icons"
+import { Link } from "react-router-dom"
+import { fetchQuery } from "../../../lib/client"
+import { HttpTypes } from "@medusajs/types"
 
-interface ProviderGuide {
-  providerId: string
-  name: string
-  logo?: string
-  estimatedSetupTime: string
-  difficulty: 'Easy' | 'Medium' | 'Advanced'
-  requirements: string[]
-  benefits: string[]
-  steps: {
-    title: string
-    description: string
-    link?: string
-    tips?: string[]
-  }[]
-  troubleshooting: {
-    issue: string
-    solution: string
-  }[]
+type SetupStepProps = {
+  number: number
+  done: boolean
+  title: string
+  description: string
+  action?: { label: string; to: string }
 }
 
-const providerGuides: ProviderGuide[] = [
-  {
-    providerId: "lalamove",
-    name: "Lalamove",
-    estimatedSetupTime: "15-30 minutes",
-    difficulty: "Easy",
-    requirements: [
-      "Valid business registration",
-      "Business address in supported market",
-      "Contact phone number",
-      "Email address"
-    ],
-    benefits: [
-      "Same-day delivery across Asia",
-      "Real-time tracking",
-      "Competitive rates for short distances",
-      "Multiple vehicle types available"
-    ],
-    steps: [
-      {
-        title: "1. Create Partner Account",
-        description: "Visit the Lalamove Partner portal and sign up for a business account",
-        link: "https://partner.lalamove.com/register",
-        tips: [
-          "Use your official business email",
-          "Ensure your business address matches your registration documents",
-          "Have your business registration number ready"
-        ]
-      },
-      {
-        title: "2. Complete Business Verification",
-        description: "Upload required business documents and wait for approval (1-3 business days)",
-        tips: [
-          "Upload clear, high-quality document scans",
-          "Ensure all documents are current and valid",
-          "Business address must match operational location"
-        ]
-      },
-      {
-        title: "3. Access Developer Settings",
-        description: "Once approved, navigate to Developer Settings in your partner dashboard",
-        link: "https://partner.lalamove.com/dashboard",
-        tips: [
-          "Look for 'Developer' or 'API' section in the main menu",
-          "You may need to request API access from support"
-        ]
-      },
-      {
-        title: "4. Generate API Credentials",
-        description: "Create new API key and copy both the key and secret",
-        tips: [
-          "⚠️ API secret is shown only once - save it securely",
-          "Consider using a password manager",
-          "Name your API key for easy identification"
-        ]
-      }
-    ],
-    troubleshooting: [
-      {
-        issue: "Can't find Developer Settings",
-        solution: "Contact Lalamove partner support to enable API access for your account"
-      },
-      {
-        issue: "Business verification taking too long",
-        solution: "Check document quality and completeness. Contact support with your application reference number"
-      },
-      {
-        issue: "API key not working",
-        solution: "Ensure you're using the correct market code and that your account is fully verified"
-      }
-    ]
-  },
-  {
-    providerId: "jnt",
-    name: "J&T Express",
-    estimatedSetupTime: "20-45 minutes",
-    difficulty: "Medium",
-    requirements: [
-      "Business registration documents",
-      "Physical pickup location",
-      "Bank account details",
-      "Valid ID of business owner"
-    ],
-    benefits: [
-      "Extensive coverage across Southeast Asia",
-      "Cash on Delivery (COD) services",
-      "Competitive express delivery rates",
-      "Insurance options available"
-    ],
-    steps: [
-      {
-        title: "1. Register as Merchant",
-        description: "Create account at J&T Express merchant portal",
-        link: "https://merchant.jtexpress.com/register",
-        tips: [
-          "Prepare business registration certificate",
-          "Have physical address for pickup location",
-          "Business owner's valid government ID required"
-        ]
-      },
-      {
-        title: "2. Submit Required Documents",
-        description: "Upload business registration, ID, and bank account information",
-        tips: [
-          "Documents must be clear and legible",
-          "Bank account must be under business name",
-          "Provide accurate pickup location address"
-        ]
-      },
-      {
-        title: "3. Wait for Account Approval",
-        description: "J&T will review your application (2-5 business days)",
-        tips: [
-          "Check email regularly for approval notifications",
-          "Respond quickly to any document requests",
-          "Contact local J&T office for faster processing"
-        ]
-      },
-      {
-        title: "4. Access API Management",
-        description: "Once approved, generate API credentials in the merchant portal",
-        link: "https://merchant.jtexpress.com/dashboard",
-        tips: [
-          "Navigate to Settings → API Management",
-          "Copy your Customer Code from Account Info",
-          "Test credentials with sample API calls"
-        ]
-      }
-    ],
-    troubleshooting: [
-      {
-        issue: "Documents rejected",
-        solution: "Ensure all documents are current, clear, and match the business name exactly"
-      },
-      {
-        issue: "No API access after approval",
-        solution: "Contact J&T merchant support to enable API access for your account"
-      },
-      {
-        issue: "Customer code not working",
-        solution: "Verify your customer code in Account Info section and ensure account is fully activated"
-      }
-    ]
-  },
-  {
-    providerId: "ninjavan",
-    name: "Ninja Van",
-    estimatedSetupTime: "25-40 minutes", 
-    difficulty: "Medium",
-    requirements: [
-      "Business registration number",
-      "Physical business address",
-      "Business contact information",
-      "Banking details"
-    ],
-    benefits: [
-      "Same-day and next-day delivery",
-      "Real-time tracking and notifications",
-      "Flexible pickup locations",
-      "Volume-based pricing discounts"
-    ],
-    steps: [
-      {
-        title: "1. Register Shipper Account",
-        description: "Sign up at Ninja Van shipper portal with business details",
-        link: "https://shipper.ninjavan.co/register",
-        tips: [
-          "Use business registration number for verification",
-          "Provide accurate business contact information",
-          "Set up primary pickup location address"
-        ]
-      },
-      {
-        title: "2. Complete Business Onboarding",
-        description: "Upload required documents and verify business information",
-        tips: [
-          "Business registration certificate required",
-          "Provide clear pickup location details",
-          "Set up default packaging preferences"
-        ]
-      },
-      {
-        title: "3. Account Verification",
-        description: "Wait for Ninja Van to verify your business (1-3 business days)",
-        tips: [
-          "Monitor email for verification updates",
-          "Ensure all contact information is accurate",
-          "Respond promptly to any verification requests"
-        ]
-      },
-      {
-        title: "4. Generate API Credentials", 
-        description: "Access Developer Settings to create API keys",
-        link: "https://shipper.ninjavan.co/dashboard",
-        tips: [
-          "Navigate to Settings → Developer section",
-          "Generate both API key and client credentials",
-          "Store client secret securely (shown only once)"
-        ]
-      }
-    ],
-    troubleshooting: [
-      {
-        issue: "Business verification failed",
-        solution: "Ensure business registration number is valid and matches official records"
-      },
-      {
-        issue: "Can't access Developer Settings",
-        solution: "Complete business verification first, then contact support to enable API access"
-      },
-      {
-        issue: "Multiple pickup locations",
-        solution: "Set up additional pickup points in Account Settings after initial verification"
-      }
-    ]
-  }
-]
-
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case 'Easy': return 'green'
-    case 'Medium': return 'orange'
-    case 'Advanced': return 'red'
-    default: return 'grey'
-  }
+function SetupStep({ number, done, title, description, action }: SetupStepProps) {
+  return (
+    <div className="flex gap-4 items-start">
+      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
+        ${done
+          ? "bg-green-500/10 text-green-600"
+          : "bg-ui-bg-subtle text-ui-fg-muted border border-ui-border-base"}`}>
+        {done ? <CheckCircle className="w-5 h-5 text-green-500" /> : number}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <Text size="small" weight="plus" className={done ? "text-ui-fg-subtle line-through" : ""}>
+            {title}
+          </Text>
+          {done && <Badge color="green" size="2xsmall">Done</Badge>}
+        </div>
+        <Text size="xsmall" className="text-ui-fg-subtle mt-0.5">{description}</Text>
+        {!done && action && (
+          <Link
+            to={action.to}
+            className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-500 hover:text-blue-400"
+          >
+            {action.label} <ArrowRight className="w-3 h-3" />
+          </Link>
+        )}
+      </div>
+    </div>
+  )
 }
 
-export const ShippingProviderGuide = ({ providerId }: { providerId?: string }) => {
-  const guide = providerId ? providerGuides.find(g => g.providerId === providerId) : null
+function useLocationsSetupStatus() {
+  return useQuery({
+    queryKey: ["vendor", "locations", "setup-status"],
+    queryFn: async () => {
+      const data = await fetchQuery("/vendor/stock-locations", {
+        method: "GET",
+        query: {
+          fields: "name,*fulfillment_sets,*fulfillment_sets.service_zones,*fulfillment_sets.service_zones.shipping_options",
+        },
+      }) as HttpTypes.AdminStockLocationListResponse
 
-  if (guide) {
-    // Single provider guide
-    return (
-      <Container className="p-0">
-        <div className="p-6">
-          <div className="flex items-center gap-4 mb-6">
-            <div>
-              <Heading level="h2">{guide.name} Setup Guide</Heading>
-              <div className="flex items-center gap-4 mt-2">
-                <Badge color={getDifficultyColor(guide.difficulty)} size="small">
-                  {guide.difficulty}
-                </Badge>
-                <div className="flex items-center gap-1 text-sm text-ui-fg-muted">
-                  <Clock className="h-4 w-4" />
-                  {guide.estimatedSetupTime}
+      const locations = (data as any).stock_locations ?? []
+      const hasLocation = locations.length > 0
+      const hasShippingFulfillmentSet = locations.some((loc: any) =>
+        loc.fulfillment_sets?.some((fs: any) => fs.type === "shipping")
+      )
+      const hasServiceZone = locations.some((loc: any) =>
+        loc.fulfillment_sets?.some((fs: any) =>
+          fs.type === "shipping" && (fs.service_zones?.length ?? 0) > 0
+        )
+      )
+      const hasShippingOptions = locations.some((loc: any) =>
+        loc.fulfillment_sets?.some((fs: any) =>
+          fs.type === "shipping" &&
+          fs.service_zones?.some((sz: any) => (sz.shipping_options?.length ?? 0) > 0)
+        )
+      )
+      return { hasLocation, hasShippingFulfillmentSet, hasServiceZone, hasShippingOptions }
+    },
+  })
+}
+
+function useCarrierStatus() {
+  return useQuery({
+    queryKey: ["vendor", "shipping-providers", "guide-status"],
+    queryFn: async () => {
+      const data = await fetchQuery("/vendor/shipping-providers", { method: "GET" }) as any
+      const providers = data?.providers ?? []
+      return { activeCount: providers.filter((p: any) => p.is_active).length }
+    },
+  })
+}
+
+export function ShippingGuide() {
+  const { data: setup } = useLocationsSetupStatus()
+  const { data: carriers } = useCarrierStatus()
+
+  const checkoutReady =
+    setup?.hasLocation &&
+    setup?.hasShippingFulfillmentSet &&
+    setup?.hasServiceZone &&
+    setup?.hasShippingOptions
+
+  const carrierReady = (carriers?.activeCount ?? 0) > 0
+
+  return (
+    <div className="flex flex-col gap-6 max-w-2xl">
+
+      {/* Overview */}
+      <Container className="p-5">
+        <div className="flex items-start gap-3">
+          <InformationCircle className="text-blue-500 w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div>
+            <Heading level="h3" className="text-blue-600 dark:text-blue-400">
+              Two-Track Shipping System
+            </Heading>
+            <Text size="small" className="text-ui-fg-subtle mt-1">
+              Shipping has two separate concerns that work together:
+            </Text>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+              <div className="p-3 rounded-lg bg-ui-bg-subtle border border-ui-border-base">
+                <div className="flex items-center gap-2 mb-1">
+                  <Buildings className="w-4 h-4 text-ui-fg-muted" />
+                  <Text size="xsmall" weight="plus">Checkout Pricing</Text>
                 </div>
+                <Text size="xsmall" className="text-ui-fg-subtle">
+                  What customers see at checkout — your zones, delivery names and prices.
+                  Configured in <strong>Settings → Locations</strong>.
+                </Text>
               </div>
-            </div>
-          </div>
-
-          {/* Requirements */}
-          <div className="mb-6 p-4 bg-ui-bg-subtle rounded-lg">
-            <Text className="font-medium mb-3">📋 What You'll Need</Text>
-            <ul className="space-y-1">
-              {guide.requirements.map((req, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  {req}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Benefits */}
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <Text className="font-medium text-green-900 mb-3">✨ Benefits</Text>
-            <ul className="space-y-1">
-              {guide.benefits.map((benefit, index) => (
-                <li key={index} className="flex items-center gap-2 text-sm text-green-800">
-                  <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                  {benefit}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Step-by-step guide */}
-          <div className="mb-6">
-            <Heading level="h3" className="mb-4">Step-by-Step Setup</Heading>
-            <div className="space-y-6">
-              {guide.steps.map((step, index) => (
-                <div key={index} className="flex gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-semibold text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Text className="font-medium">{step.title}</Text>
-                      {step.link && (
-                        <a
-                          href={step.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      )}
-                    </div>
-                    <Text className="text-sm text-ui-fg-muted mb-2">{step.description}</Text>
-                    {step.tips && (
-                      <div className="mt-2">
-                        <Text className="text-xs font-medium text-ui-fg-subtle mb-1">💡 Tips:</Text>
-                        <ul className="space-y-1">
-                          {step.tips.map((tip, tipIndex) => (
-                            <li key={tipIndex} className="text-xs text-ui-fg-muted">
-                              • {tip}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+              <div className="p-3 rounded-lg bg-ui-bg-subtle border border-ui-border-base">
+                <div className="flex items-center gap-2 mb-1">
+                  <TruckFast className="w-4 h-4 text-ui-fg-muted" />
+                  <Text size="xsmall" weight="plus">Carrier Booking</Text>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Troubleshooting */}
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              <Text className="font-medium text-yellow-900">Common Issues & Solutions</Text>
-            </div>
-            <div className="space-y-3">
-              {guide.troubleshooting.map((item, index) => (
-                <div key={index}>
-                  <Text className="text-sm font-medium text-yellow-900 mb-1">
-                    Q: {item.issue}
-                  </Text>
-                  <Text className="text-sm text-yellow-800">
-                    A: {item.solution}
-                  </Text>
-                </div>
-              ))}
+                <Text size="xsmall" className="text-ui-fg-subtle">
+                  Actually dispatching the parcel via NinjaVan or Flying Tigers.
+                  Done in the <strong>Shipments</strong> tab after an order.
+                </Text>
+              </div>
             </div>
           </div>
         </div>
       </Container>
-    )
-  }
 
-  // Overview of all providers
-  return (
-    <Container className="p-0">
-      <div className="p-6">
-        <Heading level="h2" className="mb-4">Shipping Provider Setup Guides</Heading>
-        <Text className="text-ui-fg-muted mb-6">
-          Complete guides to help you set up your shipping provider accounts and obtain API credentials.
+      {/* Track 1: Checkout setup */}
+      <Container className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Buildings className="w-5 h-5 text-ui-fg-muted" />
+            <Heading level="h3">Track 1 — Checkout Setup</Heading>
+          </div>
+          {checkoutReady
+            ? <Badge color="green" size="2xsmall">Complete</Badge>
+            : <Badge color="orange" size="2xsmall">Incomplete</Badge>}
+        </div>
+        <Text size="small" className="text-ui-fg-subtle mb-5">
+          Configure this <strong>once</strong> in <strong>Settings → Locations</strong>.
+          Customers will see these options at checkout when buying your products.
         </Text>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {providerGuides.map((guide) => (
-            <div key={guide.providerId} className="border rounded-lg p-4 hover:border-ui-border-strong transition-colors">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <Text className="font-semibold">{guide.name}</Text>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge color={getDifficultyColor(guide.difficulty)} size="2xsmall">
-                      {guide.difficulty}
-                    </Badge>
-                    <Text className="text-xs text-ui-fg-muted">{guide.estimatedSetupTime}</Text>
-                  </div>
-                </div>
-              </div>
+        <div className="flex flex-col gap-5">
+          <SetupStep
+            number={1}
+            done={!!setup?.hasLocation}
+            title="Create your warehouse location"
+            description="Add your store or warehouse address. This is the origin point for all your shipments."
+            action={{ label: "Create Location", to: "/settings/locations/create" }}
+          />
+          <SetupStep
+            number={2}
+            done={!!setup?.hasShippingFulfillmentSet}
+            title="Enable Shipping on your location"
+            description="Open your location → Add Fulfillment Set → select type Shipping."
+            action={{ label: "Open Locations", to: "/settings/locations" }}
+          />
+          <SetupStep
+            number={3}
+            done={!!setup?.hasServiceZone}
+            title="Create a Philippines service zone"
+            description="Inside your Shipping fulfillment set → Add Service Zone → Country: Philippines (PH)."
+            action={{ label: "Open Locations", to: "/settings/locations" }}
+          />
+          <SetupStep
+            number={4}
+            done={!!setup?.hasShippingOptions}
+            title="Add shipping options with prices"
+            description="Inside your Philippines zone → Add Shipping Option. Create Standard, Express, or COD options with your PHP pricing."
+            action={{ label: "Open Locations", to: "/settings/locations" }}
+          />
+        </div>
 
-              <Text className="text-sm text-ui-fg-muted mb-4">
-                {guide.benefits[0]}
-              </Text>
+        {checkoutReady && (
+          <div className="mt-5 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+            <Text size="xsmall" className="text-green-600 dark:text-green-400">
+              Your checkout shipping is ready. Customers can now select a shipping method when ordering your products.
+            </Text>
+          </div>
+        )}
+      </Container>
 
-              <div className="space-y-2">
-                <Text className="text-xs font-medium text-ui-fg-subtle">Requirements:</Text>
-                <ul className="space-y-1">
-                  {guide.requirements.slice(0, 2).map((req, index) => (
-                    <li key={index} className="text-xs text-ui-fg-muted flex items-center gap-1">
-                      <span className="w-1 h-1 bg-ui-fg-muted rounded-full"></span>
-                      {req}
-                    </li>
-                  ))}
-                  {guide.requirements.length > 2 && (
-                    <li className="text-xs text-ui-fg-muted">
-                      +{guide.requirements.length - 2} more...
-                    </li>
-                  )}
-                </ul>
-              </div>
+      {/* Track 2: Carrier booking */}
+      <Container className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <CogSixTooth className="w-5 h-5 text-ui-fg-muted" />
+            <Heading level="h3">Track 2 — Carrier Booking</Heading>
+          </div>
+          {carrierReady
+            ? <Badge color="green" size="2xsmall">{carriers!.activeCount} carrier{carriers!.activeCount > 1 ? "s" : ""} ready</Badge>
+            : <Badge color="grey" size="2xsmall">Awaiting admin setup</Badge>}
+        </div>
+        <Text size="small" className="text-ui-fg-subtle mb-5">
+          Maretinda manages carrier accounts centrally — you don't configure credentials.
+          When an order comes in, go to the <strong>Shipments</strong> tab to book the physical delivery.
+        </Text>
 
-              <Button
-                variant="secondary"
-                size="small"
-                className="w-full mt-4"
-                onClick={() => {
-                  // In real implementation, this would navigate to the detailed guide
-                  console.log(`View guide for ${guide.name}`)
-                }}
-              >
-                View Setup Guide
-              </Button>
-            </div>
+        <div className="flex flex-col gap-5">
+          <SetupStep
+            number={1}
+            done={carrierReady}
+            title="Maretinda activates carriers"
+            description="NinjaVan and Flying Tigers are configured by Maretinda admin. No action needed from you."
+          />
+          <SetupStep
+            number={2}
+            done={false}
+            title="Order received → pack the parcel"
+            description="When a customer places an order, pack the items and note the weight and dimensions."
+          />
+          <SetupStep
+            number={3}
+            done={false}
+            title="Book a shipment in the Shipments tab"
+            description="Go to Shipments → Create. Select the order, choose a carrier (NinjaVan or Flying Tigers), enter parcel details. A waybill PDF is generated."
+            action={{ label: "Go to Shipments", to: "/shipping" }}
+          />
+          <SetupStep
+            number={4}
+            done={false}
+            title="Print waybill and hand off"
+            description="Print and attach the waybill to the parcel. The carrier collects it and tracking updates automatically."
+          />
+        </div>
+      </Container>
+
+      {/* Quick links */}
+      <Container className="p-5">
+        <Heading level="h3" className="mb-3">Quick Links</Heading>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { label: "My Locations", to: "/settings/locations" },
+            { label: "Shipping Profiles", to: "/settings/locations/shipping-profiles" },
+            { label: "Available Carriers", to: "/shipping" },
+          ].map(({ label, to }) => (
+            <Link
+              key={label}
+              to={to}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ui-bg-subtle border border-ui-border-base text-sm text-ui-fg-base hover:bg-ui-bg-subtle-hover"
+            >
+              {label} <ArrowRight className="w-3 h-3" />
+            </Link>
           ))}
         </div>
-      </div>
-    </Container>
+      </Container>
+
+    </div>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

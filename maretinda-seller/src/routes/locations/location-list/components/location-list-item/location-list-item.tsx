@@ -1,6 +1,6 @@
-import { Buildings, PencilSquare, Trash } from "@medusajs/icons"
+import { Buildings, PencilSquare, Trash, ExclamationCircle } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Container, StatusBadge, Text, toast, usePrompt } from "@medusajs/ui"
+import { Badge, Container, StatusBadge, Text, toast, usePrompt } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 
 import { ActionMenu } from "../../../../../components/common/action-menu"
@@ -56,6 +56,40 @@ function FulfillmentSet(props: FulfillmentSetProps) {
   const { fulfillmentSet, type } = props
 
   const fulfillmentSetExists = !!fulfillmentSet
+
+  if (type === FulfillmentSetType.Shipping && fulfillmentSetExists) {
+    const zones = (fulfillmentSet as any).service_zones ?? []
+    const optionCount = zones.reduce((acc: number, sz: any) => acc + (sz.shipping_options?.length ?? 0), 0)
+    const zoneCount = zones.length
+    const isIncomplete = zoneCount === 0 || optionCount === 0
+
+    return (
+      <div className="flex flex-col px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Text size="small" weight="plus" className="text-ui-fg-subtle flex-1" as="div">
+            {t(`stockLocations.fulfillmentSets.${type}.header`)}
+          </Text>
+          <div className="flex items-center gap-2 flex-1">
+            <StatusBadge color="green">
+              {t("statuses.enabled")}
+            </StatusBadge>
+            {isIncomplete ? (
+              <div className="flex items-center gap-1">
+                <ExclamationCircle className="text-amber-500 w-3.5 h-3.5" />
+                <Badge color="orange" size="2xsmall">
+                  {zoneCount === 0 ? "No zones" : "No shipping options"}
+                </Badge>
+              </div>
+            ) : (
+              <Text size="xsmall" className="text-ui-fg-muted">
+                {zoneCount} zone{zoneCount !== 1 ? "s" : ""} · {optionCount} option{optionCount !== 1 ? "s" : ""}
+              </Text>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col px-6 py-4">

@@ -17,6 +17,7 @@ import {
   ExclamationCircle,
   EllipsisHorizontal,
   ArrowUpRightOnBox,
+  ArrowRight,
 } from "@medusajs/icons"
 import {
   useAdminShippingProviders,
@@ -306,6 +307,60 @@ export default function ShippingProvidersPage() {
               Flying Tigers and Ninja Van are billed to Maretinda's account.
             </Text>
           </div>
+        </div>
+      </Container>
+
+      {/* Platform Setup Checklist */}
+      <Container className="p-5">
+        <Heading level="h3" className="mb-3">Platform Setup Checklist</Heading>
+        <div className="flex flex-col gap-3">
+          {[
+            {
+              done: active_count > 0,
+              label: "Activate at least one carrier",
+              detail: "Configure credentials and toggle Active above",
+              link: null,
+            },
+            {
+              done: null,
+              label: "Verify Regions include Philippines (PH)",
+              detail: "Vendors need a PH region to create checkout shipping options",
+              link: "/settings/regions",
+            },
+            {
+              done: null,
+              label: "Vendors configure their own locations",
+              detail: "Each vendor creates their warehouse → Fulfillment Set → PH zone → shipping options",
+              link: null,
+              note: true,
+            },
+          ].map(({ done, label, detail, link, note }: any) => (
+            <div key={label} className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                {done === true ? (
+                  <CheckCircle className="text-green-500 w-4 h-4" />
+                ) : done === false ? (
+                  <XCircle className="text-ui-fg-muted w-4 h-4" />
+                ) : (
+                  <div className="w-4 h-4 rounded-full border-2 border-ui-border-base" />
+                )}
+              </div>
+              <div>
+                <Text size="small" weight={note ? "regular" : "plus"} className={note ? "text-ui-fg-muted" : ""}>
+                  {label}
+                </Text>
+                <Text size="xsmall" className="text-ui-fg-subtle">{detail}</Text>
+                {link && (
+                  <a
+                    href={link}
+                    className="inline-flex items-center gap-1 mt-1 text-xs text-blue-500 hover:text-blue-400"
+                  >
+                    Open <ArrowRight className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </Container>
 
