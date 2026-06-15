@@ -60,7 +60,37 @@ class GiyaPayService extends MedusaService({}) {
         )
       `)
       
-      // Add seller columns if they don't exist (for existing tables)
+      // Migrate legacy vendor_* columns to seller_* (older databases used vendor_id/
+      // vendor_name). This self-heals every environment on startup: rename when only
+      // the legacy column exists, otherwise backfill into seller_* and drop the legacy
+      // column. Without this, the seller panel filters transactions on an empty
+      // seller_id and shows nothing.
+      await manager.raw(`
+        DO $$
+        BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='giyapay_transaction' AND column_name='vendor_id') THEN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='giyapay_transaction' AND column_name='seller_id') THEN
+              ALTER TABLE giyapay_transaction RENAME COLUMN vendor_id TO seller_id;
+            ELSE
+              UPDATE giyapay_transaction SET seller_id = vendor_id
+                WHERE (seller_id IS NULL OR seller_id = '') AND vendor_id IS NOT NULL AND vendor_id <> '';
+              ALTER TABLE giyapay_transaction DROP COLUMN vendor_id;
+            END IF;
+          END IF;
+
+          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='giyapay_transaction' AND column_name='vendor_name') THEN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='giyapay_transaction' AND column_name='seller_name') THEN
+              ALTER TABLE giyapay_transaction RENAME COLUMN vendor_name TO seller_name;
+            ELSE
+              UPDATE giyapay_transaction SET seller_name = vendor_name
+                WHERE (seller_name IS NULL OR seller_name = '') AND vendor_name IS NOT NULL AND vendor_name <> '';
+              ALTER TABLE giyapay_transaction DROP COLUMN vendor_name;
+            END IF;
+          END IF;
+        END $$;
+      `)
+
+      // Add seller columns if they don't exist (for fresh tables)
       await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS seller_id VARCHAR(255)`)
       await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS seller_name VARCHAR(255)`)
       await manager.raw(`ALTER TABLE giyapay_transaction ADD COLUMN IF NOT EXISTS cart_id VARCHAR(255)`)
