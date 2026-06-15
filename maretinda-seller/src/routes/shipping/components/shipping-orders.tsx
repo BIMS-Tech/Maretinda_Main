@@ -176,7 +176,7 @@ function CreateShipmentDrawer({
 
   // Fetch seller's orders for picker
   const { orders: vendorOrders = [] } = useOrders(
-    { limit: 50, fields: 'id,display_id,email,shipping_address,items,total,currency_code,payment_status' } as any
+    { limit: 50, fields: 'id,display_id,email,shipping_address,items,total,currency_code,payment_status,*shipping_methods' } as any
   )
 
   // Fetch seller's locations for sender auto-fill
@@ -195,7 +195,16 @@ function CreateShipmentDrawer({
     }
   }, [locations])
 
-  // Auto-fill recipient when order is selected
+  // Derive carrier service level from the customer's chosen shipping option name
+  const deriveServiceLevel = (shippingOptionName: string): string => {
+    const name = (shippingOptionName ?? '').toLowerCase()
+    if (name.includes('same') || name.includes('sameday')) return 'Sameday'
+    if (name.includes('next') || name.includes('nextday')) return 'Nextday'
+    if (name.includes('express')) return 'Express'
+    return 'Standard'
+  }
+
+  // Auto-fill recipient + service level when order is selected
   const handleOrderSelect = (order: any) => {
     setSelectedOrder(order)
     const addr = order.shipping_address
@@ -213,6 +222,10 @@ function CreateShipmentDrawer({
         items.slice(0, 2).map((i: any) => i.title ?? 'Item').join(', ')
       )
     }
+    // Auto-derive service level from customer's chosen shipping option
+    const chosenOption = order.shipping_methods?.[0]?.name ?? ''
+    if (chosenOption) setServiceLevel(deriveServiceLevel(chosenOption))
+
     // If order is unpaid, suggest COD
     if (order.payment_status === 'not_paid') {
       setIsCod(true)
@@ -324,9 +337,12 @@ function CreateShipmentDrawer({
                       {selectedOrder.shipping_address?.first_name} {selectedOrder.shipping_address?.last_name}
                       {selectedOrder.email ? ` · ${selectedOrder.email}` : ''}
                     </Text>
-                    <Text size="xsmall" className="text-ui-fg-muted">
-                      Recipient address pre-filled below — review and edit if needed
-                    </Text>
+                    {selectedOrder.shipping_methods?.[0]?.name && (
+                      <Text size="xsmall" className="text-ui-fg-muted">
+                        Customer chose: <strong>{selectedOrder.shipping_methods[0].name}</strong>
+                        {' · '}service level auto-set to <strong>{serviceLevel}</strong>
+                      </Text>
+                    )}
                   </div>
                 </div>
                 <button
@@ -360,25 +376,33 @@ function CreateShipmentDrawer({
                       <Text size="small" className="text-ui-fg-muted">No orders found</Text>
                     </div>
                   ) : (
-                    filteredOrders.slice(0, 20).map((order: any) => (
-                      <button
-                        key={order.id}
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-ui-bg-base text-left transition-colors"
-                        onClick={() => handleOrderSelect(order)}
-                      >
-                        <div>
-                          <Text size="small" weight="plus">Order #{order.display_id}</Text>
-                          <Text size="xsmall" className="text-ui-fg-subtle">
-                            {order.shipping_address?.first_name} {order.shipping_address?.last_name}
-                            {order.email ? ` · ${order.email}` : ''}
+                    filteredOrders.slice(0, 20).map((order: any) => {
+                      const chosenShipping = order.shipping_methods?.[0]?.name
+                      return (
+                        <button
+                          key={order.id}
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-ui-bg-base text-left transition-colors"
+                          onClick={() => handleOrderSelect(order)}
+                        >
+                          <div>
+                            <Text size="small" weight="plus">Order #{order.display_id}</Text>
+                            <Text size="xsmall" className="text-ui-fg-subtle">
+                              {order.shipping_address?.first_name} {order.shipping_address?.last_name}
+                              {order.email ? ` · ${order.email}` : ''}
+                            </Text>
+                            {chosenShipping && (
+                              <Text size="xsmall" className="text-ui-fg-muted">
+                                🚚 {chosenShipping}
+                              </Text>
+                            )}
+                          </div>
+                          <Text size="xsmall" className="text-ui-fg-muted flex-shrink-0 ml-3">
+                            {order.currency_code?.toUpperCase()}{' '}
+                            {Math.round((order.total ?? 0) / 100).toLocaleString()}
                           </Text>
-                        </div>
-                        <Text size="xsmall" className="text-ui-fg-muted flex-shrink-0 ml-3">
-                          {order.currency_code?.toUpperCase()}{' '}
-                          {Math.round((order.total ?? 0) / 100).toLocaleString()}
-                        </Text>
-                      </button>
-                    ))
+                        </button>
+                      )
+                    })
                   )}
                 </div>
                 <Text size="xsmall" className="text-ui-fg-muted">
@@ -646,7 +670,14 @@ export const ShippingOrders = () => {
 
   const orders = data?.orders ?? []
   const summary = data?.summary ?? {}
-  const enabledProviders = (providersData?.providers ?? []).filter((p: any) => p.isEnabled)
+  // Normalize: API returns snake_case (is_active, provider_id); old mock used camelCase (isEnabled, providerId)
+  const enabledProviders = (providersData?.providers ?? [])
+    .filter((p: any) => p.is_active ?? p.isEnabled)
+    .map((p: any) => ({
+      ...p,
+      providerId: p.provider_id ?? p.providerId,
+      isEnabled: true,
+    }))
 
   const handleCancel = async (orderId: string, trackingNumber: string) => {
     if (!window.confirm(`Cancel shipment ${trackingNumber}? This cannot be undone.`)) return

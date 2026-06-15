@@ -26,10 +26,15 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   try {
     const pg = getPgConnection(req)
 
-    const rows = await pg('platform_shipping_provider')
-      .where({ is_active: true })
-      .whereNull('deleted_at')
-      .select('provider_id', 'name', 'settings', 'updated_at')
+    let rows: any[] = []
+    try {
+      rows = await pg('platform_shipping_provider')
+        .where({ is_active: true })
+        .whereNull('deleted_at')
+        .select('provider_id', 'name', 'settings', 'updated_at')
+    } catch {
+      // Table may not exist yet — return empty list gracefully
+    }
 
     // Provider metadata (public info only — no credentials)
     const providerMeta: Record<string, any> = {
