@@ -105,6 +105,18 @@ module.exports = defineConfig({
       resolve: '@medusajs/medusa/workflow-engine-inmemory'
     },
     {
+      resolve: '@medusajs/medusa/fulfillment',
+      options: {
+        providers: [
+          {
+            resolve: './src/modules/maretinda-shipping',
+            id: 'maretinda',
+            options: {},
+          },
+        ],
+      },
+    },
+    {
       resolve: '@medusajs/medusa/payment',
       options: {
         providers: [
