@@ -8,6 +8,7 @@ import {
   StatusBadge,
   Input,
   Label,
+  Switch,
   toast,
   Badge,
 } from '@medusajs/ui'
@@ -18,13 +19,16 @@ import {
   ArrowDownTray,
   MagnifyingGlass,
   XMark,
+  CheckCircle,
 } from '@medusajs/icons'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   useShippingOrders,
   useCreateShippingOrder,
   useShippingProviders,
 } from '../../../hooks/api/shipping'
+import { useOrders } from '../../../hooks/api/orders'
+import { useStockLocations } from '../../../hooks/api/stock-locations'
 import { backendUrl, publishableApiKey } from '../../../lib/client'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -59,65 +63,13 @@ const STATUS_LABELS: Record<string, string> = {
 
 const PROVIDER_LABELS: Record<string, string> = {
   ninjavan: 'Ninja Van',
-  jnt: 'J&T Express',
-  lalamove: 'Lalamove',
   flyingtigers: 'Flying Tigers Express',
 }
 
 const SERVICE_LEVELS = ['Standard', 'Express', 'Sameday', 'Nextday']
 const TERMINAL_STATUSES = ['delivered', 'cancelled', 'failed', 'returned']
 
-// ── Create Shipment Form state ────────────────────────────────────────────────
-
-interface ShipmentForm {
-  medusa_order_id: string
-  provider: string
-  service_level: string
-  pickup_date: string
-  from_name: string
-  from_phone: string
-  from_address: string
-  from_city: string
-  from_state: string
-  from_postcode: string
-  to_name: string
-  to_phone: string
-  to_address: string
-  to_city: string
-  to_state: string
-  to_postcode: string
-  weight: string
-  length: string
-  width: string
-  height: string
-  description: string
-}
-
-const EMPTY_FORM: ShipmentForm = {
-  medusa_order_id: '',
-  provider: '',
-  service_level: 'Standard',
-  pickup_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-  from_name: '',
-  from_phone: '',
-  from_address: '',
-  from_city: '',
-  from_state: '',
-  from_postcode: '',
-  to_name: '',
-  to_phone: '',
-  to_address: '',
-  to_city: '',
-  to_state: '',
-  to_postcode: '',
-  weight: '',
-  length: '',
-  width: '',
-  height: '',
-  description: 'Marketplace goods',
-}
-
-// ── Waybill download (needs raw fetch because response is PDF binary) ─────────
+// ── Waybill download ──────────────────────────────────────────────────────────
 
 async function downloadWaybill(orderId: string, trackingNumber: string) {
   const bearer = window.localStorage.getItem('medusa_auth_token') || ''
@@ -140,7 +92,7 @@ async function downloadWaybill(orderId: string, trackingNumber: string) {
   URL.revokeObjectURL(url)
 }
 
-// ── Field helper ─────────────────────────────────────────────────────────────
+// ── UI helpers ────────────────────────────────────────────────────────────────
 
 function FormField({
   label,
@@ -161,8 +113,6 @@ function FormField({
     </div>
   )
 }
-
-// ── Section heading ───────────────────────────────────────────────────────────
 
 function SectionHeading({ step, title }: { step: number; title: string }) {
   return (
@@ -186,60 +136,148 @@ function CreateShipmentDrawer({
   onClose: () => void
   onCreated: () => void
 }) {
-  const [form, setForm] = useState<ShipmentForm>({
-    ...EMPTY_FORM,
-    provider: enabledProviders[0]?.providerId ?? '',
-  })
+  // Order picker
+  const [orderSearch, setOrderSearch] = useState('')
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+
+  // Carrier
+  const [provider, setProvider] = useState(enabledProviders[0]?.providerId ?? '')
+  const [serviceLevel, setServiceLevel] = useState('Standard')
+  const [pickupDate, setPickupDate] = useState(
+    new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  )
+
+  // Sender (pre-filled from location, editable)
+  const [fromName, setFromName] = useState('')
+  const [fromPhone, setFromPhone] = useState('')
+  const [fromAddress, setFromAddress] = useState('')
+  const [fromCity, setFromCity] = useState('')
+  const [fromState, setFromState] = useState('')
+  const [fromPostcode, setFromPostcode] = useState('')
+
+  // Recipient (pre-filled from order, editable)
+  const [toName, setToName] = useState('')
+  const [toPhone, setToPhone] = useState('')
+  const [toAddress, setToAddress] = useState('')
+  const [toCity, setToCity] = useState('')
+  const [toState, setToState] = useState('')
+  const [toPostcode, setToPostcode] = useState('')
+
+  // Parcel
+  const [weight, setWeight] = useState('')
+  const [length, setLength] = useState('')
+  const [width, setWidth] = useState('')
+  const [height, setHeight] = useState('')
+  const [description, setDescription] = useState('Marketplace goods')
+  const [isCod, setIsCod] = useState(false)
+  const [codAmount, setCodAmount] = useState('')
 
   const { mutateAsync: createOrder, isPending } = useCreateShippingOrder()
 
-  const set = (key: keyof ShipmentForm, val: string) =>
-    setForm((prev) => ({ ...prev, [key]: val }))
+  // Fetch seller's orders for picker
+  const { orders: vendorOrders = [] } = useOrders(
+    { limit: 50, fields: 'id,display_id,email,shipping_address,items,total,currency_code,payment_status' } as any
+  )
+
+  // Fetch seller's locations for sender auto-fill
+  const { stock_locations: locations = [] } = useStockLocations(
+    { fields: 'name,*address', limit: 1 } as any
+  )
+
+  // Auto-fill sender from first stock location on mount
+  useEffect(() => {
+    const loc = (locations as any[])[0]
+    if (loc?.address && !fromAddress) {
+      setFromAddress(loc.address.address_1 ?? '')
+      setFromCity(loc.address.city ?? '')
+      setFromState(loc.address.province ?? '')
+      setFromPostcode(loc.address.postal_code ?? '')
+    }
+  }, [locations])
+
+  // Auto-fill recipient when order is selected
+  const handleOrderSelect = (order: any) => {
+    setSelectedOrder(order)
+    const addr = order.shipping_address
+    if (addr) {
+      setToName(`${addr.first_name ?? ''} ${addr.last_name ?? ''}`.trim())
+      setToPhone(addr.phone ?? '')
+      setToAddress([addr.address_1, addr.address_2].filter(Boolean).join(', '))
+      setToCity(addr.city ?? '')
+      setToState(addr.province ?? '')
+      setToPostcode(addr.postal_code ?? '')
+    }
+    const items = order.items ?? []
+    if (items.length > 0) {
+      setDescription(
+        items.slice(0, 2).map((i: any) => i.title ?? 'Item').join(', ')
+      )
+    }
+    // If order is unpaid, suggest COD
+    if (order.payment_status === 'not_paid') {
+      setIsCod(true)
+      setCodAmount(String(Math.round((order.total ?? 0) / 100)))
+    }
+  }
+
+  const filteredOrders = (vendorOrders as any[]).filter((o) => {
+    if (!orderSearch) return true
+    const q = orderSearch.toLowerCase()
+    return (
+      String(o.display_id).includes(q) ||
+      (o.email ?? '').toLowerCase().includes(q) ||
+      `${o.shipping_address?.first_name} ${o.shipping_address?.last_name}`
+        .toLowerCase()
+        .includes(q)
+    )
+  })
 
   const handleSubmit = async () => {
-    if (!form.provider) return toast.error('Select a shipping provider')
-    if (!form.from_name || !form.from_phone || !form.from_address || !form.from_city)
-      return toast.error('Fill in all required sender fields')
-    if (!form.to_name || !form.to_phone || !form.to_address || !form.to_city)
-      return toast.error('Fill in all required recipient fields')
-    if (!form.weight) return toast.error('Parcel weight is required')
+    if (!provider) return toast.error('Select a carrier')
+    if (!fromName || !fromPhone || !fromAddress || !fromCity)
+      return toast.error('Fill in all sender fields')
+    if (!toName || !toAddress || !toCity)
+      return toast.error('Recipient address is incomplete — select an order or fill manually')
+    if (!weight) return toast.error('Parcel weight is required')
 
     try {
       await createOrder({
         action: 'create-order',
-        providerId: form.provider,
+        providerId: provider,
         orderData: {
-          medusa_order_id: form.medusa_order_id || undefined,
-          service_level: form.service_level,
-          pickup_date: form.pickup_date,
+          medusa_order_id: selectedOrder?.id,
+          service_level: serviceLevel,
+          pickup_date: pickupDate,
           from: {
-            name: form.from_name,
-            phone: form.from_phone,
-            address: form.from_address,
-            city: form.from_city,
-            state: form.from_state || undefined,
-            postcode: form.from_postcode,
+            name: fromName,
+            phone: fromPhone,
+            address: fromAddress,
+            city: fromCity,
+            state: fromState || undefined,
+            postcode: fromPostcode,
             country: 'PH',
           },
           to: {
-            name: form.to_name,
-            phone: form.to_phone,
-            address: form.to_address,
-            city: form.to_city,
-            state: form.to_state || undefined,
-            postcode: form.to_postcode,
+            name: toName,
+            phone: toPhone,
+            address: toAddress,
+            city: toCity,
+            state: toState || undefined,
+            postcode: toPostcode,
             country: 'PH',
           },
           parcel: {
-            weight: parseFloat(form.weight),
-            length: form.length ? parseFloat(form.length) : undefined,
-            width: form.width ? parseFloat(form.width) : undefined,
-            height: form.height ? parseFloat(form.height) : undefined,
-            description: form.description,
+            weight: parseFloat(weight),
+            length: length ? parseFloat(length) : undefined,
+            width: width ? parseFloat(width) : undefined,
+            height: height ? parseFloat(height) : undefined,
+            description,
+            is_cod: isCod,
+            cod_amount: isCod && codAmount ? parseFloat(codAmount) : undefined,
           },
         },
       })
-      toast.success('Shipment created! Tracking number assigned.')
+      toast.success('Shipment booked! Tracking number assigned.')
       onCreated()
       onClose()
     } catch (e: any) {
@@ -247,200 +285,276 @@ function CreateShipmentDrawer({
     }
   }
 
-  const selectedProvider = enabledProviders.find((p) => p.providerId === form.provider)
+  const hasLocation = (locations as any[]).length > 0
+  const senderPrefilled = hasLocation && !!fromAddress
 
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/40" onClick={onClose} />
       <div className="w-full max-w-lg bg-ui-bg-base shadow-xl flex flex-col overflow-y-auto">
+
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-ui-border-base bg-ui-bg-base">
           <div>
             <Heading level="h3">Create Shipment</Heading>
             <Text className="text-xs text-ui-fg-muted">
-              Fill in the details to book a courier pickup
+              Select an order — address details fill automatically
             </Text>
           </div>
-          <button
-            className="text-ui-fg-muted hover:text-ui-fg-base"
-            onClick={onClose}
-          >
+          <button className="text-ui-fg-muted hover:text-ui-fg-base" onClick={onClose}>
             <XMark className="h-5 w-5" />
           </button>
         </div>
 
         <div className="px-6 py-5 flex flex-col gap-6">
-          {/* Step 1 – Provider & Basic Info */}
-          <section className="flex flex-col gap-4">
-            <SectionHeading step={1} title="Shipment basics" />
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Medusa Order ID" required={false}>
-                <Input
-                  placeholder="order_..."
-                  value={form.medusa_order_id}
-                  onChange={(e) => set('medusa_order_id', e.target.value)}
-                />
-              </FormField>
-              <FormField label="Pickup Date" required>
-                <Input
-                  type="date"
-                  value={form.pickup_date}
-                  onChange={(e) => set('pickup_date', e.target.value)}
-                />
-              </FormField>
-            </div>
 
-            <FormField label="Provider" required>
-              {enabledProviders.length === 0 ? (
-                <p className="text-sm text-ui-tag-red-text bg-ui-tag-red-bg border border-ui-tag-red-border rounded px-3 py-2">
-                  No enabled providers. Go to the Providers tab to set one up first.
-                </p>
-              ) : (
-                <select
-                  className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-ui-border-interactive"
-                  value={form.provider}
-                  onChange={(e) => set('provider', e.target.value)}
+          {/* Step 1 — Select Order */}
+          <section className="flex flex-col gap-3">
+            <SectionHeading step={1} title="Select Order" />
+
+            {selectedOrder ? (
+              <div className="flex items-start justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="text-green-500 w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <Text size="small" weight="plus" className="text-green-700 dark:text-green-400">
+                      Order #{selectedOrder.display_id}
+                    </Text>
+                    <Text size="xsmall" className="text-ui-fg-subtle">
+                      {selectedOrder.shipping_address?.first_name} {selectedOrder.shipping_address?.last_name}
+                      {selectedOrder.email ? ` · ${selectedOrder.email}` : ''}
+                    </Text>
+                    <Text size="xsmall" className="text-ui-fg-muted">
+                      Recipient address pre-filled below — review and edit if needed
+                    </Text>
+                  </div>
+                </div>
+                <button
+                  className="text-xs text-ui-fg-muted hover:text-ui-fg-base ml-3 flex-shrink-0"
+                  onClick={() => {
+                    setSelectedOrder(null)
+                    setOrderSearch('')
+                    setToName(''); setToPhone(''); setToAddress('')
+                    setToCity(''); setToState(''); setToPostcode('')
+                    setIsCod(false); setCodAmount('')
+                    setDescription('Marketplace goods')
+                  }}
                 >
-                  {enabledProviders.map((p) => (
-                    <option key={p.providerId} value={p.providerId}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </FormField>
+                  Change
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ui-fg-muted pointer-events-none" />
+                  <Input
+                    className="pl-9"
+                    placeholder="Search by order # or customer name..."
+                    value={orderSearch}
+                    onChange={(e) => setOrderSearch(e.target.value)}
+                  />
+                </div>
+                <div className="max-h-52 overflow-y-auto rounded-lg border border-ui-border-base divide-y divide-ui-border-base bg-ui-bg-subtle">
+                  {filteredOrders.length === 0 ? (
+                    <div className="px-4 py-8 text-center">
+                      <Text size="small" className="text-ui-fg-muted">No orders found</Text>
+                    </div>
+                  ) : (
+                    filteredOrders.slice(0, 20).map((order: any) => (
+                      <button
+                        key={order.id}
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-ui-bg-base text-left transition-colors"
+                        onClick={() => handleOrderSelect(order)}
+                      >
+                        <div>
+                          <Text size="small" weight="plus">Order #{order.display_id}</Text>
+                          <Text size="xsmall" className="text-ui-fg-subtle">
+                            {order.shipping_address?.first_name} {order.shipping_address?.last_name}
+                            {order.email ? ` · ${order.email}` : ''}
+                          </Text>
+                        </div>
+                        <Text size="xsmall" className="text-ui-fg-muted flex-shrink-0 ml-3">
+                          {order.currency_code?.toUpperCase()}{' '}
+                          {Math.round((order.total ?? 0) / 100).toLocaleString()}
+                        </Text>
+                      </button>
+                    ))
+                  )}
+                </div>
+                <Text size="xsmall" className="text-ui-fg-muted">
+                  Or fill addresses manually below to ship without linking an order.
+                </Text>
+              </>
+            )}
+          </section>
 
-            {selectedProvider?.providerId === 'ninjavan' && (
+          <div className="border-t border-ui-border-base" />
+
+          {/* Step 2 — Carrier */}
+          <section className="flex flex-col gap-3">
+            <SectionHeading step={2} title="Carrier & Service" />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Carrier" required>
+                {enabledProviders.length === 0 ? (
+                  <p className="text-sm text-ui-tag-red-text bg-ui-tag-red-bg border border-ui-tag-red-border rounded px-3 py-2">
+                    No carriers active yet. Admin must activate a carrier in the platform settings.
+                  </p>
+                ) : (
+                  <select
+                    className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-ui-border-interactive"
+                    value={provider}
+                    onChange={(e) => setProvider(e.target.value)}
+                  >
+                    {enabledProviders.map((p) => (
+                      <option key={p.providerId} value={p.providerId}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
               <FormField label="Service Level" required>
                 <select
-                  className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none focus:ring-1 focus:ring-ui-border-interactive"
-                  value={form.service_level}
-                  onChange={(e) => set('service_level', e.target.value)}
+                  className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base focus:outline-none"
+                  value={serviceLevel}
+                  onChange={(e) => setServiceLevel(e.target.value)}
                 >
                   {SERVICE_LEVELS.map((sl) => (
                     <option key={sl} value={sl}>{sl}</option>
                   ))}
                 </select>
               </FormField>
-            )}
+            </div>
+            <FormField label="Pickup Date" required>
+              <Input
+                type="date"
+                value={pickupDate}
+                onChange={(e) => setPickupDate(e.target.value)}
+                className="w-48"
+              />
+            </FormField>
           </section>
 
           <div className="border-t border-ui-border-base" />
 
-          {/* Step 2 – Sender */}
+          {/* Step 3 — Sender */}
           <section className="flex flex-col gap-3">
-            <SectionHeading step={2} title="Sender (pickup address)" />
+            <div className="flex items-center justify-between">
+              <SectionHeading step={3} title="Sender (your warehouse)" />
+              {senderPrefilled && (
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <Text size="xsmall" className="text-ui-fg-muted">Pre-filled from your location</Text>
+                </div>
+              )}
+            </div>
+            {!hasLocation && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <Text size="xsmall" className="text-amber-600 dark:text-amber-400">
+                  No warehouse location found. Go to Settings → Locations to add one, then it auto-fills here.
+                </Text>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Name" required>
                 <Input
-                  placeholder="Store / Seller name"
-                  value={form.from_name}
-                  onChange={(e) => set('from_name', e.target.value)}
+                  placeholder="Your store / business name"
+                  value={fromName}
+                  onChange={(e) => setFromName(e.target.value)}
                 />
               </FormField>
               <FormField label="Phone" required>
                 <Input
                   placeholder="+63 9XX XXX XXXX"
-                  value={form.from_phone}
-                  onChange={(e) => set('from_phone', e.target.value)}
+                  value={fromPhone}
+                  onChange={(e) => setFromPhone(e.target.value)}
                 />
               </FormField>
             </div>
             <FormField label="Street Address" required>
               <Input
                 placeholder="Unit / Bldg / Street"
-                value={form.from_address}
-                onChange={(e) => set('from_address', e.target.value)}
+                value={fromAddress}
+                onChange={(e) => setFromAddress(e.target.value)}
               />
             </FormField>
             <div className="grid grid-cols-3 gap-3">
               <FormField label="City" required>
-                <Input
-                  placeholder="City"
-                  value={form.from_city}
-                  onChange={(e) => set('from_city', e.target.value)}
-                />
+                <Input placeholder="City" value={fromCity} onChange={(e) => setFromCity(e.target.value)} />
               </FormField>
               <FormField label="Province">
-                <Input
-                  placeholder="Province"
-                  value={form.from_state}
-                  onChange={(e) => set('from_state', e.target.value)}
-                />
+                <Input placeholder="Province" value={fromState} onChange={(e) => setFromState(e.target.value)} />
               </FormField>
               <FormField label="Postcode">
-                <Input
-                  placeholder="1234"
-                  value={form.from_postcode}
-                  onChange={(e) => set('from_postcode', e.target.value)}
-                />
+                <Input placeholder="1234" value={fromPostcode} onChange={(e) => setFromPostcode(e.target.value)} />
               </FormField>
             </div>
           </section>
 
           <div className="border-t border-ui-border-base" />
 
-          {/* Step 3 – Recipient */}
+          {/* Step 4 — Recipient */}
           <section className="flex flex-col gap-3">
-            <SectionHeading step={3} title="Recipient (delivery address)" />
+            <div className="flex items-center justify-between">
+              <SectionHeading step={4} title="Recipient (customer)" />
+              {selectedOrder && (
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <Text size="xsmall" className="text-ui-fg-muted">Pre-filled from order</Text>
+                </div>
+              )}
+            </div>
+            {!selectedOrder && (
+              <div className="p-3 rounded-lg bg-ui-bg-subtle border border-ui-border-base">
+                <Text size="xsmall" className="text-ui-fg-muted">
+                  Select an order above to auto-fill the customer's delivery address. Or enter manually.
+                </Text>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Name" required>
                 <Input
                   placeholder="Customer name"
-                  value={form.to_name}
-                  onChange={(e) => set('to_name', e.target.value)}
+                  value={toName}
+                  onChange={(e) => setToName(e.target.value)}
                 />
               </FormField>
-              <FormField label="Phone" required>
+              <FormField label="Phone">
                 <Input
                   placeholder="+63 9XX XXX XXXX"
-                  value={form.to_phone}
-                  onChange={(e) => set('to_phone', e.target.value)}
+                  value={toPhone}
+                  onChange={(e) => setToPhone(e.target.value)}
                 />
               </FormField>
             </div>
             <FormField label="Street Address" required>
               <Input
                 placeholder="Unit / Bldg / Street"
-                value={form.to_address}
-                onChange={(e) => set('to_address', e.target.value)}
+                value={toAddress}
+                onChange={(e) => setToAddress(e.target.value)}
               />
             </FormField>
             <div className="grid grid-cols-3 gap-3">
               <FormField label="City" required>
-                <Input
-                  placeholder="City"
-                  value={form.to_city}
-                  onChange={(e) => set('to_city', e.target.value)}
-                />
+                <Input placeholder="City" value={toCity} onChange={(e) => setToCity(e.target.value)} />
               </FormField>
               <FormField label="Province">
-                <Input
-                  placeholder="Province"
-                  value={form.to_state}
-                  onChange={(e) => set('to_state', e.target.value)}
-                />
+                <Input placeholder="Province" value={toState} onChange={(e) => setToState(e.target.value)} />
               </FormField>
               <FormField label="Postcode">
-                <Input
-                  placeholder="1234"
-                  value={form.to_postcode}
-                  onChange={(e) => set('to_postcode', e.target.value)}
-                />
+                <Input placeholder="1234" value={toPostcode} onChange={(e) => setToPostcode(e.target.value)} />
               </FormField>
             </div>
           </section>
 
           <div className="border-t border-ui-border-base" />
 
-          {/* Step 4 – Parcel */}
+          {/* Step 5 — Parcel */}
           <section className="flex flex-col gap-3">
-            <SectionHeading step={4} title="Parcel details" />
+            <SectionHeading step={5} title="Parcel details" />
             <FormField label="Description">
               <Input
                 placeholder="e.g. Clothing, Electronics"
-                value={form.description}
-                onChange={(e) => set('description', e.target.value)}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </FormField>
             <div className="grid grid-cols-4 gap-3">
@@ -450,42 +564,52 @@ function CreateShipmentDrawer({
                   min="0.1"
                   step="0.1"
                   placeholder="1.0"
-                  value={form.weight}
-                  onChange={(e) => set('weight', e.target.value)}
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
                 />
               </FormField>
               <FormField label="L (cm)">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="30"
-                  value={form.length}
-                  onChange={(e) => set('length', e.target.value)}
-                />
+                <Input type="number" min="1" placeholder="30" value={length} onChange={(e) => setLength(e.target.value)} />
               </FormField>
               <FormField label="W (cm)">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="20"
-                  value={form.width}
-                  onChange={(e) => set('width', e.target.value)}
-                />
+                <Input type="number" min="1" placeholder="20" value={width} onChange={(e) => setWidth(e.target.value)} />
               </FormField>
               <FormField label="H (cm)">
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="10"
-                  value={form.height}
-                  onChange={(e) => set('height', e.target.value)}
-                />
+                <Input type="number" min="1" placeholder="10" value={height} onChange={(e) => setHeight(e.target.value)} />
               </FormField>
             </div>
+
+            {/* COD */}
+            <div className="flex items-center gap-3 pt-1">
+              <Switch
+                id="cod-switch"
+                checked={isCod}
+                onCheckedChange={(v) => {
+                  setIsCod(v)
+                  if (!v) setCodAmount('')
+                }}
+              />
+              <Label htmlFor="cod-switch" className="cursor-pointer select-none">
+                Cash on Delivery (COD)
+              </Label>
+            </div>
+            {isCod && (
+              <FormField label="COD Amount (PHP)" required>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={codAmount}
+                  onChange={(e) => setCodAmount(e.target.value)}
+                  className="w-48"
+                />
+              </FormField>
+            )}
           </section>
         </div>
 
-        {/* Footer actions */}
+        {/* Footer */}
         <div className="sticky bottom-0 bg-ui-bg-base border-t border-ui-border-base px-6 py-4 flex gap-3">
           <Button
             variant="primary"
@@ -496,9 +620,7 @@ function CreateShipmentDrawer({
           >
             Book Shipment
           </Button>
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
         </div>
       </div>
     </div>
@@ -527,7 +649,7 @@ export const ShippingOrders = () => {
   const enabledProviders = (providersData?.providers ?? []).filter((p: any) => p.isEnabled)
 
   const handleCancel = async (orderId: string, trackingNumber: string) => {
-    if (!window.confirm(`Cancel shipment ${trackingNumber}? This action cannot be undone.`)) return
+    if (!window.confirm(`Cancel shipment ${trackingNumber}? This cannot be undone.`)) return
     setCancellingId(orderId)
     try {
       await createOrder({ action: 'cancel-order', orderId })
@@ -552,11 +674,7 @@ export const ShippingOrders = () => {
   }
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('en-PH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+    new Date(dateStr).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })
 
   const formatCurrency = (amount: number, currency = 'PHP') =>
     new Intl.NumberFormat('en-PH', { style: 'currency', currency }).format(amount)
@@ -574,7 +692,6 @@ export const ShippingOrders = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Summary pills */}
             {summary.totalOrders > 0 && (
               <div className="flex gap-2">
                 <div className="text-center px-3 py-1.5 bg-ui-bg-subtle rounded-lg border border-ui-border-base">
@@ -592,11 +709,7 @@ export const ShippingOrders = () => {
               </div>
             )}
 
-            <Button
-              variant="primary"
-              size="small"
-              onClick={() => setShowCreate(true)}
-            >
+            <Button variant="primary" size="small" onClick={() => setShowCreate(true)}>
               <Plus className="h-4 w-4" />
               Create Shipment
             </Button>
@@ -626,8 +739,6 @@ export const ShippingOrders = () => {
           >
             <option value="">All Providers</option>
             <option value="ninjavan">Ninja Van</option>
-            <option value="jnt">J&amp;T Express</option>
-            <option value="lalamove">Lalamove</option>
             <option value="flyingtigers">Flying Tigers Express</option>
           </select>
 
@@ -659,11 +770,7 @@ export const ShippingOrders = () => {
                   : 'Create your first shipment to book a courier pickup for an order.'}
               </Text>
               {!statusFilter && !providerFilter && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={() => setShowCreate(true)}
-                >
+                <Button variant="secondary" size="small" onClick={() => setShowCreate(true)}>
                   <Plus className="h-4 w-4" />
                   Create First Shipment
                 </Button>
@@ -674,7 +781,7 @@ export const ShippingOrders = () => {
               <thead>
                 <tr className="border-b border-ui-border-base bg-ui-bg-subtle">
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Tracking #</th>
-                  <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Provider</th>
+                  <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Carrier</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Status</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Order</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Cost</th>
@@ -685,7 +792,6 @@ export const ShippingOrders = () => {
               <tbody>
                 {orders.map((order: any) => {
                   const isTerminal = TERMINAL_STATUSES.includes(order.status)
-                  const isNinjavan = order.provider === 'ninjavan'
                   const isCancelling = cancellingId === order.id
                   const isDownloading = downloadingId === order.id
 
@@ -749,14 +855,12 @@ export const ShippingOrders = () => {
                       </td>
 
                       <td className="px-6 py-4">
-                        <span className="text-ui-fg-subtle text-xs">
-                          {formatDate(order.created_at)}
-                        </span>
+                        <span className="text-ui-fg-subtle text-xs">{formatDate(order.created_at)}</span>
                       </td>
 
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {isNinjavan && order.tracking_number && (
+                          {order.tracking_number && (
                             <Button
                               variant="secondary"
                               size="small"
@@ -793,7 +897,6 @@ export const ShippingOrders = () => {
         </div>
       </Container>
 
-      {/* Create Shipment Drawer */}
       {showCreate && (
         <CreateShipmentDrawer
           enabledProviders={enabledProviders}
