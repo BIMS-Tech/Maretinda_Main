@@ -8,7 +8,7 @@
  *   3. Request/response shapes — compare with their docs and adjust field names
  *   4. Rate endpoint path     — /rates or /quotation (confirm)
  *
- * The user has credentials (api_key + merchant_code). These map to the
+ * The user has credentials (api_key + api_secret). These map to the
  * configTemplate already defined in the vendor shipping-providers route.
  */
 
@@ -77,12 +77,13 @@ export type FlyingTigersOrderResponse = {
 
 // ─── Auth Helper ──────────────────────────────────────────────────────────────
 
-function getAuthHeaders(apiKey: string, merchantCode: string): Record<string, string> {
+function getAuthHeaders(apiKey: string, apiSecret: string): Record<string, string> {
+  // Flying Tigers portal issues fte_... API Key + API Secret
+  // Bearer token is the API Key; secret used for HMAC webhook verification
   return {
     'Content-Type': 'application/json',
-    // VERIFY: confirm exact header names with Flying Tigers API docs
-    'X-API-Key': apiKey,
-    'X-Merchant-Code': merchantCode,
+    'Authorization': `Bearer ${apiKey}`,
+    'X-API-Secret': apiSecret,
   }
 }
 
@@ -104,12 +105,12 @@ async function handleResponse<T>(res: Response, context: string): Promise<T> {
  */
 export async function getFlyingTigersRates(
   apiKey: string,
-  merchantCode: string,
+  apiSecret: string,
   request: FlyingTigersRateRequest
 ): Promise<FlyingTigersRate[]> {
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/rates`, {
     method: 'POST',
-    headers: getAuthHeaders(apiKey, merchantCode),
+    headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify({
       origin_postal_code: request.origin_postal,
       destination_postal_code: request.dest_postal,
@@ -151,7 +152,7 @@ export async function getFlyingTigersRates(
  */
 export async function createFlyingTigersOrder(
   apiKey: string,
-  merchantCode: string,
+  apiSecret: string,
   payload: FlyingTigersOrderPayload
 ): Promise<FlyingTigersOrderResponse> {
   const body = {
@@ -201,7 +202,7 @@ export async function createFlyingTigersOrder(
 
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders`, {
     method: 'POST',
-    headers: getAuthHeaders(apiKey, merchantCode),
+    headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify(body),
   })
 
@@ -228,14 +229,14 @@ export async function createFlyingTigersOrder(
  */
 export async function cancelFlyingTigersOrder(
   apiKey: string,
-  merchantCode: string,
+  apiSecret: string,
   trackingNo: string,
   reason?: string
 ): Promise<{ success: boolean; message: string }> {
   // VERIFY: cancel endpoint — some use DELETE /orders/{id}, others POST /orders/{id}/cancel
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/cancel`, {
     method: 'POST',
-    headers: getAuthHeaders(apiKey, merchantCode),
+    headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify({ reason: reason ?? 'Cancelled by merchant' }),
   })
 
@@ -255,12 +256,12 @@ export async function cancelFlyingTigersOrder(
  */
 export async function getFlyingTigersWaybill(
   apiKey: string,
-  merchantCode: string,
+  apiSecret: string,
   trackingNo: string
 ): Promise<Buffer> {
   // VERIFY: waybill endpoint path and response format (PDF buffer vs base64 string vs URL)
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/label`, {
-    headers: getAuthHeaders(apiKey, merchantCode),
+    headers: getAuthHeaders(apiKey, apiSecret),
   })
 
   if (!res.ok) {
@@ -299,11 +300,11 @@ export async function getFlyingTigersWaybill(
  */
 export async function trackFlyingTigersOrder(
   apiKey: string,
-  merchantCode: string,
+  apiSecret: string,
   trackingNo: string
 ): Promise<{ status: string; events: any[] }> {
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/tracking`, {
-    headers: getAuthHeaders(apiKey, merchantCode),
+    headers: getAuthHeaders(apiKey, apiSecret),
   })
   const data = await handleResponse<any>(res, 'track order')
   return {

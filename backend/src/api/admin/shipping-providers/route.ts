@@ -37,8 +37,8 @@ export const PLATFORM_PROVIDERS = [
     markets: ['PH'],
     capabilities: ['Standard', 'Express', 'Same-day', 'Next-day', 'COD', 'Door-to-door', 'Real-time tracking', 'Waybill PDF'],
     credential_fields: [
-      { key: 'api_key', label: 'API Key', type: 'password', required: true, help: 'From Flying Tigers Portal → My Account → API Settings' },
-      { key: 'merchant_code', label: 'Merchant Code', type: 'text', required: true, help: 'From Flying Tigers Portal → My Account → Profile' },
+      { key: 'api_key', label: 'API Key', type: 'password', required: true, help: 'From Flying Tigers Portal → Settings → API Key Management (starts with fte_...)' },
+      { key: 'api_secret', label: 'API Secret', type: 'password', required: true, help: 'From Flying Tigers Portal → Settings → API Key Management (only shown once at creation — revoke and regenerate if lost)' },
     ],
     logo_url: 'https://www.flyingtigersexpress.com/favicon.ico',
     dashboard_url: 'https://www.flyingtigersexpress.com',
@@ -159,10 +159,9 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         }
 
         if (provider_id === 'flyingtigers') {
-          // Test by calling the rates endpoint with dummy data
           await getFlyingTigersRates(
             creds.api_key as string,
-            creds.merchant_code as string,
+            creds.api_secret as string,
             { origin_postal: '1000', dest_postal: '1600', weight_kg: 1 }
           )
           return res.json({ success: true, message: 'Flying Tigers credentials verified successfully' })

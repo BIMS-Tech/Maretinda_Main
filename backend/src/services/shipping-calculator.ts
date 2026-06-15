@@ -114,13 +114,13 @@ function getNinjaVanEstimatedRates(parcel: ShippingParcel): CarrierRate[] {
 // ─── Flying Tigers Rate Calculation ──────────────────────────────────────────
 
 async function getFlyingTigersCarrierRates(
-  creds: { api_key: string; merchant_code: string },
+  creds: { api_key: string; api_secret: string },
   origin_postal: string,
   dest_postal: string,
   parcel: ShippingParcel
 ): Promise<CarrierRate[]> {
   try {
-    const rates = await getFlyingTigersRates(creds.api_key, creds.merchant_code, {
+    const rates = await getFlyingTigersRates(creds.api_key, creds.api_secret, {
       origin_postal,
       dest_postal,
       weight_kg: parcel.weight_kg,
@@ -252,9 +252,9 @@ export async function calculateShippingRates(
       allRates.push(...getNinjaVanEstimatedRates(parcel))
     }
 
-    if (provider.provider_id === 'flyingtigers' && creds.api_key && creds.merchant_code) {
+    if (provider.provider_id === 'flyingtigers' && creds.api_key && creds.api_secret) {
       const ftRates = await getFlyingTigersCarrierRates(
-        { api_key: creds.api_key, merchant_code: creds.merchant_code },
+        { api_key: creds.api_key, api_secret: creds.api_secret },
         origin_postal,
         dest_postal,
         parcel

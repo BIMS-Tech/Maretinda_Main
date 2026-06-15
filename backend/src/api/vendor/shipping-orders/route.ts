@@ -205,7 +205,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
         const ftResponse = await createFlyingTigersOrder(
           creds.api_key as string,
-          creds.merchant_code as string,
+          creds.api_secret as string,
           ftPayload
         )
 
@@ -262,7 +262,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       if (shippingOrder.provider === 'flyingtigers') {
         const creds = await getPlatformCredentials(pg, 'flyingtigers')
-        await cancelFlyingTigersOrder(creds.api_key as string, creds.merchant_code as string, shippingOrder.tracking_number, reason)
+        await cancelFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, shippingOrder.tracking_number, reason)
       }
 
       await pg('seller_shipping_order')
@@ -295,7 +295,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         pdfBuffer = await getNinjaVanWaybill(token, shippingOrder.country_code ?? 'PH', shippingOrder.tracking_number, (creds.sandbox as boolean) ?? false)
       } else if (shippingOrder.provider === 'flyingtigers') {
         const creds = await getPlatformCredentials(pg, 'flyingtigers')
-        pdfBuffer = await getFlyingTigersWaybill(creds.api_key as string, creds.merchant_code as string, shippingOrder.tracking_number)
+        pdfBuffer = await getFlyingTigersWaybill(creds.api_key as string, creds.api_secret as string, shippingOrder.tracking_number)
       } else {
         return res.status(400).json({ message: `Waybill not supported for provider: ${shippingOrder.provider}` })
       }
