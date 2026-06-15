@@ -167,7 +167,7 @@ class MaretindaShippingProviderService extends AbstractFulfillmentProviderServic
   // Actual carrier booking (waybill) is done separately via vendor/shipping-orders.
 
   async createFulfillment(): Promise<CreateFulfillmentResult> {
-    return { data: {} }
+    return { data: {}, labels: [] }
   }
 
   async cancelFulfillment(): Promise<any> {
@@ -175,7 +175,7 @@ class MaretindaShippingProviderService extends AbstractFulfillmentProviderServic
   }
 
   async createReturnFulfillment(): Promise<CreateFulfillmentResult> {
-    return { data: {} }
+    return { data: {}, labels: [] }
   }
 
   async getFulfillmentDocuments(): Promise<never[]> { return [] }
