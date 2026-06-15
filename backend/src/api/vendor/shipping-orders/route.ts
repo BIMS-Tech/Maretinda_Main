@@ -415,6 +415,19 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
     return res.status(400).json({ message: `Unknown action: ${action}` })
   } catch (error) {
     console.error('[Shipping Orders POST]', error)
+
+    // Carrier API unreachable (bad/placeholder base URL, DNS failure, network).
+    // Surface a clear, actionable message instead of an opaque 500.
+    const err = error as any
+    const cause = err?.cause
+    const dnsCode = cause?.code ?? err?.code
+    if (err?.message === 'fetch failed' || dnsCode === 'ENOTFOUND' || dnsCode === 'ECONNREFUSED') {
+      const host = cause?.hostname ? ` (${cause.hostname})` : ''
+      return res.status(502).json({
+        message: `Could not reach the carrier's API${host}. The carrier endpoint is unreachable or not configured — verify the provider's API base URL and credentials.`,
+      })
+    }
+
     res.status(500).json({ message: (error as Error).message || 'Internal error' })
   }
 }

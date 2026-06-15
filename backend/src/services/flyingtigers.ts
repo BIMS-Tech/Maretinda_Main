@@ -12,7 +12,11 @@
  * configTemplate already defined in the vendor shipping-providers route.
  */
 
-export const FLYINGTIGERS_BASE_URL = 'https://api.flyingtigersexpress.com/v1'
+// Base URL is configurable via env so the verified production endpoint can be
+// set without a code change. The default below is a placeholder and will fail
+// DNS resolution until the real Flying Tigers API host is provided.
+export const FLYINGTIGERS_BASE_URL =
+  process.env.FLYINGTIGERS_BASE_URL || 'https://api.flyingtigersexpress.com/v1'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

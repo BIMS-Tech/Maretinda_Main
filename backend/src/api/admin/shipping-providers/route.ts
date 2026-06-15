@@ -127,8 +127,18 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           updated_at: new Date(),
         }
 
-        if (existing) {
-          await pg('platform_shipping_provider').where({ id: existing.id }).update(upsertData)
+        // provider_id has a global UNIQUE constraint that ignores deleted_at,
+        // so a previously "removed" (soft-deleted) row still reserves the key.
+        // Look up any existing row — including soft-deleted — and revive it
+        // rather than inserting a duplicate.
+        const anyRow = await pg('platform_shipping_provider')
+          .where({ provider_id })
+          .first()
+
+        if (anyRow) {
+          await pg('platform_shipping_provider')
+            .where({ id: anyRow.id })
+            .update({ ...upsertData, deleted_at: null })
         } else {
           await pg('platform_shipping_provider').insert({
             id: `psp_${randomUUID().replace(/-/g, '')}`,
