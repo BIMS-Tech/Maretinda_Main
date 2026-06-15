@@ -1961,6 +1961,14 @@ export function getRouteMap({
               ],
             },
             {
+              path: "shipping-carriers",
+              errorElement: <ErrorBoundary />,
+              handle: {
+                breadcrumb: () => "Shipping Carriers",
+              },
+              lazy: () => import("../../routes/shipping-providers/shipping-providers"),
+            },
+            {
               path: "return-reasons",
               element: <Outlet />,
               handle: {
