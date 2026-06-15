@@ -1,4 +1,4 @@
-import { ShoppingBag, ExclamationCircle, CheckCircle, ArrowRight } from "@medusajs/icons"
+import { ShoppingBag, ExclamationCircle, CheckCircle, ArrowRightMini } from "@medusajs/icons"
 import { Badge, Container, Heading, Text } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { Link, useLoaderData } from "react-router-dom"
@@ -38,7 +38,7 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
           Checkout shipping is set up. Customers can select shipping options at checkout.
         </Text>
         <Link to="/shipping?tab=guide" className="ml-auto text-xs text-green-600 dark:text-green-400 hover:underline flex items-center gap-1">
-          View Guide <ArrowRight className="w-3 h-3" />
+          View Guide <ArrowRightMini className="w-3 h-3" />
         </Link>
       </div>
     )
@@ -70,7 +70,7 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
             </Text>
           )}
           <Link to="/shipping?tab=guide" className="inline-flex items-center gap-1 mt-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline">
-            View Setup Guide <ArrowRight className="w-3 h-3" />
+            View Setup Guide <ArrowRightMini className="w-3 h-3" />
           </Link>
         </div>
       </div>

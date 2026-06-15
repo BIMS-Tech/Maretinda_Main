@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Badge, Container, Heading, Text } from "@medusajs/ui"
 import {
   CheckCircle,
-  ArrowRight,
+  ArrowRightMini,
   Buildings,
   TruckFast,
   CogSixTooth,
@@ -42,7 +42,7 @@ function SetupStep({ number, done, title, description, action }: SetupStepProps)
             to={action.to}
             className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-500 hover:text-blue-400"
           >
-            {action.label} <ArrowRight className="w-3 h-3" />
+            {action.label} <ArrowRightMini className="w-3 h-3" />
           </Link>
         )}
       </div>
@@ -260,7 +260,7 @@ export function ShippingGuide() {
               to={to}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ui-bg-subtle border border-ui-border-base text-sm text-ui-fg-base hover:bg-ui-bg-subtle-hover"
             >
-              {label} <ArrowRight className="w-3 h-3" />
+              {label} <ArrowRightMini className="w-3 h-3" />
             </Link>
           ))}
         </div>

@@ -17,7 +17,7 @@ import {
   ExclamationCircle,
   EllipsisHorizontal,
   ArrowUpRightOnBox,
-  ArrowRight,
+  ArrowRightMini,
 } from "@medusajs/icons"
 import {
   useAdminShippingProviders,
@@ -355,7 +355,7 @@ export default function ShippingProvidersPage() {
                     href={link}
                     className="inline-flex items-center gap-1 mt-1 text-xs text-blue-500 hover:text-blue-400"
                   >
-                    Open <ArrowRight className="w-3 h-3" />
+                    Open <ArrowRightMini className="w-3 h-3" />
                   </a>
                 )}
               </div>
