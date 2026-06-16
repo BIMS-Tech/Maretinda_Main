@@ -15,15 +15,18 @@ import {
   CheckCircle,
   XCircle,
   ExclamationCircle,
-  EllipsisHorizontal,
   ArrowUpRightOnBox,
   ArrowRightMini,
+  Eye,
+  EyeSlash,
+  Trash,
 } from "@medusajs/icons"
 import {
   useAdminShippingProviders,
   useAdminShippingProviderAction,
   PlatformProvider,
 } from "../../hooks/api/shipping-providers"
+import { backendUrl } from "../../lib/client/client"
 
 // ─── Credential Form ──────────────────────────────────────────────────────────
 
@@ -79,6 +82,7 @@ function CredentialForm({
             <div className="relative">
               <Input
                 type={field.type === "password" && !showPasswords[field.key] ? "password" : "text"}
+                className={field.type === "password" ? "pr-9" : undefined}
                 placeholder={field.help ?? field.label}
                 value={String(values[field.key] ?? "")}
                 onChange={(e) => set(field.key, e.target.value)}
@@ -86,10 +90,16 @@ function CredentialForm({
               {field.type === "password" && (
                 <button
                   type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ui-fg-muted text-xs"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ui-fg-muted hover:text-ui-fg-base"
                   onClick={() => toggleShow(field.key)}
+                  aria-label={showPasswords[field.key] ? "Hide value" : "Show value"}
+                  title={showPasswords[field.key] ? "Hide" : "Show"}
                 >
-                  {showPasswords[field.key] ? "Hide" : "Show"}
+                  {showPasswords[field.key] ? (
+                    <EyeSlash className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               )}
             </div>
@@ -249,8 +259,15 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
           </Button>
 
           {provider.is_configured && (
-            <Button size="small" variant="transparent" onClick={handleRemove}>
-              <EllipsisHorizontal />
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={handleRemove}
+              className="text-ui-fg-error"
+              title="Remove this carrier's credentials"
+            >
+              <Trash className="w-4 h-4" />
+              Remove
             </Button>
           )}
         </div>
@@ -268,6 +285,25 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
             isSaving={isSaving}
             isTesting={isTesting}
           />
+
+          {provider.is_configured && (
+            <div className="mt-5 pt-4 border-t border-ui-border-base flex items-center justify-between gap-3">
+              <Text size="xsmall" className="text-ui-fg-subtle">
+                <span className="text-ui-fg-error font-medium">Remove credentials</span> — deletes
+                this carrier's stored keys and disables it for all sellers. You can re-add
+                credentials anytime.
+              </Text>
+              <Button
+                size="small"
+                variant="secondary"
+                onClick={handleRemove}
+                className="text-ui-fg-error flex-shrink-0"
+              >
+                <Trash className="w-4 h-4" />
+                Remove
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </Container>
@@ -384,31 +420,34 @@ export default function ShippingProvidersPage() {
         </Text>
         <div className="flex flex-col gap-3">
           {[
-            { carrier: "Ninja Van", path: "/store/webhooks/ninjavan", note: "Dashboard → Settings → Webhook" },
-            { carrier: "Flying Tigers", path: "/store/webhooks/flyingtigers", note: "Portal → API Settings → Webhook URL" },
-          ].map(({ carrier, path, note }) => (
-            <div key={carrier} className="flex items-center justify-between p-3 rounded-lg bg-ui-bg-subtle">
-              <div>
-                <Text size="small" weight="plus">{carrier}</Text>
-                <Text size="xsmall" className="text-ui-fg-muted">{note}</Text>
+            { carrier: "Ninja Van", path: "/webhooks/ninjavan", note: "Dashboard → Settings → Webhook" },
+            { carrier: "Flying Tigers", path: "/webhooks/flyingtigers", note: "Portal → Webhooks → HTTPS URL" },
+          ].map(({ carrier, path, note }) => {
+            const fullUrl = `${backendUrl.replace(/\/$/, "")}${path}`
+            return (
+              <div key={carrier} className="flex items-center justify-between p-3 rounded-lg bg-ui-bg-subtle">
+                <div>
+                  <Text size="small" weight="plus">{carrier}</Text>
+                  <Text size="xsmall" className="text-ui-fg-muted">{note}</Text>
+                </div>
+                <div className="flex items-center gap-2">
+                  <code className="text-xs bg-ui-bg-base px-2 py-1 rounded font-mono">
+                    {fullUrl}
+                  </code>
+                  <Button
+                    size="small"
+                    variant="transparent"
+                    onClick={() => {
+                      navigator.clipboard.writeText(fullUrl)
+                      toast.success("Copied!")
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <code className="text-xs bg-ui-bg-base px-2 py-1 rounded font-mono">
-                  {window.location.origin.replace(":7001", ":9000")}{path}
-                </code>
-                <Button
-                  size="small"
-                  variant="transparent"
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.origin.replace(":7001", ":9000") + path)
-                    toast.success("Copied!")
-                  }}
-                >
-                  Copy
-                </Button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </Container>
     </div>
