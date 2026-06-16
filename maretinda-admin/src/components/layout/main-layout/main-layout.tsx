@@ -18,6 +18,7 @@ import {
   ShoppingCart,
   SquaresPlus,
   Tag,
+  TruckFast,
   Users,
 } from "@medusajs/icons";
 import { Avatar, Divider, DropdownMenu, Text, clx } from "@medusajs/ui";
@@ -290,6 +291,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <DocumentText />,
       label: "Settlement Reports",
       to: "/reports",
+    },
+    {
+      icon: <TruckFast />,
+      label: "Shipping Orders",
+      to: "/shipping-orders",
     },
     {
       icon: <BottomToTop />,
