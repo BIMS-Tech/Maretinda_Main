@@ -108,6 +108,16 @@ module.exports = defineConfig({
       resolve: '@medusajs/medusa/fulfillment',
       options: {
         providers: [
+          // Standard manual (flat-rate) provider. Required: the seller panel
+          // creates shipping options with provider_id "manual_manual", and
+          // adding such a method to a cart resolves "fp_manual_manual" from the
+          // container. Without this registration the container can't resolve it
+          // and checkout 500s ("Could not resolve 'fp_manual_manual'").
+          {
+            resolve: '@medusajs/medusa/fulfillment-manual',
+            id: 'manual',
+            options: {},
+          },
           {
             resolve: './src/modules/maretinda-shipping',
             id: 'maretinda',
