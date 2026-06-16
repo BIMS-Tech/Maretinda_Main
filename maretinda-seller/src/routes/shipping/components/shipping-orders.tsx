@@ -29,6 +29,7 @@ import {
 } from '../../../hooks/api/shipping'
 import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
+import { useMe } from '../../../hooks/api/users'
 import { backendUrl, publishableApiKey } from '../../../lib/client'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -179,21 +180,34 @@ function CreateShipmentDrawer({
     { limit: 50, fields: 'id,display_id,email,shipping_address,items,total,currency_code,payment_status,*shipping_methods' } as any
   )
 
+  // Seller profile — provides the sender's business name + phone.
+  const { seller } = useMe()
+
   // Fetch seller's locations for sender auto-fill
   const { stock_locations: locations = [] } = useStockLocations(
     { fields: 'name,*address', limit: 1 } as any
   )
 
-  // Auto-fill sender from first stock location on mount
+  // Auto-fill sender identity (name + phone) from the seller's profile.
+  // Phone stays empty if the profile has none. Don't clobber manual edits.
+  useEffect(() => {
+    if (!seller) return
+    setFromName((prev) => prev || (seller as any).name || '')
+    setFromPhone((prev) => prev || (seller as any).phone || '')
+  }, [seller])
+
+  // Auto-fill sender address from the first warehouse location, falling back to
+  // the seller profile's address when no location is configured.
   useEffect(() => {
     const loc = (locations as any[])[0]
-    if (loc?.address && !fromAddress) {
-      setFromAddress(loc.address.address_1 ?? '')
-      setFromCity(loc.address.city ?? '')
-      setFromState(loc.address.province ?? '')
-      setFromPostcode(loc.address.postal_code ?? '')
+    const locAddr = loc?.address
+    if (!fromAddress && (locAddr || seller)) {
+      setFromAddress(locAddr?.address_1 ?? (seller as any)?.address_line ?? '')
+      setFromCity(locAddr?.city ?? (seller as any)?.city ?? '')
+      setFromState(locAddr?.province ?? '')
+      setFromPostcode(locAddr?.postal_code ?? (seller as any)?.postal_code ?? '')
     }
-  }, [locations])
+  }, [locations, seller])
 
   // Derive carrier service level from the customer's chosen shipping option name
   const deriveServiceLevel = (shippingOptionName: string): string => {
@@ -299,7 +313,7 @@ function CreateShipmentDrawer({
   }
 
   const hasLocation = (locations as any[]).length > 0
-  const senderPrefilled = hasLocation && !!fromAddress
+  const senderPrefilled = !!(fromName || fromAddress)
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -470,7 +484,7 @@ function CreateShipmentDrawer({
                 </div>
               )}
             </div>
-            {!hasLocation && (
+            {!hasLocation && !fromAddress && (
               <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <Text size="xsmall" className="text-amber-600 dark:text-amber-400">
                   No warehouse location found. Go to Settings → Locations to add one, then it auto-fills here.
