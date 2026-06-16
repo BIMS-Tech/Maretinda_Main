@@ -112,10 +112,17 @@ export const useUpdateShippingOptions = (
       return fetchQuery(`/vendor/shipping-options/${id}`, {
         method: "POST",
         body: {
-          prices: payload.prices?.map((item) => ({
-            amount: item.amount,
-            currency_code: item.currency_code,
-          })),
+          // The backend price schema is strict: each price must be
+          // { currency_code | region_id, amount, rules } — `rules` is required
+          // (default [] for unconditional prices) and `id` is not accepted
+          // (prices are matched by currency_code/region_id). Region prices must
+          // send region_id, not an undefined currency_code.
+          prices: payload.prices?.map((item: any) => {
+            const base = { amount: item.amount, rules: item.rules ?? [] }
+            return "region_id" in item && item.region_id
+              ? { ...base, region_id: item.region_id }
+              : { ...base, currency_code: item.currency_code }
+          }),
         },
       })
     },
