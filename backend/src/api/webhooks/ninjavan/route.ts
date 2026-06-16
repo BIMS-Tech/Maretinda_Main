@@ -25,7 +25,7 @@ const STATUS_MAP: Record<string, string> = {
 }
 
 /**
- * POST /store/webhooks/ninjavan
+ * POST /webhooks/ninjavan
  * Receives status update webhooks from Ninja Van.
  * No authentication — Ninja Van posts directly to this URL.
  */

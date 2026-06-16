@@ -1,9 +1,10 @@
 /**
  * Flying Tigers Express — Webhook Handler
- * POST /store/webhooks/flyingtigers
+ * POST /webhooks/flyingtigers
  *
- * Flying Tigers posts shipment/tracking/transaction events directly to this URL.
- * Register it in the Flying Tigers Business portal → Webhooks.
+ * Hosted outside the /store prefix on purpose: /store routes require a
+ * publishable API key, which Flying Tigers does not send. Root paths are
+ * unauthenticated, so the carrier can POST directly here.
  *
  * Security (per FT portal):
  *   - Each delivery includes headers:
@@ -17,7 +18,7 @@
 import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { FT_STATUS_MAP } from '../../../../services/flyingtigers'
+import { FT_STATUS_MAP } from '../../../services/flyingtigers'
 
 /**
  * Verify the HMAC-SHA256 signature on a Flying Tigers webhook delivery.

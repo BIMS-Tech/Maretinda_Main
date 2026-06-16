@@ -11,7 +11,7 @@ import { defineMiddlewares } from '@medusajs/framework/http'
 export default defineMiddlewares({
   routes: [
     {
-      matcher: '/store/webhooks/flyingtigers',
+      matcher: '/webhooks/flyingtigers',
       method: ['POST'],
       bodyParser: { preserveRawBody: true },
     },
