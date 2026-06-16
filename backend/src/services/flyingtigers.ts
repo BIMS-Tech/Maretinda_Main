@@ -337,10 +337,27 @@ export async function trackFlyingTigersOrder(
     { headers: getAuthHeaders(apiKey, apiSecret) },
   )
   const data = await handleResponse<any>(res, 'track order')
-  return {
-    status: data.status ?? data.latest_status ?? 'unknown',
-    events: data.events ?? data.tracking_events ?? [],
-  }
+  // FT returns an array of tracking events (newest first); each event carries a
+  // `status`. Older/other shapes may return an object with status/events.
+  const events = Array.isArray(data) ? data : (data.events ?? data.tracking_events ?? [])
+  const latestStatus = events[0]?.status ?? data.status ?? data.latest_status ?? 'unknown'
+  return { status: latestStatus, events }
+}
+
+/**
+ * Map a Flying Tigers status (webhook event name OR tracking status) to a
+ * Maretinda internal status. Tracking events sometimes already use the
+ * lowercase internal value (e.g. "cancelled"), so accept those directly too.
+ */
+export function mapFlyingTigersStatus(raw?: string): string | null {
+  if (!raw) return null
+  if (FT_STATUS_MAP[raw]) return FT_STATUS_MAP[raw]
+  const normalized = raw.toLowerCase().replace(/\s+/g, '_')
+  const KNOWN = [
+    'pending', 'pending_pickup', 'pickup_dispatched', 'picked_up', 'in_transit',
+    'out_for_delivery', 'delivered', 'exception', 'failed', 'returning', 'returned', 'cancelled',
+  ]
+  return KNOWN.includes(normalized) ? normalized : null
 }
 
 // ─── Webhook Status Map ───────────────────────────────────────────────────────

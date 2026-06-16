@@ -20,6 +20,7 @@ import {
   cancelFlyingTigersOrder,
   getFlyingTigersWaybill,
   trackFlyingTigersOrder,
+  mapFlyingTigersStatus,
 } from '../../../services/flyingtigers'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
@@ -38,6 +39,22 @@ async function getPlatformCredentials(pg: any, providerId: string): Promise<Reco
     .first()
   if (!row) throw new Error(`Carrier "${providerId}" is not configured or not active on this platform`)
   return (typeof row.credentials === 'string' ? JSON.parse(row.credentials) : row.credentials) ?? {}
+}
+
+/** Reconcile our record with the carrier's live status (used when cancel is refused). */
+async function syncFlyingTigersStatus(pg: any, order: any): Promise<string | null> {
+  try {
+    if (order.provider !== 'flyingtigers' || !order.tracking_number) return null
+    const creds = await getPlatformCredentials(pg, 'flyingtigers')
+    const tracking = await trackFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, order.tracking_number)
+    const internal = mapFlyingTigersStatus(tracking.status)
+    if (internal && internal !== order.status) {
+      await pg('seller_shipping_order').where({ id: order.id }).update({ status: internal, updated_at: new Date() })
+    }
+    return internal
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -143,13 +160,26 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
     const country = order.country_code ?? 'PH'
 
     if (action === 'cancel-order') {
-      if (order.provider === 'ninjavan') {
-        const creds = await getPlatformCredentials(pg, 'ninjavan')
-        const token = await getNinjaVanToken(creds.client_id as string, creds.client_secret as string, country, (creds.sandbox as boolean) ?? false)
-        await cancelNinjaVanOrder(token, country, order.tracking_number, (creds.sandbox as boolean) ?? false)
-      } else if (order.provider === 'flyingtigers') {
-        const creds = await getPlatformCredentials(pg, 'flyingtigers')
-        await cancelFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, order.tracking_number, reason ?? 'Cancelled by admin')
+      try {
+        if (order.provider === 'ninjavan') {
+          const creds = await getPlatformCredentials(pg, 'ninjavan')
+          const token = await getNinjaVanToken(creds.client_id as string, creds.client_secret as string, country, (creds.sandbox as boolean) ?? false)
+          await cancelNinjaVanOrder(token, country, order.tracking_number, (creds.sandbox as boolean) ?? false)
+        } else if (order.provider === 'flyingtigers') {
+          const creds = await getPlatformCredentials(pg, 'flyingtigers')
+          await cancelFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, order.tracking_number, reason ?? 'Cancelled by admin')
+        }
+      } catch (cancelErr) {
+        // Carrier refused the cancel (already cancelled in its portal, or past the
+        // cancellable stage). Sync the real status instead of returning a 500.
+        const synced = await syncFlyingTigersStatus(pg, order)
+        return res.status(200).json({
+          success: synced === 'cancelled',
+          status: synced ?? order.status,
+          message: synced === 'cancelled'
+            ? 'This shipment was already cancelled with the carrier — status synced.'
+            : `This shipment can no longer be cancelled (carrier status: ${synced ?? 'unknown'}). The order has been updated.`,
+        })
       }
 
       await pg('seller_shipping_order')

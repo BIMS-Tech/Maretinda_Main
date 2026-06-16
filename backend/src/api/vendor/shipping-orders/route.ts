@@ -20,6 +20,8 @@ import {
   createFlyingTigersOrder,
   cancelFlyingTigersOrder,
   getFlyingTigersWaybill,
+  trackFlyingTigersOrder,
+  mapFlyingTigersStatus,
   FlyingTigersOrderPayload,
   FlyingTigersAddress,
 } from '../../../services/flyingtigers'
@@ -98,6 +100,26 @@ async function getPlatformCredentials(pg: any, providerId: string) {
     .first()
   if (!row) throw new Error(`Carrier "${providerId}" is not configured or not active on this platform`)
   return row.credentials as Record<string, unknown>
+}
+
+/**
+ * Pull the live status from Flying Tigers and persist it. Used when a cancel is
+ * refused, to reconcile our record with a status that changed in the carrier's
+ * own portal. Returns the mapped internal status, or null if it can't be synced.
+ */
+async function syncFlyingTigersStatus(pg: any, order: any): Promise<string | null> {
+  try {
+    if (order.provider !== 'flyingtigers' || !order.tracking_number) return null
+    const creds = await getPlatformCredentials(pg, 'flyingtigers')
+    const tracking = await trackFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, order.tracking_number)
+    const internal = mapFlyingTigersStatus(tracking.status)
+    if (internal && internal !== order.status) {
+      await pg('seller_shipping_order').where({ id: order.id }).update({ status: internal, updated_at: new Date() })
+    }
+    return internal
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -372,20 +394,33 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         .first()
       if (!shippingOrder) return res.status(404).json({ message: 'Shipping order not found' })
 
-      if (shippingOrder.provider === 'ninjavan') {
-        const creds = await getPlatformCredentials(pg, 'ninjavan')
-        const token = await getNinjaVanToken(
-          creds.client_id as string,
-          creds.client_secret as string,
-          shippingOrder.country_code ?? 'PH',
-          (creds.sandbox as boolean) ?? false
-        )
-        await cancelNinjaVanOrder(token, shippingOrder.country_code ?? 'PH', shippingOrder.tracking_number, (creds.sandbox as boolean) ?? false)
-      }
-
-      if (shippingOrder.provider === 'flyingtigers') {
-        const creds = await getPlatformCredentials(pg, 'flyingtigers')
-        await cancelFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, shippingOrder.tracking_number, reason)
+      try {
+        if (shippingOrder.provider === 'ninjavan') {
+          const creds = await getPlatformCredentials(pg, 'ninjavan')
+          const token = await getNinjaVanToken(
+            creds.client_id as string,
+            creds.client_secret as string,
+            shippingOrder.country_code ?? 'PH',
+            (creds.sandbox as boolean) ?? false
+          )
+          await cancelNinjaVanOrder(token, shippingOrder.country_code ?? 'PH', shippingOrder.tracking_number, (creds.sandbox as boolean) ?? false)
+        } else if (shippingOrder.provider === 'flyingtigers') {
+          const creds = await getPlatformCredentials(pg, 'flyingtigers')
+          await cancelFlyingTigersOrder(creds.api_key as string, creds.api_secret as string, shippingOrder.tracking_number, reason)
+        }
+      } catch (cancelErr) {
+        // The carrier refused the cancel — typically because the shipment is no
+        // longer in a cancellable state (already cancelled in the carrier portal,
+        // or already picked up / in transit). Don't 500: sync the real status so
+        // the panel stops showing a stale "Cancel" button, and report clearly.
+        const synced = await syncFlyingTigersStatus(pg, shippingOrder)
+        return res.status(200).json({
+          success: synced === 'cancelled',
+          status: synced ?? shippingOrder.status,
+          message: synced === 'cancelled'
+            ? 'This shipment was already cancelled with the carrier — status synced.'
+            : `This shipment can no longer be cancelled (carrier status: ${synced ?? 'unknown'}). The order has been updated.`,
+        })
       }
 
       await pg('seller_shipping_order')
