@@ -121,12 +121,6 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       case 'save-credentials': {
         if (!credentials) return res.status(400).json({ message: 'credentials are required' })
 
-        const upsertData = {
-          credentials: JSON.stringify(credentials),
-          settings: JSON.stringify(settings ?? {}),
-          updated_at: new Date(),
-        }
-
         // provider_id has a global UNIQUE constraint that ignores deleted_at,
         // so a previously "removed" (soft-deleted) row still reserves the key.
         // Look up any existing row — including soft-deleted — and revive it
@@ -134,6 +128,26 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         const anyRow = await pg('platform_shipping_provider')
           .where({ provider_id })
           .first()
+
+        // Merge with existing credentials/settings. The GET endpoint never
+        // returns secret values, so the admin form's password fields come back
+        // blank on edit — without merging, saving would wipe the stored
+        // api_key/api_secret. Only apply fields that were actually provided.
+        const parseJson = (v: any) =>
+          typeof v === 'string' ? (JSON.parse(v || '{}') as Record<string, unknown>) : (v ?? {})
+        const existingCreds = parseJson(anyRow?.credentials)
+        const existingSettings = parseJson(anyRow?.settings)
+
+        const mergedCreds: Record<string, unknown> = { ...existingCreds }
+        for (const [k, v] of Object.entries(credentials)) {
+          if (v !== undefined && v !== null && v !== '') mergedCreds[k] = v
+        }
+
+        const upsertData = {
+          credentials: JSON.stringify(mergedCreds),
+          settings: JSON.stringify({ ...existingSettings, ...(settings ?? {}) }),
+          updated_at: new Date(),
+        }
 
         if (anyRow) {
           await pg('platform_shipping_provider')
@@ -169,11 +183,26 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         }
 
         if (provider_id === 'flyingtigers') {
-          await getFlyingTigersRates(
-            creds.api_key as string,
-            creds.api_secret as string,
-            { origin_postal: '1000', dest_postal: '1600', weight_kg: 1 }
-          )
+          // FT's rate endpoint can return a server-side 500 even for valid
+          // requests, so a successful rate isn't a reliable signal. The point of
+          // this test is the credentials: FT returns 401/403 only when the
+          // api_key/api_secret are wrong — any other response means auth passed.
+          try {
+            await getFlyingTigersRates(
+              creds.api_key as string,
+              creds.api_secret as string,
+              { origin_postal: '1000', dest_postal: '1600', weight_kg: 1 }
+            )
+          } catch (e) {
+            const msg = (e as Error).message || ''
+            if (/\((401|403)\)/.test(msg)) {
+              return res.status(400).json({
+                success: false,
+                message: 'Flying Tigers rejected these credentials (invalid API key or secret).',
+              })
+            }
+            // Authenticated successfully; the rate request itself failed.
+          }
           return res.json({ success: true, message: 'Flying Tigers credentials verified successfully' })
         }
 

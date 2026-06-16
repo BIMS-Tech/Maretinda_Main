@@ -127,17 +127,22 @@ export async function getFlyingTigersRates(
   apiSecret: string,
   request: FlyingTigersRateRequest
 ): Promise<FlyingTigersRate[]> {
+  // FT Business API /api/rates/quote whitelists only a `packages` array; each
+  // package uses camelCase dimension/weight fields. Flat snake_case fields
+  // (origin_postal_code, weight, length, …) are rejected as "should not exist".
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/rates/quote`, {
     method: 'POST',
     headers: getAuthHeaders(apiKey, apiSecret),
     body: JSON.stringify({
-      origin_postal_code: request.origin_postal,
-      destination_postal_code: request.dest_postal,
-      weight: request.weight_kg,
-      length: request.length_cm ?? 10,
-      width: request.width_cm ?? 10,
-      height: request.height_cm ?? 10,
-      declared_value: request.declared_value ?? 0,
+      packages: [
+        {
+          weightInKg: request.weight_kg,
+          lengthInCm: request.length_cm ?? 10,
+          widthInCm: request.width_cm ?? 10,
+          heightInCm: request.height_cm ?? 10,
+          quantity: 1,
+        },
+      ],
     }),
   })
 
@@ -192,11 +197,14 @@ export async function createFlyingTigersOrder(
 ): Promise<FlyingTigersOrderResponse> {
   const body: Record<string, unknown> = {
     orderNumber: payload.orderNumber,
-    deliveryType: payload.deliveryType ?? 'standard',
+    // FT only accepts deliveryType: "intra city" | "next day" | "same day".
+    deliveryType: payload.deliveryType ?? 'next day',
     itemType: payload.itemType ?? 'Parcel',
     declaredValueInPesos: payload.declaredValueInPesos ?? 0,
     isCashOnDelivery: payload.isCashOnDelivery ?? false,
-    paymentMethod: payload.paymentMethod ?? (payload.isCashOnDelivery ? 'cod' : 'invoice'),
+    // FT paymentMethod enum: bank transfer | cash | gcash | invoice | manual |
+    // payment link | qr | wallet. There is no "cod" — COD is paid in cash.
+    paymentMethod: payload.paymentMethod ?? (payload.isCashOnDelivery ? 'cash' : 'invoice'),
     senderAddress: buildFtAddress(payload.sender),
     receiverAddress: buildFtAddress(payload.receiver),
     shipmentPackages: payload.packages.map((p) => ({

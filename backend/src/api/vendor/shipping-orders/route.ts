@@ -271,16 +271,22 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         const ftTo = normalizeAddress(orderData.to)
         const ftParcel = normalizeParcel(orderData.parcel)
 
-        // Map our service level to FT's deliveryType strings.
+        // Map our service level to FT's deliveryType. FT only accepts
+        // "intra city" | "next day" | "same day" — it has no "standard"/
+        // "express", so those map to the closest supported option (next day).
         const FT_DELIVERY_TYPE: Record<string, string> = {
-          standard: 'standard',
-          express: 'express',
-          sameday: 'same day',
+          standard: 'next day',
+          regular: 'next day',
           nextday: 'next day',
+          express: 'same day',
+          sameday: 'same day',
+          intracity: 'intra city',
+          local: 'intra city',
         }
-        const deliveryType =
-          FT_DELIVERY_TYPE[String(orderData.service_level ?? 'Standard').toLowerCase()] ??
-          'standard'
+        const serviceLevelKey = String(orderData.service_level ?? 'standard')
+          .toLowerCase()
+          .replace(/[\s_-]/g, '')
+        const deliveryType = FT_DELIVERY_TYPE[serviceLevelKey] ?? 'next day'
 
         // Build an FT address from normalized data, passing through PSGC codes
         // (barangay/city/province) when the client supplied them.
