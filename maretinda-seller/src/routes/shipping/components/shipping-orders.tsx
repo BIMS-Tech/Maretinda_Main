@@ -177,7 +177,7 @@ function CreateShipmentDrawer({
 
   // Fetch seller's orders for picker
   const { orders: vendorOrders = [] } = useOrders(
-    { limit: 50, fields: 'id,display_id,email,shipping_address,items,total,currency_code,payment_status,*shipping_methods' } as any
+    { limit: 50, fields: 'id,display_id,email,*shipping_address,*items,total,currency_code,payment_status,*shipping_methods' } as any
   )
 
   // Seller profile — provides the sender's business name + phone.
