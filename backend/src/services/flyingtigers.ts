@@ -22,37 +22,49 @@ export const FLYINGTIGERS_BASE_URL = (
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+/**
+ * Address as the FT Business API expects it. It uses PSGC codes
+ * (barangay/city/province) plus human-readable labels. Codes are optional in
+ * our payload because the seller/checkout data is free-text; when they're not
+ * supplied FT may reject with a clear validation error naming the missing code.
+ */
 export type FlyingTigersAddress = {
   name: string
-  phone: string
+  mobileNumber: string
   email?: string
-  address1: string
-  address2?: string
-  barangay?: string
-  city: string
-  province?: string
-  postal_code: string
-  country?: string
+  company?: string
+  floorUnitNumber?: string
+  streetName: string
+  barangayCode?: string
+  barangayLabel?: string
+  cityCode?: string
+  cityLabel: string
+  provinceCode?: string
+  provinceLabel?: string
+  zipCode: string
 }
 
-export type FlyingTigersParcel = {
-  weight_kg: number
-  length_cm?: number
-  width_cm?: number
-  height_cm?: number
-  description?: string
-  declared_value?: number
-  is_cod?: boolean
-  cod_amount?: number
+export type FlyingTigersPackage = {
+  boxName?: string
+  weightInKg: number
+  lengthInCm?: number
+  widthInCm?: number
+  heightInCm?: number
+  quantity?: number
 }
 
 export type FlyingTigersOrderPayload = {
-  merchant_order_no: string
-  service_type?: 'Standard' | 'Express' | 'Sameday' | 'Nextday'
-  pickup_date?: string // YYYY-MM-DD
-  shipper: FlyingTigersAddress
-  consignee: FlyingTigersAddress
-  parcel: FlyingTigersParcel
+  orderNumber: string
+  deliveryType?: string // e.g. 'standard' | 'next day' | 'same day'
+  itemType?: string
+  declaredValueInPesos?: number
+  isCashOnDelivery?: boolean
+  paymentMethod?: string // e.g. 'invoice' | 'cod'
+  deliveryInstructions?: string
+  remarks?: string
+  sender: FlyingTigersAddress
+  receiver: FlyingTigersAddress
+  packages: FlyingTigersPackage[]
 }
 
 export type FlyingTigersRateRequest = {
@@ -147,63 +159,57 @@ export async function getFlyingTigersRates(
 
 // ─── Create Order ─────────────────────────────────────────────────────────────
 
+/** Build the FT address block, dropping undefined optional fields. */
+function buildFtAddress(a: FlyingTigersAddress): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    name: a.name,
+    mobileNumber: a.mobileNumber,
+    streetName: a.streetName,
+    cityLabel: a.cityLabel,
+    zipCode: a.zipCode,
+  }
+  if (a.email) out.email = a.email
+  if (a.company) out.company = a.company
+  if (a.floorUnitNumber) out.floorUnitNumber = a.floorUnitNumber
+  if (a.barangayCode) out.barangayCode = a.barangayCode
+  if (a.barangayLabel) out.barangayLabel = a.barangayLabel
+  if (a.cityCode) out.cityCode = a.cityCode
+  if (a.provinceCode) out.provinceCode = a.provinceCode
+  if (a.provinceLabel) out.provinceLabel = a.provinceLabel
+  return out
+}
+
 /**
  * Create a Flying Tigers shipment order.
- *
- * VERIFY:
- *   - Endpoint: /orders or /bookings or /shipments
- *   - Field names in shipper/consignee blocks
- *   - COD payload format
+ * Body shape matches the FT Business API `POST /api/shipments` schema.
  */
 export async function createFlyingTigersOrder(
   apiKey: string,
   apiSecret: string,
   payload: FlyingTigersOrderPayload
 ): Promise<FlyingTigersOrderResponse> {
-  const body = {
-    // VERIFY: top-level field names
-    merchant_order_no: payload.merchant_order_no,
-    service_type: payload.service_type ?? 'Standard',
-    pickup_date: payload.pickup_date ?? getNextBusinessDay(),
-    pickup_timeslot: '09:00-18:00',
-
-    shipper: {
-      name: payload.shipper.name,
-      mobile: payload.shipper.phone,
-      email: payload.shipper.email ?? '',
-      address: payload.shipper.address1,
-      address2: payload.shipper.address2 ?? '',
-      barangay: payload.shipper.barangay ?? '',
-      city: payload.shipper.city,
-      province: payload.shipper.province ?? '',
-      postal_code: payload.shipper.postal_code,
-      country: payload.shipper.country ?? 'PH',
-    },
-
-    consignee: {
-      name: payload.consignee.name,
-      mobile: payload.consignee.phone,
-      email: payload.consignee.email ?? '',
-      address: payload.consignee.address1,
-      address2: payload.consignee.address2 ?? '',
-      barangay: payload.consignee.barangay ?? '',
-      city: payload.consignee.city,
-      province: payload.consignee.province ?? '',
-      postal_code: payload.consignee.postal_code,
-      country: payload.consignee.country ?? 'PH',
-    },
-
-    parcel: {
-      weight: payload.parcel.weight_kg,
-      length: payload.parcel.length_cm ?? 10,
-      width: payload.parcel.width_cm ?? 10,
-      height: payload.parcel.height_cm ?? 10,
-      description: payload.parcel.description ?? 'Merchandise',
-      declared_value: payload.parcel.declared_value ?? 0,
-      is_cod: payload.parcel.is_cod ?? false,
-      cod_amount: payload.parcel.cod_amount ?? 0,
-    },
+  const body: Record<string, unknown> = {
+    orderNumber: payload.orderNumber,
+    deliveryType: payload.deliveryType ?? 'standard',
+    itemType: payload.itemType ?? 'Parcel',
+    declaredValueInPesos: payload.declaredValueInPesos ?? 0,
+    isCashOnDelivery: payload.isCashOnDelivery ?? false,
+    paymentMethod: payload.paymentMethod ?? (payload.isCashOnDelivery ? 'cod' : 'invoice'),
+    senderAddress: buildFtAddress(payload.sender),
+    receiverAddress: buildFtAddress(payload.receiver),
+    shipmentPackages: payload.packages.map((p) => ({
+      ...(p.boxName ? { boxName: p.boxName } : {}),
+      weightInKg: p.weightInKg,
+      lengthInCm: p.lengthInCm ?? 10,
+      widthInCm: p.widthInCm ?? 10,
+      heightInCm: p.heightInCm ?? 10,
+      quantity: p.quantity ?? 1,
+    })),
+    shouldSaveRecipientAddress: false,
+    shouldSaveSenderAddress: false,
   }
+  if (payload.deliveryInstructions) body.deliveryInstructions = payload.deliveryInstructions
+  if (payload.remarks) body.remarks = payload.remarks
 
   const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/shipments`, {
     method: 'POST',

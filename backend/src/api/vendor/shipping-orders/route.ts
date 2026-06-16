@@ -21,6 +21,7 @@ import {
   cancelFlyingTigersOrder,
   getFlyingTigersWaybill,
   FlyingTigersOrderPayload,
+  FlyingTigersAddress,
 } from '../../../services/flyingtigers'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
@@ -270,44 +271,53 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         const ftTo = normalizeAddress(orderData.to)
         const ftParcel = normalizeParcel(orderData.parcel)
 
+        // Map our service level to FT's deliveryType strings.
+        const FT_DELIVERY_TYPE: Record<string, string> = {
+          standard: 'standard',
+          express: 'express',
+          sameday: 'same day',
+          nextday: 'next day',
+        }
+        const deliveryType =
+          FT_DELIVERY_TYPE[String(orderData.service_level ?? 'Standard').toLowerCase()] ??
+          'standard'
+
+        // Build an FT address from normalized data, passing through PSGC codes
+        // (barangay/city/province) when the client supplied them.
+        const toFtAddress = (norm: any, raw: any = {}): FlyingTigersAddress => ({
+          name: norm.name,
+          mobileNumber: norm.phone,
+          email: norm.email,
+          company: raw.company ?? undefined,
+          floorUnitNumber: norm.address2 ?? raw.floorUnitNumber ?? undefined,
+          streetName: norm.address1,
+          barangayCode: raw.barangayCode ?? raw.barangay_code ?? undefined,
+          barangayLabel: raw.barangayLabel ?? raw.barangay_label ?? norm.barangay ?? undefined,
+          cityCode: raw.cityCode ?? raw.city_code ?? undefined,
+          cityLabel: norm.city,
+          provinceCode: raw.provinceCode ?? raw.province_code ?? undefined,
+          provinceLabel: norm.province ?? undefined,
+          zipCode: norm.postal_code,
+        })
+
         const ftPayload: FlyingTigersOrderPayload = {
-          merchant_order_no: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
-          service_type: orderData.service_level ?? 'Standard',
-          pickup_date: orderData.pickup_date,
-          shipper: {
-            name: ftFrom.name,
-            phone: ftFrom.phone,
-            email: ftFrom.email,
-            address1: ftFrom.address1,
-            address2: ftFrom.address2,
-            barangay: ftFrom.barangay,
-            city: ftFrom.city,
-            province: ftFrom.province,
-            postal_code: ftFrom.postal_code,
-            country: ftFrom.country,
-          },
-          consignee: {
-            name: ftTo.name,
-            phone: ftTo.phone,
-            email: ftTo.email,
-            address1: ftTo.address1,
-            address2: ftTo.address2,
-            barangay: ftTo.barangay,
-            city: ftTo.city,
-            province: ftTo.province,
-            postal_code: ftTo.postal_code,
-            country: ftTo.country,
-          },
-          parcel: {
-            weight_kg: ftParcel.weight_kg,
-            length_cm: ftParcel.length_cm,
-            width_cm: ftParcel.width_cm,
-            height_cm: ftParcel.height_cm,
-            description: ftParcel.description,
-            declared_value: ftParcel.declared_value,
-            is_cod: ftParcel.is_cod,
-            cod_amount: ftParcel.cod_amount,
-          },
+          orderNumber: (orderData.medusa_order_id as string) ?? `order_${Date.now()}`,
+          deliveryType,
+          itemType: (orderData.parcel?.item_type as string) ?? 'Parcel',
+          declaredValueInPesos: ftParcel.declared_value ?? 0,
+          isCashOnDelivery: ftParcel.is_cod ?? false,
+          remarks: ftParcel.description,
+          sender: toFtAddress(ftFrom, orderData.from),
+          receiver: toFtAddress(ftTo, orderData.to),
+          packages: [
+            {
+              weightInKg: ftParcel.weight_kg,
+              lengthInCm: ftParcel.length_cm,
+              widthInCm: ftParcel.width_cm,
+              heightInCm: ftParcel.height_cm,
+              quantity: 1,
+            },
+          ],
         }
 
         const ftResponse = await createFlyingTigersOrder(
