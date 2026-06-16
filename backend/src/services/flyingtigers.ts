@@ -97,10 +97,12 @@ export type FlyingTigersOrderResponse = {
 
 function getAuthHeaders(apiKey: string, apiSecret: string): Record<string, string> {
   // Flying Tigers Business API authenticates via x-api-key + x-api-secret headers.
+  // Trim defensively — these are copy-pasted "shown once" values and a stray
+  // space/newline silently produces a 401 "Invalid API key or secret".
   return {
     'Content-Type': 'application/json',
-    'x-api-key': apiKey,
-    'x-api-secret': apiSecret,
+    'x-api-key': (apiKey ?? '').trim(),
+    'x-api-secret': (apiSecret ?? '').trim(),
   }
 }
 
