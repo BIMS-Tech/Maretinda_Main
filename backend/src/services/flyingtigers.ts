@@ -264,7 +264,8 @@ export async function cancelFlyingTigersOrder(
     {
       method: 'POST',
       headers: getAuthHeaders(apiKey, apiSecret),
-      body: JSON.stringify({ reason: reason ?? 'Cancelled by merchant' }),
+      // FT requires `reasonForCancellation` (a plain `reason` is rejected).
+      body: JSON.stringify({ reasonForCancellation: reason ?? 'Cancelled by merchant' }),
     },
   )
 
