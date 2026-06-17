@@ -83,7 +83,18 @@ async function downloadWaybill(orderId: string, trackingNumber: string) {
     },
     body: JSON.stringify({ action: 'get-waybill', orderId }),
   })
-  if (!response.ok) throw new Error('Failed to get waybill')
+  if (!response.ok) {
+    // Surface the backend's actual message (e.g. carriers like Flying Tigers
+    // that don't expose a waybill via API → "download from the FT portal").
+    let msg = 'Failed to get waybill'
+    try {
+      const body = await response.json()
+      if (body?.message) msg = body.message
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new Error(msg)
+  }
   const blob = await response.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

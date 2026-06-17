@@ -335,17 +335,11 @@ export async function getFlyingTigersWaybill(
   }
 
   const data = await res.json().catch(() => ({}))
+  // Confirmed against the live FT Business API: GET /api/shipments/{id} carries
+  // no waybill/label URL, and there is no /label, /waybill, /print endpoint
+  // (all 404). We still scan for a label in case FT adds one later, then fall
+  // back to a clear "use the portal" message.
   const label = findLabelValue(data)
-
-  if (!label) {
-    // Diagnostic: surface the response shape so we can target the real label
-    // field if FT names it unexpectedly. Safe — logs keys, not full PII payload.
-    try {
-      const top = data && typeof data === 'object' ? Object.keys(data) : []
-      const nestedData = (data?.data && typeof data.data === 'object') ? Object.keys(data.data) : []
-      console.log('[FlyingTigers Waybill] no label found. keys:', JSON.stringify({ top, nestedData }))
-    } catch {}
-  }
 
   // base64-encoded PDF
   if (label && /^[A-Za-z0-9+/=\s]+$/.test(label) && label.length > 200 && !label.startsWith('http')) {
