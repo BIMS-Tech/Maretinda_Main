@@ -22,6 +22,7 @@ import {
   getFlyingTigersWaybill,
   trackFlyingTigersOrder,
   mapFlyingTigersStatus,
+  FlyingTigersWaybillUnavailable,
   FlyingTigersOrderPayload,
   FlyingTigersAddress,
 } from '../../../services/flyingtigers'
@@ -466,6 +467,11 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
     return res.status(400).json({ message: `Unknown action: ${action}` })
   } catch (error) {
     console.error('[Shipping Orders POST]', error)
+
+    // Carrier exposes no downloadable waybill — this is expected, not a failure.
+    if (error instanceof FlyingTigersWaybillUnavailable) {
+      return res.status(422).json({ message: (error as Error).message })
+    }
 
     // Carrier API unreachable (bad/placeholder base URL, DNS failure, network).
     // Surface a clear, actionable message instead of an opaque 500.

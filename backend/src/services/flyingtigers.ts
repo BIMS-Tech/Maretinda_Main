@@ -278,46 +278,68 @@ export async function cancelFlyingTigersOrder(
 
 // ─── Waybill / Label ──────────────────────────────────────────────────────────
 
+/** Thrown when FT exposes no retrievable waybill — lets the route return 422. */
+export class FlyingTigersWaybillUnavailable extends Error {}
+
+/** Recursively find the first string value whose key hints at a label/waybill. */
+function findLabelValue(obj: any, depth = 0): string | undefined {
+  if (!obj || typeof obj !== 'object' || depth > 4) return undefined
+  for (const [k, v] of Object.entries(obj)) {
+    const key = k.toLowerCase()
+    const hints = key.includes('label') || key.includes('waybill') || key.includes('awb')
+    if (hints && typeof v === 'string' && v.length > 0) return v
+    if (v && typeof v === 'object') {
+      const nested = findLabelValue(v, depth + 1)
+      if (nested) return nested
+    }
+  }
+  return undefined
+}
+
 /**
- * Download a waybill/shipping label PDF for the given tracking number.
+ * Retrieve a waybill/label PDF for a tracking number.
  *
- * VERIFY: endpoint path — /orders/{id}/label or /waybill/{id}
+ * The FT Business API has no dedicated label endpoint in its spec, so we read
+ * the shipment detail (GET /api/shipments/{id}) and look for a label URL or
+ * base64 the response may carry. If none exists, we throw
+ * FlyingTigersWaybillUnavailable so the caller can tell the user to grab the
+ * waybill from the FT portal instead of surfacing a raw 500.
  */
 export async function getFlyingTigersWaybill(
   apiKey: string,
   apiSecret: string,
   trackingNo: string
 ): Promise<Buffer> {
-  // VERIFY: waybill endpoint path and response format (PDF buffer vs base64 string vs URL)
-  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/orders/${trackingNo}/label`, {
-    headers: getAuthHeaders(apiKey, apiSecret),
-  })
+  const res = await fetch(
+    `${FLYINGTIGERS_BASE_URL}/api/shipments/${encodeURIComponent(trackingNo)}`,
+    { headers: getAuthHeaders(apiKey, apiSecret) },
+  )
 
   if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Flying Tigers waybill failed (${res.status}): ${err}`)
+    throw new FlyingTigersWaybillUnavailable(
+      `Flying Tigers does not provide a downloadable waybill via API for ${trackingNo}. Please download it from the Flying Tigers portal.`,
+    )
   }
 
-  const contentType = res.headers.get('Content-Type') ?? ''
+  const data = await res.json().catch(() => ({}))
+  const label = findLabelValue(data)
 
-  // PDF directly
-  if (contentType.includes('application/pdf')) {
-    const arrayBuffer = await res.arrayBuffer()
-    return Buffer.from(arrayBuffer)
+  // base64-encoded PDF
+  if (label && /^[A-Za-z0-9+/=\s]+$/.test(label) && label.length > 200 && !label.startsWith('http')) {
+    return Buffer.from(label, 'base64')
   }
 
-  // JSON with base64 or URL
-  const data = await res.json()
-  if (data.pdf_base64 ?? data.label_base64) {
-    return Buffer.from(data.pdf_base64 ?? data.label_base64, 'base64')
-  }
-  if (data.label_url ?? data.pdf_url) {
-    const pdfRes = await fetch(data.label_url ?? data.pdf_url)
-    const arrayBuffer = await pdfRes.arrayBuffer()
-    return Buffer.from(arrayBuffer)
+  // URL to a PDF
+  if (label && /^https?:\/\//.test(label)) {
+    const pdfRes = await fetch(label, { headers: getAuthHeaders(apiKey, apiSecret) })
+    if (pdfRes.ok) {
+      return Buffer.from(await pdfRes.arrayBuffer())
+    }
   }
 
-  throw new Error('Flying Tigers: could not extract label PDF from response')
+  throw new FlyingTigersWaybillUnavailable(
+    `Flying Tigers did not return a waybill for ${trackingNo}. Download it from the Flying Tigers portal (Shipments → ${trackingNo}).`,
+  )
 }
 
 // ─── Track Order ──────────────────────────────────────────────────────────────
