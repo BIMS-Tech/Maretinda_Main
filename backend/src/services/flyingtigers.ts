@@ -283,11 +283,24 @@ export class FlyingTigersWaybillUnavailable extends Error {}
 
 /** Recursively find the first string value whose key hints at a label/waybill. */
 function findLabelValue(obj: any, depth = 0): string | undefined {
-  if (!obj || typeof obj !== 'object' || depth > 4) return undefined
+  if (!obj || typeof obj !== 'object' || depth > 5) return undefined
+  // First pass: keys that strongly hint at a printable label/waybill document.
   for (const [k, v] of Object.entries(obj)) {
     const key = k.toLowerCase()
-    const hints = key.includes('label') || key.includes('waybill') || key.includes('awb')
+    const hints =
+      key.includes('label') ||
+      key.includes('waybill') ||
+      key.includes('awb') ||
+      key.includes('print') ||
+      ((key.includes('document') || key.includes('pdf')) && key.includes('url'))
     if (hints && typeof v === 'string' && v.length > 0) return v
+  }
+  // Second pass: any string value that's a URL pointing at a PDF.
+  for (const v of Object.values(obj)) {
+    if (typeof v === 'string' && /^https?:\/\/\S+\.pdf(\?|$)/i.test(v)) return v
+  }
+  // Recurse into nested objects/arrays.
+  for (const v of Object.values(obj)) {
     if (v && typeof v === 'object') {
       const nested = findLabelValue(v, depth + 1)
       if (nested) return nested
@@ -323,6 +336,16 @@ export async function getFlyingTigersWaybill(
 
   const data = await res.json().catch(() => ({}))
   const label = findLabelValue(data)
+
+  if (!label) {
+    // Diagnostic: surface the response shape so we can target the real label
+    // field if FT names it unexpectedly. Safe — logs keys, not full PII payload.
+    try {
+      const top = data && typeof data === 'object' ? Object.keys(data) : []
+      const nestedData = (data?.data && typeof data.data === 'object') ? Object.keys(data.data) : []
+      console.log('[FlyingTigers Waybill] no label found. keys:', JSON.stringify({ top, nestedData }))
+    } catch {}
+  }
 
   // base64-encoded PDF
   if (label && /^[A-Za-z0-9+/=\s]+$/.test(label) && label.length > 200 && !label.startsWith('http')) {
