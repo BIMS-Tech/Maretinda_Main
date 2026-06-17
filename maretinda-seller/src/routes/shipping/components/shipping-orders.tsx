@@ -30,7 +30,7 @@ import {
 import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
 import { useMe } from '../../../hooks/api/users'
-import { backendUrl, publishableApiKey } from '../../../lib/client'
+import { backendUrl, publishableApiKey, fetchQuery } from '../../../lib/client'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -219,9 +219,26 @@ function CreateShipmentDrawer({
   }
 
   // Auto-fill recipient + service level when order is selected
-  const handleOrderSelect = (order: any) => {
+  const handleOrderSelect = async (order: any) => {
     setSelectedOrder(order)
-    const addr = order.shipping_address
+
+    // The /vendor/orders LIST endpoint doesn't reliably expand shipping_address,
+    // so fetch the full order detail (which does) and fill the recipient from it.
+    let addr = order.shipping_address
+    let items = order.items ?? []
+    try {
+      const res: any = await fetchQuery(`/vendor/orders/${order.id}`, {
+        method: 'GET',
+        query: { fields: 'id,*shipping_address,*items' },
+      })
+      if (res?.order) {
+        addr = res.order.shipping_address ?? addr
+        items = res.order.items ?? items
+      }
+    } catch {
+      // Fall back to whatever the list provided.
+    }
+
     if (addr) {
       setToName(`${addr.first_name ?? ''} ${addr.last_name ?? ''}`.trim())
       setToPhone(addr.phone ?? '')
@@ -230,7 +247,6 @@ function CreateShipmentDrawer({
       setToState(addr.province ?? '')
       setToPostcode(addr.postal_code ?? '')
     }
-    const items = order.items ?? []
     if (items.length > 0) {
       setDescription(
         items.slice(0, 2).map((i: any) => i.title ?? 'Item').join(', ')
