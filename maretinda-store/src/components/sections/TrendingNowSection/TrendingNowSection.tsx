@@ -16,7 +16,12 @@ export const TrendingNowSection = async ({
 		getTrendingProducts({ category, limit: 12 }),
 		listCategories(),
 	]);
-	if (!products.length) return null;
+
+	// Hide the whole section only when there's genuinely nothing to show on the
+	// default view. When a category filter is active we keep the section (and its
+	// filter bar) mounted so the user can switch back or pick another category.
+	const isFiltered = category !== 'all';
+	if (!products.length && !isFiltered) return null;
 
 	// Build the filter bar from the real top-level categories in the catalog,
 	// always leading with "All". Handles must match product_category.handle.

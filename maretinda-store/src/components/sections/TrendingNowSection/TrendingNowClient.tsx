@@ -36,6 +36,22 @@ export function TrendingNowClient({ products }: { products: TrendingProduct[] })
 	const visible = products.slice(0, shown);
 	const hasMore = shown < products.length;
 
+	if (!products.length) {
+		return (
+			<div
+				className="rounded-2xl border text-center py-14 px-6"
+				style={{ borderColor: '#EDEAE3', backgroundColor: 'white' }}
+			>
+				<div className="text-[15px] font-semibold text-[#1B1B1B]">
+					Nothing trending here yet
+				</div>
+				<div className="mt-1.5 text-[13px] text-[#737373]">
+					There are no trending products in this category right now. Try another category.
+				</div>
+			</div>
+		);
+	}
+
 	function handleLoadMore() {
 		setLoading(true);
 		setTimeout(() => {
