@@ -3,18 +3,17 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
-// Maps display label → category handle sent to the backend.
+// A filter is a display label + the category handle sent to the backend.
 // The handle must match product_category.handle in Medusa.
-const FILTERS: { label: string; handle: string }[] = [
-	{ label: 'All',     handle: 'all'     },
-	{ label: 'Fashion', handle: 'fashion' },
-	{ label: 'Beauty',  handle: 'beauty'  },
-	{ label: 'Tech',    handle: 'tech'    },
-	{ label: 'Home',    handle: 'home'    },
-	{ label: 'Food',    handle: 'food'    },
-];
+export type TrendingFilter = { label: string; handle: string };
 
-export const TrendingNowFilters = ({ activeCategory }: { activeCategory: string }) => {
+export const TrendingNowFilters = ({
+	activeCategory,
+	filters,
+}: {
+	activeCategory: string;
+	filters: TrendingFilter[];
+}) => {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -36,7 +35,7 @@ export const TrendingNowFilters = ({ activeCategory }: { activeCategory: string 
 
 	return (
 		<div className="flex items-center gap-2 flex-wrap">
-			{FILTERS.map((f) => {
+			{filters.map((f) => {
 				const isActive = active === f.handle;
 				return (
 					<button

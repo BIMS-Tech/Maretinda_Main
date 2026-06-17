@@ -1,7 +1,8 @@
 import { HomeText } from '@/i18n/HomeText';
+import { listCategories } from '@/lib/data/categories';
 import { getTrendingProducts } from '@/lib/data/trending';
 
-import { TrendingNowFilters } from './TrendingNowFilters';
+import { TrendingNowFilters, type TrendingFilter } from './TrendingNowFilters';
 import { TrendingNowClient } from './TrendingNowClient';
 
 export const TrendingNowSection = async ({
@@ -11,8 +12,21 @@ export const TrendingNowSection = async ({
 }) => {
 	const category = (searchParams?.trend_cat as string) || 'all';
 
-	const products = await getTrendingProducts({ category, limit: 12 });
+	const [products, { categories }] = await Promise.all([
+		getTrendingProducts({ category, limit: 12 }),
+		listCategories(),
+	]);
 	if (!products.length) return null;
+
+	// Build the filter bar from the real top-level categories in the catalog,
+	// always leading with "All". Handles must match product_category.handle.
+	const filters: TrendingFilter[] = [
+		{ label: 'All', handle: 'all' },
+		...categories
+			.filter((c) => c.handle)
+			.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+			.map((c) => ({ label: c.name, handle: c.handle as string })),
+	];
 
 	return (
 		<section style={{ backgroundColor: '#FAF8F5', borderTop: '1px solid #EDEAE3', borderBottom: '1px solid #EDEAE3' }}>
@@ -26,7 +40,7 @@ export const TrendingNowSection = async ({
 							<HomeText k="trendingHeading" />
 						</h2>
 					</div>
-					<TrendingNowFilters activeCategory={category} />
+					<TrendingNowFilters activeCategory={category} filters={filters} />
 				</div>
 
 				<TrendingNowClient products={products} />
