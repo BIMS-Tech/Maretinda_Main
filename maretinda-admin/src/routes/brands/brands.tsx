@@ -73,8 +73,8 @@ function BrandForm({
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-ui-border-base p-4 bg-ui-bg-subtle">
-      <div className="grid grid-cols-2 gap-3">
+    <div className="flex flex-col gap-3 rounded-lg border border-ui-border-base p-4 bg-ui-bg-subtle w-full max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <Label size="small">Name *</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Nike" />
@@ -166,7 +166,7 @@ export default function BrandsPage() {
   }
 
   return (
-    <Container className="divide-y p-0">
+    <Container className="divide-y p-0 w-full max-w-4xl">
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>Brands</Heading>
