@@ -74,6 +74,21 @@ export const RouteMap: RouteObject[] = [
                 },
               },
               {
+                path: "brands",
+                handle: {
+                  breadcrumb: () => "Brand requests",
+                },
+                lazy: async () => {
+                  const { RequestsBrandsList } = await import(
+                    "../../routes/requests/requests-list"
+                  )
+
+                  return {
+                    Component: RequestsBrandsList,
+                  }
+                },
+              },
+              {
                 path: "categories",
                 handle: {
                   breadcrumb: () => "Categories requests",

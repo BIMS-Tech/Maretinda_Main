@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import { Container, Heading, Text, Button, Select, Badge, toast } from "@medusajs/ui"
+import { Container, Heading, Text, Button, Select, Badge, Input, toast } from "@medusajs/ui"
 import { HttpTypes } from "@medusajs/types"
 import {
   useBrands,
   useProductBrand,
   useAssignProductBrand,
+  useRequestBrand,
 } from "../../../../../hooks/api/brands"
 
 type ProductBrandSectionProps = {
@@ -15,10 +16,25 @@ export const ProductBrandSection = ({ product }: ProductBrandSectionProps) => {
   const { data: brandsData, isLoading: brandsLoading } = useBrands()
   const { data: currentData } = useProductBrand(product.id)
   const { mutateAsync, isPending } = useAssignProductBrand(product.id)
+  const { mutateAsync: requestBrand, isPending: requesting } = useRequestBrand()
 
   const brands = brandsData?.brands ?? []
   const currentBrand = currentData?.brand ?? null
   const [selected, setSelected] = useState<string>("")
+  const [showRequest, setShowRequest] = useState(false)
+  const [requestName, setRequestName] = useState("")
+
+  const submitRequest = async () => {
+    if (!requestName.trim()) return toast.error("Enter a brand name")
+    try {
+      const r: any = await requestBrand({ name: requestName.trim() })
+      toast.success(r?.message ?? "Brand requested")
+      setRequestName("")
+      setShowRequest(false)
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to request brand")
+    }
+  }
 
   useEffect(() => {
     setSelected(currentBrand?.id ?? "")
@@ -100,6 +116,38 @@ export const ProductBrandSection = ({ product }: ProductBrandSectionProps) => {
             </div>
           </>
         )}
+
+        {/* Request a new brand (pending admin approval) */}
+        <div className="border-t border-ui-border-base pt-3 mt-1">
+          {!showRequest ? (
+            <button
+              type="button"
+              className="text-xs text-ui-fg-interactive hover:underline"
+              onClick={() => setShowRequest(true)}
+            >
+              Can&apos;t find your brand? Request it
+            </button>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Text size="xsmall" className="text-ui-fg-subtle">
+                Request a new brand — it becomes available once an admin approves it.
+              </Text>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Brand name"
+                  value={requestName}
+                  onChange={(e) => setRequestName(e.target.value)}
+                />
+                <Button size="small" variant="primary" isLoading={requesting} onClick={submitRequest}>
+                  Request
+                </Button>
+                <Button size="small" variant="secondary" onClick={() => { setShowRequest(false); setRequestName("") }}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </Container>
   )

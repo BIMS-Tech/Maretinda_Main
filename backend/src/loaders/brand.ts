@@ -30,6 +30,8 @@ export default async function brandLoader(container: MedusaContainer): Promise<v
     `)
     await pg.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_brand_slug" ON "brand" ("slug") WHERE "deleted_at" IS NULL AND "slug" IS NOT NULL`)
     await pg.raw(`CREATE INDEX IF NOT EXISTS "idx_brand_deleted" ON "brand" ("deleted_at")`)
+    // requested_by: seller id that requested this brand (pending until is_active=true)
+    await pg.raw(`ALTER TABLE "brand" ADD COLUMN IF NOT EXISTS "requested_by" text`)
 
     await pg.raw(`
       CREATE TABLE IF NOT EXISTS "product_brand" (

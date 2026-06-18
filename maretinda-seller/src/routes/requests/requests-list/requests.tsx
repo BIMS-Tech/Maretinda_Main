@@ -2,6 +2,7 @@ import { Badge, Button, Container, Heading, Text } from "@medusajs/ui"
 import { SingleColumnPage } from "../../../components/layout/pages"
 import { useDashboardExtension } from "../../../extensions"
 import { useOrderReturnRequests, useRequests } from "../../../hooks/api"
+import { useMyBrandRequests } from "../../../hooks/api/brands"
 import { TriangleRightMini } from "@medusajs/icons"
 import { Link } from "react-router-dom"
 
@@ -10,6 +11,8 @@ export const Requests = () => {
 
   const { requests, isError, error } = useRequests()
   const { count } = useOrderReturnRequests()
+  const { data: brandReqData } = useMyBrandRequests()
+  const brandRequestCount = brandReqData?.requests?.length ?? 0
 
   const categoryRequests =
     requests?.filter(
@@ -82,6 +85,15 @@ export const Requests = () => {
               <div className="flex gap-4 items-center">
                 <Badge>{ordersRequestsCount}</Badge>
                 Orders requests
+              </div>
+              <TriangleRightMini color="grey" />
+            </Button>
+          </Link>
+          <Link to="/requests/brands">
+            <Button variant="secondary" className="w-full justify-between py-4">
+              <div className="flex gap-4 items-center">
+                <Badge>{brandRequestCount}</Badge>
+                Brand requests
               </div>
               <TriangleRightMini color="grey" />
             </Button>

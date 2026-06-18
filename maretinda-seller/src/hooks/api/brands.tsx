@@ -33,6 +33,29 @@ export const useProductBrand = (productId: string) => {
   })
 }
 
+/** The seller's own brand requests (pending + approved). */
+export const useMyBrandRequests = () => {
+  return useQuery({
+    queryKey: [BRANDS_KEY, "requests"],
+    queryFn: async (): Promise<{ requests: (Brand & { status: string })[] }> => {
+      return await fetchQuery("/vendor/brands/request", { method: "GET" })
+    },
+  })
+}
+
+/** Request a new brand (pending admin approval). */
+export const useRequestBrand = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (body: { name: string; logo_url?: string }) => {
+      return await fetchQuery("/vendor/brands/request", { method: "POST", body })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [BRANDS_KEY] })
+    },
+  })
+}
+
 /** Assign or clear a product's brand. */
 export const useAssignProductBrand = (productId: string) => {
   const queryClient = useQueryClient()

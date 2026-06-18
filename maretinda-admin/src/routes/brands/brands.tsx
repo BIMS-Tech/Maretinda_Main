@@ -19,6 +19,7 @@ import {
   useUpdateBrand,
   useDeleteBrand,
   useReindexBrands,
+  uploadBrandLogo,
 } from "../../hooks/api/admin-brands"
 
 function BrandForm({
@@ -34,9 +35,26 @@ function BrandForm({
   const [logoUrl, setLogoUrl] = useState(initial?.logo_url ?? "")
   const [description, setDescription] = useState(initial?.description ?? "")
   const [isActive, setIsActive] = useState(initial?.is_active ?? true)
+  const [uploading, setUploading] = useState(false)
 
   const { mutateAsync: create, isPending: creating } = useCreateBrand()
   const { mutateAsync: update, isPending: updating } = useUpdateBrand()
+
+  const onPickLogo = async (file?: File) => {
+    if (!file) return
+    setUploading(true)
+    try {
+      const url = await uploadBrandLogo(file)
+      if (url) {
+        setLogoUrl(url)
+        toast.success("Logo uploaded")
+      }
+    } catch {
+      toast.error("Logo upload failed")
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const save = async () => {
     if (!name.trim()) return toast.error("Brand name is required")
@@ -62,8 +80,28 @@ function BrandForm({
           <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Nike" />
         </div>
         <div className="flex flex-col gap-1">
-          <Label size="small">Logo URL</Label>
-          <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…" />
+          <Label size="small">Logo</Label>
+          <div className="flex items-center gap-2">
+            {logoUrl && (
+              <img src={logoUrl} alt="logo" className="h-9 w-9 rounded object-contain border border-ui-border-base" />
+            )}
+            <label className="cursor-pointer">
+              <span className="inline-flex items-center rounded-md border border-ui-border-base bg-ui-bg-base px-3 py-1.5 text-sm hover:bg-ui-bg-subtle">
+                {uploading ? "Uploading…" : logoUrl ? "Replace" : "Upload"}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) => onPickLogo(e.target.files?.[0])}
+              />
+            </label>
+            {logoUrl && (
+              <Button size="small" variant="transparent" onClick={() => setLogoUrl("")}>Remove</Button>
+            )}
+          </div>
+          <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="…or paste an image URL" />
         </div>
       </div>
       <div className="flex flex-col gap-1">
@@ -91,8 +129,18 @@ export default function BrandsPage() {
 
   const { brands, count, isLoading } = useAdminBrands(search)
   const { mutateAsync: remove } = useDeleteBrand()
+  const { mutateAsync: update } = useUpdateBrand()
   const { mutateAsync: reindex, isPending: reindexing } = useReindexBrands()
   const prompt = usePrompt()
+
+  const handleApprove = async (b: AdminBrand) => {
+    try {
+      await update({ id: b.id, is_active: true })
+      toast.success(`${b.name} approved`)
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to approve")
+    }
+  }
 
   const handleDelete = async (b: AdminBrand) => {
     const ok = await prompt({
@@ -167,10 +215,19 @@ export default function BrandsPage() {
                     )}
                     <div>
                       <Text size="small" weight="plus">{b.name}</Text>
-                      {!b.is_active && <Text size="xsmall" className="text-ui-fg-muted">Inactive</Text>}
+                      {!b.is_active && (
+                        <Text size="xsmall" className="text-ui-tag-orange-text">
+                          {b.requested_by ? "Pending seller request" : "Inactive"}
+                        </Text>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    {!b.is_active && (
+                      <Button size="small" variant="secondary" onClick={() => handleApprove(b)}>
+                        Approve
+                      </Button>
+                    )}
                     <Button size="small" variant="transparent" onClick={() => { setEditingId(editingId === b.id ? null : b.id); setCreating(false) }}>
                       <PencilSquare />
                     </Button>

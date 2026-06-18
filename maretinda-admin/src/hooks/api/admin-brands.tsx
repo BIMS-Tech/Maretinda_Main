@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { sdk } from "../../lib/client"
+import { sdk, backendUrl } from "../../lib/client"
 
 export type AdminBrand = {
   id: string
@@ -8,8 +8,24 @@ export type AdminBrand = {
   logo_url?: string | null
   description?: string | null
   is_active: boolean
+  requested_by?: string | null
   created_at?: string
   updated_at?: string
+}
+
+/** Upload a brand logo via Medusa's file service; returns the public URL. */
+export async function uploadBrandLogo(file: File): Promise<string> {
+  const fd = new FormData()
+  fd.append("files", file)
+  const token = window.localStorage.getItem("medusa_admin_jwt") || ""
+  const res = await fetch(`${backendUrl}/admin/uploads`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    body: fd,
+  })
+  if (!res.ok) throw new Error("Upload failed")
+  const data = await res.json()
+  return data.files?.[0]?.url ?? ""
 }
 
 const KEY = ["admin", "brands"]

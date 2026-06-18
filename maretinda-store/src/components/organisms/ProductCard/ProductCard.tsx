@@ -107,6 +107,13 @@ export const ProductCard = ({
 					</span>
 				</div>
 
+				{/* Brand */}
+				{(product as any)?.brand?.name && (
+					<span className="text-[11px] font-bold text-[#432C63] uppercase tracking-wide line-clamp-1">
+						{(product as any).brand.name}
+					</span>
+				)}
+
 				{/* Title */}
 				<LocalizedClientLink href={`/products/${product.handle}`}>
 					<h3 className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[2.4em] group-hover:text-[#432C63] transition-colors duration-150">
