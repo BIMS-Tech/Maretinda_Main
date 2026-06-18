@@ -57,15 +57,18 @@ export const AlgoliaProductsListing = ({
 		? `seller.handle:${seller_handle} AND `
 		: '';
 
-	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED${currencyFilter}${
-		category_id
-			? ` AND categories.id:${category_id}${
-					collection_id !== undefined
-						? ` AND collections.id:${collection_id}`
-						: ''
-				} ${facetFilters}`
-			: ` ${facetFilters}`
-	}`;
+	// Compose scope conditions independently. Previously the collection filter
+	// was nested inside the category branch, so collection pages (which have no
+	// category_id) silently fell through and listed every product.
+	const scopeConditions: string[] = [];
+	if (category_id) scopeConditions.push(`categories.id:${category_id}`);
+	if (collection_id) scopeConditions.push(`collections.id:${collection_id}`);
+	const scopeFilter = scopeConditions.length
+		? ` AND ${scopeConditions.join(' AND ')}`
+		: '';
+
+	// facetFilters is already prefixed with " AND …" (or empty) by getFacedFilters.
+	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED${currencyFilter}${scopeFilter}${facetFilters}`;
 
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>
