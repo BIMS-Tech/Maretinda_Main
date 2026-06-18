@@ -140,18 +140,8 @@ export default function BrandsPage() {
 
   const { brands, count, isLoading } = useAdminBrands(search)
   const { mutateAsync: remove } = useDeleteBrand()
-  const { mutateAsync: update } = useUpdateBrand()
   const { mutateAsync: reindex, isPending: reindexing } = useReindexBrands()
   const prompt = usePrompt()
-
-  const handleApprove = async (b: AdminBrand) => {
-    try {
-      await update({ id: b.id, is_active: true })
-      toast.success(`${b.name} approved`)
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to approve")
-    }
-  }
 
   const handleDelete = async (b: AdminBrand) => {
     const ok = await prompt({
@@ -227,18 +217,13 @@ export default function BrandsPage() {
                     <div>
                       <Text size="small" weight="plus">{b.name}</Text>
                       {!b.is_active && (
-                        <Text size="xsmall" className="text-ui-tag-orange-text">
-                          {b.requested_by ? "Pending seller request" : "Inactive"}
+                        <Text size="xsmall" className="text-ui-fg-muted">
+                          {b.requested_by ? "Pending approval — review in Requests → Brands" : "Inactive"}
                         </Text>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    {!b.is_active && (
-                      <Button size="small" variant="secondary" onClick={() => handleApprove(b)}>
-                        Approve
-                      </Button>
-                    )}
                     <Button size="small" variant="transparent" onClick={() => { setEditingId(editingId === b.id ? null : b.id); setCreating(false) }}>
                       <PencilSquare />
                     </Button>
