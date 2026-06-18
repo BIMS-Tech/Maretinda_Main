@@ -178,7 +178,11 @@ const ProductsListing = ({
 		page * pageLimit,
 	);
 
-	const count = results?.nbHits ?? filteredProducts.length;
+	// Count must reflect what is actually rendered. Algolia's nbHits counts every
+	// indexed record matching the filters, but the grid only shows products that
+	// also exist in the Medusa fetch and have a price (filteredProducts). Using
+	// nbHits here caused mismatches like "9 of 9 results" while showing 3 cards.
+	const count = filteredProducts.length;
 	// const pages = Math.ceil(count / pageLimit) || 1;
 
 	const sortByDropdownOptions = [
