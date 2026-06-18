@@ -25,9 +25,24 @@ const ALLOWED_TYPES = [
   "text/plain", "text/csv",
 ]
 
-const setCorsHeaders = (res: MedusaResponse) => {
-  const allowedOrigins = (process.env.seller_CORS || "http://localhost:5173").split(",")
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigins[0].trim())
+const setCorsHeaders = (req: MedusaRequest, res: MedusaResponse) => {
+  // Use the seller panel CORS origins. Echo the request origin when allowed so
+  // multiple configured origins work (SELLER_CORS is the correct env var;
+  // the old code read `seller_CORS` which is undefined and fell back to localhost).
+  const allowedOrigins = (
+    process.env.SELLER_CORS ||
+    process.env.VENDOR_CORS ||
+    process.env.seller_CORS ||
+    "http://localhost:5173"
+  )
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean)
+  const origin = req.headers.origin as string | undefined
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0],
+  )
   res.setHeader("Access-Control-Allow-Credentials", "true")
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS")
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-publishable-api-key")
@@ -59,14 +74,14 @@ const upload = multer({
   },
 })
 
-export const OPTIONS = async (_req: MedusaRequest, res: MedusaResponse): Promise<void> => {
-  setCorsHeaders(res)
+export const OPTIONS = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
+  setCorsHeaders(req, res)
   res.status(204).end()
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   const startTime = Date.now()
-  setCorsHeaders(res)
+  setCorsHeaders(req, res)
 
   try {
     const auth = verifyAuth(req)
