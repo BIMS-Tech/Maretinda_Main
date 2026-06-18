@@ -1,5 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import VoucherService from "../../../../services/voucher"
 
 /**
@@ -68,6 +68,28 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       }
     }
 
+    // Whether the products above were explicitly targeted by the campaign's
+    // promotion rules. When false, the grid below is a "shop the sale" fallback
+    // so "Shop now" always lands on a product-rich page (not a bare voucher list).
+    const products_targeted = products.length > 0
+
+    // Fallback: campaign has no product-targeted promotions (e.g. a cart-wide
+    // discount). Show recent published products so shoppers can actually shop.
+    if (products.length === 0) {
+      try {
+        const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+        const { data: recent } = await (query as any).graph({
+          entity: "product",
+          fields: ["id", "title", "handle", "thumbnail", "description", "images.url"],
+          filters: { status: "published" },
+          pagination: { take: 12, order: { created_at: "DESC" } },
+        })
+        products = recent || []
+      } catch {
+        products = []
+      }
+    }
+
     const voucherService = new VoucherService(req.scope)
 
     res.status(200).json({
@@ -91,6 +113,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
           voucherService.formatPromotion(p)
         ),
       },
+      products_targeted,
       products: products.map((p: any) => ({
         id: p.id,
         title: p.title,

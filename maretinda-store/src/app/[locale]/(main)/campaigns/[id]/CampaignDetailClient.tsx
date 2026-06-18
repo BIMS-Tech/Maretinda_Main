@@ -35,10 +35,12 @@ interface CampaignProduct {
 export default function CampaignDetailClient({
 	campaign,
 	products,
+	productsTargeted = true,
 	isLoggedIn,
 }: {
 	campaign: Campaign
 	products: CampaignProduct[]
+	productsTargeted?: boolean
 	isLoggedIn: boolean
 }) {
 	const [vouchers, setVouchers] = useState<VoucherPromotion[]>(
@@ -144,16 +146,24 @@ export default function CampaignDetailClient({
 				</div>
 			</div>
 
-			{/* Campaign Products */}
+			{/* Campaign Products — lead the page so "Shop now" feels like shopping */}
 			{products.length > 0 && (
 				<div className="max-w-5xl mx-auto px-4 lg:px-8 pt-8">
 					<h2
-						className="text-lg font-bold mb-5"
+						className="text-lg font-bold mb-1"
 						style={{ color: '#111827' }}
 					>
-						🛍️ Campaign Products ({products.length})
+						{productsTargeted
+							? `🛍️ Campaign Products (${products.length})`
+							: '🛍️ Shop the sale'}
 					</h2>
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+					{!productsTargeted && (
+						<p className="text-sm text-gray-500">
+							Popular picks you can use the campaign voucher on — claim it
+							below, then add to cart.
+						</p>
+					)}
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-5">
 						{products.map((product) => (
 							<Link
 								key={product.id}
@@ -198,14 +208,14 @@ export default function CampaignDetailClient({
 				</div>
 			)}
 
-			{/* Vouchers */}
+			{/* Vouchers — secondary claim strip below the products */}
 			<div className="max-w-5xl mx-auto px-4 lg:px-8 py-8">
-				<div className="flex items-center justify-between mb-5">
+				<div className="flex items-center justify-between mb-1">
 					<h2
 						className="text-lg font-bold"
 						style={{ color: '#111827' }}
 					>
-						🎟️ Campaign Vouchers ({vouchers.length})
+						🎟️ Claim your voucher
 					</h2>
 					{isLoggedIn && (
 						<Link

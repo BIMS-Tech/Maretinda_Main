@@ -35,6 +35,7 @@ export default async function CampaignDetailPage({
 		<CampaignDetailClient
 			campaign={data.campaign}
 			products={data.products || []}
+			productsTargeted={(data as any).products_targeted ?? (data.products || []).length > 0}
 			isLoggedIn={!!customer}
 		/>
 	)

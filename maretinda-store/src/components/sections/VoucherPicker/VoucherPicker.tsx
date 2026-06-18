@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { VoucherPromotion } from '@/lib/data/vouchers'
 import { getMyVouchers } from '@/lib/data/vouchers'
 
@@ -68,29 +69,32 @@ export default function VoucherPicker({
 
 	if (!isOpen) return null
 
+	// cartTotal (cart.subtotal) and v.min_order are both in major currency units
+	// (pesos), matching how prices are displayed via convertToLocale. Compare directly.
 	const eligibleVouchers = vouchers.filter((v) => {
 		if (v.expires_at && new Date(v.expires_at) < new Date()) return false
-		if (v.min_order && cartTotal < v.min_order * 100) return false
+		if (v.min_order && cartTotal < v.min_order) return false
 		return true
 	})
 
 	const ineligibleVouchers = vouchers.filter((v) => {
 		if (v.expires_at && new Date(v.expires_at) < new Date()) return true
-		if (v.min_order && cartTotal < v.min_order * 100) return true
+		if (v.min_order && cartTotal < v.min_order) return true
 		return false
 	})
 
-	return (
+	const drawer = (
 		<>
-			{/* Backdrop — above the site header (z-50) */}
+			{/* Backdrop — portaled to <body> so it escapes the sticky header's
+			    stacking/containing context and covers the full viewport. */}
 			<div
 				ref={overlayRef}
-				className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-[2px] animate-[fadeIn_0.2s_ease-out]"
+				className="fixed inset-0 z-[2147483646] bg-black/50 backdrop-blur-[2px] animate-[fadeIn_0.2s_ease-out]"
 				onClick={onClose}
 			/>
 
 			{/* Drawer */}
-			<div className="fixed inset-y-0 right-0 z-[101] w-full max-w-md bg-gray-50 flex flex-col shadow-2xl animate-[slideInRight_0.25s_ease-out]">
+			<div className="fixed inset-y-0 right-0 z-[2147483647] w-full max-w-md bg-gray-50 flex flex-col shadow-2xl animate-[slideInRight_0.25s_ease-out]">
 				{/* Header */}
 				<div
 					className="flex items-center justify-between px-5 py-4 text-white"
@@ -279,6 +283,9 @@ export default function VoucherPicker({
 			`}</style>
 		</>
 	)
+
+	if (typeof document === 'undefined') return null
+	return createPortal(drawer, document.body)
 }
 
 function VoucherPickerCard({

@@ -1,6 +1,6 @@
 import { PencilSquare, Trash } from "@medusajs/icons"
 import { PromotionDTO } from "@medusajs/types"
-import { Button, Container, Heading, usePrompt } from "@medusajs/ui"
+import { Button, Container, Heading, Text, usePrompt } from "@medusajs/ui"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -55,7 +55,13 @@ export const PromotionListTable = () => {
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">{t("promotions.domain")}</Heading>
+        <div>
+          <Heading level="h2">{t("promotions.domain")}</Heading>
+          <Text size="small" className="text-ui-fg-subtle mt-1">
+            Active promotions appear to shoppers as <strong>Vouchers</strong> they
+            can collect and apply at checkout.
+          </Text>
+        </div>
 
         <Button size="small" variant="secondary" asChild>
           <Link to="create">{t("actions.create")}</Link>
