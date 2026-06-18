@@ -30,6 +30,7 @@ import type { Wishlist } from '@/types/wishlist';
 export const AlgoliaProductsListing = ({
 	category_id,
 	collection_id,
+	collection_title,
 	seller_handle,
 	locale = process.env.NEXT_PUBLIC_DEFAULT_REGION,
 	currency_code,
@@ -38,6 +39,7 @@ export const AlgoliaProductsListing = ({
 }: {
 	category_id?: string;
 	collection_id?: string;
+	collection_title?: string;
 	locale?: string;
 	seller_handle?: string;
 	currency_code?: string;
@@ -60,9 +62,17 @@ export const AlgoliaProductsListing = ({
 	// Compose scope conditions independently. Previously the collection filter
 	// was nested inside the category branch, so collection pages (which have no
 	// category_id) silently fell through and listed every product.
+	//
+	// Note: the Algolia records only carry `collection.title` (the Mercur
+	// indexer/validator drops `collections.id`), so collection scoping filters
+	// on the title — which is why we pass collection_title from the page.
 	const scopeConditions: string[] = [];
 	if (category_id) scopeConditions.push(`categories.id:${category_id}`);
-	if (collection_id) scopeConditions.push(`collections.id:${collection_id}`);
+	if (collection_title) {
+		scopeConditions.push(`collection.title:"${collection_title}"`);
+	} else if (collection_id) {
+		scopeConditions.push(`collections.id:${collection_id}`);
+	}
 	const scopeFilter = scopeConditions.length
 		? ` AND ${scopeConditions.join(' AND ')}`
 		: '';

@@ -41,6 +41,7 @@ const SingleCollectionsPage = async ({
 				) : (
 					<AlgoliaProductsListing
 						collection_id={collection.id}
+						collection_title={collection.title}
 						locale={locale}
 					/>
 				)}
