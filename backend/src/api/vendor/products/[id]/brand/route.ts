@@ -41,6 +41,20 @@ async function getCurrentBrandId(req: AuthenticatedMedusaRequest, productId: str
   return (data?.[0] as any)?.brand?.id ?? null
 }
 
+export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
+  const productId = req.params.id
+  if (!(await assertOwnership(req, productId))) {
+    return res.status(403).json({ message: 'You do not own this product' })
+  }
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+  const { data } = await query.graph({
+    entity: 'product',
+    fields: ['id', 'brand.id', 'brand.name', 'brand.logo_url'],
+    filters: { id: productId },
+  })
+  res.json({ brand: (data?.[0] as any)?.brand ?? null })
+}
+
 export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
   const productId = req.params.id
   const { brand_id } = req.body as { brand_id?: string }

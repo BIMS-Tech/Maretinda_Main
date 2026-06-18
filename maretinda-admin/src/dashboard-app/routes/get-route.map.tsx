@@ -1974,6 +1974,14 @@ export function getRouteMap({
               lazy: () => import("../../routes/shipping-providers"),
             },
             {
+              path: "brands",
+              errorElement: <ErrorBoundary />,
+              handle: {
+                breadcrumb: () => "Brands",
+              },
+              lazy: () => import("../../routes/brands"),
+            },
+            {
               path: "return-reasons",
               element: <Outlet />,
               handle: {
