@@ -751,6 +751,14 @@ export function getRouteMap({
                     ),
                 },
                 {
+                  path: "brands",
+                  handle: {
+                    breadcrumb: () => "Brand requests",
+                  },
+                  lazy: () =>
+                    import("../../routes/requests/request-brand-list"),
+                },
+                {
                   path: "product-update",
                   handle: {
                     breadcrumb: () => t("requests.product-update"),
