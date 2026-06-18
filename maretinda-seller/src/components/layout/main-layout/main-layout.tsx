@@ -247,6 +247,10 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           to: "/requests/categories",
         },
         {
+          label: "Brands",
+          to: "/requests/brands",
+        },
+        {
           label: "Reviews",
           to: "/requests/reviews",
         },
