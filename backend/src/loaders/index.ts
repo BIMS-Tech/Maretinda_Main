@@ -7,6 +7,7 @@ import fileBackupLoader from "./file-backup"
 import subscriptionLoader from "./subscription"
 import chatLoader from "./chat"
 import promotionsLoader from "./promotions"
+import brandLoader from "./brand"
 
 export default async function customLoader(container: MedusaContainer): Promise<void> {
   console.log('[Custom Loaders] ========== STARTING ==========')
@@ -20,6 +21,7 @@ export default async function customLoader(container: MedusaContainer): Promise<
     await subscriptionLoader(container)
     await chatLoader(container)
     await promotionsLoader(container)
+    await brandLoader(container)
 
     console.log('[Custom Loaders] ========== COMPLETE ==========')
   } catch (error) {

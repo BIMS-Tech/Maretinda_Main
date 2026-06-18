@@ -2,25 +2,25 @@
  * Vendor Brands (read-only)
  * Route: /vendor/brands
  *
- * Sellers pick from the admin-curated brand catalog when assigning a brand
- * to their products.
+ * Sellers pick from the admin-curated, active brand catalog.
  */
 
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
-import { BRAND_MODULE } from '../../../modules/brand'
+import { getPg } from '../../../lib/brand-db'
 
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
-  const brandService: any = req.scope.resolve(BRAND_MODULE)
+  const pg = getPg(req.scope)
   const { q, limit = '200', offset = '0' } = req.query as Record<string, string>
 
-  const filters: Record<string, unknown> = { is_active: true }
-  if (q) filters.name = { $ilike: `%${q}%` }
+  const base = pg('brand').whereNull('deleted_at').where('is_active', true)
+  if (q) base.andWhereILike('name', `%${q}%`)
 
-  const [brands, count] = await brandService.listAndCountBrands(filters, {
-    take: parseInt(limit),
-    skip: parseInt(offset),
-    order: { name: 'ASC' },
-  })
+  const brands = await base
+    .clone()
+    .orderBy('name', 'asc')
+    .limit(parseInt(limit))
+    .offset(parseInt(offset))
+  const [{ count }] = await base.clone().count('id as count')
 
-  res.json({ brands, count })
+  res.json({ brands, count: parseInt(String(count)) })
 }

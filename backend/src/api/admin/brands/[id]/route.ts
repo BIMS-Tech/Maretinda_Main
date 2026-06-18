@@ -1,20 +1,20 @@
 /**
  * Admin Brand detail
- * Route: /admin/brands/:id  (GET update via POST, DELETE)
+ * Route: /admin/brands/:id  (GET, POST update, DELETE)
  */
 
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
-import { BRAND_MODULE } from '../../../../modules/brand'
+import { getPg } from '../../../../lib/brand-db'
 
 export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
-  const brandService: any = req.scope.resolve(BRAND_MODULE)
-  const brand = await brandService.retrieveBrand(req.params.id).catch(() => null)
+  const pg = getPg(req.scope)
+  const brand = await pg('brand').where({ id: req.params.id }).whereNull('deleted_at').first()
   if (!brand) return res.status(404).json({ message: 'Brand not found' })
   res.json({ brand })
 }
 
 export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
-  const brandService: any = req.scope.resolve(BRAND_MODULE)
+  const pg = getPg(req.scope)
   const { name, logo_url, description, is_active } = req.body as {
     name?: string
     logo_url?: string
@@ -22,18 +22,21 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
     is_active?: boolean
   }
 
-  const update: Record<string, unknown> = { id: req.params.id }
+  const update: Record<string, unknown> = { updated_at: new Date() }
   if (name !== undefined) update.name = name
   if (logo_url !== undefined) update.logo_url = logo_url
   if (description !== undefined) update.description = description
   if (is_active !== undefined) update.is_active = is_active
 
-  const brand = await brandService.updateBrands(update)
+  await pg('brand').where({ id: req.params.id }).update(update)
+  const brand = await pg('brand').where({ id: req.params.id }).first()
   res.json({ brand })
 }
 
 export const DELETE = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) => {
-  const brandService: any = req.scope.resolve(BRAND_MODULE)
-  await brandService.deleteBrands(req.params.id)
+  const pg = getPg(req.scope)
+  await pg('brand').where({ id: req.params.id }).update({ deleted_at: new Date() })
+  // also drop any product links to this brand
+  await pg('product_brand').where({ brand_id: req.params.id }).whereNull('deleted_at').del()
   res.json({ id: req.params.id, object: 'brand', deleted: true })
 }

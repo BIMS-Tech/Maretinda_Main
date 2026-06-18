@@ -1,14 +1,15 @@
 /**
  * Helpers to keep a product's brand in sync with its Algolia record.
  *
+ * Brand is stored in raw tables (`brand`, `product_brand`) — matching the
+ * shipping tables' pattern — to avoid depending on module migrations.
+ *
  * The Mercur Algolia plugin rebuilds product records without brand (its zod
  * validator strips unknown fields) and writes them with addObject (full
  * replace). We therefore patch `brand` onto the record directly via the algolia
- * module's partialUpdate, which the plugin cannot express.
- *
- * NOTE: a product edit re-runs the plugin's full replace, which can drop brand
- * until brand is re-applied. `reindexAllBrands` re-applies brand for every
- * product and is exposed via an admin endpoint for recovery/backfill.
+ * module's partialUpdate. A product edit re-runs the plugin's full replace,
+ * which can drop brand until it's re-applied — the `algolia-brand-sync`
+ * subscriber and the admin reindex endpoint re-apply it.
  */
 
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
@@ -16,6 +17,14 @@ import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 type Container = { resolve: (key: string) => any }
 
 const PRODUCT_INDEX = 'products'
+
+function getPg(container: Container): any {
+  try {
+    return container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+  } catch {
+    return (container as any).__pg_connection__ || (container as any).pgConnection
+  }
+}
 
 function getAlgolia(container: Container): any | null {
   try {
@@ -25,20 +34,23 @@ function getAlgolia(container: Container): any | null {
   }
 }
 
-/** Resolve the brand (if any) linked to each product id. */
+/** Resolve the brand (if any) linked to each product id, via raw tables. */
 async function getProductBrands(
   container: Container,
   productIds: string[],
 ): Promise<Record<string, { id: string; name: string } | null>> {
-  const query = container.resolve(ContainerRegistrationKeys.QUERY)
-  const { data } = await query.graph({
-    entity: 'product',
-    fields: ['id', 'brand.id', 'brand.name'],
-    filters: { id: productIds },
-  })
+  const pg = getPg(container)
+  const rows = await pg('product_brand as pb')
+    .join('brand as b', 'b.id', 'pb.brand_id')
+    .whereIn('pb.product_id', productIds)
+    .whereNull('pb.deleted_at')
+    .whereNull('b.deleted_at')
+    .select('pb.product_id as product_id', 'b.id as brand_id', 'b.name as brand_name')
+
   const map: Record<string, { id: string; name: string } | null> = {}
-  for (const p of data as any[]) {
-    map[p.id] = p.brand ? { id: p.brand.id, name: p.brand.name } : null
+  for (const id of productIds) map[id] = null
+  for (const r of rows) {
+    map[r.product_id] = { id: r.brand_id, name: r.brand_name }
   }
   return map
 }
@@ -56,7 +68,6 @@ export async function applyBrandToAlgolia(
   await Promise.all(
     productIds.map((id) => {
       const brand = brands[id]
-      // partialUpdate adds/clears the brand attribute without touching the rest.
       return algolia
         .partialUpdate(PRODUCT_INDEX, {
           id,
@@ -67,16 +78,14 @@ export async function applyBrandToAlgolia(
   )
 }
 
-/** Re-apply brand to every (non-deleted) product's Algolia record. */
+/** Re-apply brand to every product that currently has one. Returns the count. */
 export async function reindexAllBrands(container: Container): Promise<number> {
-  const query = container.resolve(ContainerRegistrationKeys.QUERY)
-  const { data } = await query.graph({
-    entity: 'product',
-    fields: ['id'],
-    filters: { status: 'published' },
-    pagination: { take: 1000, skip: 0 },
-  })
-  const ids = (data as any[]).map((p) => p.id)
+  const pg = getPg(container)
+  const rows = await pg('product_brand')
+    .whereNull('deleted_at')
+    .distinct('product_id')
+    .select('product_id')
+  const ids = rows.map((r: any) => r.product_id)
   await applyBrandToAlgolia(container, ids)
   return ids.length
 }
