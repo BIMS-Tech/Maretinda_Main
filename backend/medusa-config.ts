@@ -84,6 +84,9 @@ module.exports = defineConfig({
       resolve: '@mercurjs/b2c-core/modules/wishlist'
     },
     {
+      resolve: './src/modules/brand'
+    },
+    {
       resolve: '@medusajs/medusa/file',
       options: {
         providers: [
