@@ -74,20 +74,25 @@ function BrandForm({
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-ui-border-base p-4 bg-ui-bg-subtle w-full max-w-2xl">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1">
-          <Label size="small">Name *</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Nike" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label size="small">Logo</Label>
-          <div className="flex items-center gap-2">
-            {logoUrl && (
-              <img src={logoUrl} alt="logo" className="h-9 w-9 rounded object-contain border border-ui-border-base" />
+      <div className="flex flex-col gap-1">
+        <Label size="small">Name *</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Nike" />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label size="small">Logo</Label>
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 shrink-0 rounded-md border border-ui-border-base bg-ui-bg-base flex items-center justify-center overflow-hidden">
+            {logoUrl ? (
+              <img src={logoUrl} alt="logo" className="h-full w-full object-contain" />
+            ) : (
+              <span className="text-ui-fg-muted text-xs">{(name || "?").charAt(0).toUpperCase()}</span>
             )}
+          </div>
+          <div className="flex items-center gap-2">
             <label className="cursor-pointer">
               <span className="inline-flex items-center rounded-md border border-ui-border-base bg-ui-bg-base px-3 py-1.5 text-sm hover:bg-ui-bg-subtle">
-                {uploading ? "Uploading…" : logoUrl ? "Replace" : "Upload"}
+                {uploading ? "Uploading…" : logoUrl ? "Replace image" : "Upload image"}
               </span>
               <input
                 type="file"
@@ -101,9 +106,15 @@ function BrandForm({
               <Button size="small" variant="transparent" onClick={() => setLogoUrl("")}>Remove</Button>
             )}
           </div>
-          <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="…or paste an image URL" />
         </div>
+        <Input
+          className="mt-1"
+          value={logoUrl}
+          onChange={(e) => setLogoUrl(e.target.value)}
+          placeholder="…or paste an image URL"
+        />
       </div>
+
       <div className="flex flex-col gap-1">
         <Label size="small">Description</Label>
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
