@@ -32,7 +32,10 @@ async function resolveProductPrice(
     }
 
     if (phpPrices.length === 0) return null
-    return { featured_product_price: Math.min(...phpPrices) }
+    // Medusa stores price.amount in major units (pesos), but site_settings (and the
+    // hero's formatPrice, which divides by 100) use centavos. Convert so the live price
+    // matches the admin-entered featured_product_original_price convention.
+    return { featured_product_price: Math.round(Math.min(...phpPrices) * 100) }
   } catch (e) {
     console.error("[Hero Content] Failed to resolve product price:", (e as Error).message)
     return null
