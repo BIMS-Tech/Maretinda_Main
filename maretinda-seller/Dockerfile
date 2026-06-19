@@ -51,6 +51,10 @@ COPY --from=builder --chown=appuser:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=appuser:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=appuser:nodejs /app/vite.preview.config.mjs ./vite.preview.config.mjs
 
+# Vite bundles the preview config at startup and writes a temp file next to it,
+# so the working dir must be writable by the runtime user.
+RUN chown appuser:nodejs /app
+
 USER appuser
 
 # Expose port 3000
