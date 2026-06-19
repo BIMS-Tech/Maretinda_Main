@@ -1,11 +1,56 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
-import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules, QueryContext } from "@medusajs/framework/utils"
 import VoucherService from "../../../services/voucher"
+import FlashSaleService from "../../../services/flash-sale"
+
+/**
+ * Effective + original price (in pesos) for a single variant. Prefers Medusa's
+ * `calculated_price` (which respects seller/admin PRICE LISTS, sale windows and currency)
+ * and falls back to the raw PHP base price when no calculated price is available.
+ */
+function variantPesos(variant: any): { effective: number; original: number } | null {
+  const cp = variant?.calculated_price
+  if (cp && typeof cp.calculated_amount === "number") {
+    const effective = cp.calculated_amount
+    const original = typeof cp.original_amount === "number" ? cp.original_amount : effective
+    return { effective, original }
+  }
+  const php = (variant?.prices || [])
+    .filter((p: any) => p.currency_code?.toLowerCase() === "php" && typeof p.amount === "number")
+    .map((p: any) => p.amount as number)
+  if (php.length === 0) return null
+  const min = Math.min(...php)
+  return { effective: min, original: min }
+}
+
+/**
+ * Find an approved active flash-sale discount for a product. Returns null if the product
+ * is not currently on flash sale. Kept defensive — if the flash_sale tables don't exist
+ * (fresh env) we just treat the product as not on sale.
+ */
+async function getActiveFlashDiscount(
+  req: MedusaRequest,
+  productId: string
+): Promise<{ discount_type: "percentage" | "fixed"; discount_value: number; variant_id: string | null } | null> {
+  try {
+    const service = new FlashSaleService(req.scope as any)
+    const sale = await service.getActive()
+    const item = sale?.items?.find((i) => i.product_id === productId)
+    if (!item) return null
+    return {
+      discount_type: item.discount_type,
+      discount_value: Number(item.discount_value),
+      variant_id: item.variant_id ?? null,
+    }
+  } catch {
+    return null
+  }
+}
 
 async function resolveProductPrice(
   req: MedusaRequest,
   productLink: string | undefined
-): Promise<{ featured_product_price?: number } | null> {
+): Promise<{ featured_product_price?: number; featured_product_original_price?: number } | null> {
   if (!productLink) return null
   const match = productLink.match(/^\/products\/(.+)$/)
   if (!match) return null
@@ -15,27 +60,56 @@ async function resolveProductPrice(
     const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
     const { data: products } = await (query as any).graph({
       entity: "product",
-      fields: ["id", "handle", "variants.*", "variants.prices.*"],
+      fields: ["id", "handle", "variants.id", "variants.calculated_price.*", "variants.prices.*"],
       filters: { handle, status: "published" },
+      // Anonymous PHP storefront context so seller/admin price lists are applied to
+      // calculated_price (same context the store uses via region_id).
+      context: {
+        variants: { calculated_price: QueryContext({ currency_code: "php" }) },
+      },
     })
 
     const product = products?.[0]
     if (!product?.variants?.length) return null
 
-    const phpPrices: number[] = []
-    for (const variant of product.variants) {
-      for (const price of (variant.prices || [])) {
-        if (price.currency_code?.toLowerCase() === "php" && typeof price.amount === "number") {
-          phpPrices.push(price.amount)
-        }
-      }
+    const flash = await getActiveFlashDiscount(req, product.id)
+
+    // Cheapest variant by effective (price-list-aware) price, matching the storefront's
+    // getProductPrice. When the flash sale targets a specific variant, restrict to it.
+    const priced = product.variants
+      .filter((v: any) => !flash?.variant_id || v.id === flash.variant_id)
+      .map((v: any) => variantPesos(v))
+      .filter((p: any): p is { effective: number; original: number } => p !== null)
+      .sort((a: any, b: any) => a.effective - b.effective)
+
+    const cheapest = priced[0]
+    if (!cheapest) return null
+
+    // Medusa amounts are in major units (pesos); the hero's formatPrice divides by 100, so
+    // convert to centavos.
+    const toCentavos = (pesos: number) => Math.round(pesos * 100)
+
+    let pricePesos = cheapest.effective
+    // Price-list discount already baked into `effective`; show the list price as original.
+    let originalPesos: number | null = cheapest.original > cheapest.effective ? cheapest.original : null
+
+    if (flash) {
+      // Layer the custom flash-sale discount on top of the (already price-list-aware) price,
+      // mirroring FlashSaleSection's math. The pre-flash price becomes the struck-through original.
+      const salePesos =
+        flash.discount_type === "percentage"
+          ? Math.round(pricePesos * (1 - flash.discount_value / 100))
+          : Math.max(0, Math.round(pricePesos - flash.discount_value))
+      originalPesos = pricePesos
+      pricePesos = salePesos
     }
 
-    if (phpPrices.length === 0) return null
-    // Medusa stores price.amount in major units (pesos), but site_settings (and the
-    // hero's formatPrice, which divides by 100) use centavos. Convert so the live price
-    // matches the admin-entered featured_product_original_price convention.
-    return { featured_product_price: Math.round(Math.min(...phpPrices) * 100) }
+    return {
+      featured_product_price: toCentavos(pricePesos),
+      ...(originalPesos != null && originalPesos > pricePesos
+        ? { featured_product_original_price: toCentavos(originalPesos) }
+        : {}),
+    }
   } catch (e) {
     console.error("[Hero Content] Failed to resolve product price:", (e as Error).message)
     return null
