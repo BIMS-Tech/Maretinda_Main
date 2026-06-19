@@ -1,0 +1,184 @@
+name: Deploy to Production (maretinda-prod)
+
+# Live deploys happen ONLY on push to the `production` branch.
+# `main` continues to auto-deploy the TEST backend (see backend-deploy.yml).
+# Each service rebuilds only when its own folder changes (path filters).
+on:
+  push:
+    branches: [production]
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+env:
+  GCP_PROJECT_ID: maretinda-prod
+  GCP_REGION: asia-southeast1
+  AR: asia-southeast1-docker.pkg.dev/maretinda-prod/maretinda
+  # Public, build-time config for the frontends (publishable key + public URLs)
+  BACKEND_URL: https://maretinda-backend-181910438684.asia-southeast1.run.app
+  STORE_URL: https://maretinda-store-181910438684.asia-southeast1.run.app
+  PUBLISHABLE_KEY: pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27
+  ALGOLIA_ID: S9HSUC6UM1
+  ALGOLIA_SEARCH_KEY: f5416cfd0b945c3d7fc8c88942b5084d
+  TALKJS_APP_ID: t7Ja6Dzg
+
+jobs:
+  # ── Detect which services changed ────────────────────────────────────────
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      store: ${{ steps.filter.outputs.store }}
+      admin: ${{ steps.filter.outputs.admin }}
+      seller: ${{ steps.filter.outputs.seller }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/prod-deploy.yml'
+            store:
+              - 'maretinda-store/**'
+            admin:
+              - 'maretinda-admin/**'
+            seller:
+              - 'maretinda-seller/**'
+
+  # ── Backend: build (Cloud Build) → migrate → deploy server + worker ──────
+  backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build & push backend image (Cloud Build)
+        run: |
+          gcloud builds submit ./backend \
+            --tag "$AR/backend:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" --timeout=2400s
+          gcloud artifacts docker tags add \
+            "$AR/backend:${{ github.sha }}" "$AR/backend:latest" || true
+
+      - name: Run DB migrations (Cloud Run job)
+        run: |
+          gcloud run jobs update maretinda-migrate \
+            --image "$AR/backend:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"
+          gcloud run jobs execute maretinda-migrate \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" --wait
+
+      - name: Deploy backend (server) — loaders run on boot
+        run: |
+          gcloud run deploy maretinda-backend \
+            --image "$AR/backend:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"
+
+      - name: Deploy backend (worker)
+        run: |
+          gcloud run deploy maretinda-worker \
+            --image "$AR/backend:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"
+
+  # ── Storefront (Next.js SSR) ─────────────────────────────────────────────
+  store:
+    needs: changes
+    if: ${{ needs.changes.outputs.store == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
+
+      - name: Build, push & deploy store
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_MEDUSA_BACKEND_URL="$BACKEND_URL" \
+            --build-arg MEDUSA_BACKEND_URL="$BACKEND_URL" \
+            --build-arg NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY="$PUBLISHABLE_KEY" \
+            --build-arg NEXT_PUBLIC_BASE_URL="$STORE_URL" \
+            --build-arg NEXT_PUBLIC_DEFAULT_REGION=ph \
+            --build-arg NEXT_PUBLIC_SITE_NAME=Maretinda \
+            --build-arg NEXT_PUBLIC_ALGOLIA_ID="$ALGOLIA_ID" \
+            --build-arg NEXT_PUBLIC_ALGOLIA_SEARCH_KEY="$ALGOLIA_SEARCH_KEY" \
+            --build-arg NEXT_PUBLIC_TALKJS_APP_ID="$TALKJS_APP_ID" \
+            -t "$AR/store:${{ github.sha }}" -t "$AR/store:latest" ./maretinda-store
+          docker push "$AR/store:${{ github.sha }}"
+          docker push "$AR/store:latest"
+          gcloud run deploy maretinda-store \
+            --image "$AR/store:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"
+
+  # ── Admin panel (Vite SPA) ───────────────────────────────────────────────
+  admin:
+    needs: changes
+    if: ${{ needs.changes.outputs.admin == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
+
+      - name: Build, push & deploy admin
+        run: |
+          docker build \
+            --build-arg VITE_MEDUSA_BACKEND_URL="$BACKEND_URL" \
+            --build-arg VITE_MEDUSA_STOREFRONT_URL="$STORE_URL" \
+            --build-arg VITE_MEDUSA_BASE=/ \
+            --build-arg VITE_MEDUSA_B2B_PANEL=true \
+            -t "$AR/admin:${{ github.sha }}" -t "$AR/admin:latest" ./maretinda-admin
+          docker push "$AR/admin:${{ github.sha }}"
+          docker push "$AR/admin:latest"
+          gcloud run deploy maretinda-admin \
+            --image "$AR/admin:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"
+
+  # ── Seller panel (Vite SPA) ──────────────────────────────────────────────
+  seller:
+    needs: changes
+    if: ${{ needs.changes.outputs.seller == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_PROD }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
+
+      - name: Build, push & deploy seller
+        run: |
+          docker build \
+            --build-arg VITE_MEDUSA_BACKEND_URL="$BACKEND_URL" \
+            --build-arg VITE_MEDUSA_STOREFRONT_URL="$STORE_URL" \
+            --build-arg VITE_MEDUSA_BASE=/ \
+            --build-arg VITE_MEDUSA_B2B_PANEL=false \
+            -t "$AR/seller:${{ github.sha }}" -t "$AR/seller:latest" ./maretinda-seller
+          docker push "$AR/seller:${{ github.sha }}"
+          docker push "$AR/seller:latest"
+          gcloud run deploy maretinda-seller \
+            --image "$AR/seller:${{ github.sha }}" \
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION"

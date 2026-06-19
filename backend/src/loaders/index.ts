@@ -9,6 +9,7 @@ import chatLoader from "./chat"
 import promotionsLoader from "./promotions"
 import brandLoader from "./brand"
 import product3dModelLoader from "./product-3d-model"
+import sellerApplicationLoader from "./seller-application"
 
 export default async function customLoader(container: MedusaContainer): Promise<void> {
   console.log('[Custom Loaders] ========== STARTING ==========')
@@ -24,6 +25,7 @@ export default async function customLoader(container: MedusaContainer): Promise<
     await promotionsLoader(container)
     await brandLoader(container)
     await product3dModelLoader(container)
+    await sellerApplicationLoader(container)
 
     console.log('[Custom Loaders] ========== COMPLETE ==========')
   } catch (error) {
