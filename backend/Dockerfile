@@ -52,6 +52,12 @@ WORKDIR /app/src/modules/file-gcs
 RUN npm install
 RUN npm run build
 
+# Build notification-resend module (dist is excluded by .dockerignore, so it
+# must be compiled here; medusa-config resolves ./src/modules/notification-resend)
+WORKDIR /app/src/modules/notification-resend
+RUN npm install
+RUN npx tsc -p tsconfig.json
+
 # Build main application
 WORKDIR /app
 RUN yarn build
