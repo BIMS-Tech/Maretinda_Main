@@ -19,6 +19,7 @@ export const ProductDetails = async ({
 	locale,
 	seller,
 	flashSaleItem,
+	brand,
 }: {
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
@@ -26,6 +27,7 @@ export const ProductDetails = async ({
 	locale: string;
 	seller: SellerProps;
 	flashSaleItem?: ActiveFlashSaleItem | null;
+	brand?: { id: string; name: string; logo_url: string | null } | null;
 }) => {
 	const user = await retrieveCustomer();
 
@@ -48,6 +50,25 @@ export const ProductDetails = async ({
 				user={user}
 				wishlist={wishlist}
 			/>
+
+			{brand && (
+				<div className="flex items-center gap-2">
+					{brand.logo_url && (
+						// eslint-disable-next-line @next/next/no-img-element
+						<img
+							alt={brand.name}
+							className="h-7 w-7 rounded object-contain border border-black/10 bg-white"
+							src={brand.logo_url}
+						/>
+					)}
+					<span className="text-sm text-gray-500">
+						Brand:{' '}
+						<span className="font-semibold text-[#372248]">
+							{brand.name}
+						</span>
+					</span>
+				</div>
+			)}
 
 			<ProductDetailsSeller product={product} seller={seller} user={user} />
 
