@@ -3,9 +3,19 @@ import { defineConfig, loadEnv } from '@medusajs/framework/utils'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
+// In production we run two Cloud Run services from this same image:
+//   - server  (MEDUSA_WORKER_MODE=server) handles HTTP/API traffic
+//   - worker  (MEDUSA_WORKER_MODE=worker) handles subscribers, scheduled
+//     jobs and the event bus. Both share Redis so cache/events/workflows are
+//     consistent across all autoscaled instances.
+const REDIS_URL = process.env.REDIS_URL
+const workerMode = (process.env.MEDUSA_WORKER_MODE as 'shared' | 'worker' | 'server') || 'shared'
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    workerMode,
+    ...(REDIS_URL ? { redisUrl: REDIS_URL } : {}),
     ...(process.env.DB_HOST ? {
       databaseDriverOptions: { host: process.env.DB_HOST }
     } : {}),
@@ -95,15 +105,29 @@ module.exports = defineConfig({
         ]
       }
     },
-    {
-      resolve: '@medusajs/medusa/cache-inmemory'
-    },
-    {
-      resolve: '@medusajs/medusa/event-bus-local'
-    },
-    {
-      resolve: '@medusajs/medusa/workflow-engine-inmemory'
-    },
+    // Redis-backed cache / event bus / workflow engine in production (when
+    // REDIS_URL is set) so state is shared across all instances and the
+    // server/worker split works. Falls back to in-memory for local dev.
+    ...(REDIS_URL
+      ? [
+          {
+            resolve: '@medusajs/medusa/cache-redis',
+            options: { redisUrl: REDIS_URL }
+          },
+          {
+            resolve: '@medusajs/medusa/event-bus-redis',
+            options: { redisUrl: REDIS_URL }
+          },
+          {
+            resolve: '@medusajs/medusa/workflow-engine-redis',
+            options: { redis: { url: REDIS_URL } }
+          }
+        ]
+      : [
+          { resolve: '@medusajs/medusa/cache-inmemory' },
+          { resolve: '@medusajs/medusa/event-bus-local' },
+          { resolve: '@medusajs/medusa/workflow-engine-inmemory' }
+        ]),
     {
       resolve: '@medusajs/medusa/fulfillment',
       options: {
