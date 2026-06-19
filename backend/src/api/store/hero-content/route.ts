@@ -76,6 +76,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       // table may not exist yet on first deploy
     }
 
+    // The featured product price is NOT admin-overridable — it is always derived from the
+    // live product (see resolveProductPrice below). Drop any price fields that may linger in
+    // stored site_settings so a stale override can never leak onto the hero.
+    delete site_settings.featured_product_price
+    delete site_settings.featured_product_original_price
+
     // --- Welcome promo ---
     let welcome_promo: Record<string, any> | null = null
     const pinnedCode = site_settings.welcome_promo_code as string | undefined

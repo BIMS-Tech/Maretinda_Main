@@ -119,7 +119,12 @@ export const StoreFront = () => {
 
   const handleSave = async () => {
     try {
-      await save(form)
+      // The featured product price is never admin-overridable — it is derived from the live
+      // product on the storefront. Strip any legacy price fields so they don't get re-persisted.
+      const payload = { ...form } as HeroSettings & Record<string, unknown>
+      delete payload.featured_product_price
+      delete payload.featured_product_original_price
+      await save(payload)
       toast.success("Home page settings saved successfully.")
       setIsDirty(false)
     } catch {
@@ -143,7 +148,7 @@ export const StoreFront = () => {
       featured_product_sold_this_week: product.trending_score || prev.featured_product_sold_this_week,
     }))
     setIsDirty(true)
-    toast.success(`"${product.title}" applied to hero. Adjust price and category below, then save.`)
+    toast.success(`"${product.title}" applied to hero. Adjust the category below, then save.`)
   }
 
   if (isLoading) {
@@ -188,7 +193,8 @@ export const StoreFront = () => {
         <div className="px-6 py-4">
           <Heading level="h2" className="text-base font-semibold">Most Sold Products</Heading>
           <Text size="small" className="text-ui-fg-muted">
-            Click a product to auto-fill the hero featured product fields. Adjust price and category below, then save.
+            Click a product to auto-fill the hero featured product fields. Adjust the category below, then save.
+            The price always comes live from the selected product and can't be overridden here.
           </Text>
         </div>
         <div className="px-6 py-4">
