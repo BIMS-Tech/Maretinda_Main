@@ -106,6 +106,16 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+	// Redirect the www subdomain to the apex domain (301-style, permanent).
+	const host = request.headers.get('host') || '';
+	if (host.toLowerCase().startsWith('www.')) {
+		const apexUrl = request.nextUrl.clone();
+		apexUrl.host = host.slice(4);
+		apexUrl.protocol = 'https:';
+		apexUrl.port = '';
+		return NextResponse.redirect(apexUrl, 308);
+	}
+
 	let redirectUrl = request.nextUrl.href;
 
 	let response = NextResponse.redirect(redirectUrl, 307);

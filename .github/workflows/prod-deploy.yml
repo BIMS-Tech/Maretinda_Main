@@ -14,7 +14,7 @@ env:
   AR: asia-southeast1-docker.pkg.dev/maretinda-prod/maretinda
   # Public, build-time config for the frontends (publishable key + public URLs)
   BACKEND_URL: https://maretinda-backend-181910438684.asia-southeast1.run.app
-  STORE_URL: https://maretinda-store-181910438684.asia-southeast1.run.app
+  STORE_URL: https://maretinda.com
   PUBLISHABLE_KEY: pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27
   ALGOLIA_ID: S9HSUC6UM1
   ALGOLIA_SEARCH_KEY: f5416cfd0b945c3d7fc8c88942b5084d

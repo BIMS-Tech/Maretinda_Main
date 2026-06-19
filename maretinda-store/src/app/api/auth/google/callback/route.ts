@@ -27,7 +27,16 @@ export async function GET(request: NextRequest) {
 	const state = searchParams.get('state');
 	const error = searchParams.get('error');
 
-	const baseUrl = new URL(request.url).origin;
+	// Behind Cloud Run the custom server binds to 0.0.0.0:3000, so
+	// new URL(request.url).origin resolves to http://0.0.0.0:3000. Derive the
+	// public origin from the proxy's forwarded headers instead, falling back to
+	// the configured base URL and finally the request origin.
+	const fwdHost =
+		request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+	const fwdProto = request.headers.get('x-forwarded-proto') ?? 'https';
+	const baseUrl = fwdHost
+		? `${fwdProto}://${fwdHost}`
+		: (process.env.NEXT_PUBLIC_BASE_URL ?? new URL(request.url).origin);
 	const secure = process.env.NODE_ENV === 'production';
 
 	const failRedirect = (reason: string) =>
