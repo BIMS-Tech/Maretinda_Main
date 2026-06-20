@@ -6,7 +6,12 @@ name: Deploy to Production (maretinda-prod)
 on:
   push:
     branches: [production]
-  workflow_dispatch: {} # allow manual runs from the Actions tab
+  workflow_dispatch: # allow manual runs from the Actions tab
+    inputs:
+      force:
+        description: "Force-deploy all services, bypassing the path filter (use when production was fully merged from main and the diff is empty)"
+        type: boolean
+        default: false
 
 env:
   GCP_PROJECT_ID: maretinda-prod
@@ -48,7 +53,7 @@ jobs:
   # ── Backend: build (Cloud Build) → migrate → deploy server + worker ──────
   backend:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -91,7 +96,7 @@ jobs:
   # ── Storefront (Next.js SSR) ─────────────────────────────────────────────
   store:
     needs: changes
-    if: ${{ needs.changes.outputs.store == 'true' }}
+    if: ${{ needs.changes.outputs.store == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -126,7 +131,7 @@ jobs:
   # ── Admin panel (Vite SPA) ───────────────────────────────────────────────
   admin:
     needs: changes
-    if: ${{ needs.changes.outputs.admin == 'true' }}
+    if: ${{ needs.changes.outputs.admin == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -156,7 +161,7 @@ jobs:
   # ── Seller panel (Vite SPA) ──────────────────────────────────────────────
   seller:
     needs: changes
-    if: ${{ needs.changes.outputs.seller == 'true' }}
+    if: ${{ needs.changes.outputs.seller == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
