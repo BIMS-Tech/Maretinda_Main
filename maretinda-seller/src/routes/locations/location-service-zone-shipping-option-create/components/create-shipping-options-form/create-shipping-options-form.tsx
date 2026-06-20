@@ -89,9 +89,26 @@ export function CreateShippingOptionsForm({
         return {
           currency_code: code,
           amount: castNumber(value),
+          rules: [],
         }
       })
-      .filter((p): p is { currency_code: string; amount: number } => !!p)
+      .filter(
+        (p): p is { currency_code: string; amount: number; rules: [] } => !!p
+      )
+
+    const regionPrices = Object.entries(data.region_prices)
+      .map(([region_id, value]) => {
+        if (!value) {
+          return undefined
+        }
+
+        return {
+          region_id,
+          amount: castNumber(value),
+          rules: [],
+        }
+      })
+      .filter((p): p is { region_id: string; amount: number; rules: [] } => !!p)
 
     const fulfillmentOptionData = fulfillmentProviderOptions?.find(
       (fo) => fo.id === data.fulfillment_option_id
@@ -103,7 +120,7 @@ export function CreateShippingOptionsForm({
         service_zone_id: zone.id,
         shipping_profile_id: data.shipping_profile_id,
         provider_id: data.provider_id,
-        prices: currencyPrices,
+        prices: [...currencyPrices, ...regionPrices],
         data: fulfillmentOptionData as unknown as Record<string, unknown>,
         rules: [
           {
