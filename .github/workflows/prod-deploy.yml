@@ -67,9 +67,13 @@ jobs:
 
       - name: Build & push backend image (Cloud Build)
         run: |
+          # --suppress-logs: the prod project's VPC-SC perimeter blocks streaming
+          # from the default Cloud Build logs bucket, which made gcloud exit 1 on
+          # long builds even when the build itself succeeded. Poll status instead.
           gcloud builds submit ./backend \
             --tag "$AR/backend:${{ github.sha }}" \
-            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" --timeout=2400s
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
+            --timeout=2400s --suppress-logs
           gcloud artifacts docker tags add \
             "$AR/backend:${{ github.sha }}" "$AR/backend:latest" || true
 
