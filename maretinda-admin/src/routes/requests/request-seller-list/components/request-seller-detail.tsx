@@ -13,6 +13,10 @@ type Props = {
   row: UnifiedRow | null;
   open: boolean;
   close: () => void;
+  // The legacy Mercur seller request that belongs to the same registration as a
+  // new application (matched by email). Approving the application also accepts
+  // this request, which is what actually activates the seller account.
+  matchedRequest?: LegacyRow | null;
 };
 
 function statusBadge(status: string) {
@@ -52,11 +56,17 @@ function Grid({ children }: { children: React.ReactNode }) {
 
 // ─── Full new-application drawer ─────────────────────────────────────────────
 
-function NewAppDrawer({ row, close }: { row: NewAppRow; close: () => void }) {
+function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedRequest?: LegacyRow | null; close: () => void }) {
   const [adminNotes, setAdminNotes] = useState("");
   const [actionError, setActionError] = useState("");
 
   const app: SellerApplication = row;
+
+  // Approving/rejecting the application also reviews the linked Mercur seller
+  // request — that is what creates/activates (or rejects) the seller account.
+  const reviewMutation = useReviewRequest({
+    onError: (err: Error) => setActionError(err.message || "Failed to update the seller account"),
+  });
 
   const updateMutation = useUpdateSellerApplication(app.id, {
     onSuccess: () => close(),
@@ -69,6 +79,15 @@ function NewAppDrawer({ row, close }: { row: NewAppRow; close: () => void }) {
 
   const handleAction = (status: "approved" | "rejected") => {
     setActionError("");
+    if (matchedRequest?.id && matchedRequest._normalizedStatus === "pending") {
+      reviewMutation.mutate({
+        id: matchedRequest.id,
+        payload: {
+          status: status === "approved" ? "accepted" : "rejected",
+          reviewer_note: adminNotes || undefined,
+        },
+      });
+    }
     updateMutation.mutate({ status, admin_notes: adminNotes || undefined });
   };
 
@@ -263,10 +282,10 @@ function NewAppDrawer({ row, close }: { row: NewAppRow; close: () => void }) {
 
           {app.status === "pending" ? (
             <>
-              <Button variant="danger" isLoading={updateMutation.isPending} onClick={() => handleAction("rejected")}>
+              <Button variant="danger" isLoading={updateMutation.isPending || reviewMutation.isPending} onClick={() => handleAction("rejected")}>
                 Reject
               </Button>
-              <Button isLoading={updateMutation.isPending} onClick={() => handleAction("approved")}>
+              <Button isLoading={updateMutation.isPending || reviewMutation.isPending} onClick={() => handleAction("approved")}>
                 Approve
               </Button>
             </>
@@ -400,14 +419,14 @@ function LegacyDrawer({ row, close }: { row: LegacyRow; close: () => void }) {
 
 // ─── Combined drawer ──────────────────────────────────────────────────────────
 
-export function RequestSellerDetail({ row, open, close }: Props) {
+export function RequestSellerDetail({ row, open, close, matchedRequest }: Props) {
   if (!row) return null;
 
   return (
     <Drawer open={open} onOpenChange={close}>
       <Drawer.Content className="max-w-2xl">
         {row._source === "new"
-          ? <NewAppDrawer row={row as NewAppRow} close={close} />
+          ? <NewAppDrawer row={row as NewAppRow} matchedRequest={matchedRequest} close={close} />
           : <LegacyDrawer row={row as LegacyRow} close={close} />
         }
       </Drawer.Content>

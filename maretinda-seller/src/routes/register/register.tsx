@@ -2,8 +2,7 @@ import { useState, useRef, ChangeEvent } from "react"
 import { Link } from "react-router-dom"
 import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import { Input } from "@medusajs/ui"
-import { useSignUpWithEmailPass } from "../../hooks/api"
-import { backendUrl } from "../../lib/client/client"
+import { backendUrl, publishableApiKey, sdk } from "../../lib/client/client"
 import { useTheme } from "../../providers/theme-provider"
 
 function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
@@ -235,7 +234,11 @@ function FileUpload({ docKey, label, value, onChange }: {
     try {
       const fd = new FormData()
       fd.append("files", file)
-      const res = await fetch(`${backendUrl}/store/uploads`, { method: "POST", body: fd })
+      const res = await fetch(`${backendUrl}/store/uploads`, {
+        method: "POST",
+        body: fd,
+        headers: { "x-publishable-api-key": publishableApiKey },
+      })
       if (!res.ok) throw new Error("Upload failed")
       const json = await res.json()
       const url = json.files?.[0]?.url || json.url
@@ -520,8 +523,6 @@ export const Register = () => {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
 
-  const { mutateAsync: signUp } = useSignUpWithEmailPass()
-
   const steps = getSteps(data)
   const currentStep = steps[stepIdx]
 
@@ -558,15 +559,28 @@ export const Register = () => {
     setSubmitting(true)
     setError("")
     try {
-      await signUp({ name: data.business_name, email: data.email, password: data.password, confirmPassword: data.confirm_password })
-      try {
-        await fetch(`${backendUrl}/store/seller-application`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        })
-      } catch {
-        // account created; application submission best-effort
+      // Create ONLY the auth identity (email + password). The seller account is
+      // created when an admin approves the application — so no Mercur seller
+      // request (legacy row) is created here. The registration token links the
+      // application to this auth identity so approval can activate the seller.
+      const token = await sdk.auth.register("seller", "emailpass", {
+        email: data.email,
+        password: data.password,
+      })
+
+      const appRes = await fetch(`${backendUrl}/store/seller-application`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-publishable-api-key": publishableApiKey,
+          ...(typeof token === "string" ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      })
+      if (!appRes.ok) {
+        const detail = await appRes.text()
+        console.error("[register] seller-application failed", appRes.status, detail)
+        throw new Error("Could not submit your application. Please try again.")
       }
       setSuccess(true)
     } catch (err: unknown) {

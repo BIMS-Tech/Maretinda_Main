@@ -79,11 +79,14 @@ export default async function sellerApplicationLoader(container: MedusaContainer
         "status"                      text        NOT NULL DEFAULT 'pending',
         "admin_notes"                 text        NULL,
         "seller_id"                   text        NULL,
+        "auth_identity_id"            text        NULL,
         "reviewed_at"                 timestamptz NULL,
 
         CONSTRAINT "seller_application_pkey" PRIMARY KEY ("id")
       );
     `)
+    // Older installs may predate auth_identity_id (used to create the seller on approval)
+    await pg.raw(`ALTER TABLE "seller_application" ADD COLUMN IF NOT EXISTS "auth_identity_id" text`)
     await pg.raw(`CREATE INDEX IF NOT EXISTS "seller_application_status_idx" ON "seller_application" ("status")`)
     await pg.raw(`CREATE INDEX IF NOT EXISTS "seller_application_email_idx" ON "seller_application" ("email")`)
 

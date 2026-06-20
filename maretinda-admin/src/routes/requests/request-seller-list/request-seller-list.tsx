@@ -85,13 +85,39 @@ export const RequestSellerList = () => {
     [applications]
   );
 
+  // A registration creates BOTH a Mercur request (legacy) and a new application
+  // with the same email. De-duplicate: hide the legacy row when a new
+  // application exists for that email. The request is kept (indexed by email) so
+  // the application's Approve can also activate the seller via the request.
+  const newEmails = useMemo(
+    () => new Set(newRows.map((a) => (a.email || "").trim().toLowerCase()).filter(Boolean)),
+    [newRows]
+  );
+  const legacyByEmail = useMemo(() => {
+    const m = new Map<string, LegacyRow>();
+    for (const r of legacyRows) {
+      const e = (r._email || "").trim().toLowerCase();
+      if (e && !m.has(e)) m.set(e, r);
+    }
+    return m;
+  }, [legacyRows]);
+  const dedupedLegacy = useMemo(
+    () => filteredLegacy.filter((r) => !newEmails.has((r._email || "").trim().toLowerCase())),
+    [filteredLegacy, newEmails]
+  );
+
   // On page 0, show legacy rows first (they're few). On subsequent pages, new apps only.
   const displayRows: UnifiedRow[] = useMemo(() => {
-    if (currentPage === 0) return [...filteredLegacy, ...newRows];
+    if (currentPage === 0) return [...dedupedLegacy, ...newRows];
     return newRows;
-  }, [currentPage, filteredLegacy, newRows]);
+  }, [currentPage, dedupedLegacy, newRows]);
 
-  const totalCount = newCount + filteredLegacy.length;
+  const totalCount = newCount + dedupedLegacy.length;
+
+  const matchedRequest =
+    selected && selected._source === "new"
+      ? legacyByEmail.get((selected.email || "").trim().toLowerCase()) ?? null
+      : null;
   const isLoading = newLoading || legacyLoading;
 
   return (
@@ -125,6 +151,7 @@ export const RequestSellerList = () => {
       {/* Detail drawer */}
       <RequestSellerDetail
         row={selected}
+        matchedRequest={matchedRequest}
         open={!!selected}
         close={() => { setSelected(null); refetchNew(); }}
       />

@@ -34,9 +34,27 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
 
     const id = `sapp_${crypto.randomBytes(10).toString("hex")}`
 
+    // The seller's auth identity (created at registration via
+    // /auth/seller/emailpass/register) is carried in the Bearer token. Store it
+    // so approving the application can create + activate the seller account.
+    let authIdentityId: string | null = null
+    try {
+      const authHeader = (req.headers["authorization"] as string) || ""
+      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
+      if (token) {
+        const payload = JSON.parse(
+          Buffer.from(token.split(".")[1], "base64url").toString("utf-8")
+        )
+        authIdentityId = payload?.auth_identity_id || payload?.actor_id || null
+      }
+    } catch {
+      // best-effort; application can still be reviewed manually
+    }
+
     await db("seller_application").insert({
       id,
       submitted_at: new Date(),
+      auth_identity_id: authIdentityId,
       first_name: body.first_name || "",
       last_name: body.last_name || "",
       complete_address: body.complete_address || "",

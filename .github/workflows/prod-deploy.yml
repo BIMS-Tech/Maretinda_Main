@@ -176,6 +176,7 @@ jobs:
             --build-arg VITE_MEDUSA_STOREFRONT_URL="$STORE_URL" \
             --build-arg VITE_MEDUSA_BASE=/ \
             --build-arg VITE_MEDUSA_B2B_PANEL=false \
+            --build-arg VITE_PUBLISHABLE_API_KEY="$PUBLISHABLE_KEY" \
             -t "$AR/seller:${{ github.sha }}" -t "$AR/seller:latest" ./maretinda-seller
           docker push "$AR/seller:${{ github.sha }}"
           docker push "$AR/seller:latest"
