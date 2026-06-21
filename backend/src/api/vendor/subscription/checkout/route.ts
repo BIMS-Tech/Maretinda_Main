@@ -111,6 +111,18 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       "http://localhost:5173"
     ).replace(/\/$/, "")
 
+    // Success must redirect to the storefront's /giyapay/success page — that is
+    // the ONLY callback URL the canonical /giyapay/verify endpoint reconstructs
+    // when checking the GiyaPay signature. The success page verifies the payment,
+    // records the transaction, activates the renewal, then bounces the seller
+    // back to the seller panel (`/subscription?renewed=1`).
+    // (Resolved identically to the verify route so the signed URL matches.)
+    const storefrontUrl = (
+      process.env.STOREFRONT_URL ||
+      process.env.STORE_CORS?.split(",")[0] ||
+      "http://localhost:3000"
+    ).replace(/\/$/, "")
+
     const checkoutUrl = config.sandboxMode
       ? "https://sandbox.giyapay.com/checkout"
       : "https://pay.giyapay.com/checkout"
@@ -124,7 +136,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       nonce,
       timestamp,
       signature,
-      success_callback: `${sellerPanelUrl}/subscription`,
+      success_callback: `${storefrontUrl}/giyapay/success`,
       error_callback: `${sellerPanelUrl}/subscription#payment-error`,
       cancel_callback: `${sellerPanelUrl}/subscription#payment-cancelled`,
     }
