@@ -615,6 +615,50 @@ export function getRouteMap({
               ],
             },
             {
+              path: "/brands",
+              errorElement: <ErrorBoundary />,
+              handle: {
+                breadcrumb: () => "Brands",
+              },
+              children: [
+                {
+                  path: "",
+                  lazy: () => import("../../routes/brands/brand-list"),
+                  children: [
+                    {
+                      path: "create",
+                      lazy: () => import("../../routes/brands/brand-create"),
+                    },
+                  ],
+                },
+                {
+                  path: ":id",
+                  lazy: async () => {
+                    const { Component, Breadcrumb } = await import(
+                      "../../routes/brands/brand-detail"
+                    );
+
+                    return {
+                      Component,
+                      handle: {
+                        breadcrumb: (match: UIMatch) => <Breadcrumb {...match} />,
+                      },
+                    };
+                  },
+                  children: [
+                    {
+                      path: "edit",
+                      lazy: () => import("../../routes/brands/brand-edit"),
+                    },
+                    {
+                      path: "products",
+                      lazy: () => import("../../routes/brands/brand-add-products"),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
               path: "/price-lists",
               errorElement: <ErrorBoundary />,
               handle: {
@@ -1980,14 +2024,6 @@ export function getRouteMap({
                 breadcrumb: () => "Shipping Carriers",
               },
               lazy: () => import("../../routes/shipping-providers"),
-            },
-            {
-              path: "brands",
-              errorElement: <ErrorBoundary />,
-              handle: {
-                breadcrumb: () => "Brands",
-              },
-              lazy: () => import("../../routes/brands"),
             },
             {
               path: "return-reasons",

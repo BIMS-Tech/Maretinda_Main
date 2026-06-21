@@ -13,15 +13,25 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   const pg = getPg(req.scope)
   const { q, limit = '100', offset = '0' } = req.query as Record<string, string>
 
-  const base = pg('brand').whereNull('deleted_at')
-  if (q) base.andWhereILike('name', `%${q}%`)
+  const base = pg('brand as b').whereNull('b.deleted_at')
+  if (q) base.andWhereILike('b.name', `%${q}%`)
 
   const brands = await base
     .clone()
-    .orderBy('name', 'asc')
+    .leftJoin('product_brand as pb', function (this: any) {
+      this.on('pb.brand_id', 'b.id').andOnNull('pb.deleted_at')
+    })
+    .groupBy('b.id')
+    .orderBy('b.name', 'asc')
     .limit(parseInt(limit))
     .offset(parseInt(offset))
-  const [{ count }] = await base.clone().count('id as count')
+    .select('b.*')
+    .count('pb.id as product_count')
+  // knex returns count as string; normalize to number
+  for (const b of brands) {
+    b.product_count = parseInt(String(b.product_count ?? 0))
+  }
+  const [{ count }] = await base.clone().count('b.id as count')
 
   res.json({ brands, count: parseInt(String(count)), offset: parseInt(offset), limit: parseInt(limit) })
 }

@@ -77,10 +77,6 @@ const useSettingRoutes = (): INavItem[] => {
         label: "Shipping Carriers",
         to: "/settings/shipping-carriers",
       },
-      {
-        label: "Brands",
-        to: "/settings/brands",
-      },
     ],
     [t],
   );
