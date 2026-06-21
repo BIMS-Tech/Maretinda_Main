@@ -257,7 +257,7 @@ const ITEM_STATUS_STYLE: Record<string, string> = {
   rejected: "bg-red-100 text-red-700",
 }
 
-function sellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
+function SellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
   const prompt = usePrompt()
   const { mutate: approve, isPending: approving } = useApproveFlashSaleItem(flashSaleId, item.id, {
     onSuccess: () => toast.success("Application approved"),
@@ -568,7 +568,7 @@ export const FlashSaleDetail = () => {
           <div className="space-y-2">
             {sale.items.map((item: any) => (
               item.seller_id ? (
-                <sellerApplicationRow key={item.id} item={item} flashSaleId={sale.id} />
+                <SellerApplicationRow key={item.id} item={item} flashSaleId={sale.id} />
               ) : (
                 <ItemRow key={item.id} item={item} flashSaleId={sale.id} editable={editable} />
               )
