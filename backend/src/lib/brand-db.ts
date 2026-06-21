@@ -73,3 +73,42 @@ export async function clearProductBrand(scope: any, productId: string): Promise<
   const pg = getPg(scope)
   await pg('product_brand').where({ product_id: productId }).whereNull('deleted_at').del()
 }
+
+/** Number of (non-deleted) products assigned to a brand. */
+export async function countBrandProducts(scope: any, brandId: string): Promise<number> {
+  const pg = getPg(scope)
+  const [{ count }] = await pg('product_brand as pb')
+    .join('product as p', 'p.id', 'pb.product_id')
+    .where('pb.brand_id', brandId)
+    .whereNull('pb.deleted_at')
+    .whereNull('p.deleted_at')
+    .count('pb.id as count')
+  return parseInt(String(count))
+}
+
+/** Products assigned to a brand (paginated, optional title search). */
+export async function listBrandProducts(
+  scope: any,
+  brandId: string,
+  opts: { q?: string; limit?: number; offset?: number } = {}
+): Promise<{ products: any[]; count: number }> {
+  const pg = getPg(scope)
+  const { q, limit = 50, offset = 0 } = opts
+
+  const base = pg('product_brand as pb')
+    .join('product as p', 'p.id', 'pb.product_id')
+    .where('pb.brand_id', brandId)
+    .whereNull('pb.deleted_at')
+    .whereNull('p.deleted_at')
+  if (q) base.andWhereILike('p.title', `%${q}%`)
+
+  const products = await base
+    .clone()
+    .orderBy('p.title', 'asc')
+    .limit(limit)
+    .offset(offset)
+    .select('p.id', 'p.title', 'p.thumbnail', 'p.status', 'p.handle')
+  const [{ count }] = await base.clone().count('pb.id as count')
+
+  return { products, count: parseInt(String(count)) }
+}
