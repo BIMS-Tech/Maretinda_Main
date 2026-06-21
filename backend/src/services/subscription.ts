@@ -32,11 +32,41 @@ class SubscriptionService {
 
   async getActiveSubscription(sellerId: string): Promise<any | null> {
     const db = this.getDb()
+    // "active" means status active AND not past its end date. Without the
+    // end_date guard an expired subscription/trial would keep granting access
+    // until the hourly expiry job runs.
     return db("seller_subscription")
       .where("seller_id", sellerId)
       .where("status", "active")
+      .where("end_date", ">", new Date())
       .orderBy("created_at", "desc")
       .first()
+  }
+
+  // Flip any active-but-overdue subscriptions/trials to "expired". Run on a
+  // schedule so that direct `status = 'active'` reads elsewhere stay correct.
+  async expireOverdue(): Promise<number> {
+    const db = this.getDb()
+    const updated = await db("seller_subscription")
+      .where("status", "active")
+      .where("end_date", "<", new Date())
+      .update({ status: "expired", updated_at: new Date() })
+    return Number(updated || 0)
+  }
+
+  // Idempotent DB guards. Safe to call repeatedly (CREATE ... IF NOT EXISTS).
+  async initConstraints(): Promise<void> {
+    const db = this.getDb()
+    // At most one trial row per seller — atomically blocks double-trial races
+    // that the hasEverSubscribed() check alone can't (read-then-insert).
+    try {
+      await db.raw(
+        `CREATE UNIQUE INDEX IF NOT EXISTS seller_subscription_one_trial
+         ON seller_subscription (seller_id) WHERE is_trial = true`
+      )
+    } catch (e) {
+      console.error("[Subscription] initConstraints (one_trial) failed:", e)
+    }
   }
 
   async hasEverSubscribed(sellerId: string): Promise<boolean> {
@@ -92,6 +122,8 @@ class SubscriptionService {
   async startTrial(sellerId: string, planName: string): Promise<any> {
     const db = this.getDb()
 
+    await this.initConstraints()
+
     const alreadyUsed = await this.hasEverSubscribed(sellerId)
     if (alreadyUsed) throw new Error("Trial has already been used for this account.")
 
@@ -103,27 +135,36 @@ class SubscriptionService {
     const trialEnd = new Date(startDate)
     trialEnd.setDate(trialEnd.getDate() + plan.trial_days)
 
-    const [subscription] = await db("seller_subscription")
-      .insert({
-        id: generateId("vsub"),
-        seller_id: sellerId,
-        plan_id: plan.id,
-        plan_name: plan.name,
-        price: 0,
-        billing_period: "monthly",
-        start_date: startDate,
-        end_date: trialEnd,
-        trial_ends_at: trialEnd,
-        is_trial: true,
-        status: "active",
-        auto_renew: false,
-        payment_reference: "trial",
-        created_at: new Date(),
-        updated_at: new Date(),
-      })
-      .returning("*")
+    try {
+      const [subscription] = await db("seller_subscription")
+        .insert({
+          id: generateId("vsub"),
+          seller_id: sellerId,
+          plan_id: plan.id,
+          plan_name: plan.name,
+          price: 0,
+          billing_period: "monthly",
+          start_date: startDate,
+          end_date: trialEnd,
+          trial_ends_at: trialEnd,
+          is_trial: true,
+          status: "active",
+          auto_renew: false,
+          payment_reference: "trial",
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning("*")
 
-    return subscription
+      return subscription
+    } catch (e: any) {
+      // Unique-violation on the one-trial-per-seller index => concurrent/double
+      // trial attempt. Surface the same friendly message.
+      if (e?.code === "23505") {
+        throw new Error("Trial has already been used for this account.")
+      }
+      throw e
+    }
   }
 
   // Admin: manually assign a plan (complimentary or trial)
