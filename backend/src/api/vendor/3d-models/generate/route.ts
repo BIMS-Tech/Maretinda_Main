@@ -36,10 +36,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
     const sellerId = member.seller_id
 
-    // Verify subscription is Boost or Managed (tiers 2 and 3)
+    // Verify subscription is Boost or Managed (tiers 2 and 3).
+    // end_date guard: an expired-but-not-yet-swept subscription must not grant access.
     const subscription = await pg("seller_subscription")
       .where("seller_id", sellerId)
       .where("status", "active")
+      .where("end_date", ">", new Date())
       .first()
 
     if (!subscription) {

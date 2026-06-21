@@ -117,9 +117,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // Recover the plan/period from the pending intent stored at checkout, keyed
-    // by the authenticated seller (order_id/nonce don't survive the GiyaPay
-    // round-trip). The table is created by the checkout route.
+    // Recover the pending intent for this seller (keyed by the authenticated
+    // seller because GiyaPay's order_id/nonce don't survive the round-trip).
+    // We read → validate → renew → delete so the intent (and the seller's
+    // payment) is never lost if activation fails midway. The refno idempotency
+    // check above makes re-submitting the same payment safe.
     let intent: any = null
     try {
       intent = await pgConnection("subscription_payment_intent").where("seller_id", sellerId).first()
@@ -129,6 +131,24 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     if (!intent) {
       console.warn("[Subscription Activate] No pending intent for seller:", sellerId)
       res.status(404).json({ message: "No pending subscription payment found for this account. Please start the checkout again." })
+      return
+    }
+
+    // Intent must be recent — guards against activating a stale intent with an
+    // unrelated (later) payment callback.
+    const intentAgeMs = Date.now() - new Date(intent.created_at).getTime()
+    if (Number.isFinite(intentAgeMs) && intentAgeMs > 60 * 60 * 1000) {
+      console.warn("[Subscription Activate] Stale intent for seller:", sellerId, "age(ms):", intentAgeMs)
+      res.status(400).json({ message: "This checkout has expired. Please start the subscription again." })
+      return
+    }
+
+    // The amount actually paid must match the intent's price — blocks activating
+    // a more expensive plan with a smaller/replayed payment.
+    const expectedCentavos = Math.round(Number(intent.price) * 100)
+    if (Number(amount) !== expectedCentavos) {
+      console.error("[Subscription Activate] Amount mismatch — paid:", amount, "expected:", expectedCentavos, "seller:", sellerId)
+      res.status(400).json({ message: "Payment amount does not match the selected plan." })
       return
     }
 
@@ -157,7 +177,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       planId: plan.id,
     })
 
-    // Consume the intent so it can't be replayed.
+    // Consume the intent now that the subscription exists.
     try {
       await pgConnection("subscription_payment_intent").where("seller_id", sellerId).del()
     } catch { /* non-fatal */ }
