@@ -83,7 +83,12 @@ export const ProductAdditionalAttributesForm = () => {
   return (
     <RouteDrawer>
       <RouteDrawer.Header>
-        <Heading level="h2">Additional Attributes</Heading>
+        <RouteDrawer.Title asChild>
+          <Heading level="h2">Additional Attributes</Heading>
+        </RouteDrawer.Title>
+        <RouteDrawer.Description className="sr-only">
+          Edit additional product attributes
+        </RouteDrawer.Description>
       </RouteDrawer.Header>
       <RouteDrawer.Body className="max-h-[calc(86vh)] overflow-y-auto py-2">
         <Form {...form}>
