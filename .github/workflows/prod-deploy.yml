@@ -67,13 +67,27 @@ jobs:
 
       - name: Build & push backend image (Cloud Build)
         run: |
-          # --suppress-logs: the prod project's VPC-SC perimeter blocks streaming
-          # from the default Cloud Build logs bucket, which made gcloud exit 1 on
-          # long builds even when the build itself succeeded. Poll status instead.
-          gcloud builds submit ./backend \
+          # The prod project's VPC-SC perimeter blocks gcloud from streaming /
+          # polling logs in the default Cloud Build bucket, which makes a blocking
+          # `gcloud builds submit` exit 1 even when the build SUCCEEDS. So submit
+          # async and poll the build status ourselves (an API call, not the log
+          # bucket) — no false failures, no manual finish.
+          BUILD_ID=$(gcloud builds submit ./backend \
             --tag "$AR/backend:${{ github.sha }}" \
             --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
-            --timeout=2400s --suppress-logs
+            --timeout=2400s --async --format='value(id)')
+          echo "Submitted Cloud Build: $BUILD_ID"
+          while true; do
+            STATUS=$(gcloud builds describe "$BUILD_ID" \
+              --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
+              --format='value(status)' 2>/dev/null || echo "")
+            echo "build status: ${STATUS:-<transient>}"
+            case "$STATUS" in
+              SUCCESS) break ;;
+              FAILURE|CANCELLED|TIMEOUT|EXPIRED) echo "Cloud Build $STATUS"; exit 1 ;;
+            esac
+            sleep 20
+          done
           gcloud artifacts docker tags add \
             "$AR/backend:${{ github.sha }}" "$AR/backend:latest" || true
 
