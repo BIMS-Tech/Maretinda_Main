@@ -118,19 +118,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // Parse order_id: vrenew_{planSlug}_{billing}_{sellerId}_{timestamp}
-    // planSlug has no underscores (Foundation/Boost/Managed are single words)
-    const match = String(order_id).match(/^vrenew_([^_]+)_(monthly|yearly)_(.+)_(\d{10,})$/)
+    // Parse order_id: vrenew_{planSlug}_{billing}_{compactTs}
+    // The seller is taken from the authenticated session (sellerId above), not
+    // the order_id, so it is no longer embedded. planSlug has no underscores
+    // (Starter/Growth/Premium are single words).
+    const match = String(order_id).match(/^vrenew_([a-z0-9]+)_(monthly|yearly)_[a-z0-9]+$/i)
     if (!match) {
       res.status(400).json({ message: "Could not parse order ID" })
       return
     }
-    const [, planSlug, billingPeriod, ordersellerId] = match
-
-    if (ordersellerId !== sellerId) {
-      res.status(403).json({ message: "Order does not belong to this seller" })
-      return
-    }
+    const [, planSlug, billingPeriod] = match
 
     // Resolve plan — try by ID first, then by name
     const plan = await pgConnection("subscription_plan")

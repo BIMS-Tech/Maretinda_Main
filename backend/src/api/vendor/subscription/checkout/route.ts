@@ -95,8 +95,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       config = mainConfig
     }
 
+    // Keep order_id SHORT. GiyaPay rejects/echoes back the literal "undefined"
+    // for over-long order ids (the old format embedded the full seller_id and
+    // ran ~70 chars). The seller is resolved from the authenticated session at
+    // activation time, so it doesn't need to live in the order_id — plan +
+    // period + a compact base36 timestamp is enough (~30 chars).
     const planSlug = plan_name.toLowerCase().replace(/\s+/g, "_")
-    const orderId = `vrenew_${planSlug}_${billing_period}_${sellerId}_${Date.now()}`
+    const orderId = `vrenew_${planSlug}_${billing_period}_${Date.now().toString(36)}`
 
     const nonce = crypto.randomBytes(16).toString("hex")
     const timestamp = Math.floor(Date.now() / 1000).toString()
