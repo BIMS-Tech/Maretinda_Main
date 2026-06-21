@@ -63,14 +63,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       order_id, refno, nonce, timestamp, amount, hasSignature: !!signature,
     }))
 
-    if (!order_id || !refno || !nonce || !timestamp || !amount || !signature) {
-      console.warn("[Subscription Activate] Missing params — order_id:", order_id)
+    // NOTE: GiyaPay does not round-trip our order_id (it returns "undefined")
+    // or our nonce (it sends a different one). So we cannot validate the order
+    // type from order_id. We pass order_id through purely for signature
+    // verification (GiyaPay signed the callback URL containing order_id=undefined).
+    if (!refno || !nonce || !timestamp || !amount || !signature) {
+      console.warn("[Subscription Activate] Missing params — refno:", refno)
       res.status(400).json({ message: "Missing required payment parameters" })
-      return
-    }
-
-    if (!String(order_id).startsWith("vrenew_")) {
-      res.status(400).json({ message: "Invalid order type for subscription activation" })
       return
     }
 
@@ -118,43 +117,50 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    // Parse order_id: vrenew_{planSlug}_{billing}_{compactTs}
-    // The seller is taken from the authenticated session (sellerId above), not
-    // the order_id, so it is no longer embedded. planSlug has no underscores
-    // (Starter/Growth/Premium are single words).
-    const match = String(order_id).match(/^vrenew_([a-z0-9]+)_(monthly|yearly)_[a-z0-9]+$/i)
-    if (!match) {
-      res.status(400).json({ message: "Could not parse order ID" })
+    // Recover the plan/period from the pending intent stored at checkout, keyed
+    // by the authenticated seller (order_id/nonce don't survive the GiyaPay
+    // round-trip). The table is created by the checkout route.
+    let intent: any = null
+    try {
+      intent = await pgConnection("subscription_payment_intent").where("seller_id", sellerId).first()
+    } catch {
+      // table doesn't exist yet → no intent
+    }
+    if (!intent) {
+      console.warn("[Subscription Activate] No pending intent for seller:", sellerId)
+      res.status(404).json({ message: "No pending subscription payment found for this account. Please start the checkout again." })
       return
     }
-    const [, planSlug, billingPeriod] = match
 
-    // Resolve plan — try by ID first, then by name
+    const billingPeriod = (intent.billing_period === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly"
+
     const plan = await pgConnection("subscription_plan")
       .where(function (this: any) {
-        this.where("id", `subplan_${planSlug}`)
-          .orWhereRaw("LOWER(REPLACE(name, ' ', '_')) = ?", [planSlug])
+        this.where("id", intent.plan_id).orWhere("name", intent.plan_name)
       })
       .first()
 
     if (!plan) {
-      res.status(404).json({ message: `Plan "${planSlug}" not found` })
+      res.status(404).json({ message: `Plan "${intent.plan_name}" not found` })
       return
     }
 
-    const price = billingPeriod === "yearly"
-      ? (plan.yearly_price ?? Math.round(plan.price * 10))
-      : plan.price
+    const price = Number(intent.price)
 
     const subscriptionService = new SubscriptionService(req.scope)
     const subscription = await subscriptionService.renewSubscription({
       sellerId,
       planName: plan.name,
-      billingPeriod: billingPeriod as "monthly" | "yearly",
+      billingPeriod,
       price,
       paymentReference: refno,
       planId: plan.id,
     })
+
+    // Consume the intent so it can't be replayed.
+    try {
+      await pgConnection("subscription_payment_intent").where("seller_id", sellerId).del()
+    } catch { /* non-fatal */ }
 
     console.log(`[Subscription Activate] Activated ${plan.name} (${billingPeriod}) for seller ${sellerId}, ref: ${refno}`)
 
