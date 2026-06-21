@@ -391,8 +391,8 @@ function CountdownBox({ label, value }: { label: string; value: number }) {
 // ---------------------------------------------------------------------------
 type PaymentState = "idle" | "verifying" | "success" | "error" | "cancelled"
 
-function PaymentResultBanner({ state, result, onDismiss }: {
-  state: PaymentState; result: ActivateResponse | null; onDismiss: () => void
+function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
+  state: PaymentState; result: ActivateResponse | null; errorMessage?: string | null; onDismiss: () => void
 }) {
   if (state === "verifying") {
     return (
@@ -451,7 +451,7 @@ function PaymentResultBanner({ state, result, onDismiss }: {
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-red-300">Payment Failed</p>
-          <p className="text-xs text-red-400 mt-1">We could not process your payment. No charges were made. Please try again.</p>
+          <p className="text-xs text-red-400 mt-1">{errorMessage || "We could not process your payment. No charges were made. Please try again."}</p>
         </div>
         <button onClick={onDismiss} className="text-red-400/60 hover:text-red-400">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -843,22 +843,18 @@ export const SubscriptionPage = () => {
 
   const [paymentState, setPaymentState] = useState<PaymentState>("idle")
   const [paymentResult, setPaymentResult] = useState<ActivateResponse | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   // Detect GiyaPay callback params on mount
   useEffect(() => {
     if (typeof window === "undefined") return
     const hash = window.location.hash
-    const params = new URLSearchParams(window.location.search)
+    const rawSearch = window.location.search
+    const params = new URLSearchParams(rawSearch)
     window.history.replaceState({}, "", window.location.pathname)
 
     if (hash === "#payment-error")     { setPaymentState("error");     return }
     if (hash === "#payment-cancelled") { setPaymentState("cancelled"); return }
-
-    // Renewal activated by the storefront /giyapay/success page, which bounces
-    // back here with ?renewed=1. The subscription is already active in the DB —
-    // just show the success banner; useSubscriptionStatus (fetched on mount)
-    // will render the active plan.
-    if (params.get("renewed") === "1") { setPaymentState("success"); return }
 
     const signature = params.get("signature")
     const order_id  = params.get("order_id")
@@ -867,13 +863,24 @@ export const SubscriptionPage = () => {
     const timestamp = params.get("timestamp")
     const amount    = params.get("amount")
 
-    if (signature && order_id && String(order_id).startsWith("vrenew_") && refno && nonce && timestamp && amount) {
+    // Log exactly what GiyaPay returned so a failed renewal is diagnosable.
+    if (rawSearch && rawSearch.length > 1) {
+      console.log("[Subscription] GiyaPay return params:", {
+        order_id, refno, nonce, timestamp, amount, hasSignature: !!signature,
+        all: Object.fromEntries(params.entries()),
+      })
+    }
+
+    // Attempt activation whenever GiyaPay returned a renewal order + signature.
+    // The backend re-verifies the signature and reports any problem (which we
+    // surface), rather than silently skipping when a param looks missing.
+    if (signature && order_id && String(order_id).startsWith("vrenew_")) {
       setPaymentState("verifying")
       activate.mutate(
-        { order_id, refno, nonce, timestamp, amount, signature },
+        { order_id, refno: refno || "", nonce: nonce || "", timestamp: timestamp || "", amount: amount || "", signature },
         {
           onSuccess: (result) => { setPaymentResult(result); setPaymentState("success") },
-          onError:   ()       => setPaymentState("error"),
+          onError:   (err: any) => { setPaymentError(err?.message || "Payment verification failed."); setPaymentState("error") },
         }
       )
     }
@@ -987,7 +994,8 @@ export const SubscriptionPage = () => {
           <PaymentResultBanner
             state={paymentState}
             result={paymentResult}
-            onDismiss={() => { setPaymentState("idle"); setPaymentResult(null) }}
+            errorMessage={paymentError}
+            onDismiss={() => { setPaymentState("idle"); setPaymentResult(null); setPaymentError(null) }}
           />
         )}
 
