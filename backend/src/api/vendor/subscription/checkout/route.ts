@@ -137,6 +137,43 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       cancel_callback: `${sellerPanelUrl}/subscription#payment-cancelled`,
     }
 
+    // Persist a pending payment intent keyed by the seller. GiyaPay's callback
+    // does NOT round-trip our order_id (returns "undefined") OR our nonce (it
+    // sends a different one), so activation cannot recover the plan from the
+    // callback. The activate endpoint is authenticated, so we look the intent up
+    // by the seller instead. Table is created idempotently here — no migration.
+    try {
+      await pgConnection.raw(`
+        CREATE TABLE IF NOT EXISTS subscription_payment_intent (
+          seller_id      VARCHAR PRIMARY KEY,
+          plan_name      VARCHAR NOT NULL,
+          plan_id        VARCHAR,
+          billing_period VARCHAR NOT NULL,
+          price          NUMERIC NOT NULL,
+          order_id       VARCHAR,
+          nonce          VARCHAR,
+          created_at     TIMESTAMPTZ DEFAULT now(),
+          updated_at     TIMESTAMPTZ DEFAULT now()
+        )
+      `)
+      await pgConnection.raw(
+        `INSERT INTO subscription_payment_intent
+           (seller_id, plan_name, plan_id, billing_period, price, order_id, nonce, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, now(), now())
+         ON CONFLICT (seller_id) DO UPDATE SET
+           plan_name = EXCLUDED.plan_name,
+           plan_id = EXCLUDED.plan_id,
+           billing_period = EXCLUDED.billing_period,
+           price = EXCLUDED.price,
+           order_id = EXCLUDED.order_id,
+           nonce = EXCLUDED.nonce,
+           updated_at = now()`,
+        [sellerId, plan.name, plan.id, billing_period, price, orderId, nonce]
+      )
+    } catch (e) {
+      console.error("[Subscription Checkout] Failed to persist payment intent:", e)
+    }
+
     res.status(200).json({
       checkout_url: checkoutUrl,
       form_data: formData,

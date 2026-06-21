@@ -871,13 +871,14 @@ export const SubscriptionPage = () => {
       })
     }
 
-    // Attempt activation whenever GiyaPay returned a renewal order + signature.
-    // The backend re-verifies the signature and reports any problem (which we
-    // surface), rather than silently skipping when a param looks missing.
-    if (signature && order_id && String(order_id).startsWith("vrenew_")) {
+    // GiyaPay payment return — it carries signature + refno + amount (but does
+    // NOT round-trip our order_id or nonce). Activate on any such return; the
+    // backend verifies the signature and recovers the plan from the pending
+    // intent (keyed by the authenticated seller).
+    if (signature && refno && amount) {
       setPaymentState("verifying")
       activate.mutate(
-        { order_id, refno: refno || "", nonce: nonce || "", timestamp: timestamp || "", amount: amount || "", signature },
+        { order_id: order_id || "", refno, nonce: nonce || "", timestamp: timestamp || "", amount, signature },
         {
           onSuccess: (result) => { setPaymentResult(result); setPaymentState("success") },
           onError:   (err: any) => { setPaymentError(err?.message || "Payment verification failed."); setPaymentState("error") },
