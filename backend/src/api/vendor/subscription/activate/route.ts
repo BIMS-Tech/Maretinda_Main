@@ -59,7 +59,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
 
     const { order_id, refno, nonce, timestamp, amount, signature } = req.body as any
 
+    console.log("[Subscription Activate] Received:", JSON.stringify({
+      order_id, refno, nonce, timestamp, amount, hasSignature: !!signature,
+    }))
+
     if (!order_id || !refno || !nonce || !timestamp || !amount || !signature) {
+      console.warn("[Subscription Activate] Missing params — order_id:", order_id)
       res.status(400).json({ message: "Missing required payment parameters" })
       return
     }
