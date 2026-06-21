@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { SingleColumnPage } from "../../components/layout/pages"
 import {
   useSubscriptionStatus,
@@ -179,31 +179,123 @@ function GiyaPayAutoSubmit({
 
 // ---------------------------------------------------------------------------
 // Payment method selector modal
+//
+// Mirrors the storefront checkout gateway selector (GiyaPayGatewayDirect):
+// a radio-style list of the *activated* GiyaPay gateways with branded icons,
+// plus a "Pay with …" CTA. The chosen `payment_method` is posted directly to
+// GiyaPay so the customer skips GiyaPay's own method-picker page.
 // ---------------------------------------------------------------------------
-const GATEWAY_LABELS: Record<string, string> = {
-  GCASH: "GCash",
-  PAYMAYA: "PayMaya",
-  INSTAPAY: "InstaPay",
-  "MASTERCARD/VISA": "Mastercard / Visa",
-  QRPH: "QR Ph",
+const PAYMENT_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
+  "MASTERCARD/VISA": {
+    title: "Visa / Mastercard",
+    icon: (
+      <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="32" rx="4" fill="#1434CB" />
+        <text x="24" y="20" textAnchor="middle" fontSize="12" fill="white" fontWeight="bold" fontFamily="Arial, sans-serif">VISA</text>
+      </svg>
+    ),
+  },
+  GCASH: {
+    title: "GCash",
+    icon: (
+      <div className="flex items-center justify-center w-12 h-8 bg-blue-600 rounded">
+        <span className="text-white font-bold text-xs">GCash</span>
+      </div>
+    ),
+  },
+  PAYMAYA: {
+    title: "PayMaya",
+    icon: (
+      <div className="flex items-center justify-center w-12 h-8 bg-green-600 rounded">
+        <span className="text-white font-bold text-[10px]">Maya</span>
+      </div>
+    ),
+  },
+  INSTAPAY: {
+    title: "InstaPay",
+    icon: (
+      <div className="flex items-center justify-center w-12 h-8 bg-green-700 rounded">
+        <span className="text-white font-bold text-[10px]">InstaPay</span>
+      </div>
+    ),
+  },
+  QRPH: {
+    title: "QR Ph",
+    icon: (
+      <svg width="48" height="32" viewBox="0 0 48 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="48" height="32" rx="4" fill="white" stroke="#E5E7EB" strokeWidth="1" />
+        <text x="16" y="20" textAnchor="middle" fontSize="9" fill="#EF4444" fontWeight="bold" fontFamily="Arial, sans-serif">QR</text>
+        <text x="32" y="20" textAnchor="middle" fontSize="9" fill="#F59E0B" fontWeight="bold" fontFamily="Arial, sans-serif">Ph</text>
+      </svg>
+    ),
+  },
+  WECHATPAY: {
+    title: "WeChat Pay",
+    icon: (
+      <div className="flex items-center justify-center w-12 h-8 bg-[#07C160] rounded">
+        <span className="text-white font-bold text-[10px]">WeChat</span>
+      </div>
+    ),
+  },
+  UNIONPAY: {
+    title: "UnionPay",
+    icon: (
+      <div className="flex items-center justify-center w-12 h-8 bg-[#C0153E] rounded">
+        <span className="text-white font-bold text-[9px]">UnionPay</span>
+      </div>
+    ),
+  },
 }
 
 function MethodModal({ methods, onSelect, onCancel }: {
   methods: string[]; onSelect: (m: string) => void; onCancel: () => void
 }) {
+  const available = methods.filter((m) => PAYMENT_METHOD_CONFIG[m])
+  const [selected, setSelected] = useState<string>(available[0] ?? "")
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">Choose Payment Method</h3>
-        <div className="flex flex-col gap-2">
-          {methods.map((m) => (
-            <button key={m} onClick={() => onSelect(m)}
-              className="rounded-xl border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-800 hover:border-violet-400 hover:bg-violet-50 transition-colors">
-              {GATEWAY_LABELS[m] || m}
-            </button>
-          ))}
+      <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm overflow-hidden">
+        <div className="px-6 pt-6 pb-4">
+          <h3 className="text-base font-semibold text-gray-900">Choose Payment Method</h3>
+          <p className="mt-1 text-xs text-gray-500">Select how you'd like to pay via GiyaPay.</p>
         </div>
-        <button onClick={onCancel} className="mt-4 w-full text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+
+        <div className="border-y border-gray-200">
+          {available.map((m) => {
+            const config = PAYMENT_METHOD_CONFIG[m]
+            const isSelected = selected === m
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setSelected(m)}
+                className={`w-full flex items-center gap-x-4 px-6 py-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors ${
+                  isSelected ? "bg-violet-50" : ""
+                }`}
+              >
+                <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  isSelected ? "border-violet-600 bg-violet-600" : "border-gray-300 bg-white"
+                }`}>
+                  {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
+                </span>
+                <span className="flex-shrink-0 flex items-center justify-center">{config.icon}</span>
+                <span className="text-sm font-semibold text-gray-900 flex-1 text-left">{config.title}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="px-6 py-5 flex flex-col gap-2">
+          <button
+            onClick={() => selected && onSelect(selected)}
+            disabled={!selected}
+            className="w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
+          >
+            {selected ? `Pay with ${PAYMENT_METHOD_CONFIG[selected].title}` : "Select a method"}
+          </button>
+          <button onClick={onCancel} className="w-full text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+        </div>
       </div>
     </div>
   )
@@ -668,7 +760,7 @@ function TrialBanner({
 // Active subscription card
 // ---------------------------------------------------------------------------
 function ActiveSubscriptionCard({ subscription }: {
-  subscription: { plan_name: string; billing_period: string; status: string; start_date: string; end_date: string; price: number; payment_reference?: string | null }
+  subscription: { plan_name: string; billing_period: string; status: string; start_date: string; end_date: string | null; price: number; payment_reference?: string | null }
 }) {
   const countdown = useCountdown(subscription.end_date)
   const isExpiring = subscription.end_date
