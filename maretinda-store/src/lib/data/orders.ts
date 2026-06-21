@@ -15,7 +15,11 @@ export const retrieveOrderSet = async (id: string) => {
 
 	return sdk.client
 		.fetch<any>(`/store/order-set/${id}`, {
-			cache: 'force-cache',
+			// Order status (fulfillment_status) changes on the backend when the
+			// seller marks the order shipped/delivered. force-cache here pinned the
+			// page to the first snapshot (e.g. "Received") forever, so always fetch
+			// fresh — matching listOrders, which uses no-cache for the same reason.
+			cache: 'no-cache',
 			headers,
 			method: 'GET',
 		})
