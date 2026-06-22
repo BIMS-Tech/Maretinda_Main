@@ -368,8 +368,12 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       contextKeys: context ? Object.keys(context) : [],
     })
     
-    // MedusaJS passes amount already in the smallest currency unit (centavos for PHP)
-    const amountInCents = Math.round(Number(amount)).toString()
+    // Medusa passes the amount in MAJOR units (pesos) — the store formats it
+    // directly as currency with no /100 (see lib/helpers/money.ts), and the
+    // subscription flow likewise does price * 100. GiyaPay's `amount` field
+    // expects the smallest unit (centavos), so multiply by 100. Without this we
+    // undercharge 100x (a ₱557 cart was sent as 557 centavos = ₱5.57).
+    const amountInCents = Math.round(Number(amount) * 100).toString()
 
     // Use storefront URL for callbacks
     const storefrontUrl = process.env.STOREFRONT_URL || process.env.STORE_CORS?.split(",")[0] || "http://localhost:3000"
