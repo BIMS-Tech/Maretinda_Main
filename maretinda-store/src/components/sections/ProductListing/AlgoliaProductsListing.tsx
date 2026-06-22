@@ -194,47 +194,79 @@ const ProductsListing = ({
 
 	return (
 		<>
-			<div className="text-[#999] font-medium text-[20px] grid grid-cols-2 grid-rows-2 gap-y-6 gap-x-[20px] md:grid-flow-col md:grid-cols-none md:grid-rows-1 justify-between w-full border-b-[1px] border-[#00000021] mb-12">
-				<div className="md:hidden order-1">
-					<Button
-						className="w-full bg-white rounded-[5px] border-black flex justify-center items-center py-[15px] gap-[10px] font-poppins font-medium text-base border-[1px]"
-						onClick={() => setIsFilterModalOpen(true)}
-					>
-						<BsSliders size={24} />
-						Filter
-					</Button>
+			<div className="w-full border-b-[1px] border-[#00000021] mb-8 md:mb-12">
+				{/* ── Mobile toolbar ── */}
+				<div className="md:hidden flex flex-col gap-3 pb-4">
+					<div className="flex gap-3">
+						<Button
+							className="flex-1 h-12 bg-white rounded-lg border-[1px] border-black flex justify-center items-center gap-2 font-poppins font-medium text-base"
+							onClick={() => setIsFilterModalOpen(true)}
+						>
+							<BsSliders size={20} />
+							Filter
+						</Button>
+						<div className="flex-1 h-12 flex items-center rounded-lg border-[1px] border-black px-3 text-[15px]">
+							<span className="text-nowrap text-[#999] font-medium">Sort by:</span>
+							<SelectField
+								className="ml-1 flex-1 text-black bg-transparent border-none !font-medium !text-[15px] !p-0 !h-auto"
+								full
+								options={sortByDropdownOptions}
+								selectOption={refineSort}
+								selected={currentSort}
+							/>
+						</div>
+					</div>
+					<div className="flex items-center justify-between">
+						<span className="text-[#999] font-medium text-[15px]">{`${count} of ${count} results`}</span>
+						<div className="flex">
+							<Button
+								className={cn(`toggleIcon ${isToggleActive && 'border-b-[3px]'}`)}
+								onClick={() => setIsToggleActive(true)}
+							>
+								<CardViewIcon size={24} />
+							</Button>
+							<Button
+								className={cn(`toggleIcon ${!isToggleActive && 'border-b-[3px]'}`)}
+								onClick={() => setIsToggleActive(false)}
+							>
+								<ListViewIcon size={24} />
+							</Button>
+						</div>
+					</div>
 				</div>
-				<div className="hidden md:flex order-1 gap-[7px] items-center pb-[18px] ">
-					<Funnel height={18} width={18} /> Filter
-				</div>
-				<div className="order-3 md:order-2">{`${count} of ${count} results`}</div>
-				<div className="order-2 md:order-3 text-[16px] md:text-[20px] flex items-center rounded-[5px] pl-[10px] md:p-0 md:pb-[18px] border-black border-[1px] md:border-none">
-					<span className="text-nowrap">Sort by: </span>
-					<SelectField
-						className="ml-2 text-black bg-transparent border-none !font-medium !text-[16px] md:!text-[20px] !p-0 !h-auto md:min-w-[192px]"
-						full
-						options={sortByDropdownOptions}
-						selectOption={refineSort}
-						selected={currentSort}
-					/>
-				</div>
-				<div className="order-4 h-full flex justify-end">
-					<Button
-						className={cn(
-							`toggleIcon ${isToggleActive && 'border-b-[3px]'}`,
-						)}
-						onClick={() => setIsToggleActive(true)}
-					>
-						<CardViewIcon size={27} />
-					</Button>
-					<Button
-						className={cn(
-							`toggleIcon ${!isToggleActive && 'border-b-[3px]'}`,
-						)}
-						onClick={() => setIsToggleActive(false)}
-					>
-						<ListViewIcon size={27} />
-					</Button>
+
+				{/* ── Desktop toolbar ── */}
+				<div className="hidden md:flex items-center justify-between text-[#999] font-medium text-[20px] pb-[18px]">
+					<div className="flex gap-[7px] items-center">
+						<Funnel height={18} width={18} /> Filter
+					</div>
+					<div>{`${count} of ${count} results`}</div>
+					<div className="flex items-center gap-4">
+						<div className="flex items-center">
+							<span className="text-nowrap">Sort by: </span>
+							<SelectField
+								className="ml-2 text-black bg-transparent border-none !font-medium !text-[20px] !p-0 !h-auto min-w-[192px]"
+								full
+								options={sortByDropdownOptions}
+								selectOption={refineSort}
+								selected={currentSort}
+							/>
+						</div>
+						<div className="flex">
+							<Button
+								className={cn(`toggleIcon ${isToggleActive && 'border-b-[3px]'}`)}
+								onClick={() => setIsToggleActive(true)}
+							>
+								<CardViewIcon size={27} />
+							</Button>
+							<Button
+								className={cn(`toggleIcon ${!isToggleActive && 'border-b-[3px]'}`)}
+								onClick={() => setIsToggleActive(false)}
+							>
+								<ListViewIcon size={27} />
+							</Button>
+						</div>
+					</div>
 				</div>
 			</div>
 

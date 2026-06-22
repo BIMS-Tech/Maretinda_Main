@@ -6,7 +6,15 @@ function msUntil(iso: string): number {
 	return Math.max(0, new Date(iso).getTime() - Date.now())
 }
 
-export const FlashSaleCountdown = ({ endsAt }: { endsAt: string }) => {
+type CountdownProps = {
+	endsAt: string
+	/** 'dark' tunes label/separator colors for use on a dark background. */
+	tone?: 'light' | 'dark'
+	/** Hide the built-in "Ends in" label (e.g. when the caller renders its own). */
+	hideLabel?: boolean
+}
+
+export const FlashSaleCountdown = ({ endsAt, tone = 'light', hideLabel = false }: CountdownProps) => {
 	const [ms, setMs] = useState(() => msUntil(endsAt))
 
 	useEffect(() => {
@@ -37,18 +45,21 @@ export const FlashSaleCountdown = ({ endsAt }: { endsAt: string }) => {
 		? [{ label: `${dd}d`, value: `${dd}` }, { label: 'h', value: hh }, { label: 'm', value: mm }]
 		: [{ label: 'h', value: hh }, { label: 'm', value: mm }, { label: 's', value: ss }]
 
+	const labelClass = tone === 'dark' ? 'text-white/60' : 'text-[#404040]'
+	const sepClass = tone === 'dark' ? 'text-white/40' : 'text-[#1B1B1B]/40'
+
 	return (
-		<div className="flex items-center gap-1 font-mono font-bold text-[14px]">
-			<span className="text-[12px] text-[#404040] mr-1">Ends in</span>
+		<div className="flex items-center gap-1.5 font-mono font-bold text-[14px]">
+			{!hideLabel && <span className={`text-[12px] mr-1 ${labelClass}`}>Ends in</span>}
 			{units.map(({ value }, i) => (
 				<React.Fragment key={i}>
 					<span
 						suppressHydrationWarning
-						className="bg-[#1B1B1B] text-white px-2 py-1.5 rounded-md tabular-nums"
+						className="bg-[#1B1B1B] text-white px-2.5 py-1.5 rounded-md tabular-nums shadow-sm"
 					>
 						{value}
 					</span>
-					{i < units.length - 1 && <span className="text-[#1B1B1B]/40">:</span>}
+					{i < units.length - 1 && <span className={sepClass}>:</span>}
 				</React.Fragment>
 			))}
 		</div>

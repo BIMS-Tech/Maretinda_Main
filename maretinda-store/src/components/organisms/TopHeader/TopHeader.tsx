@@ -135,7 +135,9 @@ const TopHeaderBanner: React.FC = () => {
 					<Link href={`/${locale}/vouchers`}
 						className="hidden md:inline-flex items-center gap-1.5 text-white/80 hover:text-white transition-colors whitespace-nowrap"
 					>
-						<span className="text-[11px]">🎟️</span>
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4V7z" /><path d="M13 5v2M13 11v2M13 17v2" />
+						</svg>
 						Vouchers
 					</Link>
 
@@ -156,7 +158,7 @@ const TopHeaderBanner: React.FC = () => {
 						{appTooltip && (
 							<div className="absolute left-0 top-full mt-2 px-3 py-2 rounded-lg text-[11.5px] whitespace-nowrap z-50 pointer-events-none"
 								style={{ backgroundColor: '#1B1B1B', color: 'white', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-								{s.appComingSoon} 🚀
+								{s.appComingSoon}
 								<div className="absolute -top-1 left-4 w-2 h-2 rotate-45" style={{ backgroundColor: '#1B1B1B' }} />
 							</div>
 						)}

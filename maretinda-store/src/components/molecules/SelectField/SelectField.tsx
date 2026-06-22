@@ -68,7 +68,7 @@ export const SelectField = ({
 				/>
 			</div>
 			{open && (
-				<ul className="absolute border border-black/15 bg-component-secondary rounded-sm w-full top-[47px] z-10">
+				<ul className="absolute border border-black/15 bg-component-secondary rounded-sm min-w-full w-max max-w-[80vw] right-0 top-[47px] z-50 shadow-lg">
 					{options.map(
 						({ label, value, hidden }, index) =>
 							!hidden && (
@@ -90,7 +90,7 @@ export const SelectField = ({
 											size={20}
 										/>
 									)}
-									<span className="ml-5">{label}</span>
+									<span className="ml-5 whitespace-nowrap">{label}</span>
 								</li>
 							),
 					)}
