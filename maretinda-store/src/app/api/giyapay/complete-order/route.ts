@@ -38,13 +38,21 @@ export async function POST(request: NextRequest) {
     // Determine which cart ID to use for completion
     // Prefer the real cart ID from cookies if available and different from callback
     let cartIdToComplete = order_id;
-    
-    // If the callback order_id looks like a generated fallback (starts with 'cart_' followed by numbers only)
-    // and we have a real cart ID from cookies, use the real one
-    const isGeneratedId = /^cart_\d+$/.test(order_id);
-    if (isGeneratedId && realCartId && realCartId !== order_id) {
-      console.log('[GiyaPay] Callback order_id appears to be a generated fallback');
-      console.log('[GiyaPay] Using real cart ID from cookies instead:', realCartId);
+
+    // GiyaPay's callback order_id is unreliable: it is either a generated
+    // fallback (cart_<digits>) or missing entirely ("undefined"). In both cases
+    // the real Medusa cart id lives in the cookie. Prefer it so the FIRST
+    // completion attempt targets the right cart — that path is the one that
+    // records the real order id and seller on the transaction. Without this we
+    // fall through to the retry path (which used to skip the transaction update)
+    // and the transaction is stranded with order_id "undefined" / no seller.
+    const isBogus = (v: any) => {
+      const s = String(v ?? '').trim().toLowerCase();
+      return !s || s === 'undefined' || s === 'null';
+    };
+    const isGeneratedId = /^cart_\d+$/.test(String(order_id || ''));
+    if ((isBogus(order_id) || isGeneratedId) && realCartId && realCartId !== order_id) {
+      console.log('[GiyaPay] Callback order_id missing or a generated fallback; using real cart ID from cookies:', realCartId);
       cartIdToComplete = realCartId;
     }
     
@@ -153,7 +161,26 @@ export async function POST(request: NextRequest) {
             }
             
             console.log('[GiyaPay] Order completed successfully with retry:', finalOrderId);
-            
+
+            // Backstop: stamp the real order id + cart onto the transaction.
+            // The main path does this too, but if we reached the retry it means
+            // the main path failed — without this the transaction is left with
+            // order_id "undefined" and no seller, invisible in the seller panel.
+            try {
+              await fetch(`${backendUrl}/giyapay/update-transaction`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  reference_number: refno,
+                  order_id: finalOrderId,
+                  cart_id: realCartId,
+                }),
+              });
+              console.log('[GiyaPay] Transaction updated with order ID (retry):', finalOrderId);
+            } catch (updateError) {
+              console.log('[GiyaPay] Failed to update transaction after retry (non-fatal):', updateError);
+            }
+
             // Clear the cart cookie since order is completed
             const cookieStore = await cookies();
             cookieStore.set('_medusa_cart_id', '', {
@@ -161,7 +188,7 @@ export async function POST(request: NextRequest) {
               path: '/',
             });
             console.log('[GiyaPay] Cart cookie cleared');
-            
+
             return NextResponse.json({
               success: true,
               order_id: finalOrderId,
