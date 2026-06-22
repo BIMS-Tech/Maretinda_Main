@@ -22,27 +22,27 @@ import PaymentContainer, {
 const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
 	'INSTAPAY': {
 		title: 'InstaPay',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'MASTERCARD/VISA': {
 		title: 'Visa / Mastercard',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'GCASH': {
 		title: 'GCash',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'QRPH': {
 		title: 'QR Ph',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'WECHATPAY': {
 		title: 'WeChat Pay',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'UNIONPAY': {
 		title: 'UnionPay',
-		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" style={{ height: 24, width: 'auto', objectFit: 'contain' }} /></span>,
+		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 };
 
@@ -224,12 +224,16 @@ const CartPaymentSection = ({
 			{/* Header with Checkmark and Edit */}
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-3">
-					{!isOpen && paymentReady && (
-						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
+					{!isOpen && paymentReady ? (
+						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#432C63' }}>
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
+					) : (
+						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+						</div>
 					)}
-					<h2 className="text-2xl font-bold" style={{ color: '#111827' }}>
+					<h2 className="text-xl font-bold" style={{ color: '#111827' }}>
 						Payment
 					</h2>
 				</div>
@@ -237,8 +241,8 @@ const CartPaymentSection = ({
 					<button
 						type="button"
 						onClick={handleEdit}
-						className="text-sm font-medium underline"
-						style={{ color: '#2563eb' }}
+						className="text-sm font-semibold hover:opacity-80 transition-opacity"
+						style={{ color: '#432C63' }}
 					>
 						Edit
 					</button>
@@ -258,18 +262,18 @@ const CartPaymentSection = ({
 										key={method}
 										type="button"
 										onClick={() => setGiyaPaySubMethod(method)}
-										className="w-full flex items-center gap-x-4 px-5 py-4 border rounded-lg text-left hover:bg-gray-50 transition-colors"
+										className="w-full flex items-center gap-x-3 px-3.5 py-2.5 border rounded-lg text-left hover:bg-gray-50 transition-colors"
 										style={{
-											borderColor: isSelected ? '#3b82f6' : '#d1d5db',
+											borderColor: isSelected ? '#432C63' : '#e5e7eb',
 											borderWidth: isSelected ? '2px' : '1px',
-											backgroundColor: isSelected ? '#eff6ff' : 'white',
+											backgroundColor: isSelected ? 'rgba(67,44,99,0.05)' : 'white',
 										}}
 									>
-										<div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'}`}>
-											{isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+										<div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-[#432C63] bg-[#432C63]' : 'border-gray-300 bg-white'}`}>
+											{isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
 										</div>
 										<div className="flex-shrink-0">{config.icon}</div>
-										<span className="text-base font-semibold" style={{ color: '#111827' }}>{config.title}</span>
+										<span className="text-sm font-semibold" style={{ color: '#111827' }}>{config.title}</span>
 									</button>
 								);
 							})}
@@ -329,7 +333,7 @@ const CartPaymentSection = ({
 					/>
 
 					<Button
-						className="mt-6 rounded-lg !font-medium h-12 text-base"
+						className="mt-5 rounded-lg !font-semibold h-10 text-sm px-6 w-full sm:w-auto"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard) ||
@@ -337,7 +341,7 @@ const CartPaymentSection = ({
 						}
 						loading={isLoading}
 						onClick={handleSubmit}
-						style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
+						style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 600 }}
 						type="button"
 					>
 						Continue to review

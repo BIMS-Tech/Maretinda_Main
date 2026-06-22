@@ -31,9 +31,9 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 	return (
 		<RadioGroup.Option
 			className={clx(
-				'flex items-center gap-x-4 cursor-pointer py-5 px-5 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors',
+				'flex items-center gap-x-3 cursor-pointer py-2.5 px-3.5 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors',
 				{
-					'bg-blue-50':
+					'bg-[#432C63]/5':
 						selectedPaymentOptionId === paymentProviderId,
 				},
 			)}
@@ -43,20 +43,20 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
 		>
 			{({ checked }) => (
 				<>
-					<div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-						checked 
-							? 'border-blue-600 bg-blue-600' 
+					<div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+						checked
+							? 'border-[#432C63] bg-[#432C63]'
 							: 'border-gray-300 bg-white'
 					}`}>
 						{checked && (
-							<div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+							<div className="w-1.5 h-1.5 rounded-full bg-white"></div>
 						)}
 					</div>
 					<div className="flex-shrink-0 flex items-center justify-center">
 						{paymentInfoMap[paymentProviderId]?.icon}
 					</div>
 					{!hideTitle && (
-						<Text className="text-base font-semibold flex-1" style={{ color: '#111827' }}>
+						<Text className="text-sm font-semibold flex-1" style={{ color: '#111827' }}>
 							{paymentInfoMap[paymentProviderId]?.title ||
 								paymentProviderId}
 						</Text>

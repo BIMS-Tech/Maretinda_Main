@@ -18,8 +18,8 @@ const GiyaPayIcon = () => (
 
 // Delivery truck icon for Cash on Delivery
 const DeliveryTruckIcon = () => (
-  <div className="flex items-center justify-center w-10 h-10">
-    <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div className="flex items-center justify-center w-7 h-7">
+    <svg width="26" height="26" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Truck body */}
       <rect x="6" y="18" width="20" height="10" fill="#FF6B35" rx="2"/>
       {/* Window */}
@@ -36,8 +36,8 @@ const DeliveryTruckIcon = () => (
 )
 
 const GiyaPayMethodIcon = ({ src, alt }: { src: string; alt: string }) => (
-  <span style={{ background: '#fff', borderRadius: 4, padding: '2px 6px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}>
-    <img src={src} alt={alt} style={{ height: 24, width: 'auto', objectFit: 'contain' }} />
+  <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}>
+    <img src={src} alt={alt} style={{ height: 16, width: 'auto', objectFit: 'contain' }} />
   </span>
 )
 

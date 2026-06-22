@@ -196,7 +196,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
 
-function ChatPanel({ conv, onNewMessage }: { conv: ChatConversation; onNewMessage: () => void }) {
+function ChatPanel({ conv, onNewMessage, onBack }: { conv: ChatConversation; onNewMessage: () => void; onBack?: () => void }) {
 	const [messages, setMessages] = useState<ChatMessage[]>([])
 	const [loading, setLoading] = useState(true)
 	const [input, setInput] = useState('')
@@ -271,6 +271,18 @@ function ChatPanel({ conv, onNewMessage }: { conv: ChatConversation; onNewMessag
 				className="px-4 py-3 flex items-center gap-3 shrink-0"
 				style={{ background: 'linear-gradient(135deg, #372248 0%, #5c3882 100%)' }}
 			>
+				{onBack && (
+					<button
+						type="button"
+						onClick={onBack}
+						aria-label="Back to conversations"
+						className="md:hidden -ml-1 text-white/90 hover:text-white transition-colors shrink-0"
+					>
+						<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+						</svg>
+					</button>
+				)}
 				<div className="w-9 h-9 rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center shrink-0">
 					<span className="text-xs font-bold text-white">{initials(label)}</span>
 				</div>
@@ -423,10 +435,10 @@ export const UserMessagesSection = () => {
 	}, [loadConversations])
 
 	return (
-		<div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm" style={{ height: '620px' }}>
+		<div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm h-[78vh] min-h-[480px] md:h-[620px]">
 			<div className="flex h-full">
-				{/* Sidebar */}
-				<div className="w-56 sm:w-64 border-r border-gray-200 flex flex-col shrink-0 bg-white">
+				{/* Sidebar — full width on mobile when nothing is selected, hidden once a chat is open */}
+				<div className={`w-full md:w-64 border-r border-gray-200 flex-col shrink-0 bg-white ${selected ? 'hidden md:flex' : 'flex'}`}>
 					<div className="px-4 py-3 border-b border-gray-100">
 						<h2 className="font-semibold text-gray-900 text-sm">Conversations</h2>
 					</div>
@@ -453,10 +465,10 @@ export const UserMessagesSection = () => {
 					</div>
 				</div>
 
-				{/* Chat area */}
-				<div className="flex-1 flex min-w-0">
+				{/* Chat area — hidden on mobile until a conversation is selected */}
+				<div className={`flex-1 min-w-0 ${selected ? 'flex' : 'hidden md:flex'}`}>
 					{selected ? (
-						<ChatPanel key={selected.id} conv={selected} onNewMessage={loadConversations} />
+						<ChatPanel key={selected.id} conv={selected} onNewMessage={loadConversations} onBack={() => setSelected(null)} />
 					) : (
 						<div className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-8 bg-[#f7f5fa]">
 							<div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center">

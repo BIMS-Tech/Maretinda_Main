@@ -191,7 +191,7 @@ export function Footer() {
 							{PAYMENT_LOGOS.map((logo) => (
 								<span
 									key={logo.alt}
-									className="h-9 w-[58px] bg-white flex items-center justify-center p-1.5"
+									className="h-7 w-[54px] bg-white flex items-center justify-center px-1.5 py-1"
 								>
 									{/* eslint-disable-next-line @next/next/no-img-element */}
 									<img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
@@ -205,7 +205,7 @@ export function Footer() {
 							{COURIER_LOGOS.map((logo) => (
 								<span
 									key={logo.alt}
-									className={`h-9 w-[58px] flex items-center justify-center p-1.5 ${logo.dark ? 'bg-[#111]' : 'bg-white'}`}
+									className={`h-7 w-[54px] flex items-center justify-center px-1.5 py-1 ${logo.dark ? 'bg-[#111]' : 'bg-white'}`}
 								>
 									{/* eslint-disable-next-line @next/next/no-img-element */}
 									<img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
