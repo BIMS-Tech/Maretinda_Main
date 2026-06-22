@@ -2064,7 +2064,7 @@ export function SearchIcon2({
 }
 
 export function ProfileIcon2({
-	color = '#000000',
+	color = 'currentColor',
 	size = 18,
 	className = '',
 }: IconProps) {
@@ -2097,7 +2097,7 @@ export function ProfileIcon2({
 }
 
 export function CartIcon2({
-	color = '#000000',
+	color = 'currentColor',
 	size = 24,
 	className = '',
 }: IconProps) {
@@ -2144,7 +2144,7 @@ export function CartIcon2({
 }
 
 export function WishlistIcon2({
-	color = '#000000',
+	color = 'currentColor',
 	size = 24,
 	className = '',
 }: IconProps) {
