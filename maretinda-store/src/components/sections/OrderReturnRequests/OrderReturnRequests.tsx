@@ -25,14 +25,14 @@ export const OrderReturnRequests = ({
 
 	if (isEmpty(processedReturns)) {
 		return (
-			<div className="mt-8">
+			<div className="mt-8 px-4">
 				<Heading
 					className="uppercase text-center heading-lg"
 					level="h2"
 				>
 					No returns
 				</Heading>
-				<p className="text-center text-secondary w-96 mt-8 mx-auto">
+				<p className="text-center text-secondary max-w-96 w-full mt-8 mx-auto">
 					{
 						"You haven't requested any returns yet. Once you request a return, it will appear here."
 					}
