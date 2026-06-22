@@ -101,7 +101,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-8 grid grid-cols-12 gap-4 lg:gap-5">
 
 				{/* Main hero card */}
-				<div className="col-span-12 lg:col-span-8 relative rounded-2xl overflow-hidden min-h-[380px] lg:min-h-[420px] flex" style={{ backgroundColor: '#FBF9FC' }}>
+				<div className="col-span-12 lg:col-span-8 relative rounded-2xl overflow-hidden lg:min-h-[420px] flex flex-col lg:flex-row" style={{ backgroundColor: '#FBF9FC' }}>
 					{/* Striped background */}
 					<div
 						className="absolute inset-0"
@@ -110,11 +110,11 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 							backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
 						}}
 					/>
-					{/* Fade overlay */}
-					<div className="absolute inset-0" style={{ background: 'linear-gradient(to right, #FBF9FC 0%, rgba(251,249,252,0.88) 55%, transparent 100%)' }} />
+					{/* Fade overlay — desktop overlay effect only */}
+					<div className="absolute inset-0 hidden lg:block" style={{ background: 'linear-gradient(to right, #FBF9FC 0%, rgba(251,249,252,0.88) 55%, transparent 100%)' }} />
 
 					{/* Copy */}
-					<div className="relative z-10 p-8 lg:p-12 max-w-[58%] flex flex-col justify-between">
+					<div className="relative z-10 p-6 sm:p-8 lg:p-12 w-full max-w-full lg:max-w-[58%] flex flex-col justify-between bg-[#FBF9FC] lg:bg-transparent">
 						<div>
 							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase" style={{ color: '#432C63' }}>
 								<span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
@@ -129,7 +129,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 									</span>
 								))}
 							</h1>
-							<p className="mt-4 text-[15px] text-[#404040] leading-relaxed max-w-[420px] hidden md:block">
+							<p className="mt-4 text-[14px] sm:text-[15px] text-[#404040] leading-relaxed max-w-[420px]">
 								{subheading}
 							</p>
 						</div>
@@ -166,15 +166,15 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 						</div>
 					</div>
 
-					{/* Featured product panel */}
-					<div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[44%]">
+					{/* Featured product panel — stacked below copy on mobile, overlaid on the right on desktop */}
+					<div className="relative w-full h-56 sm:h-64 mt-auto lg:mt-0 lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:h-auto lg:w-[44%]">
 						<div className="relative w-full h-full">
 							<Image
 								src={productImage}
 								alt={`${productName} — featured pick`}
 								fill
 								className="object-cover object-center"
-								sizes="25vw"
+								sizes="(min-width: 1024px) 25vw, 100vw"
 								priority
 								unoptimized={productImage.startsWith('http')}
 							/>
@@ -225,7 +225,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 					</div>
 
 					{/* Slider dots */}
-					<div className="absolute bottom-5 left-8 lg:left-12 flex items-center gap-1.5 z-10">
+					<div className="absolute bottom-5 left-8 lg:left-12 hidden lg:flex items-center gap-1.5 z-10">
 						<span className="w-7 h-1.5 rounded-full" style={{ backgroundColor: '#432C63' }} />
 						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
 						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
