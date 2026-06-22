@@ -43,15 +43,14 @@ export async function GET(
       giyaPayService = new GiyaPayService(req.scope)
     }
 
-    const allTransactions = await giyaPayService.getTransactions({ status })
-
-    // Filter by seller_id
-    let filtered = sellerId
-      ? allTransactions.filter((t: any) => t.seller_id === sellerId)
-      : allTransactions
+    // Scope to this seller at the SQL level so their rows are never pushed out
+    // of the global result window. A seller with no resolvable id sees nothing.
+    const allTransactions = sellerId
+      ? await giyaPayService.getTransactions({ status, sellerId })
+      : []
 
     // Exclude subscription payments — they belong to the subscription history, not order transactions
-    filtered = filtered.filter((t: any) => !(t.order_id || '').startsWith('vrenew_'))
+    let filtered = allTransactions.filter((t: any) => !(t.order_id || '').startsWith('vrenew_'))
 
     // Gateway filter
     if (gateway) {

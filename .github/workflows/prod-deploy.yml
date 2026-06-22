@@ -6,7 +6,20 @@ name: Deploy to Production (maretinda-prod)
 on:
   push:
     branches: [production]
-  workflow_dispatch: {} # allow manual runs from the Actions tab
+  workflow_dispatch: # allow manual runs from the Actions tab
+    inputs:
+      force:
+        description: "Force-deploy all services, bypassing the path filter (use when production was fully merged from main and the diff is empty)"
+        type: boolean
+        default: false
+
+# Serialize production deploys. Two overlapping runs both calling
+# `gcloud run deploy maretinda-worker` race on the same Cloud Run service and
+# the later one fails with `ABORTED: Conflict`. Queue runs instead, and never
+# cancel an in-flight deploy mid-way (it could leave a service half-updated).
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
 
 env:
   GCP_PROJECT_ID: maretinda-prod
@@ -48,7 +61,7 @@ jobs:
   # ── Backend: build (Cloud Build) → migrate → deploy server + worker ──────
   backend:
     needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
+    if: ${{ needs.changes.outputs.backend == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,9 +75,27 @@ jobs:
 
       - name: Build & push backend image (Cloud Build)
         run: |
-          gcloud builds submit ./backend \
+          # The prod project's VPC-SC perimeter blocks gcloud from streaming /
+          # polling logs in the default Cloud Build bucket, which makes a blocking
+          # `gcloud builds submit` exit 1 even when the build SUCCEEDS. So submit
+          # async and poll the build status ourselves (an API call, not the log
+          # bucket) — no false failures, no manual finish.
+          BUILD_ID=$(gcloud builds submit ./backend \
             --tag "$AR/backend:${{ github.sha }}" \
-            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" --timeout=2400s
+            --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
+            --timeout=2400s --async --format='value(id)')
+          echo "Submitted Cloud Build: $BUILD_ID"
+          while true; do
+            STATUS=$(gcloud builds describe "$BUILD_ID" \
+              --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
+              --format='value(status)' 2>/dev/null || echo "")
+            echo "build status: ${STATUS:-<transient>}"
+            case "$STATUS" in
+              SUCCESS) break ;;
+              FAILURE|CANCELLED|TIMEOUT|EXPIRED) echo "Cloud Build $STATUS"; exit 1 ;;
+            esac
+            sleep 20
+          done
           gcloud artifacts docker tags add \
             "$AR/backend:${{ github.sha }}" "$AR/backend:latest" || true
 
@@ -91,7 +122,7 @@ jobs:
   # ── Storefront (Next.js SSR) ─────────────────────────────────────────────
   store:
     needs: changes
-    if: ${{ needs.changes.outputs.store == 'true' }}
+    if: ${{ needs.changes.outputs.store == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -126,7 +157,7 @@ jobs:
   # ── Admin panel (Vite SPA) ───────────────────────────────────────────────
   admin:
     needs: changes
-    if: ${{ needs.changes.outputs.admin == 'true' }}
+    if: ${{ needs.changes.outputs.admin == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -156,7 +187,7 @@ jobs:
   # ── Seller panel (Vite SPA) ──────────────────────────────────────────────
   seller:
     needs: changes
-    if: ${{ needs.changes.outputs.seller == 'true' }}
+    if: ${{ needs.changes.outputs.seller == 'true' || github.event.inputs.force == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
