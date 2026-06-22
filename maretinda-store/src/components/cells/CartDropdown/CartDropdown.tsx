@@ -75,10 +75,10 @@ export const CartDropdown = ({
 			</LocalizedClientLink>
 
 			<Dropdown
-				className="!bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-1"
+				className="!bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-1 !right-0 max-w-[calc(100vw-1rem)]"
 				show={open}
 			>
-				<div className="w-[360px] lg:w-[420px]">
+				<div className="w-[min(360px,calc(100vw-1rem))] lg:w-[420px]">
 					{/* Header */}
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-[#EDEAE3]">
 						<div className="text-[11px] font-semibold tracking-[0.14em] uppercase" style={{ color: '#432C63' }}>
@@ -120,7 +120,11 @@ export const CartDropdown = ({
 							</>
 						) : (
 							<div className="py-6 text-center">
-								<div className="text-[32px] mb-3">🛒</div>
+								<div className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
+									<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+										<circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+									</svg>
+								</div>
 								<div className="text-[14px] font-semibold text-[#1B1B1B] mb-1">{s.empty}</div>
 								<div className="text-[12.5px] text-[#737373] mb-4">{s.emptyDesc}</div>
 								<LocalizedClientLink href="/categories">
