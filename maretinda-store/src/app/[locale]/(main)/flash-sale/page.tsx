@@ -78,22 +78,34 @@ export default async function FlashSalePage({
 		<main className="w-full min-h-screen bg-[#FAF8F5]">
 			{/* ── Hero banner ── */}
 			<div
-				className="w-full py-10 lg:py-14 relative overflow-hidden"
+				className="w-full py-10 lg:py-16 relative overflow-hidden"
 				style={{ background: 'linear-gradient(135deg, #1A0A2E 0%, #2D1654 60%, #C0392B 100%)' }}
 			>
-				{/* seller-supplied banner image as blended background */}
+				{/* seller-supplied banner image — kept crisp on the right, darkened on the left for legible copy */}
 				{sale.banner_image && (
-					// eslint-disable-next-line @next/next/no-img-element
-					<img
-						src={sale.banner_image}
-						alt=""
-						aria-hidden
-						className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity pointer-events-none"
-					/>
+					<>
+						{/* eslint-disable-next-line @next/next/no-img-element */}
+						<img
+							src={sale.banner_image}
+							alt=""
+							aria-hidden
+							className="absolute inset-0 w-full h-full object-cover object-center opacity-60 pointer-events-none"
+						/>
+						{/* Contrast overlay: solid behind the copy (left), transparent over the product photo (right) */}
+						<div
+							className="absolute inset-0 pointer-events-none"
+							style={{ background: 'linear-gradient(90deg, #1A0A2E 0%, rgba(26,10,46,0.85) 35%, rgba(45,22,84,0.45) 70%, rgba(45,22,84,0.15) 100%)' }}
+						/>
+						{/* Gentle bottom fade so stats stay readable on mobile (stacked layout) */}
+						<div
+							className="absolute inset-0 pointer-events-none lg:hidden"
+							style={{ background: 'linear-gradient(180deg, rgba(26,10,46,0.2) 0%, rgba(26,10,46,0.75) 100%)' }}
+						/>
+					</>
 				)}
 
 				<div
-					className="absolute inset-0"
+					className="absolute inset-0 pointer-events-none"
 					style={{ backgroundImage: 'repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 14px)' }}
 				/>
 
@@ -114,8 +126,8 @@ export default async function FlashSalePage({
 						<span className="text-white/80 text-[13px]">Flash Sale</span>
 					</div>
 
-					<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-						<div>
+					<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+						<div className="max-w-[640px]">
 							{/* Live badge */}
 							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase text-red-400 mb-3">
 								<span className="relative flex w-2 h-2">
@@ -125,38 +137,38 @@ export default async function FlashSalePage({
 								Happening Now
 							</div>
 
-							<div className="flex items-center gap-4">
-								<svg width="36" height="36" viewBox="0 0 24 24" fill="#FFC533" stroke="none">
+							<div className="flex items-start gap-3 sm:gap-4">
+								<svg className="w-7 h-7 sm:w-9 sm:h-9 shrink-0 mt-1" viewBox="0 0 24 24" fill="#FFC533" stroke="none">
 									<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
 								</svg>
-								<h1 className="text-[36px] lg:text-[52px] font-extrabold text-white tracking-tight leading-[1.0]">
+								<h1 className="text-[32px] sm:text-[40px] lg:text-[52px] font-extrabold text-white tracking-tight leading-[1.05]">
 									{sale.title}
 								</h1>
 							</div>
 
 							{sale.description && (
-								<p className="mt-3 text-[15px] text-white/70 max-w-[520px]">{sale.description}</p>
+								<p className="mt-3 text-[14px] sm:text-[15px] text-white/75 max-w-[520px] leading-relaxed">{sale.description}</p>
 							)}
 
-							<div className="mt-5">
-								<p className="text-[12px] text-white/50 uppercase tracking-widest mb-2">Sale ends in</p>
-								<FlashSaleCountdown endsAt={sale.ends_at} />
+							<div className="mt-6">
+								<p className="text-[11px] text-white/50 uppercase tracking-widest mb-2">Sale ends in</p>
+								<FlashSaleCountdown endsAt={sale.ends_at} tone="dark" hideLabel />
 							</div>
 						</div>
 
-						{/* Stats */}
-						<div className="flex items-center gap-6 lg:gap-8 text-white/80">
+						{/* Stats — translucent card so they read cleanly over the product photo */}
+						<div className="flex items-center gap-6 sm:gap-8 rounded-2xl bg-white/[0.07] border border-white/10 backdrop-blur-sm px-5 py-4 self-start lg:self-end shrink-0">
 							<div className="text-center">
-								<div className="text-[28px] font-extrabold text-[#FFC533]">{items.length}</div>
-								<div className="text-[11px] uppercase tracking-wider text-white/50 mt-0.5">Products</div>
+								<div className="text-[26px] sm:text-[30px] font-extrabold text-[#FFC533] leading-none">{items.length}</div>
+								<div className="text-[10.5px] uppercase tracking-wider text-white/55 mt-1.5">Products</div>
 							</div>
-							<div className="w-px h-10 bg-white/10" />
+							<div className="w-px h-10 bg-white/15" />
 							<div className="text-center">
-								<div className="text-[28px] font-extrabold text-[#FFC533]">
+								<div className="text-[26px] sm:text-[30px] font-extrabold text-[#FFC533] leading-none">
 									{Math.max(...items.map((i) => Number(i.discount_value)))}
 									{items.find((i) => i.discount_type === 'percentage') ? '%' : '₱'}
 								</div>
-								<div className="text-[11px] uppercase tracking-wider text-white/50 mt-0.5">Max Off</div>
+								<div className="text-[10.5px] uppercase tracking-wider text-white/55 mt-1.5">Max Off</div>
 							</div>
 						</div>
 					</div>

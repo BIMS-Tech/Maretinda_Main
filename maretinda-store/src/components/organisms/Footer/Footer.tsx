@@ -25,8 +25,22 @@ const SUPPORT_LINKS = [
 	{ label: 'Contact us', href: '#' },
 ];
 
-const PAYMENT_CHIPS = ['VISA', 'Mastercard', 'GCash', 'Maya', 'GiyaPay', 'COD'];
-const COURIER_CHIPS = ['LBC', 'J&T', 'Ninja Van', 'Lalamove'];
+// Real payment logos — the same GiyaPay-hosted assets shown on the checkout payment button.
+const PAYMENT_LOGOS = [
+	{ src: 'https://pay.giyapay.com/images/select-mastercard-visa.png', alt: 'Visa / Mastercard' },
+	{ src: 'https://pay.giyapay.com/images/select-gcash.png', alt: 'GCash' },
+	{ src: 'https://pay.giyapay.com/images/select-instapay.png', alt: 'InstaPay' },
+	{ src: 'https://pay.giyapay.com/images/select-qrph.png', alt: 'QR Ph' },
+	{ src: 'https://pay.giyapay.com/images/select-wechatpay.png', alt: 'WeChat Pay' },
+	{ src: 'https://pay.giyapay.com/images/select-unionpay.png', alt: 'UnionPay' },
+];
+
+// Couriers integrated in the vendor panel. Logos copied from the seller panel's public folder.
+// `dark` flags logos whose source PNG has a baked-in dark background (no transparency).
+// Only Flying Tigers is shown for now; other couriers are hidden until they're live.
+const COURIER_LOGOS = [
+	{ src: '/flying-tigers.png', alt: 'Flying Tigers Express', dark: true },
+];
 
 export function Footer() {
 	return (
@@ -70,32 +84,40 @@ export function Footer() {
 							))}
 						</div>
 
-						{/* App download buttons */}
-						<div className="flex items-center gap-2.5 mt-6 flex-wrap">
-							<a
-								href="#"
-								className="flex items-center gap-2 h-10 px-4 rounded-lg border border-white/20 hover:border-white/40 transition-colors"
-							>
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-									<path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-								</svg>
-								<div>
-									<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Download on</div>
-									<div className="text-white text-[12px] font-semibold leading-tight">App Store</div>
+						{/* App download buttons — coming soon */}
+						<div className="mt-6">
+							<div className="flex items-center gap-2 mb-2">
+								<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>Get the app</span>
+								<span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,197,51,0.18)', color: '#FFC533' }}>Coming soon</span>
+							</div>
+							<div className="flex items-center gap-2.5 flex-wrap">
+								<div
+									className="flex items-center gap-2 h-10 px-4 rounded-lg border border-white/15 opacity-60 cursor-default select-none"
+									aria-disabled="true"
+									title="Coming soon"
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+										<path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+									</svg>
+									<div>
+										<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Download on</div>
+										<div className="text-white text-[12px] font-semibold leading-tight">App Store</div>
+									</div>
 								</div>
-							</a>
-							<a
-								href="#"
-								className="flex items-center gap-2 h-10 px-4 rounded-lg border border-white/20 hover:border-white/40 transition-colors"
-							>
-								<svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-									<path d="M3.18 23.76c.3.17.66.19.99.06l11.67-6.73-2.31-2.31-10.35 8.98zM.5 1.72A1.5 1.5 0 0 0 0 2.83v18.34a1.5 1.5 0 0 0 .5 1.11l.06.05 10.27-10.27v-.24L.56 1.67.5 1.72zM22.06 10.33l-2.9-1.67-2.59 2.59 2.59 2.59 2.93-1.69c.83-.48.83-1.26-.03-1.82zM4.17.24L15.84 6.97l-2.31 2.31L3.18.3C3.51.17 3.87.2 4.17.4V.24z" />
-								</svg>
-								<div>
-									<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Get it on</div>
-									<div className="text-white text-[12px] font-semibold leading-tight">Google Play</div>
+								<div
+									className="flex items-center gap-2 h-10 px-4 rounded-lg border border-white/15 opacity-60 cursor-default select-none"
+									aria-disabled="true"
+									title="Coming soon"
+								>
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+										<path d="M3.18 23.76c.3.17.66.19.99.06l11.67-6.73-2.31-2.31-10.35 8.98zM.5 1.72A1.5 1.5 0 0 0 0 2.83v18.34a1.5 1.5 0 0 0 .5 1.11l.06.05 10.27-10.27v-.24L.56 1.67.5 1.72zM22.06 10.33l-2.9-1.67-2.59 2.59 2.59 2.59 2.93-1.69c.83-.48.83-1.26-.03-1.82zM4.17.24L15.84 6.97l-2.31 2.31L3.18.3C3.51.17 3.87.2 4.17.4V.24z" />
+									</svg>
+									<div>
+										<div style={{ color: 'rgba(255,255,255,0.50)', fontSize: '9px', lineHeight: '1' }}>Get it on</div>
+										<div className="text-white text-[12px] font-semibold leading-tight">Google Play</div>
+									</div>
 								</div>
-							</a>
+							</div>
 						</div>
 					</div>
 
@@ -162,28 +184,31 @@ export function Footer() {
 
 				{/* Payment & couriers row */}
 				<div className="py-5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-					<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
+					<div className="flex flex-col sm:flex-row sm:items-center gap-x-8 gap-y-4 flex-wrap">
+						{/* Payment methods — individual uniform tiles */}
 						<div className="flex items-center gap-2 flex-wrap">
-							<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>We accept</span>
-							{PAYMENT_CHIPS.map((chip) => (
+							<span className="text-[11px] font-semibold uppercase tracking-wider shrink-0 mr-1" style={{ color: 'rgba(255,255,255,0.40)' }}>We accept</span>
+							{PAYMENT_LOGOS.map((logo) => (
 								<span
-									key={chip}
-									className="h-6 px-2.5 rounded text-[10.5px] font-bold flex items-center"
-									style={{ backgroundColor: 'white', color: '#432C63' }}
+									key={logo.alt}
+									className="h-9 w-[58px] bg-white flex items-center justify-center p-1.5"
 								>
-									{chip}
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
 								</span>
 							))}
 						</div>
-						<div className="flex items-center gap-2 flex-wrap sm:ml-4">
-							<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>Couriers</span>
-							{COURIER_CHIPS.map((chip) => (
+
+						{/* Couriers — same tile size as the payment logos */}
+						<div className="flex items-center gap-2 flex-wrap">
+							<span className="text-[11px] font-semibold uppercase tracking-wider shrink-0 mr-1" style={{ color: 'rgba(255,255,255,0.40)' }}>Ships with</span>
+							{COURIER_LOGOS.map((logo) => (
 								<span
-									key={chip}
-									className="h-6 px-2.5 rounded text-[10.5px] font-semibold flex items-center border"
-									style={{ borderColor: 'rgba(255,255,255,0.20)', color: 'rgba(255,255,255,0.65)' }}
+									key={logo.alt}
+									className={`h-9 w-[58px] flex items-center justify-center p-1.5 ${logo.dark ? 'bg-[#111]' : 'bg-white'}`}
 								>
-									{chip}
+									{/* eslint-disable-next-line @next/next/no-img-element */}
+									<img src={logo.src} alt={logo.alt} className="max-h-full max-w-full object-contain" loading="lazy" />
 								</span>
 							))}
 						</div>

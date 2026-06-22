@@ -32,18 +32,25 @@ function useAvailableCarriers() {
   })
 }
 
-const CARRIER_ICONS: Record<string, string> = {
-  ninjavan: "🟢",
-  flyingtigers: "🐯",
+// Real carrier logos (served from the seller panel's public folder).
+// Carriers without a logo fall back to their initial — no emojis.
+const CARRIER_LOGOS: Record<string, string> = {
+  flyingtigers: "/flying-tigers.png",
+  ninjavan: "/ninjavan-logo.png",
 }
 
 function CarrierCard({ carrier }: { carrier: PlatformCarrier }) {
+  const logoSrc = CARRIER_LOGOS[carrier.provider_id]
   return (
     <Container className="p-6">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg bg-ui-bg-subtle flex items-center justify-center text-xl">
-            {CARRIER_ICONS[carrier.provider_id] ?? "📦"}
+          <div className="w-10 h-10 bg-ui-bg-subtle flex items-center justify-center overflow-hidden shrink-0">
+            {logoSrc ? (
+              <img src={logoSrc} alt={carrier.name} className="w-full h-full object-contain" />
+            ) : (
+              <span className="text-base font-semibold text-ui-fg-muted">{carrier.name.charAt(0).toUpperCase()}</span>
+            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
