@@ -13,6 +13,14 @@ on:
         type: boolean
         default: false
 
+# Serialize production deploys. Two overlapping runs both calling
+# `gcloud run deploy maretinda-worker` race on the same Cloud Run service and
+# the later one fails with `ABORTED: Conflict`. Queue runs instead, and never
+# cancel an in-flight deploy mid-way (it could leave a service half-updated).
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: false
+
 env:
   GCP_PROJECT_ID: maretinda-prod
   GCP_REGION: asia-southeast1
