@@ -135,24 +135,34 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     try {
       const amountInPesos = amount ? Number(amount) / 100 : 0
 
+      // Guard against a missing id arriving as the literal string "undefined"
+      // (truthy, so it would otherwise be stored and render as the word
+      // "undefined" — and poison cart_id, breaking seller attribution).
+      const isBogus = (v: any) => {
+        const s = String(v ?? "").trim().toLowerCase()
+        return !s || s === "undefined" || s === "null"
+      }
+      const cleanOrderId = isBogus(order_id) ? null : order_id
+      const cleanCartId = isBogus(cart_id) ? cleanOrderId : cart_id
+
       // Attribute the transaction to its seller at creation time so it shows up
       // in the seller panel even if the follow-up update-transaction call never
       // fires. Skipped for subscription payments (vrenew_/vsub_), which aren't
       // seller-order transactions.
       const seller = isSubscriptionPayment
         ? null
-        : await resolveSeller(container, cart_id, order_id)
+        : await resolveSeller(container, cleanCartId || undefined, cleanOrderId || undefined)
 
       await giyaPayService.createTransaction({
         referenceNumber: refno,
-        orderId: order_id,
-        cartId: cart_id || order_id,
+        orderId: cleanOrderId || undefined,
+        cartId: cleanCartId || undefined,
         sellerId: seller?.sellerId,
         amount: amountInPesos,
         currency: 'PHP',
         status: 'SUCCESS',
         gateway: payment_method || 'GIYAPAY',
-        description: `Payment for order ${order_id}`,
+        description: cleanOrderId ? `Payment for order ${cleanOrderId}` : 'GiyaPay payment',
         paymentData: { nonce, timestamp, signature, payment_method },
       })
       console.log('[GiyaPay Verify] Transaction saved for reference:', refno, seller ? `(seller ${seller.sellerId})` : '(no seller resolved)')

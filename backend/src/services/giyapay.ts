@@ -9,6 +9,19 @@ class GiyaPayService extends MedusaService({}) {
     this.container = container
   }
 
+  /**
+   * Normalise an id-like value before it touches the database. Stringified
+   * `undefined`/`null` (and blanks) leak in when an upstream callback echoes a
+   * missing order_id — they are truthy strings, so the UI renders the literal
+   * word "undefined" instead of a dash. Collapse all of those to null.
+   */
+  private cleanId(value: any): string | null {
+    if (value === undefined || value === null) return null
+    const s = String(value).trim()
+    if (!s || s.toLowerCase() === "undefined" || s.toLowerCase() === "null") return null
+    return s
+  }
+
   private async getManager(sharedContext?: any) {
     if (sharedContext?.transactionManager) {
       return sharedContext.transactionManager
@@ -97,6 +110,22 @@ class GiyaPayService extends MedusaService({}) {
       
       // Add enabled_methods column if it doesn't exist (for existing giyapay_config tables)
       await manager.raw(`ALTER TABLE giyapay_config ADD COLUMN IF NOT EXISTS enabled_methods JSONB DEFAULT '["instapay", "visa", "mastercard", "gcash", "paymaya"]'`)
+
+      // Self-heal rows where a missing id was persisted as the literal string
+      // "undefined"/"null" (truthy, so the admin UI rendered the word instead of
+      // a dash). Normalise them to NULL so the UI falls back to "-".
+      await manager.raw(`
+        UPDATE giyapay_transaction
+           SET order_id = NULL
+         WHERE order_id IS NOT NULL
+           AND lower(trim(order_id)) IN ('undefined', 'null', '')
+      `)
+      await manager.raw(`
+        UPDATE giyapay_transaction
+           SET seller_id = NULL
+         WHERE seller_id IS NOT NULL
+           AND lower(trim(seller_id)) IN ('undefined', 'null', '')
+      `)
 
       console.log('[GiyaPayService] Tables initialized successfully')
     } catch (error) {
@@ -248,24 +277,33 @@ class GiyaPayService extends MedusaService({}) {
     return this.createOrUpdateConfig(data)
   }
 
-  async getTransactions(options?: { status?: string }, sharedContext?: any): Promise<any[]> {
+  async getTransactions(options?: { status?: string; sellerId?: string }, sharedContext?: any): Promise<any[]> {
     try {
       await this.initializeTables(sharedContext)
       const manager = await this.getManager(sharedContext)
-      
-      let whereClause = ''
+
+      const conditions: string[] = []
       const params: any[] = []
-      
+
       if (options?.status) {
-        whereClause = 'WHERE status = ?'
+        conditions.push('status = ?')
         params.push(options.status)
       }
-      
+
+      // When scoped to a seller, filter in SQL — otherwise the global LIMIT can
+      // push a seller's rows out of the window and they see nothing in the panel.
+      if (options?.sellerId) {
+        conditions.push('seller_id = ?')
+        params.push(options.sellerId)
+      }
+
+      const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+
       const result = await manager.raw(`
-        SELECT * FROM giyapay_transaction 
+        SELECT * FROM giyapay_transaction
         ${whereClause}
-        ORDER BY created_at DESC 
-        LIMIT 100
+        ORDER BY created_at DESC
+        LIMIT 500
       `, params)
       const rows = result?.rows || result || []
       
@@ -308,7 +346,11 @@ class GiyaPayService extends MedusaService({}) {
       
       const transactionId = `giyapay_txn_${Date.now()}`
       const now = new Date()
-      
+
+      const orderId = this.cleanId(data.orderId)
+      const cartId = this.cleanId(data.cartId)
+      const sellerId = this.cleanId(data.sellerId)
+
       await manager.raw(`
         INSERT INTO giyapay_transaction (
           id, reference_number, order_id, cart_id, seller_id, amount, currency, status, gateway, description, payment_data, created_at, updated_at
@@ -316,9 +358,9 @@ class GiyaPayService extends MedusaService({}) {
       `, [
         transactionId,
         data.referenceNumber,
-        data.orderId || null,
-        data.cartId || null,
-        data.sellerId || null,
+        orderId,
+        cartId,
+        sellerId,
         data.amount,
         data.currency || 'PHP',
         data.status || 'PENDING',
@@ -329,14 +371,14 @@ class GiyaPayService extends MedusaService({}) {
         now
       ])
       
-      console.log('[GiyaPayService] Transaction created:', transactionId, 'for seller:', data.sellerId || 'unknown')
-      
+      console.log('[GiyaPayService] Transaction created:', transactionId, 'for seller:', sellerId || 'unknown')
+
       return {
         id: transactionId,
         referenceNumber: data.referenceNumber,
-        orderId: data.orderId,
-        cartId: data.cartId,
-        sellerId: data.sellerId,
+        orderId,
+        cartId,
+        sellerId,
         amount: data.amount,
         currency: data.currency || 'PHP',
         status: data.status || 'PENDING',
@@ -362,10 +404,11 @@ class GiyaPayService extends MedusaService({}) {
       
       let updateQuery = 'UPDATE giyapay_transaction SET status = ?, updated_at = ?'
       const params: any[] = [status, now]
-      
-      if (orderId) {
+
+      const cleanOrderId = this.cleanId(orderId)
+      if (cleanOrderId) {
         updateQuery += ', order_id = ?'
-        params.push(orderId)
+        params.push(cleanOrderId)
       }
       
       updateQuery += ' WHERE reference_number = ?'
