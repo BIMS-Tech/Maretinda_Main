@@ -43,8 +43,14 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 
 	return (
 		<div>
+			{/* Header */}
+			<div className="flex items-baseline justify-between mb-4">
+				<h2 className="text-[17px] font-bold text-[#111827]">Order Summary</h2>
+				<span className="text-[13px] text-[#6b7280]">{totalItems} {totalItems === 1 ? 'item' : 'items'}</span>
+			</div>
+
 			{/* Product Items List */}
-			<div className="mb-6 space-y-4">
+			<div className="mb-5 space-y-3">
 				{allItems.map((item) => {
 					const unitPrice = convertToLocale({
 						amount: item.unit_price || 0,
@@ -52,38 +58,36 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 					});
 
 					return (
-						<div key={item.id} className="flex items-center gap-4 pb-4 border-b last:border-0" style={{ borderColor: '#f3f4f6' }}>
+						<div key={item.id} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: '#f3f4f6' }}>
 							{/* Product Image */}
-							<div className="w-20 h-20 flex items-center justify-center bg-gray-50 rounded flex-shrink-0">
+							<div className="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg flex-shrink-0 overflow-hidden">
 								{item.thumbnail ? (
 									<Image
 										alt={item.title || 'Product'}
-										className="rounded object-contain"
-										height={80}
+										className="rounded-lg object-cover w-full h-full"
+										height={64}
 										src={decodeURIComponent(item.thumbnail)}
-										width={80}
+										width={64}
 									/>
 								) : (
 									<Image
 										alt="Product placeholder"
 										className="rounded opacity-30"
-										height={40}
+										height={32}
 										src={'/images/placeholder.svg'}
-										width={40}
+										width={32}
 									/>
 								)}
 							</div>
 
 							{/* Product Info */}
 							<div className="flex-1 min-w-0">
-								<h3 className="font-medium mb-1 truncate" style={{ color: '#111827', fontWeight: 500 }}>
+								<h3 className="text-[14px] font-semibold leading-snug line-clamp-2 text-[#111827]">
 									{item.title || item.subtitle}
 								</h3>
-								<p className="text-xs mb-2" style={{ color: '#6b7280' }}>
-									{item.sellerName}
-								</p>
-								<div className="flex items-center justify-between">
-									<span className="font-medium" style={{ color: '#111827', fontWeight: 500 }}>
+								<p className="text-[12px] text-[#9ca3af] mt-0.5">{item.sellerName}</p>
+								<div className="flex items-center justify-between mt-1.5">
+									<span className="text-[14px] font-bold text-[#432C63]">
 										{unitPrice}
 									</span>
 									<UpdateCartItemButton

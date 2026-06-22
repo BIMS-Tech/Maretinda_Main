@@ -83,12 +83,12 @@ export const HomeCategories = async (_: { heading: string }) => {
 								className="group"
 							>
 								<div
-									className="aspect-square rounded-[14px] overflow-hidden relative border transition-all duration-[350ms] group-hover:shadow-md"
+									className="aspect-square rounded-[14px] overflow-hidden relative border transition-all duration-300 group-hover:shadow-md"
 									style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
 								>
 									{/* Colored bg with stripe pattern */}
 									<div
-										className="absolute inset-0 transition-transform duration-[350ms] group-hover:scale-[1.04]"
+										className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.04]"
 										style={{
 											backgroundColor: color,
 											backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
@@ -100,7 +100,7 @@ export const HomeCategories = async (_: { heading: string }) => {
 										<img
 											src={imageUrl}
 											alt={category.name}
-											className="absolute inset-0 w-full h-full object-cover transition-transform duration-[350ms] group-hover:scale-[1.04]"
+											className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
 										/>
 									)}
 									{/* Label */}

@@ -181,12 +181,16 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 			{/* Header with Checkmark and Edit */}
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-3">
-					{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
-						<div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#2563eb' }}>
+					{!isOpen && (cart.shipping_methods?.length ?? 0) > 0 ? (
+						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#432C63' }}>
 							<CheckCircleSolid className="text-white" width={16} height={16} />
 						</div>
+					) : (
+						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
+						</div>
 					)}
-					<h2 className="text-2xl font-bold" style={{ color: '#111827' }}>
+					<h2 className="text-xl font-bold" style={{ color: '#111827' }}>
 						Delivery
 					</h2>
 				</div>
@@ -194,8 +198,8 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 					<button
 						type="button"
 						onClick={handleEdit}
-						className="text-sm font-medium underline"
-						style={{ color: '#2563eb' }}
+						className="text-sm font-semibold hover:opacity-80 transition-opacity"
+						style={{ color: '#432C63' }}
 					>
 						Edit
 					</button>
@@ -219,8 +223,8 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 								{groupedBySellerId && Object.keys(groupedBySellerId).map((key) => {
 									return (
 										<div className="mb-6" key={key}>
-											<h3 className="text-lg font-semibold mb-4" style={{ color: '#111827' }}>
-												seller : {groupedBySellerId[key][0].seller_name || 'Local Clothing'}
+											<h3 className="text-[11px] font-semibold tracking-[0.12em] uppercase mb-3" style={{ color: '#9ca3af' }}>
+												Shipping from <span style={{ color: '#432C63' }}>{groupedBySellerId[key][0].seller_name || 'Local Clothing'}</span>
 											</h3>
 											<Listbox
 												onChange={(value) => {
@@ -352,11 +356,11 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 							error={error}
 						/>
 						<Button
-							className="mt-6 rounded-lg !font-medium h-12 text-base"
+							className="mt-5 rounded-lg !font-semibold h-10 text-sm px-8 w-full sm:w-auto"
 							disabled={!cart.shipping_methods?.[0]}
 							loading={isLoadingPrices}
 							onClick={handleSubmit}
-							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 500 }}
+							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 600 }}
 							type="button"
 						>
 							Continue to payment
@@ -366,20 +370,25 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 			) : (
 				<div className="pb-2">
 					{cart && (cart.shipping_methods?.length ?? 0) > 0 && (
-						<div className="space-y-1">
+						<div className="space-y-2">
 							{cart.shipping_methods?.map((method) => {
-								// Get seller name from the shipping method
-								const sellerName: string = typeof method.data?.seller_name === 'string' 
-									? method.data.seller_name 
-									: 'Local Clothing';
 								const shippingCost: string = convertToLocale({
 									amount: method.amount!,
 									currency_code: cart?.currency_code || 'USD',
 								});
 								return (
-									<p key={method.id} className="text-sm" style={{ color: '#6b7280' }}>
-										{method.name} - {shippingCost}
-									</p>
+									<div
+										key={method.id}
+										className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50/70 px-4 py-3"
+									>
+										<div className="flex items-center gap-3 min-w-0">
+											<span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
+												<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
+											</span>
+											<span className="text-[14px] font-medium truncate" style={{ color: '#111827' }}>{method.name}</span>
+										</div>
+										<span className="text-[14px] font-semibold flex-shrink-0" style={{ color: '#432C63' }}>{shippingCost}</span>
+									</div>
 								);
 							})}
 						</div>

@@ -1,17 +1,14 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
+// Launch-stage value props instead of vanity scale metrics — honest for a new platform.
+// These restate claims already made elsewhere on this section (free trial, no listing
+// fees, nationwide reach), so no new/unverified metrics are introduced.
 const STATS = [
-	{ value: '12.8k', label: 'Active sellers' },
-	{ value: '1.4M', label: 'Monthly shoppers' },
-	{ value: '97%', label: 'On-time delivery' },
+	{ value: '1 month', label: 'Free to sell' },
+	{ value: '₱0', label: 'Listing fees' },
+	{ value: 'PH-wide', label: 'Delivery reach' },
 ];
-
-const ChartBar = ({ h, active }: { h: number; active?: boolean }) => (
-	<div
-		className="w-5 rounded-t-sm flex-shrink-0"
-		style={{ height: `${h}px`, backgroundColor: active ? '#432C63' : '#E8DEF7' }}
-	/>
-);
 
 export const BecomeSellerBand = () => (
 	<section style={{ backgroundColor: '#432C63' }}>
@@ -63,75 +60,31 @@ export const BecomeSellerBand = () => (
 					</div>
 
 					<div className="mt-5 text-[12px] text-white/55 font-medium">
-						90 days free · No listing fees · Cancel anytime
+						1 month free · No listing fees · Cancel anytime
 					</div>
 				</div>
 
-				{/* Right — seller dashboard mockup card */}
-				<div className="flex-shrink-0 w-full lg:w-[380px]">
-					<div className="bg-white rounded-2xl p-6 shadow-2xl relative">
+				{/* Right — real seller dashboard preview */}
+				<div className="flex-shrink-0 w-full lg:w-[560px]">
+					<div className="relative">
 						{/* Floating chip */}
 						<div
-							className="absolute -top-3.5 left-6 text-[11px] font-bold px-3 py-1 rounded-full"
+							className="absolute -top-3.5 left-6 z-10 text-[11px] font-bold px-3 py-1 rounded-full shadow-md"
 							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 						>
-							90 days · zero fees
+							1 month · zero fees
 						</div>
 
-						{/* Dashboard header */}
-						<div className="flex items-center justify-between mb-4">
-							<div>
-								<div className="text-[13px] font-extrabold text-[#1B1B1B]">Your store</div>
-								<div className="text-[11px] text-[#737373]">Dashboard overview</div>
-							</div>
-							<div
-								className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-								style={{ backgroundColor: '#E8DEF7', color: '#432C63' }}
-							>
-								Live
-							</div>
-						</div>
-
-						{/* Revenue figure */}
-						<div className="mb-4">
-							<div className="text-[11px] text-[#737373] mb-1">Total revenue (30d)</div>
-							<div className="text-[28px] font-extrabold text-[#1B1B1B]">₱84,210</div>
-							<div className="text-[12px] font-semibold" style={{ color: '#5FA88B' }}>+18.4% vs last month</div>
-						</div>
-
-						{/* Mini bar chart */}
-						<div className="flex items-end gap-1.5 h-[60px] mb-5">
-							<ChartBar h={28} />
-							<ChartBar h={36} />
-							<ChartBar h={22} />
-							<ChartBar h={44} />
-							<ChartBar h={32} />
-							<ChartBar h={48} />
-							<ChartBar h={38} active />
-							<ChartBar h={54} active />
-							<ChartBar h={42} active />
-							<ChartBar h={60} active />
-							<ChartBar h={50} active />
-							<ChartBar h={56} active />
-						</div>
-
-						{/* Stats row */}
-						<div className="grid grid-cols-3 gap-3">
-							{[
-								{ label: 'Orders', value: '1,284', sub: 'this month' },
-								{ label: 'Rating', value: '4.9★', sub: '312 reviews' },
-								{ label: 'Followers', value: '3.2k', sub: '+240 new' },
-							].map(({ label, value, sub }) => (
-								<div
-									key={label}
-									className="rounded-xl p-3 text-center"
-									style={{ backgroundColor: '#FAF8F5' }}
-								>
-									<div className="text-[14px] font-extrabold text-[#1B1B1B]">{value}</div>
-									<div className="text-[10px] text-[#737373] mt-0.5">{label}</div>
-									<div className="text-[9.5px] text-[#737373]">{sub}</div>
-								</div>
-							))}
+						<div className="rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-white">
+							<Image
+								src="/vendor-dbrd.png"
+								alt="Maretinda seller dashboard preview"
+								width={3374}
+								height={1610}
+								className="w-full h-auto"
+								sizes="(min-width: 1024px) 560px, 100vw"
+								priority
+							/>
 						</div>
 					</div>
 				</div>
