@@ -18,7 +18,13 @@ function getMeta(col: HttpTypes.StoreCollection) {
 
 function getImage(col: HttpTypes.StoreCollection): string | null {
 	const meta = getMeta(col);
-	return meta.image || meta.thumbnail || col.products?.[0]?.thumbnail || null;
+	return (
+		meta.image_url ||
+		meta.image ||
+		meta.thumbnail ||
+		col.products?.[0]?.thumbnail ||
+		null
+	);
 }
 
 function getDesc(col: HttpTypes.StoreCollection): string {
