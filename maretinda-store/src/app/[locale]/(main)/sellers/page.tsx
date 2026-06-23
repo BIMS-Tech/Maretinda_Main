@@ -11,6 +11,9 @@ export const metadata: Metadata = {
 
 export const revalidate = 300
 
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || ''
+const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#'
+
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 14px)'
 const BANNER_COLORS = ['#E8DEF7', '#E2D9C7', '#D9EAE2', '#F2D9E2', '#D9E5F0', '#F0E4CC', '#FFE2D2', '#D8EAD9']
 const AVATAR_COLORS = ['#9B80D2', '#D9CFB8', '#5FA88B', '#D98AA1', '#7FA8C9', '#E8B87A', '#E26D5C', '#6BBF8A']
@@ -153,7 +156,7 @@ export default async function SellersPage() {
               Be the first to sell on Maretinda.
             </p>
             <Link
-              href="/become-vendor"
+              href={SELLER_REGISTER_URL}
               className="inline-flex items-center gap-2 h-11 px-7 rounded-full font-bold text-[13.5px] text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: '#432C63' }}
             >
@@ -192,7 +195,7 @@ export default async function SellersPage() {
             </p>
           </div>
           <Link
-            href="/become-vendor"
+            href={SELLER_REGISTER_URL}
             className="shrink-0 inline-flex items-center gap-2 h-12 px-8 rounded-full font-bold text-[14px] transition-opacity hover:opacity-90"
             style={{ backgroundColor: '#FFC533', color: '#432C63' }}
           >

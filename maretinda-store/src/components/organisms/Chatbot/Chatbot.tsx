@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+
 import { useLanguage } from '@/providers/LanguageProvider';
 
 type Message = {
@@ -40,7 +43,7 @@ const RESPONSES: Record<string, BotResponse> = {
 	},
 	seller: {
 		text: 'Becoming a Maretinda seller is free! Register your shop, upload a valid ID, and you\'ll be approved within 1–2 business days. We charge 5% commission per sale — no listing fees.',
-		links: [{ label: 'Start selling', href: '/become-vendor' }],
+		links: [{ label: 'Start selling', href: SELLER_REGISTER_URL }],
 	},
 	password: {
 		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',

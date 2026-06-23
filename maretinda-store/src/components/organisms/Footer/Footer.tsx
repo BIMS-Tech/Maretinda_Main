@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+const SELLER_SUBSCRIPTION_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/subscription` : '#';
+
 const SHOP_LINKS = [
 	{ label: 'New arrivals', href: '/categories' },
 	{ label: 'Flash sales', href: '/flash-sale' },
@@ -10,10 +14,10 @@ const SHOP_LINKS = [
 ];
 
 const SELL_LINKS = [
-	{ label: 'Start selling', href: '/become-vendor/register' },
-	{ label: 'Seller dashboard', href: '/become-vendor' },
-	{ label: 'How it works', href: '/become-vendor' },
-	{ label: 'Fees & pricing', href: '/pricing' },
+	{ label: 'Start selling', href: SELLER_REGISTER_URL },
+	{ label: 'Seller dashboard', href: SELLER_PANEL_URL || '#' },
+	{ label: 'How it works', href: SELLER_REGISTER_URL },
+	{ label: 'Fees & pricing', href: SELLER_SUBSCRIPTION_URL },
 	{ label: 'Seller blog', href: '#' },
 ];
 

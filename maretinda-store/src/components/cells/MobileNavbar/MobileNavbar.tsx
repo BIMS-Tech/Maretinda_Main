@@ -11,6 +11,9 @@ import { sortCategories } from '@/lib/utils';
 
 type Category = HttpTypes.StoreProductCategory;
 
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+
 const MobileCategoryItem = ({
 	category,
 	onNavigate,
@@ -161,14 +164,14 @@ export const MobileNavbar = ({
 							</span>
 							<NavText k="flashSale" />
 						</LocalizedClientLink>
-						<LocalizedClientLink
-							href="/become-vendor"
+						<a
+							href={SELLER_REGISTER_URL}
 							onClick={close}
 							className="flex items-center justify-center px-3 h-11 rounded-xl font-bold text-[14px] text-white"
 							style={{ backgroundColor: '#432C63' }}
 						>
 							<NavText k="sellNow" />
-						</LocalizedClientLink>
+						</a>
 					</div>
 				</div>
 			</div>
