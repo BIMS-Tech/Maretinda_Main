@@ -34,7 +34,7 @@ export const TrendingNowFilters = ({
 	const active = activeCategory || 'all';
 
 	return (
-		<div className="flex items-center gap-2 flex-wrap">
+		<div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 lg:mx-0 lg:px-0 pb-1">
 			{filters.map((f) => {
 				const isActive = active === f.handle;
 				return (
@@ -42,7 +42,7 @@ export const TrendingNowFilters = ({
 						key={f.handle}
 						onClick={() => select(f.handle)}
 						disabled={isPending}
-						className="px-4 h-9 rounded-full text-[12.5px] font-semibold transition-colors disabled:opacity-60"
+						className="px-4 h-9 rounded-full text-[12.5px] font-semibold transition-colors disabled:opacity-60 shrink-0 whitespace-nowrap"
 						style={
 							isActive
 								? { backgroundColor: '#1B1B1B', color: 'white' }
