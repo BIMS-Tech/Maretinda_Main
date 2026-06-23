@@ -20,8 +20,8 @@ export const FlashSaleSection = async ({
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-10 lg:py-12">
 
 				{/* Section header */}
-				<div className="flex items-end justify-between flex-wrap gap-4 mb-7">
-					<div className="flex items-end gap-5 flex-wrap">
+				<div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 lg:gap-6 mb-7">
+					<div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
 						<div>
 							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase text-red-600">
 								<span className="relative flex w-2 h-2">
@@ -31,18 +31,20 @@ export const FlashSaleSection = async ({
 								Happening now
 							</div>
 							<Link href="/flash-sale">
-							<h2 className="mt-2 font-serif tracking-[-0.01em] flex items-center gap-3 hover:opacity-80 transition-opacity" style={{ fontSize: '40px' }}>
-								<svg width="26" height="26" viewBox="0 0 24 24" fill="#FFC533" stroke="none">
+							<h2 className="mt-2 font-serif tracking-[-0.01em] flex items-center gap-2.5 hover:opacity-80 transition-opacity leading-[1.05]" style={{ fontSize: 'clamp(26px, 6vw, 40px)' }}>
+								<svg className="w-6 h-6 sm:w-[26px] sm:h-[26px] shrink-0" viewBox="0 0 24 24" fill="#FFC533" stroke="none">
 									<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />
 								</svg>
 								{sale.title || 'Flash Sale'}
 							</h2>
 						</Link>
 						</div>
-						<FlashSaleCountdown endsAt={sale.ends_at} />
+						<div className="shrink-0">
+							<FlashSaleCountdown endsAt={sale.ends_at} />
+						</div>
 					</div>
 
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 shrink-0">
 						<Link
 							href="/flash-sale"
 							className="text-[13px] font-bold flex items-center gap-1.5 hover:underline"
