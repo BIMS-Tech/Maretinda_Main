@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 
-const words = ["Amplified.", "Unstoppable.", "Reimagined.", "Limitless.", "Future-Proof."];
+const words = ["Amplified.", "Transformed.", "Reimagined.", "Elevated.", "Unleashed."];
 
 export default function Typewriter() {
   const [displayed, setDisplayed] = useState("");
