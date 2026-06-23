@@ -281,42 +281,50 @@ export async function cancelFlyingTigersOrder(
 /** Thrown when FT exposes no retrievable waybill — lets the route return 422. */
 export class FlyingTigersWaybillUnavailable extends Error {}
 
-/** Recursively find the first string value whose key hints at a label/waybill. */
-function findLabelValue(obj: any, depth = 0): string | undefined {
-  if (!obj || typeof obj !== 'object' || depth > 5) return undefined
-  // First pass: keys that strongly hint at a printable label/waybill document.
-  for (const [k, v] of Object.entries(obj)) {
-    const key = k.toLowerCase()
-    const hints =
-      key.includes('label') ||
-      key.includes('waybill') ||
-      key.includes('awb') ||
-      key.includes('print') ||
-      ((key.includes('document') || key.includes('pdf')) && key.includes('url'))
-    if (hints && typeof v === 'string' && v.length > 0) return v
+/**
+ * Pull a base64 document out of an FT JSON response (used when the air-waybill
+ * endpoint returns JSON instead of a raw PDF stream — e.g. format=image, or a
+ * wrapper carrying a base64/data-URI value under an unknown key).
+ */
+function extractBase64Document(obj: any, depth = 0): string | undefined {
+  if (obj == null || depth > 5) return undefined
+  if (typeof obj === 'string') {
+    const dataUri = obj.match(/^data:[^;]+;base64,(.+)$/i)
+    if (dataUri) return dataUri[1]
+    const stripped = obj.replace(/\s+/g, '')
+    if (/^[A-Za-z0-9+/=]+$/.test(stripped) && stripped.length > 200) return stripped
+    return undefined
   }
-  // Second pass: any string value that's a URL pointing at a PDF.
-  for (const v of Object.values(obj)) {
-    if (typeof v === 'string' && /^https?:\/\/\S+\.pdf(\?|$)/i.test(v)) return v
-  }
-  // Recurse into nested objects/arrays.
-  for (const v of Object.values(obj)) {
-    if (v && typeof v === 'object') {
-      const nested = findLabelValue(v, depth + 1)
-      if (nested) return nested
+  if (typeof obj !== 'object') return undefined
+  // Prefer keys that hint at the document payload, then fall back to any value.
+  const preferred = [
+    'image', 'base64', 'pdf', 'file', 'content', 'document',
+    'data', 'awb', 'airwaybill', 'air_waybill', 'airwaybillimage',
+  ]
+  for (const k of Object.keys(obj)) {
+    if (preferred.includes(k.toLowerCase().replace(/[\s_-]/g, ''))) {
+      const found = extractBase64Document(obj[k], depth + 1)
+      if (found) return found
     }
+  }
+  for (const v of Object.values(obj)) {
+    const found = extractBase64Document(v, depth + 1)
+    if (found) return found
   }
   return undefined
 }
 
 /**
- * Retrieve a waybill/label PDF for a tracking number.
+ * Retrieve the air waybill PDF for a tracking number.
  *
- * The FT Business API has no dedicated label endpoint in its spec, so we read
- * the shipment detail (GET /api/shipments/{id}) and look for a label URL or
- * base64 the response may carry. If none exists, we throw
- * FlyingTigersWaybillUnavailable so the caller can tell the user to grab the
- * waybill from the FT portal instead of surfacing a raw 500.
+ * Flying Tigers exposes a dedicated endpoint:
+ *   GET /api/tracking/{trackingNumber}/air-waybill?format=pdf
+ * which streams a PDF by default (format=pdf), or returns JSON with a
+ * base64-encoded image when format=image. We request the PDF and buffer it; if
+ * FT instead replies with a JSON/base64 payload we decode that. A 404 (the AWB
+ * isn't ready yet, or the shipment isn't ours) surfaces as
+ * FlyingTigersWaybillUnavailable so the caller returns 422 with a clear message
+ * rather than a raw 500.
  */
 export async function getFlyingTigersWaybill(
   apiKey: string,
@@ -324,38 +332,41 @@ export async function getFlyingTigersWaybill(
   trackingNo: string
 ): Promise<Buffer> {
   const res = await fetch(
-    `${FLYINGTIGERS_BASE_URL}/api/shipments/${encodeURIComponent(trackingNo)}`,
+    `${FLYINGTIGERS_BASE_URL}/api/tracking/${encodeURIComponent(trackingNo)}/air-waybill?format=pdf`,
     { headers: getAuthHeaders(apiKey, apiSecret) },
   )
 
   if (!res.ok) {
-    throw new FlyingTigersWaybillUnavailable(
-      `Flying Tigers does not provide a downloadable waybill via API for ${trackingNo}. Please download it from the Flying Tigers portal.`,
-    )
-  }
-
-  const data = await res.json().catch(() => ({}))
-  // Confirmed against the live FT Business API: GET /api/shipments/{id} carries
-  // no waybill/label URL, and there is no /label, /waybill, /print endpoint
-  // (all 404). We still scan for a label in case FT adds one later, then fall
-  // back to a clear "use the portal" message.
-  const label = findLabelValue(data)
-
-  // base64-encoded PDF
-  if (label && /^[A-Za-z0-9+/=\s]+$/.test(label) && label.length > 200 && !label.startsWith('http')) {
-    return Buffer.from(label, 'base64')
-  }
-
-  // URL to a PDF
-  if (label && /^https?:\/\//.test(label)) {
-    const pdfRes = await fetch(label, { headers: getAuthHeaders(apiKey, apiSecret) })
-    if (pdfRes.ok) {
-      return Buffer.from(await pdfRes.arrayBuffer())
+    if (res.status === 404) {
+      throw new FlyingTigersWaybillUnavailable(
+        `Flying Tigers has no air waybill for ${trackingNo} yet. It becomes available once the shipment is booked/accepted — try again shortly, or download it from the Flying Tigers portal.`,
+      )
     }
+    const body = await res.text().catch(() => res.statusText)
+    throw new Error(`Flying Tigers air waybill failed (${res.status}): ${body}`)
   }
+
+  const contentType = (res.headers.get('content-type') || '').toLowerCase()
+
+  // Default (format=pdf) → binary PDF stream.
+  if (contentType.includes('pdf') || contentType.includes('octet-stream')) {
+    return Buffer.from(await res.arrayBuffer())
+  }
+
+  // Otherwise FT wrapped the document in JSON (or a raw base64 body) — decode it.
+  const text = await res.text()
+  let payload: any = text
+  try {
+    payload = JSON.parse(text)
+  } catch {
+    /* not JSON — treat as a raw (possibly base64) body below */
+  }
+
+  const b64 = extractBase64Document(payload)
+  if (b64) return Buffer.from(b64, 'base64')
 
   throw new FlyingTigersWaybillUnavailable(
-    `Flying Tigers did not return a waybill for ${trackingNo}. Download it from the Flying Tigers portal (Shipments → ${trackingNo}).`,
+    `Flying Tigers returned an unexpected air waybill response for ${trackingNo}. Download it from the Flying Tigers portal (Tracking → ${trackingNo}).`,
   )
 }
 
