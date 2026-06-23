@@ -216,7 +216,11 @@ function SuccessContent() {
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Issue</h2>
               <p className="text-gray-600">{message}</p>
               <button
-                onClick={() => router.push(`/${locale}/become-vendor`)}
+                onClick={() => {
+                  const url = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+                  if (url) window.location.href = `${url}/subscription`;
+                  else router.push(`/${locale}`);
+                }}
                 className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Try Again

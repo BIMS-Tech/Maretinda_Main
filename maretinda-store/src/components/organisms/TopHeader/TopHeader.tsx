@@ -8,6 +8,9 @@ import { useLanguage } from '@/providers/LanguageProvider';
 
 type Lang = 'en' | 'fil';
 
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+
 function readLangCookie(): Lang {
 	if (typeof document === 'undefined') return 'en';
 	const match = document.cookie.split('; ').find((r) => r.startsWith('maretinda_lang='));
@@ -167,9 +170,9 @@ const TopHeaderBanner: React.FC = () => {
 
 				{/* RIGHT */}
 				<div className="flex items-center gap-4 flex-shrink-0">
-					<Link href={`/${locale}/become-vendor`} className="hidden sm:inline text-white/80 hover:text-white transition-colors whitespace-nowrap">
+					<a href={SELLER_REGISTER_URL} className="hidden sm:inline text-white/80 hover:text-white transition-colors whitespace-nowrap">
 						{s.sellOn}
-					</Link>
+					</a>
 
 					<span className="hidden md:block opacity-20 text-white">|</span>
 

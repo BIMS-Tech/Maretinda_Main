@@ -156,7 +156,11 @@ function RegisterContent() {
           <h2 className="text-xl font-bold text-gray-900 mb-2">Payment Verification Failed</h2>
           <p className="text-sm text-gray-500 mb-6">{errorMsg}</p>
           <button
-            onClick={() => router.push(`/${locale}/become-vendor`)}
+            onClick={() => {
+              const url = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+              if (url) window.location.href = `${url}/subscription`;
+              else router.push(`/${locale}`);
+            }}
             className="w-full rounded-xl bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             Back to Plans
