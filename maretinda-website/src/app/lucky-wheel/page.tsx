@@ -27,6 +27,30 @@ const DEFAULT_NAMES = [
   "Maria", "Juan", "Andrea", "Jose", "Sofia", "Miguel",
 ];
 
+/* The Maretinda 4-petal flower (same art as src/app/icon.svg, 32×32 space).
+   Drawn as crisp vector so it never distorts or blurs at any wheel size.
+   Path2D is created lazily inside the fn — it only exists in the browser. */
+const PETAL_D = "M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z";
+function drawFlower(ctx: CanvasRenderingContext2D, cx: number, cy: number, reach: number, color: string) {
+  const petal = new Path2D(PETAL_D);
+  // `reach` = pixel distance from centre to a petal tip (≈11 units in the 32 space)
+  const s = reach / 11;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(s, s);
+  ctx.translate(-16, -16);
+  ctx.fillStyle = color;
+  for (const deg of [45, 135, 225, 315]) {
+    ctx.save();
+    ctx.translate(16, 16);
+    ctx.rotate((deg * Math.PI) / 180);
+    ctx.translate(-16, -16);
+    ctx.fill(petal);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 /* ══════════════════════════════════════════════════════════════════ */
 export default function LuckyWheelPage() {
   const [authed, setAuthed] = useState(false);
@@ -154,7 +178,6 @@ function Wheel({ onSignOut }: { onSignOut: () => void }) {
   const [single, setSingle] = useState("");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const hubImg = useRef<HTMLImageElement | null>(null);
   const rotRef = useRef(0);
   const rafRef = useRef<number>(0);
 
@@ -162,14 +185,6 @@ function Wheel({ onSignOut }: { onSignOut: () => void }) {
   const confettiCanvas = useRef<HTMLCanvasElement>(null);
   const confettiRef = useRef<Confetti[]>([]);
   const confettiRaf = useRef<number>(0);
-
-  /* preload hub logo */
-  useEffect(() => {
-    const img = new window.Image();
-    img.src = "/logo-m.png";
-    img.onload = () => { hubImg.current = img; draw(rotRef.current); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const seg = names.length;
   const arc = seg > 0 ? (Math.PI * 2) / seg : 0;
@@ -243,22 +258,26 @@ function Wheel({ onSignOut }: { onSignOut: () => void }) {
     ctx.strokeStyle = "rgba(255,197,51,.35)";
     ctx.stroke();
 
-    // hub
+    // hub — white disc, soft shadow, gold ring, then the brand flower
+    ctx.save();
+    ctx.shadowColor = "rgba(0,0,0,.25)";
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+    ctx.arc(cx, cy, 40, 0, Math.PI * 2);
     ctx.fillStyle = "#FFFFFF";
     ctx.fill();
+    ctx.restore();
     ctx.lineWidth = 4;
     ctx.strokeStyle = "#FFC533";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 40, 0, Math.PI * 2);
     ctx.stroke();
-    if (hubImg.current) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, 28, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.drawImage(hubImg.current, cx - 24, cy - 24, 48, 48);
-      ctx.restore();
-    }
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(67,44,99,.12)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 33, 0, Math.PI * 2);
+    ctx.stroke();
+    drawFlower(ctx, cx, cy, 24, "#432C63");
   }, [seg, names]);
 
   /* redraw on names change */
