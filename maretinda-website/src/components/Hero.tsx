@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { FiArrowRight, FiPlayCircle } from "react-icons/fi";
 import Typewriter from "./Typewriter";
+import { SELLER_REGISTER_URL } from "@/lib/site";
 
 export default function Hero() {
   const particleRef = useRef<HTMLDivElement>(null);
@@ -115,7 +116,7 @@ export default function Hero() {
             className="flex items-center justify-center gap-3 flex-wrap mb-12"
           >
             <a
-              href="#pricing"
+              href={SELLER_REGISTER_URL}
               className="inline-flex items-center gap-2 font-semibold text-[15px] px-8 py-3.5 rounded-full text-[#2A1B3E] transition-all duration-250 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(255,197,51,.5)]"
               style={{ background: "linear-gradient(135deg,#FFC533,#F2B230)", boxShadow: "0 4px 18px rgba(255,197,51,.38)" }}
             >
@@ -123,7 +124,7 @@ export default function Hero() {
               <FiArrowRight size={16} />
             </a>
             <a
-              href="#about"
+              href="#how-it-works"
               className="inline-flex items-center gap-2 font-medium text-[15px] px-8 py-3.5 rounded-full text-white/88 border border-white/22 hover:bg-white/8 hover:border-white/40 transition-all duration-200"
             >
               <FiPlayCircle size={16} />

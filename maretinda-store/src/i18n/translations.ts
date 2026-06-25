@@ -145,17 +145,17 @@ export const translations = {
 
 		// ── Chatbot ───────────────────────────────────────────
 		chatbot: {
-			greeting: "Hi there! 👋 I'm your Maretinda assistant. Ask me anything about orders, shipping, returns, or payments.",
+			greeting: "Hi there! I'm your Maretinda assistant. Ask me anything about orders, shipping, returns, or payments.",
 			placeholder: 'Type your question…',
 			online: 'Online · Typically replies instantly',
 			helpCenter: 'Help Center',
 			quickReplies: {
-				track: '📦 Track my order',
-				returns: '↩️ Returns & refunds',
-				shipping: '🚚 Shipping info',
-				payments: '💳 Payment methods',
-				seller: '🏪 Become a seller',
-				password: '🔑 Reset password',
+				track: 'Track my order',
+				returns: 'Returns & refunds',
+				shipping: 'Shipping info',
+				payments: 'Payment methods',
+				seller: 'Become a seller',
+				password: 'Reset password',
 			},
 		},
 
@@ -358,17 +358,17 @@ export const translations = {
 
 		// ── Chatbot ───────────────────────────────────────────
 		chatbot: {
-			greeting: 'Kumusta! 👋 Ako ang iyong Maretinda assistant. Magtanong tungkol sa mga order, shipping, refund, o pagbabayad.',
+			greeting: 'Kumusta! Ako ang iyong Maretinda assistant. Magtanong tungkol sa mga order, shipping, refund, o pagbabayad.',
 			placeholder: 'I-type ang iyong tanong…',
 			online: 'Online · Karaniwang sumasagot agad',
 			helpCenter: 'Sentro ng Tulong',
 			quickReplies: {
-				track: '📦 Subaybayan ang order',
-				returns: '↩️ Pagbabalik at refund',
-				shipping: '🚚 Impormasyon sa shipping',
-				payments: '💳 Mga paraan ng pagbabayad',
-				seller: '🏪 Maging nagbebenta',
-				password: '🔑 I-reset ang password',
+				track: 'Subaybayan ang order',
+				returns: 'Pagbabalik at refund',
+				shipping: 'Impormasyon sa shipping',
+				payments: 'Mga paraan ng pagbabayad',
+				seller: 'Maging nagbebenta',
+				password: 'I-reset ang password',
 			},
 		},
 

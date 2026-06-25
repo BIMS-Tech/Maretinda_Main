@@ -1,32 +1,35 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
-const SELLER_SUBSCRIPTION_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/subscription` : '#';
+// Seller panel (seller.maretinda.com) and the marketing site (about.maretinda.com).
+// Env vars win when present; otherwise fall back to the production domains.
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
+const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
+const SELLER_DASHBOARD_URL = `${SELLER_PANEL_URL}/dashboard`;
+const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
 const SHOP_LINKS = [
 	{ label: 'New arrivals', href: '/categories' },
 	{ label: 'Flash sales', href: '/flash-sale' },
-	{ label: 'Collections', href: '/categories' },
-	{ label: 'Trending now', href: '/categories' },
-	{ label: 'Local brands', href: '/categories' },
+	{ label: 'Collections', href: '/#collections' },
+	{ label: 'Trending now', href: '/#trending' },
+	{ label: 'Local brands', href: '/sellers' },
 ];
 
 const SELL_LINKS = [
 	{ label: 'Start selling', href: SELLER_REGISTER_URL },
-	{ label: 'Seller dashboard', href: SELLER_PANEL_URL || '#' },
-	{ label: 'How it works', href: SELLER_REGISTER_URL },
-	{ label: 'Fees & pricing', href: SELLER_SUBSCRIPTION_URL },
-	{ label: 'Seller blog', href: '#' },
+	{ label: 'Seller dashboard', href: SELLER_DASHBOARD_URL },
+	{ label: 'How it works', href: '/help-center#selling' },
+	{ label: 'Fees & pricing', href: `${ABOUT_SITE_URL}/#pricing` },
+	{ label: 'Seller blog', href: `${ABOUT_SITE_URL}/blogs` },
 ];
 
 const SUPPORT_LINKS = [
 	{ label: 'Help center', href: '/help-center' },
-	{ label: 'Buyer protection', href: '#' },
-	{ label: 'Shipping info', href: '#' },
-	{ label: 'Returns & refunds', href: '#' },
-	{ label: 'Contact us', href: '#' },
+	{ label: 'Buyer protection', href: '/help-center#returns' },
+	{ label: 'Shipping info', href: '/help-center#shipping' },
+	{ label: 'Returns & refunds', href: '/help-center#returns' },
+	{ label: 'Contact us', href: `${ABOUT_SITE_URL}/contact` },
 ];
 
 // Real payment logos — the same GiyaPay-hosted assets shown on the checkout payment button.
