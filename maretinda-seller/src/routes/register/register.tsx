@@ -712,7 +712,7 @@ export const Register = () => {
           <div className="mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4" style={{ background: "#F2ECF8", color: "#432C63" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Vendor Registration
+              Seller Registration
             </div>
             <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your Seller account</h2>
             <p className="text-ui-fg-subtle text-sm">Step {stepIdx + 1} of {steps.length} — {currentStep?.label}</p>
