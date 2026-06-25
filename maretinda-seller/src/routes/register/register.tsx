@@ -616,7 +616,7 @@ export const Register = () => {
           </div>
           <h2 className="text-2xl font-bold text-ui-fg-base mb-2">Registration submitted!</h2>
           <p className="text-ui-fg-subtle text-sm leading-relaxed mb-8">
-            Thank you for applying to become a vendor on Maretinda. Your application is under review.
+            Thank you for applying to become a seller on Maretinda. Your application is under review.
             You will receive an email once your account is activated.
           </p>
           <Link
@@ -635,7 +635,7 @@ export const Register = () => {
   return (
     <div className="min-h-dvh w-dvw flex">
 
-      {/* Left panel — vendor brand */}
+      {/* Left panel — seller brand */}
       <div
         className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden flex-shrink-0"
         style={{ backgroundColor: "#432C63" }}
@@ -649,7 +649,7 @@ export const Register = () => {
           <MaretindaFlower color="white" size={40} />
           <div>
             <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>Vendor</span>
+            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>Seller</span>
           </div>
         </div>
 
@@ -701,7 +701,7 @@ export const Register = () => {
             <div className="lg:hidden flex items-center gap-2">
               <MaretindaFlower color="#432C63" size={28} />
               <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>Vendor</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>Seller</span>
             </div>
             <div className="ml-auto">
               <ThemeToggleButton />
