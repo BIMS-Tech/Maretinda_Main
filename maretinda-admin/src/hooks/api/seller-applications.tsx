@@ -48,6 +48,9 @@ export interface SellerApplication {
   digital_support: string[] | null;
   has_marketing_budget: boolean | null;
 
+  // Promo / referral code entered at registration
+  promo_code: string | null;
+
   // Documents (key → URL map)
   documents: Record<string, string> | null;
 }

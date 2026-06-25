@@ -96,6 +96,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       brand_colors: body.brand_colors || null,
       digital_support: body.digital_support || null,
       has_marketing_budget: body.has_marketing_budget ?? null,
+      promo_code: body.promo_code || null,
       documents: body.documents ? JSON.stringify(body.documents) : null,
       status: "pending",
     })

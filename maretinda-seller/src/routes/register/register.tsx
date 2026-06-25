@@ -101,6 +101,7 @@ interface FormData {
   signatory_email: string; signatory_landline: string; signatory_mobile: string
   documents: Record<string, string>
   brand_colors: string; digital_support: string[]; has_marketing_budget: boolean | null
+  promo_code: string
   password: string; confirm_password: string
 }
 
@@ -114,6 +115,7 @@ const INITIAL: FormData = {
   signatory_email: "", signatory_landline: "", signatory_mobile: "",
   documents: {},
   brand_colors: "", digital_support: [], has_marketing_budget: null,
+  promo_code: "",
   password: "", confirm_password: "",
 }
 
@@ -475,6 +477,18 @@ function StepAccount({ data, set }: { data: FormData; set: <K extends keyof Form
       {data.password && data.password.length >= 8 && data.confirm_password && data.password === data.confirm_password && (
         <p className="text-green-500 text-xs">Passwords match ✓</p>
       )}
+
+      <div className="pt-2 border-t border-ui-border-base" />
+
+      <Field label="Promo Code">
+        <Input
+          value={data.promo_code}
+          onChange={e => set("promo_code", e.target.value.toUpperCase())}
+          placeholder="Have a promo code? Enter it here"
+          autoCapitalize="characters"
+        />
+        <p className="text-ui-fg-muted text-xs mt-1">Optional — your first month is already free.</p>
+      </Field>
     </div>
   )
 }
@@ -700,7 +714,7 @@ export const Register = () => {
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               Vendor Registration
             </div>
-            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your vendor account</h2>
+            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Create your Seller account</h2>
             <p className="text-ui-fg-subtle text-sm">Step {stepIdx + 1} of {steps.length} — {currentStep?.label}</p>
           </div>
 

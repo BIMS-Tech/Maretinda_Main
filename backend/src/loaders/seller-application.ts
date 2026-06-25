@@ -72,6 +72,9 @@ export default async function sellerApplicationLoader(container: MedusaContainer
         "digital_support"             text[]      NULL,
         "has_marketing_budget"        boolean     NULL,
 
+        -- Promo / referral code entered at registration
+        "promo_code"                  text        NULL,
+
         -- Document URLs (JSON object: { key: url })
         "documents"                   jsonb       NULL,
 
@@ -87,6 +90,8 @@ export default async function sellerApplicationLoader(container: MedusaContainer
     `)
     // Older installs may predate auth_identity_id (used to create the seller on approval)
     await pg.raw(`ALTER TABLE "seller_application" ADD COLUMN IF NOT EXISTS "auth_identity_id" text`)
+    // Older installs may predate promo_code (entered during registration)
+    await pg.raw(`ALTER TABLE "seller_application" ADD COLUMN IF NOT EXISTS "promo_code" text`)
     await pg.raw(`CREATE INDEX IF NOT EXISTS "seller_application_status_idx" ON "seller_application" ("status")`)
     await pg.raw(`CREATE INDEX IF NOT EXISTS "seller_application_email_idx" ON "seller_application" ("email")`)
 

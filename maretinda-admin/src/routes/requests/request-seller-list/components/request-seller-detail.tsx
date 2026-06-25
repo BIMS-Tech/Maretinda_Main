@@ -129,6 +129,7 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
         digital_support: app.digital_support,
         has_marketing_budget: app.has_marketing_budget,
       },
+      promo_code: app.promo_code,
       documents: docs,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -210,6 +211,7 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
                 app.has_marketing_budget === false ? "No" : undefined
               }
             />
+            <Field label="Promo Code" value={app.promo_code} />
           </Grid>
           <Field
             label="Digital Support Channels"
