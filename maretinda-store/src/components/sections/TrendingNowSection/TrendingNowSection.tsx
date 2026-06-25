@@ -34,7 +34,7 @@ export const TrendingNowSection = async ({
 	];
 
 	return (
-		<section style={{ backgroundColor: '#FAF8F5', borderTop: '1px solid #EDEAE3', borderBottom: '1px solid #EDEAE3' }}>
+		<section id="trending" className="scroll-mt-24" style={{ backgroundColor: '#FAF8F5', borderTop: '1px solid #EDEAE3', borderBottom: '1px solid #EDEAE3' }}>
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-10 lg:py-14">
 				<div className="flex items-end justify-between flex-wrap gap-4 mb-7">
 					<div>

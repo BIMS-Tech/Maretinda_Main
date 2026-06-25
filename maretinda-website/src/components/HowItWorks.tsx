@@ -3,6 +3,8 @@
 import { FiUserPlus, FiShoppingBag, FiTrendingUp, FiArrowRight } from "react-icons/fi";
 import { useState } from "react";
 
+import { SELLER_REGISTER_URL } from "@/lib/site";
+
 const steps = [
   {
     num: "01",
@@ -118,7 +120,7 @@ export default function HowItWorks() {
         {/* CTA */}
         <div data-aos="fade-up" className="text-center">
           <a
-            href="#pricing"
+            href={SELLER_REGISTER_URL}
             className="inline-flex items-center gap-2 font-semibold text-[15px] px-8 py-3.5 rounded-full text-[#2A1B3E] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(255,197,51,.45)]"
             style={{ background:"linear-gradient(135deg,#FFC533,#F2B230)", boxShadow:"0 4px 16px rgba(255,197,51,.35)" }}
           >

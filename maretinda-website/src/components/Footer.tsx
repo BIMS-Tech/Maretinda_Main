@@ -7,27 +7,29 @@ import {
 } from "react-icons/fi";
 import { RiTiktokLine } from "react-icons/ri";
 
+import { SELLER_LOGIN_URL, SELLER_REGISTER_URL } from "@/lib/site";
+
 const footerLinks = {
   Platform: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Integrations", href: "#" },
-    { label: "API Docs", href: "#" },
-    { label: "Changelog", href: "#" },
+    { label: "Features", href: "/#features" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "How It Works", href: "/#how-it-works" },
+    { label: "FAQ", href: "/#faq" },
+    { label: "Blog", href: "/blogs" },
   ],
   sellers: [
-    { label: "seller Portal", href: "#" },
-    { label: "Success Stories", href: "#" },
-    { label: "Help Center", href: "#" },
-    { label: "Community", href: "#" },
-    { label: "Webinars", href: "#" },
+    { label: "Start Selling", href: SELLER_REGISTER_URL },
+    { label: "Seller Portal", href: SELLER_LOGIN_URL },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "Success Stories", href: "/#testimonials" },
+    { label: "Contact", href: "/contact" },
   ],
   Company: [
-    { label: "About Us", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Press Kit", href: "#" },
-    { label: "Contact", href: "mailto:hello@maretinda.com" },
+    { label: "About Us", href: "/#about" },
+    { label: "Blog", href: "/blogs" },
+    { label: "Contact", href: "/contact" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "FAQ", href: "/#faq" },
   ],
   Legal: [
     { label: "Terms of Service", href: "#" },

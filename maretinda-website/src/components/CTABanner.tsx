@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { FiArrowRight, FiMail } from "react-icons/fi";
 
+import { SELLER_REGISTER_URL } from "@/lib/site";
+
 export default function CTABanner() {
   return (
     <section className="relative py-24 overflow-hidden text-center">
@@ -51,7 +53,7 @@ export default function CTABanner() {
 
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <a
-              href="#pricing"
+              href={SELLER_REGISTER_URL}
               className="inline-flex items-center gap-2 font-semibold text-[15px] px-8 py-3.5 rounded-full text-[#2A1B3E] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(255,197,51,.5)]"
               style={{ background:"linear-gradient(135deg,#FFC533,#F2B230)", boxShadow:"0 4px 18px rgba(255,197,51,.38)" }}
             >

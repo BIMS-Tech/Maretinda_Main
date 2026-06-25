@@ -54,7 +54,7 @@ function Stars({ count = 5 }: { count?: number }) {
 
 export default function Testimonials() {
   return (
-    <section className="py-24 bg-[#F6F4FB] relative overflow-hidden">
+    <section id="testimonials" className="py-24 bg-[#F6F4FB] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none"
         style={{ backgroundImage:"radial-gradient(rgba(67,44,99,.055) 1px, transparent 1px)", backgroundSize:"28px 28px" }} />
 

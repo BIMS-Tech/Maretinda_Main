@@ -46,7 +46,7 @@ export const FeaturedCollectionsSection = async () => {
 	const featuredImage = getImage(featured);
 
 	return (
-		<section className="bg-white">
+		<section id="collections" className="bg-white scroll-mt-24">
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
 				{/* Header */}
 				<div className="flex items-end justify-between mb-7 lg:mb-8">

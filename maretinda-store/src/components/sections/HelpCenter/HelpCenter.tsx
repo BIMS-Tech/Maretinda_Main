@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
 const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
@@ -249,6 +249,19 @@ export const HelpCenter = () => {
 	const [query, setQuery] = useState('');
 	const [activeSection, setActiveSection] = useState<SectionId>('orders');
 
+	// Allow deep-linking to a topic via URL hash, e.g. /help-center#shipping (footer links).
+	useEffect(() => {
+		const applyHash = () => {
+			const id = window.location.hash.replace('#', '');
+			if ((SECTION_IDS as readonly string[]).includes(id)) {
+				setActiveSection(id as SectionId);
+			}
+		};
+		applyHash();
+		window.addEventListener('hashchange', applyHash);
+		return () => window.removeEventListener('hashchange', applyHash);
+	}, []);
+
 	const filteredFaqs = query.trim().length >= 2
 		? SECTION_IDS.flatMap((sec) =>
 			FAQS[sec]
@@ -305,7 +318,11 @@ export const HelpCenter = () => {
 						</p>
 						{filteredFaqs.length === 0 ? (
 							<div className="text-center py-16">
-								<div className="text-[48px] mb-4">🔍</div>
+								<div className="flex justify-center mb-4">
+									<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#C4BBD6" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+										<circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+									</svg>
+								</div>
 								<p className="text-[15px] font-semibold text-[#1B1B1B] mb-2">{s.noResults}</p>
 								<p className="text-[13.5px]" style={{ color: '#737373' }}>
 									{s.noResultsDesc}
@@ -407,10 +424,42 @@ export const HelpCenter = () => {
 				{/* Popular links */}
 				<div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
 					{[
-						{ label: s.trackMyOrder, href: '/user/orders', icon: '📦' },
-						{ label: s.requestReturn, href: '/user/orders', icon: '↩️' },
-						{ label: s.refundPolicy, href: '/refund-policy', icon: '💸' },
-						{ label: s.becomeSeller, href: SELLER_REGISTER_URL, icon: '🏪' },
+						{
+							label: s.trackMyOrder,
+							href: '/user/orders',
+							icon: (
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M16.5 9.4 7.55 4.24" /><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" />
+								</svg>
+							),
+						},
+						{
+							label: s.requestReturn,
+							href: '/user/orders',
+							icon: (
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+									<polyline points="9 14 4 9 9 4" /><path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+								</svg>
+							),
+						},
+						{
+							label: s.refundPolicy,
+							href: '/refund-policy',
+							icon: (
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+									<rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M6 12h.01M18 12h.01" />
+								</svg>
+							),
+						},
+						{
+							label: s.becomeSeller,
+							href: SELLER_REGISTER_URL,
+							icon: (
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M3 9 4.5 4.5h15L21 9" /><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" /><path d="M3 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 3 0" />
+								</svg>
+							),
+						},
 					].map(({ label, href, icon }) => (
 						<Link
 							key={label}
@@ -418,7 +467,7 @@ export const HelpCenter = () => {
 							className="flex items-center gap-3 p-4 rounded-xl border bg-white hover:border-[#432C63] hover:text-[#432C63] transition-colors text-[13px] font-semibold text-[#1B1B1B]"
 							style={{ borderColor: '#EDEAE3' }}
 						>
-							<span className="text-[18px]">{icon}</span>
+							<span className="flex-shrink-0 text-[#432C63]">{icon}</span>
 							{label}
 						</Link>
 					))}

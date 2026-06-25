@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
+const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
+const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
+const PRICING_URL = `${ABOUT_SITE_URL}/#pricing`;
 
 import { useLanguage } from '@/providers/LanguageProvider';
 
@@ -38,19 +40,29 @@ const RESPONSES: Record<string, BotResponse> = {
 		links: [{ label: 'Shop now', href: '/categories' }],
 	},
 	payments: {
-		text: 'We accept GCash, Maya, GiyaPay, Visa/Mastercard, and Cash on Delivery (COD). COD is available nationwide for most sellers. Split payment is not yet supported.',
-		links: [{ label: 'Help Center — Payments', href: '/help-center' }],
+		text: 'Checkout is powered by GiyaPay. We accept GCash, Maya, credit/debit cards (Visa & Mastercard), InstaPay, QR Ph, and Cash on Delivery (COD). COD is available nationwide for most sellers. Split payment is not yet supported.',
+		links: [{ label: 'Help Center — Payments', href: '/help-center#payments' }],
 	},
 	seller: {
-		text: 'Becoming a Maretinda seller is free! Register your shop, upload a valid ID, and you\'ll be approved within 1–2 business days. We charge 5% commission per sale — no listing fees.',
-		links: [{ label: 'Start selling', href: SELLER_REGISTER_URL }],
+		text: 'Selling on Maretinda runs on a simple subscription — there is no per-sale commission and no listing fees, so you keep what you earn. Register your shop, upload a valid ID, and you will be approved within 1–2 business days. Your first month is free, so you can set up and start selling before paying anything.',
+		links: [
+			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
+			{ label: 'Plans & pricing', href: PRICING_URL },
+		],
+	},
+	fees: {
+		text: 'Maretinda charges a flat monthly subscription instead of taking a commission on your sales — you keep what you earn (minus standard payment processing). Your first month is free, and you can upgrade, downgrade, or cancel your plan anytime.',
+		links: [
+			{ label: 'See plans & pricing', href: PRICING_URL },
+			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
+		],
 	},
 	password: {
 		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',
 		links: [{ label: 'Go to login', href: '/login' }],
 	},
 	greeting: {
-		text: 'Hello! 👋 I\'m Maretinda\'s virtual assistant. I can help with orders, shipping, returns, payments, and more. What can I help you with today?',
+		text: 'Hello! I\'m Maretinda\'s virtual assistant. I can help with orders, shipping, returns, payments, selling, and more. What can I help you with today?',
 	},
 	fallback: {
 		text: 'I\'m not sure about that one! For detailed help, visit our Help Center or email our support team at support@maretinda.com.',
@@ -63,7 +75,8 @@ const INTENT_MAP: [RegExp, string][] = [
 	[/return|refund|exchange|money back|wrong item|damaged/i, 'returns'],
 	[/ship|deliver|courier|how long|how many days|lbc|j&t|ninja|lalamove/i, 'shipping'],
 	[/pay|payment|gcash|maya|cod|cash on delivery|credit|debit|visa|mastercard|card/i, 'payments'],
-	[/sell|seller|seller|shop|listing|commission|payout/i, 'seller'],
+	[/subscription|commission|fee|fees|plan|pricing|price|how much.*sell|cost.*sell/i, 'fees'],
+	[/sell|seller|vendor|shop|listing|payout/i, 'seller'],
 	[/password|forgot|reset|login|can.*log|sign in/i, 'password'],
 	[/hi|hello|hey|good morning|good afternoon|good evening|help/i, 'greeting'],
 ];
@@ -123,6 +136,22 @@ export const Chatbot = () => {
 		setTimeout(() => {
 			const key = matchIntent(text);
 			const response = RESPONSES[key];
+			setTyping(false);
+			setMessages((prev) => [
+				...prev,
+				{ id: uid(), from: 'bot', text: response.text, links: response.links },
+			]);
+		}, 700 + Math.random() * 400);
+	};
+
+	// Quick replies carry their own intent key, so respond directly instead of
+	// re-matching the (emoji-free) label text.
+	const sendQuickReply = (key: string, label: string) => {
+		const response = RESPONSES[key] ?? RESPONSES.fallback;
+		setMessages((prev) => [...prev, { id: uid(), from: 'user', text: label }]);
+		setTyping(true);
+
+		setTimeout(() => {
 			setTyping(false);
 			setMessages((prev) => [
 				...prev,
@@ -246,7 +275,7 @@ export const Chatbot = () => {
 						{quickReplies.map(({ label, key }) => (
 							<button
 								key={key}
-								onClick={() => sendMessage(label.replace(/^[^ ]+ /, ''))}
+								onClick={() => sendQuickReply(key, label)}
 								className="flex-shrink-0 text-[11.5px] font-semibold px-3 py-1.5 rounded-full transition-colors hover:bg-[#432C63] hover:text-white whitespace-nowrap"
 								style={{ backgroundColor: '#F0EBF8', color: '#432C63', border: '1px solid #E0D6F0' }}
 							>

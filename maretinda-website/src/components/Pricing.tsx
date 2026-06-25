@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { FiCheck, FiMinus, FiArrowRight, FiSun, FiTrendingUp, FiAward, FiClock } from "react-icons/fi";
 
+import { SELLER_REGISTER_URL } from "@/lib/site";
+
 interface PlanFeature { text: string; included: boolean; comingSoon?: boolean }
 interface Plan {
   icon: typeof FiSun;
@@ -255,18 +257,18 @@ export default function Pricing() {
 
                   <div className="mt-3">
                     {plan.style === "cta" && (
-                      <a href="#" className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full text-[#2A1B3E] transition-all duration-200 hover:-translate-y-0.5"
+                      <a href={SELLER_REGISTER_URL} className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full text-[#2A1B3E] transition-all duration-200 hover:-translate-y-0.5"
                         style={{ background:"linear-gradient(135deg,#FFC533,#F2B230)", boxShadow:"0 4px 16px rgba(255,197,51,.35)" }}>
                         {plan.cta} <FiArrowRight size={14} />
                       </a>
                     )}
                     {plan.style === "outline" && (
-                      <a href="#" className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full border-2 border-brand-purple text-brand-purple transition-all duration-200 hover:bg-brand-purple hover:text-white hover:-translate-y-0.5">
+                      <a href={SELLER_REGISTER_URL} className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full border-2 border-brand-purple text-brand-purple transition-all duration-200 hover:bg-brand-purple hover:text-white hover:-translate-y-0.5">
                         {plan.cta} <FiArrowRight size={14} />
                       </a>
                     )}
                     {plan.style === "primary" && (
-                      <a href="#" className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full text-white transition-all duration-200 hover:-translate-y-0.5"
+                      <a href="/contact" className="flex items-center justify-center gap-1.5 w-full font-semibold text-[14px] py-3.5 rounded-full text-white transition-all duration-200 hover:-translate-y-0.5"
                         style={{ background:"linear-gradient(135deg,#432C63,#5C3E88,#7C3AED)", boxShadow:"0 4px 14px rgba(67,44,99,.25)" }}>
                         {plan.cta} <FiArrowRight size={14} />
                       </a>
