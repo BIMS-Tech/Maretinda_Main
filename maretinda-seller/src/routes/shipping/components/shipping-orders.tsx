@@ -619,7 +619,8 @@ function CreateShipmentDrawer({
               <Input
                 placeholder="e.g. Clothing, Electronics"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                readOnly
+                disabled
               />
             </FormField>
             <div className="grid grid-cols-4 gap-3">
