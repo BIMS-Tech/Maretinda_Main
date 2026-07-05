@@ -133,11 +133,11 @@ export function buyerNewOrderTemplate(data: {
 
                 <!-- Header banner -->
                 <tr>
-                  <td style="background:#111827;padding:36px 40px 30px;text-align:center;">
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${store_name}" height="26" style="display:inline-block;border:0;max-width:180px;margin-bottom:20px;">
-                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">Order Confirmed</p>
+                  <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
+                    <img src="https://maretinda.com/logo-m-2.png" alt="${store_name}" height="42" style="display:inline-block;border:0;max-width:220px;margin-bottom:22px;">
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Order Confirmed</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">#${display_id}</p>
-                    <div style="width:40px;height:3px;background:#FACC15;margin:14px auto 0;border-radius:2px;"></div>
+                    <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>
                   </td>
                 </tr>
 
@@ -154,17 +154,17 @@ export function buyerNewOrderTemplate(data: {
                 <!-- Order summary box -->
                 <tr>
                   <td style="padding:0 40px 28px;">
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#111827;border-radius:10px;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#432C63;border-radius:10px;">
                       <tr>
                         <td style="padding:20px 24px;">
                           <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
                             <tr>
                               <td>
-                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Order Total</p>
-                                <p style="margin:6px 0 0;font-size:24px;font-weight:800;color:#FACC15;">${formatCurrency(orderTotal)}</p>
+                                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:1px;">Order Total</p>
+                                <p style="margin:6px 0 0;font-size:24px;font-weight:800;color:#FFC533;">${formatCurrency(orderTotal)}</p>
                               </td>
                               <td style="text-align:right;">
-                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Order ID</p>
+                                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:1px;">Order ID</p>
                                 <p style="margin:6px 0 0;font-size:16px;font-weight:700;color:#FFFFFF;">#${display_id}</p>
                               </td>
                             </tr>
@@ -223,7 +223,7 @@ export function buyerNewOrderTemplate(data: {
                   <td style="padding:0 40px 40px;text-align:center;">
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
-                        <td style="background:#FACC15;border-radius:10px;">
+                        <td style="background:#FFC533;border-radius:10px;">
                           <a href="${order_address}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:700;color:#111827;text-decoration:none;letter-spacing:-0.2px;">View Order Details &rarr;</a>
                         </td>
                       </tr>

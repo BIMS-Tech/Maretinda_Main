@@ -72,11 +72,11 @@ export function sellerNewOrderTemplate(data: {
 
                 <!-- Header banner -->
                 <tr>
-                  <td style="background:#111827;padding:36px 40px 30px;text-align:center;">
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="26" style="display:inline-block;border:0;max-width:180px;margin-bottom:20px;">
-                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">New Order</p>
+                  <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
+                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="42" style="display:inline-block;border:0;max-width:220px;margin-bottom:22px;">
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">New Order</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">#${displayId}</p>
-                    <div style="width:40px;height:3px;background:#FACC15;margin:14px auto 0;border-radius:2px;"></div>
+                    <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>
                   </td>
                 </tr>
 
@@ -106,17 +106,17 @@ export function sellerNewOrderTemplate(data: {
                 <!-- Order meta box -->
                 <tr>
                   <td style="padding:0 40px 28px;">
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#111827;border-radius:10px;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#432C63;border-radius:10px;">
                       <tr>
                         <td style="padding:20px 24px;">
                           <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
                             <tr>
                               <td>
-                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Order Number</p>
-                                <p style="margin:6px 0 0;font-size:22px;font-weight:800;color:#FACC15;">#${displayId}</p>
+                                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:1px;">Order Number</p>
+                                <p style="margin:6px 0 0;font-size:22px;font-weight:800;color:#FFC533;">#${displayId}</p>
                               </td>
                               <td style="text-align:right;">
-                                <p style="margin:0;font-size:11px;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;">Customer</p>
+                                <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:1px;">Customer</p>
                                 <p style="margin:6px 0 0;font-size:16px;font-weight:700;color:#FFFFFF;">${customerName}</p>
                               </td>
                             </tr>
@@ -150,7 +150,7 @@ export function sellerNewOrderTemplate(data: {
                     <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
                       <tr>
                         <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">1</div>
+                          <div style="width:22px;height:22px;background:#FFC533;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">1</div>
                         </td>
                         <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
                           Log in to your vendor dashboard and confirm the order
@@ -158,7 +158,7 @@ export function sellerNewOrderTemplate(data: {
                       </tr>
                       <tr>
                         <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">2</div>
+                          <div style="width:22px;height:22px;background:#FFC533;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">2</div>
                         </td>
                         <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
                           Pack the items securely and arrange for pickup or drop-off
@@ -166,7 +166,7 @@ export function sellerNewOrderTemplate(data: {
                       </tr>
                       <tr>
                         <td style="padding:6px 0;vertical-align:top;width:24px;">
-                          <div style="width:22px;height:22px;background:#FACC15;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">3</div>
+                          <div style="width:22px;height:22px;background:#FFC533;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">3</div>
                         </td>
                         <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
                           Mark the order as shipped and enter the tracking number
@@ -181,7 +181,7 @@ export function sellerNewOrderTemplate(data: {
                   <td style="padding:0 40px 40px;text-align:center;">
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
-                        <td style="background:#FACC15;border-radius:10px;">
+                        <td style="background:#FFC533;border-radius:10px;">
                           <a href="${vendorUrl}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:700;color:#111827;text-decoration:none;letter-spacing:-0.2px;">Manage Orders &rarr;</a>
                         </td>
                       </tr>

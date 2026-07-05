@@ -29,10 +29,10 @@ export function buyerAccountCreatedTemplate(data: {
 
                 <!-- Header banner -->
                 <tr>
-                  <td style="background:#111827;padding:38px 40px 32px;text-align:center;">
-                    <p style="margin:0 0 18px;font-size:12px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">Welcome to</p>
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="34" style="display:inline-block;border:0;max-width:220px;">
-                    <div style="width:40px;height:3px;background:#FACC15;margin:18px auto 0;border-radius:2px;"></div>
+                  <td style="background:#432C63;padding:38px 40px 34px;text-align:center;">
+                    <p style="margin:0 0 20px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Welcome to</p>
+                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="48" style="display:inline-block;border:0;max-width:260px;">
+                    <div style="width:40px;height:3px;background:#FFC533;margin:18px auto 0;border-radius:2px;"></div>
                   </td>
                 </tr>
 
@@ -133,7 +133,7 @@ export function buyerAccountCreatedTemplate(data: {
                   <td style="padding:0 40px 40px;text-align:center;">
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
-                        <td style="background:#FACC15;border-radius:10px;">
+                        <td style="background:#FFC533;border-radius:10px;">
                           <a href="${storefrontUrl}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:700;color:#111827;text-decoration:none;letter-spacing:-0.2px;">Start Shopping &rarr;</a>
                         </td>
                       </tr>
