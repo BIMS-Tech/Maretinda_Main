@@ -7,6 +7,7 @@ import { useOrder, useOrderPreview } from "../../../hooks/api/orders"
 import { ActiveOrderClaimSection } from "./components/active-order-claim-section"
 import { ActiveOrderExchangeSection } from "./components/active-order-exchange-section"
 import { ActiveOrderReturnSection } from "./components/active-order-return-section"
+import { OrderCourierShipmentSection } from "./components/order-courier-shipment-section"
 import { OrderCustomerSection } from "./components/order-customer-section"
 import { OrderFulfillmentSection } from "./components/order-fulfillment-section"
 import { OrderGeneralSection } from "./components/order-general-section"
@@ -80,6 +81,7 @@ export const OrderDetail = () => {
         <OrderSummarySection order={order} />
         <OrderPaymentSection order={order} />
         <OrderFulfillmentSection order={order} />
+        <OrderCourierShipmentSection order={order} />
       </TwoColumnPage.Main>
       <TwoColumnPage.Sidebar>
         <OrderCustomerSection order={order} />
