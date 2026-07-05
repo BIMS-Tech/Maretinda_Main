@@ -22,13 +22,6 @@ export function passwordResetTemplate(data: {
       <td align="center" style="padding:0 16px;">
         <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;">
 
-          <!-- Logo above card -->
-          <tr>
-            <td style="text-align:center;padding-bottom:24px;">
-              <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="40" style="display:inline-block;border:0;max-width:180px;">
-            </td>
-          </tr>
-
           <!-- Card -->
           <tr>
             <td style="background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
@@ -36,8 +29,9 @@ export function passwordResetTemplate(data: {
 
                 <!-- Header banner -->
                 <tr>
-                  <td style="background:#111827;padding:32px 40px;text-align:center;">
-                    <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">Account Security</p>
+                  <td style="background:#111827;padding:36px 40px 30px;text-align:center;">
+                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="26" style="display:inline-block;border:0;max-width:180px;margin-bottom:20px;">
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FACC15;text-transform:uppercase;letter-spacing:2px;">Account Security</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">Password Reset</p>
                     <div style="width:40px;height:3px;background:#FACC15;margin:14px auto 0;border-radius:2px;"></div>
                   </td>
