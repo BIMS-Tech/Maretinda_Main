@@ -203,6 +203,23 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         return res.status(400).json({ message: 'providerId and orderData are required' })
       }
 
+      // Guard against double-booking: an order that already has an active
+      // (non-cancelled) shipment must not be shipped again. This is the
+      // server-side backstop for the seller panel's UI blocking, so a stale
+      // client can never create a duplicate booking.
+      if (orderData.medusa_order_id) {
+        const existing = await pg('seller_shipping_order')
+          .where({ seller_id: sellerId, medusa_order_id: orderData.medusa_order_id })
+          .whereNot('status', 'cancelled')
+          .whereNull('deleted_at')
+          .first()
+        if (existing) {
+          return res.status(409).json({
+            message: `Order already has an active shipment (${existing.tracking_number ?? existing.id}). Cancel it before booking again.`,
+          })
+        }
+      }
+
       const creds = await getPlatformCredentials(pg, providerId).catch((err) => {
         throw new Error(err.message)
       })
