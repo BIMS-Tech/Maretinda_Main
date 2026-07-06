@@ -96,8 +96,15 @@ jobs:
             esac
             sleep 20
           done
-          gcloud artifacts docker tags add \
-            "$AR/backend:${{ github.sha }}" "$AR/backend:latest" || true
+          # Move the convenience `latest` tag by re-pushing the built image.
+          # `gcloud artifacts docker tags add` needs artifactregistry.tags.delete
+          # to move an existing tag (delete old pointer + add) — the CI SA doesn't
+          # have it. A plain `docker push` overwrites the tag with only push
+          # perms, matching how the store/admin/seller jobs tag `latest`.
+          gcloud auth configure-docker "$GCP_REGION-docker.pkg.dev" --quiet
+          docker pull "$AR/backend:${{ github.sha }}"
+          docker tag "$AR/backend:${{ github.sha }}" "$AR/backend:latest"
+          docker push "$AR/backend:latest"
 
       - name: Run DB migrations (Cloud Run job)
         run: |
