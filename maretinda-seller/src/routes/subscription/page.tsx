@@ -521,35 +521,34 @@ function PlanCard({
 
   const features = plan.features ? buildFeatureRows(plan.features) : []
 
-  // Card styles — popular card keeps a fixed dark-purple brand background;
-  // all other cards use Medusa UI theme tokens so they match the panel.
-  const cardBg = isPopular
-    ? "bg-gradient-to-b from-[#2d1f5e] to-[#1a1030]"
-    : "bg-ui-bg-base hover:bg-ui-bg-base-hover"
+  // Unified card styling — every tier shares the same theme surface and violet
+  // accent so the three cards read as one system. Emphasis is expressed only
+  // through a colored ring + badge: violet for the popular tier, emerald for the
+  // current plan. No per-tier background swaps or white-on-purple text.
+  const cardBg = "bg-ui-bg-base"
   const cardBorder = isCurrent
-    ? "border-ui-tag-green-border ring-2 ring-ui-tag-green-bg"
+    ? "border-emerald-500/50 ring-1 ring-emerald-500/20"
     : isPopular
-    ? "border-violet-500/40"
-    : changeType === "upgrade"
-    ? "border-violet-400/40"
-    : changeType === "downgrade"
-    ? "border-orange-400/40"
+    ? "border-violet-500/50 ring-1 ring-violet-500/20 shadow-lg shadow-violet-500/10"
     : "border-ui-border-base"
-  const tierColor = isPopular ? "text-amber-400" : "text-violet-500"
-  const nameColor = isPopular ? "text-white" : "text-ui-fg-base"
-  const taglineColor = isPopular ? "text-violet-200/70" : "text-ui-fg-subtle"
-  const priceColor = isPopular ? "text-white" : "text-ui-fg-base"
-  const periodColor = isPopular ? "text-violet-300/60" : "text-ui-fg-muted"
-  const featureTextColor = isPopular ? "text-violet-100" : "text-ui-fg-subtle"
-  const featureDisabledColor = isPopular ? "text-white/20" : "text-ui-fg-disabled"
-  const dividerColor = isPopular ? "border-white/10" : "border-ui-border-base"
+  const tierColor = "text-violet-500"
+  const nameColor = "text-ui-fg-base"
+  const taglineColor = "text-ui-fg-subtle"
+  const priceColor = "text-ui-fg-base"
+  const periodColor = "text-ui-fg-muted"
+  const featureTextColor = "text-ui-fg-subtle"
+  const featureDisabledColor = "text-ui-fg-disabled"
+  const dividerColor = "border-ui-border-base"
 
+  // Button styling is driven by the *action*, not the tier — so the same action
+  // always looks the same across cards (e.g. every "Downgrade" is a neutral
+  // outline, every forward move is a solid violet CTA).
   const getButtonStyle = () => {
-    if (isCurrent)     return "bg-green-600 text-white hover:bg-green-700"
-    if (isPopular)     return "bg-amber-400 text-gray-900 hover:bg-amber-300 font-extrabold"
-    if (changeType === "upgrade") return "bg-violet-600 text-white hover:bg-violet-700"
-    if (changeType === "downgrade") return "border border-orange-500 text-orange-400 hover:bg-orange-500/10"
-    return "border border-violet-500 text-violet-300 hover:bg-violet-500/10"
+    if (isCurrent) return "bg-emerald-500 text-white cursor-default"
+    if (changeType === "downgrade") return "border border-ui-border-strong text-ui-fg-subtle hover:bg-ui-bg-base-hover"
+    if (changeType === "upgrade" || changeType === "renew") return "bg-violet-600 text-white hover:bg-violet-700"
+    if (isPopular) return "bg-violet-600 text-white hover:bg-violet-700"
+    return "border border-violet-500/50 text-violet-500 hover:bg-violet-500/10"
   }
 
   const getButtonLabel = () => {
@@ -564,35 +563,25 @@ function PlanCard({
 
   return (
     <div className={`relative flex flex-col rounded-2xl border transition-all duration-200 ${cardBg} ${cardBorder}`}>
-      {/* Popular badge */}
-      {isPopular && !isCurrent && (
+      {/* Emphasis badge — current plan takes priority over the popular badge */}
+      {isCurrent ? (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-          <span className="rounded-full bg-amber-400 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-gray-900 shadow-lg">
-            Most Popular
-          </span>
-        </div>
-      )}
-      {isCurrent && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-          <span className="rounded-full bg-green-500 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
+          <span className="rounded-full bg-emerald-500 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
             Current Plan
           </span>
         </div>
-      )}
-      {!isCurrent && changeType === "upgrade" && !isPopular && (
+      ) : isPopular ? (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
           <span className="rounded-full bg-violet-600 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
-            Upgrade
+            Most Popular
           </span>
         </div>
-      )}
+      ) : null}
 
       {/* Header section */}
       <div className={`p-6 border-b ${dividerColor}`}>
         <div className="flex items-start gap-3 mb-4">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold ${
-            isPopular ? "bg-white/10 text-white" : "bg-ui-bg-subtle text-violet-500"
-          }`}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-violet-500/10 text-violet-500">
             {meta.icon}
           </div>
           <div>
@@ -604,14 +593,14 @@ function PlanCard({
 
         <div className="mt-2">
           <div className="flex items-end gap-1">
-            <span className={`text-[11px] font-bold -mb-1 ${isPopular ? "text-amber-400" : "text-violet-500"}`}>₱</span>
+            <span className="text-[11px] font-bold -mb-1 text-violet-500">₱</span>
             <span className={`text-4xl font-extrabold tabular-nums ${priceColor}`}>
               {displayPrice.toLocaleString()}
             </span>
             <span className={`text-xs mb-1 ml-1 ${periodColor}`}>/mo</span>
           </div>
           {billing === "yearly" && (
-            <p className={`text-xs mt-1 ${isPopular ? "text-amber-300/80" : "text-violet-500"}`}>
+            <p className="text-xs mt-1 text-violet-500">
               Billed ₱{yearlyTotal.toLocaleString()}/year · Save {discountPct}%
             </p>
           )}
@@ -669,11 +658,7 @@ function PlanCard({
           <button
             disabled={loading}
             onClick={() => onTrial(plan)}
-            className={`w-full rounded-xl px-4 py-2.5 text-xs font-semibold border transition-all disabled:opacity-50 ${
-              isPopular
-                ? "border-white/10 text-violet-100 hover:text-white hover:border-white/20"
-                : "border-ui-border-base text-ui-fg-subtle hover:text-ui-fg-base hover:border-ui-border-strong"
-            }`}
+            className="w-full rounded-xl px-4 py-2.5 text-xs font-semibold border transition-all disabled:opacity-50 border-ui-border-base text-ui-fg-subtle hover:text-ui-fg-base hover:border-ui-border-strong"
           >
             Start {trialDays}-day free trial
           </button>
@@ -1060,13 +1045,13 @@ export const SubscriptionPage = () => {
           {has_subscription && !isTrialActive && (
             <div className="flex flex-wrap gap-3 mb-4 text-xs text-ui-fg-subtle">
               <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-ui-tag-green-icon" /> Current Plan
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" /> Current Plan
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-violet-500" /> Upgrade (activates immediately)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-orange-500" /> Downgrade (requires confirmation)
+                <span className="inline-block w-2 h-2 rounded-full bg-ui-fg-muted" /> Downgrade (requires confirmation)
               </span>
             </div>
           )}
