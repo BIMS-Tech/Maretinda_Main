@@ -230,25 +230,28 @@ export function CreateShipmentDrawer({
       typeof full.shipping_total === 'number' ? full.shipping_total : null
     )
 
-    // COD detection: an order is Cash-on-Delivery when it carries a system
-    // (manual) payment that hasn't been captured yet — the seller collects cash
-    // on delivery. An order paid online (e.g. GiyaPay) has nothing to collect,
-    // so COD is switched off and locked. Mirrors the order payment section.
-    const payments = ((full.payment_collections ?? []) as any[])
-      .flatMap((pc: any) => pc?.payments ?? [])
-      .filter(Boolean)
-    const hasCodPayment = payments.some((p: any) => p?.provider_id === 'pp_system_default')
-    const capturedAmount = Number(full.split_order_payment?.captured_amount ?? 0)
-    const paymentsKnown = payments.length > 0 || full.split_order_payment != null
-    // Fall back to the coarse payment_status flag if payment detail is missing.
-    const isCodOrder = paymentsKnown
-      ? hasCodPayment && capturedAmount === 0
-      : full.payment_status === 'not_paid'
+    // COD vs prepaid: an order only counts as paid-online when money has
+    // actually been captured. Anything still awaiting/pending (nothing captured)
+    // is collected on delivery, so COD is switched on with the pending amount.
+    // A truly prepaid order (e.g. GiyaPay, captured) has nothing to collect, so
+    // COD is switched off and locked. This mirrors what the order Payment
+    // section shows ("Awaiting" ⇒ captured_amount 0 ⇒ COD).
+    const split = full.split_order_payment
+    const capturedAmount = Number(split?.captured_amount ?? 0)
+    const PAID_STATUSES = ['captured', 'partially_captured', 'refunded', 'partially_refunded']
+    const isPrepaid = capturedAmount > 0 || PAID_STATUSES.includes(full.payment_status)
+    const isCodOrder = !isPrepaid
+
+    // Amount to collect = what's still outstanding (falls back to the total).
+    const pending =
+      split != null
+        ? Math.max(0, Number(split.authorized_amount ?? full.total ?? 0) - capturedAmount)
+        : Number(full.total ?? order.total ?? 0)
 
     setCodLocked(!isCodOrder)
     setIsCod(isCodOrder)
     // Medusa amounts are already major-unit pesos — do NOT divide by 100.
-    setCodAmount(isCodOrder ? String(full.total ?? order.total ?? '') : '')
+    setCodAmount(isCodOrder ? String(pending || full.total || order.total || '') : '')
   }
 
   // Prefill immediately when opened for a specific order.
