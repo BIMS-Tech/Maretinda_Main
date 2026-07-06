@@ -19,7 +19,6 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   useCreateShippingOrder,
   useShippingOrders,
-  useShippingRates,
 } from '../../../hooks/api/shipping'
 import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
@@ -119,12 +118,15 @@ export function CreateShipmentDrawer({
   // COD is locked off once we know the linked order was paid online (nothing
   // to collect). Stays unlocked for COD orders and manual (no-order) bookings.
   const [codLocked, setCodLocked] = useState(false)
-  // Shipping fee the customer paid at checkout (major-unit pesos), for margin.
+  // Shipping fee the customer paid at checkout (major-unit pesos) — the delivery
+  // rate they selected. This is the amount charged for shipping; never recomputed.
   const [customerShipping, setCustomerShipping] = useState<number | null>(
     initialOrder && typeof initialOrder.shipping_total === 'number'
       ? initialOrder.shipping_total
       : null
   )
+  // Optional: what the courier actually charges the seller, so they can see margin.
+  const [courierCost, setCourierCost] = useState('')
 
   const { mutateAsync: createOrder, isPending } = useCreateShippingOrder()
 
@@ -273,7 +275,7 @@ export function CreateShipmentDrawer({
     setToName(''); setToPhone(''); setToAddress('')
     setToCity(''); setToState(''); setToPostcode('')
     setIsCod(false); setCodAmount(''); setCodLocked(false)
-    setCustomerShipping(null)
+    setCustomerShipping(null); setCourierCost('')
     setDescription('Marketplace goods')
   }
 
@@ -310,6 +312,10 @@ export function CreateShipmentDrawer({
           medusa_order_id: selectedOrder?.id,
           service_level: serviceLevel,
           pickup_date: pickupDate,
+          // Amount charged for shipping = the delivery rate the customer selected
+          // at checkout. Never recalculated from weight/rate cards.
+          shipping_charge: customerShipping ?? undefined,
+          courier_cost: courierCost ? parseFloat(courierCost) : undefined,
           from: {
             name: fromName,
             phone: fromPhone,
@@ -350,36 +356,15 @@ export function CreateShipmentDrawer({
   const hasLocation = (locations as any[]).length > 0
   const senderPrefilled = !!(fromName || fromAddress)
 
-  // ── Cost & margin estimate ──────────────────────────────────────────────────
-  const weightNum = parseFloat(weight)
-  const hasValidWeight = !Number.isNaN(weightNum) && weightNum > 0
-
-  const { data: ratesData, isFetching: ratesLoading } = useShippingRates(
-    {
-      origin_postal: fromPostcode,
-      dest_postal: toPostcode,
-      weight_kg: weight,
-      length_cm: length,
-      width_cm: width,
-      height_cm: height,
-      is_cod: isCod,
-    },
-    !!provider && hasValidWeight
-  )
-
-  // Pick the rate for the chosen carrier + service level; fall back to that
-  // carrier's cheapest option when the exact service level isn't rate-carded.
-  const providerRates = (ratesData?.rates ?? []).filter((r) => r.provider_id === provider)
-  const matchedRate =
-    providerRates.find(
-      (r) => (r.service_type ?? '').toLowerCase() === serviceLevel.toLowerCase()
-    ) ??
-    [...providerRates].sort((a, b) => a.rate - b.rate)[0] ??
-    null
-
-  const courierCost = matchedRate?.rate ?? null
+  // ── Shipping charge & margin ────────────────────────────────────────────────
+  // The customer pays exactly the delivery rate they selected at checkout — the
+  // seller's own shipping option. We never re-calculate a rate here; we use the
+  // order's shipping_total as the amount charged. The seller can optionally note
+  // what the courier actually charges them to see their margin.
+  const courierCostNum = parseFloat(courierCost)
+  const hasCourierCost = !Number.isNaN(courierCostNum) && courierCostNum >= 0
   const margin =
-    courierCost != null && customerShipping != null ? customerShipping - courierCost : null
+    customerShipping != null && hasCourierCost ? customerShipping - courierCostNum : null
 
   const peso = (n: number) =>
     '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -751,72 +736,53 @@ export function CreateShipmentDrawer({
 
           <div className="border-t border-ui-border-base" />
 
-          {/* Step 6 — Cost & margin */}
+          {/* Step 6 — Shipping charge & margin */}
           <section className="flex flex-col gap-3">
-            <SectionHeading step={6} title="Cost & margin" />
+            <SectionHeading step={6} title="Shipping charge & margin" />
             <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 flex flex-col gap-2">
-              {!hasValidWeight ? (
-                <Text size="xsmall" className="text-ui-fg-muted">
-                  Enter the parcel weight above to estimate the courier cost and your margin.
+              <div className="flex items-center justify-between">
+                <Text size="small" className="text-ui-fg-subtle">
+                  Delivery rate charged to customer
                 </Text>
-              ) : (
+                <Text size="small" weight="plus" className="text-ui-fg-base">
+                  {customerShipping != null ? peso(customerShipping) : '—'}
+                </Text>
+              </div>
+              <Text size="xsmall" className="text-ui-fg-muted -mt-1">
+                {selectedOrder
+                  ? 'The delivery option the customer selected at checkout — this is what they pay.'
+                  : 'No order linked, so there is no customer-selected delivery rate.'}
+              </Text>
+
+              <div className="mt-1">
+                <FormField label="Your courier cost (optional)">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="What the courier charges you"
+                    value={courierCost}
+                    onChange={(e) => setCourierCost(e.target.value)}
+                    className="w-56"
+                  />
+                </FormField>
+              </div>
+
+              {margin != null && (
                 <>
+                  <div className="border-t border-ui-border-base my-1" />
                   <div className="flex items-center justify-between">
-                    <Text size="small" className="text-ui-fg-subtle">Courier cost (you pay)</Text>
                     <Text size="small" weight="plus" className="text-ui-fg-base">
-                      {courierCost != null
-                        ? peso(courierCost)
-                        : ratesLoading
-                          ? 'Estimating…'
-                          : 'Unavailable'}
+                      Your margin
+                    </Text>
+                    <Text
+                      size="small"
+                      weight="plus"
+                      className={margin >= 0 ? 'text-ui-tag-green-text' : 'text-ui-tag-red-text'}
+                    >
+                      {margin < 0 ? '-' : ''}{peso(Math.abs(margin))}
                     </Text>
                   </div>
-                  {matchedRate && (
-                    <Text size="xsmall" className="text-ui-fg-muted -mt-1">
-                      {matchedRate.service_label}
-                    </Text>
-                  )}
-
-                  {customerShipping != null && (
-                    <div className="flex items-center justify-between">
-                      <Text size="small" className="text-ui-fg-subtle">
-                        Shipping charged to customer
-                      </Text>
-                      <Text size="small" weight="plus" className="text-ui-fg-base">
-                        {peso(customerShipping)}
-                      </Text>
-                    </div>
-                  )}
-
-                  {margin != null && (
-                    <>
-                      <div className="border-t border-ui-border-base my-1" />
-                      <div className="flex items-center justify-between">
-                        <Text size="small" weight="plus" className="text-ui-fg-base">
-                          Your margin
-                        </Text>
-                        <Text
-                          size="small"
-                          weight="plus"
-                          className={margin >= 0 ? 'text-ui-tag-green-text' : 'text-ui-tag-red-text'}
-                        >
-                          {margin < 0 ? '-' : ''}{peso(Math.abs(margin))}
-                        </Text>
-                      </div>
-                    </>
-                  )}
-
-                  {courierCost != null ? (
-                    <Text size="xsmall" className="text-ui-fg-muted">
-                      Estimated from carrier rate cards — the final charge is confirmed by the carrier.
-                    </Text>
-                  ) : (
-                    !ratesLoading && (
-                      <Text size="xsmall" className="text-ui-fg-muted">
-                        No live estimate for this carrier — check your carrier portal for the exact rate.
-                      </Text>
-                    )
-                  )}
                 </>
               )}
             </div>

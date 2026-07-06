@@ -273,54 +273,6 @@ export const useCreateShippingOrder = () => {
   })
 }
 
-// ── Shipping Rate Estimate ────────────────────────────────────────────────────
-
-export interface CarrierRateEstimate {
-  provider_id: string
-  provider_name: string
-  service_type: string
-  service_label: string
-  rate: number
-  currency: string
-  estimated_days: number
-  estimated_delivery: string
-  supports_cod: boolean
-  is_recommended: boolean
-  recommendation_reason?: string
-}
-
-export const useShippingRates = (
-  params: {
-    origin_postal?: string
-    dest_postal?: string
-    weight_kg?: string | number
-    length_cm?: string | number
-    width_cm?: string | number
-    height_cm?: string | number
-    is_cod?: boolean
-  },
-  enabled = true
-) => {
-  return useQuery({
-    queryKey: [SHIPPING_QUERY_KEY, "rates", params],
-    enabled,
-    // Rates are cached 10 min server-side; keep the client copy fresh for a bit.
-    staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<{
-      rates: CarrierRateEstimate[]
-      recommended: CarrierRateEstimate | null
-      chargeable_weight_kg: number
-      actual_weight_kg: number
-    }> => {
-      const query: Record<string, string> = {}
-      Object.entries(params).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== "") query[k] = String(v)
-      })
-      return await fetchQuery("/vendor/shipping-rates", { method: "GET", query })
-    },
-  })
-}
-
 // ── Shipping Analytics ────────────────────────────────────────────────────────
 
 export const useShippingAnalytics = (period: string = "30d", providerId?: string) => {
