@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   useCreateShippingOrder,
   useShippingOrders,
+  useShippingRates,
 } from '../../../hooks/api/shipping'
 import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
@@ -115,6 +116,15 @@ export function CreateShipmentDrawer({
   const [description, setDescription] = useState('Marketplace goods')
   const [isCod, setIsCod] = useState(false)
   const [codAmount, setCodAmount] = useState('')
+  // COD is locked off once we know the linked order was paid online (nothing
+  // to collect). Stays unlocked for COD orders and manual (no-order) bookings.
+  const [codLocked, setCodLocked] = useState(false)
+  // Shipping fee the customer paid at checkout (major-unit pesos), for margin.
+  const [customerShipping, setCustomerShipping] = useState<number | null>(
+    initialOrder && typeof initialOrder.shipping_total === 'number'
+      ? initialOrder.shipping_total
+      : null
+  )
 
   const { mutateAsync: createOrder, isPending } = useCreateShippingOrder()
 
@@ -176,22 +186,26 @@ export function CreateShipmentDrawer({
    * expand shipping_address); otherwise use the order object as given.
    */
   const fillFromOrder = async (order: any, fetchDetail: boolean) => {
-    let addr = order.shipping_address
-    let items = order.items ?? []
+    // The list endpoint doesn't reliably expand address / payment info, so when
+    // selecting from the picker we load the full order (which does).
+    let full = order
     if (fetchDetail) {
       try {
         const res: any = await fetchQuery(`/vendor/orders/${order.id}`, {
           method: 'GET',
-          query: { fields: 'id,*shipping_address,*items' },
+          query: {
+            fields:
+              'id,total,shipping_total,payment_status,currency_code,*shipping_address,*items,*shipping_methods,*payment_collections.payments,*split_order_payment',
+          },
         })
-        if (res?.order) {
-          addr = res.order.shipping_address ?? addr
-          items = res.order.items ?? items
-        }
+        if (res?.order) full = { ...order, ...res.order }
       } catch {
         // Fall back to whatever the caller provided.
       }
     }
+
+    const addr = full.shipping_address
+    const items = full.items ?? []
 
     if (addr) {
       setToName(`${addr.first_name ?? ''} ${addr.last_name ?? ''}`.trim())
@@ -207,15 +221,34 @@ export function CreateShipmentDrawer({
       )
     }
     // Auto-derive service level from the customer's chosen shipping option.
-    const chosenOption = order.shipping_methods?.[0]?.name ?? ''
+    const chosenOption = full.shipping_methods?.[0]?.name ?? ''
     if (chosenOption) setServiceLevel(deriveServiceLevel(chosenOption))
 
-    // If the order is unpaid, suggest COD for the full order total. Medusa
-    // amounts are already in major units (pesos) — do NOT divide by 100.
-    if (order.payment_status === 'not_paid') {
-      setIsCod(true)
-      setCodAmount(String(order.total ?? ''))
-    }
+    // Shipping fee the customer paid at checkout (major-unit pesos) — used to
+    // show the seller's margin against the courier cost.
+    setCustomerShipping(
+      typeof full.shipping_total === 'number' ? full.shipping_total : null
+    )
+
+    // COD detection: an order is Cash-on-Delivery when it carries a system
+    // (manual) payment that hasn't been captured yet — the seller collects cash
+    // on delivery. An order paid online (e.g. GiyaPay) has nothing to collect,
+    // so COD is switched off and locked. Mirrors the order payment section.
+    const payments = ((full.payment_collections ?? []) as any[])
+      .flatMap((pc: any) => pc?.payments ?? [])
+      .filter(Boolean)
+    const hasCodPayment = payments.some((p: any) => p?.provider_id === 'pp_system_default')
+    const capturedAmount = Number(full.split_order_payment?.captured_amount ?? 0)
+    const paymentsKnown = payments.length > 0 || full.split_order_payment != null
+    // Fall back to the coarse payment_status flag if payment detail is missing.
+    const isCodOrder = paymentsKnown
+      ? hasCodPayment && capturedAmount === 0
+      : full.payment_status === 'not_paid'
+
+    setCodLocked(!isCodOrder)
+    setIsCod(isCodOrder)
+    // Medusa amounts are already major-unit pesos — do NOT divide by 100.
+    setCodAmount(isCodOrder ? String(full.total ?? order.total ?? '') : '')
   }
 
   // Prefill immediately when opened for a specific order.
@@ -236,7 +269,8 @@ export function CreateShipmentDrawer({
     setOrderSearch('')
     setToName(''); setToPhone(''); setToAddress('')
     setToCity(''); setToState(''); setToPostcode('')
-    setIsCod(false); setCodAmount('')
+    setIsCod(false); setCodAmount(''); setCodLocked(false)
+    setCustomerShipping(null)
     setDescription('Marketplace goods')
   }
 
@@ -312,6 +346,40 @@ export function CreateShipmentDrawer({
 
   const hasLocation = (locations as any[]).length > 0
   const senderPrefilled = !!(fromName || fromAddress)
+
+  // ── Cost & margin estimate ──────────────────────────────────────────────────
+  const weightNum = parseFloat(weight)
+  const hasValidWeight = !Number.isNaN(weightNum) && weightNum > 0
+
+  const { data: ratesData, isFetching: ratesLoading } = useShippingRates(
+    {
+      origin_postal: fromPostcode,
+      dest_postal: toPostcode,
+      weight_kg: weight,
+      length_cm: length,
+      width_cm: width,
+      height_cm: height,
+      is_cod: isCod,
+    },
+    !!provider && hasValidWeight
+  )
+
+  // Pick the rate for the chosen carrier + service level; fall back to that
+  // carrier's cheapest option when the exact service level isn't rate-carded.
+  const providerRates = (ratesData?.rates ?? []).filter((r) => r.provider_id === provider)
+  const matchedRate =
+    providerRates.find(
+      (r) => (r.service_type ?? '').toLowerCase() === serviceLevel.toLowerCase()
+    ) ??
+    [...providerRates].sort((a, b) => a.rate - b.rate)[0] ??
+    null
+
+  const courierCost = matchedRate?.rate ?? null
+  const margin =
+    courierCost != null && customerShipping != null ? customerShipping - courierCost : null
+
+  const peso = (n: number) =>
+    '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -641,28 +709,114 @@ export function CreateShipmentDrawer({
               <Switch
                 id="cod-switch"
                 checked={isCod}
+                disabled={codLocked}
                 onCheckedChange={(v) => {
                   setIsCod(v)
                   if (!v) setCodAmount('')
                 }}
               />
-              <Label htmlFor="cod-switch" className="cursor-pointer select-none">
+              <Label
+                htmlFor="cod-switch"
+                className={`select-none ${codLocked ? 'text-ui-fg-muted' : 'cursor-pointer'}`}
+              >
                 Cash on Delivery (COD)
               </Label>
+              {codLocked && (
+                <Badge size="2xsmall" color="green">Paid online</Badge>
+              )}
             </div>
-            {isCod && (
-              <FormField label="COD Amount (PHP)" required>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={codAmount}
-                  onChange={(e) => setCodAmount(e.target.value)}
-                  className="w-48"
-                />
-              </FormField>
+            {codLocked ? (
+              <Text size="xsmall" className="text-ui-fg-muted">
+                This order was already paid online — there's nothing to collect on delivery.
+              </Text>
+            ) : (
+              isCod && (
+                <FormField label="COD Amount (PHP)" required>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={codAmount}
+                    onChange={(e) => setCodAmount(e.target.value)}
+                    className="w-48"
+                  />
+                </FormField>
+              )
             )}
+          </section>
+
+          <div className="border-t border-ui-border-base" />
+
+          {/* Step 6 — Cost & margin */}
+          <section className="flex flex-col gap-3">
+            <SectionHeading step={6} title="Cost & margin" />
+            <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 flex flex-col gap-2">
+              {!hasValidWeight ? (
+                <Text size="xsmall" className="text-ui-fg-muted">
+                  Enter the parcel weight above to estimate the courier cost and your margin.
+                </Text>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <Text size="small" className="text-ui-fg-subtle">Courier cost (you pay)</Text>
+                    <Text size="small" weight="plus" className="text-ui-fg-base">
+                      {courierCost != null
+                        ? peso(courierCost)
+                        : ratesLoading
+                          ? 'Estimating…'
+                          : 'Unavailable'}
+                    </Text>
+                  </div>
+                  {matchedRate && (
+                    <Text size="xsmall" className="text-ui-fg-muted -mt-1">
+                      {matchedRate.service_label}
+                    </Text>
+                  )}
+
+                  {customerShipping != null && (
+                    <div className="flex items-center justify-between">
+                      <Text size="small" className="text-ui-fg-subtle">
+                        Shipping charged to customer
+                      </Text>
+                      <Text size="small" weight="plus" className="text-ui-fg-base">
+                        {peso(customerShipping)}
+                      </Text>
+                    </div>
+                  )}
+
+                  {margin != null && (
+                    <>
+                      <div className="border-t border-ui-border-base my-1" />
+                      <div className="flex items-center justify-between">
+                        <Text size="small" weight="plus" className="text-ui-fg-base">
+                          Your margin
+                        </Text>
+                        <Text
+                          size="small"
+                          weight="plus"
+                          className={margin >= 0 ? 'text-ui-tag-green-text' : 'text-ui-tag-red-text'}
+                        >
+                          {margin < 0 ? '-' : ''}{peso(Math.abs(margin))}
+                        </Text>
+                      </div>
+                    </>
+                  )}
+
+                  {courierCost != null ? (
+                    <Text size="xsmall" className="text-ui-fg-muted">
+                      Estimated from carrier rate cards — the final charge is confirmed by the carrier.
+                    </Text>
+                  ) : (
+                    !ratesLoading && (
+                      <Text size="xsmall" className="text-ui-fg-muted">
+                        No live estimate for this carrier — check your carrier portal for the exact rate.
+                      </Text>
+                    )
+                  )}
+                </>
+              )}
+            </div>
           </section>
         </div>
 
