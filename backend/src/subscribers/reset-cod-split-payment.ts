@@ -1,15 +1,17 @@
 import { type SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules, PaymentEvents } from "@medusajs/framework/utils"
+import { resetCodPaymentToAuthorized } from "../lib/cod-payment"
 
 /**
  * Resets COD payment status back to "authorized" after the mercurjs plugin
  * auto-captures pp_system_default payments on order placement.
  *
- * The @mercurjs/b2c-core subscriber `split-payment-payment-captured` fires on
- * every PaymentEvents.CAPTURED (including pp_system_default auto-captures) and
- * marks both the core `payment` record and `split_order_payment` as captured.
- * This subscriber runs 600ms later to undo that for COD orders — resetting both
- * tables so the seller panel shows "Awaiting" until cash is physically collected.
+ * The @mercurjs/b2c-core subscriber `order-set-placed-payment-capture` runs
+ * capturePaymentWorkflow on EVERY order (COD included), which sets
+ * payment_collection.captured_amount + status = completed and emits
+ * PaymentEvents.CAPTURED. This subscriber reverses that for COD orders so the
+ * order shows "Authorized" (awaiting cash) until the seller physically collects
+ * it. See resetCodPaymentToAuthorized for which tables actually drive the badge.
  */
 export default async function resetCodSplitPayment({
   event,
@@ -31,33 +33,11 @@ export default async function resetCodSplitPayment({
     ?? (payment as any).payment_collection?.id
   if (!paymentCollectionId) return
 
-  // Wait for the mercurjs subscriber to finish writing its update first
+  // Wait for the mercurjs subscriber to finish writing split_order_payment first
   await new Promise<void>((resolve) => setTimeout(resolve, 600))
 
   const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-  const now = new Date()
-
-  // Reset the core payment record — this drives the "Captured" badge in the UI
-  await pg("payment")
-    .where({ id: paymentId })
-    .update({
-      status: "authorized",
-      captured_amount: 0,
-      raw_captured_amount: JSON.stringify({ value: "0", precision: 20 }),
-      captured_at: null,
-      updated_at: now,
-    })
-
-  // Reset the split order payment record
-  await pg("split_order_payment")
-    .where({ payment_collection_id: paymentCollectionId, status: "captured" })
-    .whereNull("deleted_at")
-    .update({
-      captured_amount: 0,
-      raw_captured_amount: JSON.stringify({ value: "0", precision: 20 }),
-      status: "pending",
-      updated_at: now,
-    })
+  await resetCodPaymentToAuthorized(pg, { paymentCollectionId, paymentId })
 }
 
 export const config: SubscriberConfig = {

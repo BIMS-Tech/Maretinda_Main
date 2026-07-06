@@ -1,11 +1,12 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { captureCodPayment } from "../../../../../lib/cod-payment"
 
 /**
  * POST /seller/orders/:id/capture
  *
  * seller-initiated manual capture for COD (pp_system_default) orders.
- * Updates payment and split_order_payment directly via Knex to avoid
+ * Writes the capture state directly via Knex (see captureCodPayment) to avoid
  * triggering PaymentEvents.CAPTURED, which would fire the reset subscriber
  * and undo the capture.
  */
@@ -32,28 +33,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     return res.status(404).json({ message: "No COD payment found for this order" })
   }
 
-  const now = new Date()
-  const amount = payment.amount
-  // raw_amount stores the full precision value; use it for captured amount
-  const rawCapturedAmount = payment.raw_amount ?? JSON.stringify({ value: String(amount), precision: 20 })
-
-  await pg("payment").where({ id: payment.id }).update({
-    status: "captured",
-    captured_amount: amount,
-    raw_captured_amount: rawCapturedAmount,
-    captured_at: now,
-    updated_at: now,
+  await captureCodPayment(pg, {
+    paymentCollectionId: payment.payment_collection_id,
+    paymentId: payment.id,
+    amount: payment.amount,
+    rawAmount: payment.raw_amount,
   })
-
-  await pg("split_order_payment")
-    .where({ payment_collection_id: payment.payment_collection_id })
-    .whereNull("deleted_at")
-    .update({
-      status: "captured",
-      captured_amount: amount,
-      raw_captured_amount: rawCapturedAmount,
-      updated_at: now,
-    })
 
   return res.status(200).json({ message: "Payment captured successfully", payment_id: payment.id })
 }
