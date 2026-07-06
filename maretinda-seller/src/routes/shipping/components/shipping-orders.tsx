@@ -195,7 +195,7 @@ export const ShippingOrders = () => {
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Carrier</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Status</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Order</th>
-                  <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Cost</th>
+                  <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Shipping Rate</th>
                   <th className="px-6 py-3 text-left font-medium text-ui-fg-subtle">Date</th>
                   <th className="px-6 py-3 text-right font-medium text-ui-fg-subtle">Actions</th>
                 </tr>
