@@ -2,17 +2,21 @@ import { Client } from 'pg'
 import * as dotenv from 'dotenv'
 
 /**
- * One-time fix for COD split order payments.
+ * One-time repair for COD orders that were wrongly auto-captured.
  *
- * The @mercurjs/b2c-core subscriber `split-payment-payment-captured` fires on
- * every PaymentEvents.CAPTURED — including pp_system_default auto-captures for
- * COD orders — and incorrectly marks split_order_payment.captured_amount to the
- * full order total. This script resets those records so the seller panel shows
- * "Awaiting" instead of "Captured" for COD orders.
+ * The @mercurjs/b2c-core subscriber `order-set-placed-payment-capture` runs
+ * capturePaymentWorkflow on EVERY order at placement — including
+ * pp_system_default (COD) — which marks payment_collection.captured_amount +
+ * status = completed and records a capture. That makes COD orders read as
+ * "Captured" when they should be "Authorized" (awaiting cash on delivery).
  *
- * Safe to run multiple times (idempotent). Does NOT affect orders where the
- * seller has already used the capture button, since those are reset by the
- * ongoing reset-cod-split-payment subscriber.
+ * This script reverses the capture across ALL the tables Medusa/mercur derive
+ * status from: payment_collection (drives the order badge), payment.captured_at,
+ * the capture record, and split_order_payment (seller split view).
+ *
+ * Safe to run multiple times (idempotent). NOTE: it resets every captured COD
+ * order, so if a seller has genuinely collected cash for one, re-capture it via
+ * the seller "capture" button afterwards.
  *
  * Usage: npm run fix:cod
  */
@@ -31,69 +35,71 @@ async function fixCodSplitPayments() {
     await client.connect()
     console.log('Connected to database')
 
-    // Identify affected COD split order payments
+    // Identify captured COD orders that need reversing
     const { rows: affected } = await client.query(`
-      SELECT sop.id, sop.captured_amount, o.display_id, p.id AS payment_id
-      FROM split_order_payment sop
-      JOIN payment_collection pc ON pc.id = sop.payment_collection_id
-      JOIN payment p ON p.payment_collection_id = pc.id
+      SELECT DISTINCT p.id AS payment_id, pc.id AS payment_collection_id, o.display_id
+      FROM payment p
+      JOIN payment_collection pc ON pc.id = p.payment_collection_id
       JOIN order_payment_collection opc ON opc.payment_collection_id = pc.id
       JOIN "order" o ON o.id = opc.order_id
+      LEFT JOIN split_order_payment sop ON sop.payment_collection_id = pc.id AND sop.deleted_at IS NULL
       WHERE p.provider_id = 'pp_system_default'
         AND p.deleted_at IS NULL
         AND pc.deleted_at IS NULL
-        AND sop.deleted_at IS NULL
-        AND (sop.captured_amount > 0 OR p.status = 'captured')
+        AND (
+          pc.captured_amount > 0
+          OR pc.status = 'completed'
+          OR p.captured_at IS NOT NULL
+          OR sop.captured_amount > 0
+          OR sop.status = 'captured'
+        )
     `)
 
     if (affected.length === 0) {
-      console.log('No COD split order payments need fixing. All good!')
+      console.log('No captured COD orders need fixing. All good!')
       return
     }
 
-    console.log(`Found ${affected.length} COD split order payment(s) to fix:`)
+    console.log(`Found ${affected.length} captured COD order(s) to reset:`)
     for (const row of affected) {
-      console.log(`  Order #${row.display_id} — split_payment ${row.id}, captured_amount was ${row.captured_amount}`)
+      console.log(`  Order #${row.display_id} — payment ${row.payment_id}`)
     }
 
-    const ids = affected.map((r: any) => r.id)
-    const placeholders = ids.map((_: any, i: number) => `$${i + 1}`).join(', ')
+    const zeroRaw = JSON.stringify({ value: "0", precision: 20 })
 
-    // Reset split_order_payment records
-    await client.query(`
-      UPDATE split_order_payment
-      SET
-        captured_amount     = 0,
-        raw_captured_amount = '{"value": "0", "precision": 20}',
-        status              = 'pending',
-        updated_at          = NOW()
-      WHERE id IN (${placeholders})
-    `, ids)
-
-    // Also reset the core payment records — these drive the "Captured" badge in the UI
-    const paymentIds = affected.map((r: any) => r.payment_id)
-    const uniquePaymentIds = [...new Set(paymentIds)].filter(Boolean)
-    if (uniquePaymentIds.length > 0) {
-      const paymentPlaceholders = uniquePaymentIds.map((_: any, i: number) => `$${i + 1}`).join(', ')
+    for (const row of affected) {
+      // 1. payment_collection — drives the order payment badge
       await client.query(`
-        UPDATE payment
-        SET
-          status              = 'authorized',
-          captured_amount     = 0,
-          raw_captured_amount = '{"value": "0", "precision": 20}',
-          captured_at         = NULL,
-          updated_at          = NOW()
-        WHERE id IN (${paymentPlaceholders})
-          AND status = 'captured'
-      `, uniquePaymentIds)
+        UPDATE payment_collection
+        SET status = 'authorized', captured_amount = 0, raw_captured_amount = $1,
+            completed_at = NULL, updated_at = NOW()
+        WHERE id = $2
+      `, [zeroRaw, row.payment_collection_id])
+
+      // 2. clear the capture timestamp on the payment row
+      await client.query(`
+        UPDATE payment SET captured_at = NULL, updated_at = NOW() WHERE id = $1
+      `, [row.payment_id])
+
+      // 3. soft-delete the capture record(s)
+      await client.query(`
+        UPDATE capture SET deleted_at = NOW(), updated_at = NOW()
+        WHERE payment_id = $1 AND deleted_at IS NULL
+      `, [row.payment_id])
+
+      // 4. reset the mercur split_order_payment (seller split view)
+      await client.query(`
+        UPDATE split_order_payment
+        SET status = 'pending', captured_amount = 0, raw_captured_amount = $1, updated_at = NOW()
+        WHERE payment_collection_id = $2 AND deleted_at IS NULL
+      `, [zeroRaw, row.payment_collection_id])
     }
 
-    console.log(`\nReset ${affected.length} COD split order payment(s) to captured_amount = 0, status = pending.`)
-    console.log(`Reset ${uniquePaymentIds.length} COD payment record(s) to status = authorized.`)
-    console.log('Done! seller panel will now show the correct status for these COD orders.')
+    console.log(`\nReset ${affected.length} COD order(s) to authorized (awaiting cash).`)
+    console.log('Done! The seller panel and order list will now show the correct status.')
 
   } catch (err) {
-    console.error('Error fixing COD split payments:', err)
+    console.error('Error fixing COD payments:', err)
     process.exit(1)
   } finally {
     await client.end()
