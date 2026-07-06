@@ -26,6 +26,10 @@ import {
   FlyingTigersOrderPayload,
   FlyingTigersAddress,
 } from '../../../services/flyingtigers'
+import {
+  calculateShippingRates,
+  getChargeableWeight,
+} from '../../../services/shipping-calculator'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -101,6 +105,44 @@ async function getPlatformCredentials(pg: any, providerId: string) {
     .first()
   if (!row) throw new Error(`Carrier "${providerId}" is not configured or not active on this platform`)
   return row.credentials as Record<string, unknown>
+}
+
+/**
+ * Estimate what this shipment will cost the seller, so it can be stored on the
+ * booking and shown in the Shipments "Cost" column. Uses the same platform rate
+ * calculator (chargeable weight, cached) that powers the booking drawer's
+ * cost/margin estimate, so the two always agree. Best-effort — returns null if
+ * no rate is available (e.g. a carrier with no live rate API).
+ */
+async function estimateShippingAmount(
+  pg: any,
+  providerId: string,
+  orderData: Record<string, any>
+): Promise<number | null> {
+  try {
+    const from = normalizeAddress(orderData.from)
+    const to = normalizeAddress(orderData.to)
+    const parcel = normalizeParcel(orderData.parcel)
+    const base = {
+      weight_kg: parcel.weight_kg,
+      length_cm: parcel.length_cm,
+      width_cm: parcel.width_cm,
+      height_cm: parcel.height_cm,
+      is_cod: parcel.is_cod,
+    }
+    const chargeable = { ...base, weight_kg: getChargeableWeight(base) }
+    const result = await calculateShippingRates(pg, from.postcode, to.postcode, chargeable)
+
+    const svc = String(orderData.service_level ?? '').toLowerCase()
+    const providerRates = result.rates.filter((r) => r.provider_id === providerId)
+    const matched =
+      providerRates.find((r) => (r.service_type ?? '').toLowerCase() === svc) ??
+      [...providerRates].sort((a, b) => a.rate - b.rate)[0]
+    return matched?.rate ?? null
+  } catch (err) {
+    console.error('[Shipping Orders] rate estimate failed:', err)
+    return null
+  }
 }
 
 /**
@@ -226,6 +268,9 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
 
       const shippingOrderId = `vso_${randomUUID().replace(/-/g, '')}`
 
+      // Estimate the courier cost up front so the Shipments list shows it.
+      const estimatedAmount = await estimateShippingAmount(pg, providerId, orderData)
+
       // ── Ninja Van ────────────────────────────────────────────────────────
       if (providerId === 'ninjavan') {
         const countryCode = (creds.country_code as string) ?? 'PH'
@@ -289,6 +334,9 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           tracking_url: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
           status: 'pending_pickup',
           service_level: orderData.service_level ?? 'Standard',
+          amount: estimatedAmount,
+          currency: 'PHP',
+          calculated_rate: estimatedAmount,
           from_details: JSON.stringify(orderData.from),
           to_details: JSON.stringify(orderData.to),
           parcel_details: JSON.stringify(orderData.parcel),
@@ -383,6 +431,9 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           tracking_url: ftResponse.tracking_url,
           status: 'pending_pickup',
           service_level: orderData.service_level ?? 'Standard',
+          amount: estimatedAmount,
+          currency: 'PHP',
+          calculated_rate: estimatedAmount,
           from_details: JSON.stringify(orderData.from),
           to_details: JSON.stringify(orderData.to),
           parcel_details: JSON.stringify(orderData.parcel),
