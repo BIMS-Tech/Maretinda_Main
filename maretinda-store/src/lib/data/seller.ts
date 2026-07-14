@@ -9,7 +9,7 @@ export const listSellers = async ({
 	return sdk.client
 		.fetch<{ sellers: SellerProps[]; count: number }>(`/store/seller`, {
 			next: { revalidate: 300 },
-			query: { limit, offset, fields: 'id,name,handle,photo,description,store_status' },
+			query: { limit, offset, fields: 'id,name,handle,photo,description,store_status,verification_status' },
 		})
 		.then((res) => res)
 		.catch(() => ({ sellers: [], count: 0 }));
@@ -23,7 +23,7 @@ export const getSellerByHandle = async (handle: string) => {
 				tags: [`seller-${handle}`, 'reviews'] 
 			},
 			query: {
-				fields: '+created_at,+rating,+email,*reviews,*reviews.customer,*reviews.seller,+description',
+				fields: '+created_at,+rating,+email,+verification_status,*reviews,*reviews.customer,*reviews.seller,+description',
 			},
 		})
 		.then(({ seller }) => {

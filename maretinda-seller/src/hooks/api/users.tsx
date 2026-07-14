@@ -111,6 +111,33 @@ export const useUpdateBankInfo = (
   })
 }
 
+/**
+ * Hook for updating business-verification details (TIN, org type, documents).
+ * Uses a separate endpoint to bypass Mercur plugin validation.
+ */
+export const useUpdateVerification = (
+  options?: UseMutationOptions<
+    HttpTypes.AdminUserResponse,
+    FetchError,
+    Partial<Storeseller>,
+    QueryKey
+  >
+) => {
+  return useMutation({
+    mutationFn: (body) =>
+      fetchQuery("/vendor/sellers/me/verification", {
+        method: "POST",
+        body,
+      }),
+    onSuccess: (data, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: usersQueryKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: usersQueryKeys.me() })
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
 export const useOnboarding = () => {
   const { data, ...rest } = useQuery({
     queryFn: () =>

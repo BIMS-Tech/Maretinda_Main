@@ -89,11 +89,10 @@ export function CreateShippingOptionsForm({
         return {
           currency_code: code,
           amount: castNumber(value),
-          rules: [],
         }
       })
       .filter(
-        (p): p is { currency_code: string; amount: number; rules: [] } => !!p
+        (p): p is { currency_code: string; amount: number } => !!p
       )
 
     const regionPrices = Object.entries(data.region_prices)
@@ -105,10 +104,9 @@ export function CreateShippingOptionsForm({
         return {
           region_id,
           amount: castNumber(value),
-          rules: [],
         }
       })
-      .filter((p): p is { region_id: string; amount: number; rules: [] } => !!p)
+      .filter((p): p is { region_id: string; amount: number } => !!p)
 
     const fulfillmentOptionData = fulfillmentProviderOptions?.find(
       (fo) => fo.id === data.fulfillment_option_id
@@ -248,6 +246,11 @@ export function CreateShippingOptionsForm({
           onValueChange={(tab) => onTabChange(tab as Tab)}
         >
           <RouteFocusModal.Header>
+            <RouteFocusModal.Title className="sr-only">
+              {isReturn
+                ? t("stockLocations.shippingOptions.create.returns.header", { zone: zone.name })
+                : t("stockLocations.shippingOptions.create.shipping.header", { zone: zone.name })}
+            </RouteFocusModal.Title>
             <ProgressTabs.List className="border-ui-border-base -my-2 ml-2 min-w-0 flex-1 border-l">
               <ProgressTabs.Trigger
                 value={Tab.DETAILS}

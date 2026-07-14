@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { isVerificationComplete, deriveStatusAfterSellerUpdate } from "../../../../lib/seller-verification"
 
 /**
  * @oas [post] /seller/sellers/me
@@ -118,6 +119,8 @@ export async function POST(
       'name', 'email', 'phone', 'description', 'photo',
       // Company/address fields
       'address_line', 'postal_code', 'city', 'country_code', 'tax_id',
+      // Business verification (documents completed in Store settings)
+      'form_of_organization', 'business_documents',
       // New settlement fields
       'bank_name', 'account_number', 'account_name', 'branch_name',
       'swift_code', 'beneficiary_address', 'beneficiary_bank_address',
@@ -128,8 +131,35 @@ export async function POST(
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
-        updateData[field] = body[field]
+        // jsonb column: store objects as JSON text
+        if (field === 'business_documents' && body[field] && typeof body[field] === 'object') {
+          updateData[field] = JSON.stringify(body[field])
+        } else {
+          updateData[field] = body[field]
+        }
       }
+    }
+
+    // Recompute verification status whenever a verification-relevant field
+    // (TIN, org type, or documents) is touched. Sellers can never self-verify;
+    // completing details moves them to "pending_review" for admin confirmation.
+    const touchesVerification =
+      body.tax_id !== undefined ||
+      body.form_of_organization !== undefined ||
+      body.business_documents !== undefined
+    if (touchesVerification) {
+      const current = await pgConnection('seller').where('id', sellerId).first()
+      const merged = {
+        tax_id: updateData.tax_id !== undefined ? updateData.tax_id : current?.tax_id,
+        form_of_organization:
+          updateData.form_of_organization !== undefined
+            ? updateData.form_of_organization
+            : current?.form_of_organization,
+        business_documents:
+          body.business_documents !== undefined ? body.business_documents : current?.business_documents,
+      }
+      const complete = isVerificationComplete(merged)
+      updateData.verification_status = deriveStatusAfterSellerUpdate(current?.verification_status, complete)
     }
 
     // Add updated_at timestamp

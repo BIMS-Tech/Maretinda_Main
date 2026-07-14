@@ -58,7 +58,7 @@ export const ProductBigCard = ({
 			: 0;
 
 	const seller = api_product.seller;
-	const sellerName = seller?.name || 'Verified Seller';
+	const sellerName = seller?.name || 'Seller';
 	const sellerPhoto: string | undefined = seller?.photo ? seller.photo : undefined;
 
 	const thumbnail = product.thumbnail

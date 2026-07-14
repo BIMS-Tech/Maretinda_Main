@@ -741,6 +741,14 @@ export function getRouteMap({
                     import("../../routes/requests/request-seller-list"),
                 },
                 {
+                  path: "seller-verification",
+                  handle: {
+                    breadcrumb: () => "Seller Verifications",
+                  },
+                  lazy: () =>
+                    import("../../routes/requests/seller-verification-list"),
+                },
+                {
                   path: "review-remove",
                   handle: {
                     breadcrumb: () => t("requests.review-remove"),

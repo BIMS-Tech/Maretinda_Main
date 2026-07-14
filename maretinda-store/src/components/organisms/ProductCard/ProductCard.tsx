@@ -98,14 +98,16 @@ export const ProductCard = ({
 			{/* Content */}
 			<div className="flex flex-col flex-1 px-3.5 pt-3 pb-4 gap-1">
 				{/* Verified Seller */}
-				<div className="flex items-center gap-1.5">
-					<svg fill="#432C63" height="10" viewBox="0 0 24 24" width="10">
-						<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-					</svg>
-					<span className="text-[10px] font-semibold text-[#432C63]/50 tracking-[0.08em] uppercase">
-						Verified Seller
-					</span>
-				</div>
+				{(product as any)?.seller?.verification_status === 'verified' && (
+					<div className="flex items-center gap-1.5">
+						<svg fill="#432C63" height="10" viewBox="0 0 24 24" width="10">
+							<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+						</svg>
+						<span className="text-[10px] font-semibold text-[#432C63]/50 tracking-[0.08em] uppercase">
+							Verified Seller
+						</span>
+					</div>
+				)}
 
 				{/* Brand */}
 				{(product as any)?.brand?.name && (

@@ -8,6 +8,7 @@ import { SingleColumnPageSkeleton } from "../../../components/common/skeleton/sk
 import { SingleColumnPage } from "../../../components/layout/pages/index.ts"
 import { useDashboardExtension } from "../../../extensions/index.ts"
 import { CompanySection } from "./components/company-section/company-section.tsx"
+import { BusinessVerificationSection } from "./components/business-verification-section/index.ts"
 import { DftBankSection } from "./components/dft-bank-section/index.ts"
 import { useMe } from "../../../hooks/api/users.tsx"
 
@@ -41,6 +42,7 @@ export const StoreDetail = () => {
     >
       <StoreGeneralSection seller={seller} />
       <CompanySection seller={seller} />
+      <BusinessVerificationSection seller={seller} />
       <DftBankSection seller={seller} />
     </SingleColumnPage>
   )

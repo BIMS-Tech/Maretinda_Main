@@ -98,9 +98,12 @@ export const useShippingProfiles = (
     ...options,
   })
 
-  const shipping_profiles = data?.shipping_profiles?.filter(Boolean).map((sp) =>
-    convertShippingProfileNames(sp)
-  )
+  // The vendor list endpoint queries the seller_shipping_profile link, so each
+  // row is wrapped as { shipping_profile: {...} }. Unwrap to the flat profile so
+  // the table columns / getRowId read a real id, name and type.
+  const shipping_profiles = data?.shipping_profiles
+    ?.filter(Boolean)
+    .map((sp: any) => convertShippingProfileNames(sp?.shipping_profile ?? sp))
 
   return { ...data, shipping_profiles, ...rest }
 }

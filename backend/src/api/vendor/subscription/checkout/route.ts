@@ -84,7 +84,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       try {
         giyaPayService = req.scope.resolve("giyaPayService")
       } catch {
-        const GiyaPayService = (await import("../../../../services/giyapay.js")).default as any
+        const GiyaPayService = require("../../../../services/giyapay").default as any
         giyaPayService = new GiyaPayService(req.scope)
       }
       const mainConfig = await giyaPayService.getConfig()

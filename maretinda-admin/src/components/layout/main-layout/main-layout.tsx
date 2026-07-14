@@ -311,6 +311,10 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           to: "/requests/seller",
         },
         {
+          label: "Seller Verifications",
+          to: "/requests/seller-verification",
+        },
+        {
           label: t("requests.product"),
           to: "/requests/product/",
         },

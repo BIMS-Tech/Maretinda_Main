@@ -47,10 +47,13 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           p.status,
           p.metadata,
           p.created_at,
+          s.verification_status AS seller_verification_status,
           COALESCE((p.metadata->>'trending_score')::int, 0) AS score
         FROM product p
         JOIN product_category_product pcp ON pcp.product_id = p.id
         JOIN product_category pc ON pc.id = pcp.product_category_id
+        LEFT JOIN seller_seller_product_product ssp ON ssp.product_id = p.id AND ssp.deleted_at IS NULL
+        LEFT JOIN seller s ON s.id = ssp.seller_id
         WHERE p.status = 'published'
           AND p.deleted_at IS NULL
           AND LOWER(pc.handle) = LOWER(?)
@@ -68,8 +71,11 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
           p.status,
           p.metadata,
           p.created_at,
+          s.verification_status AS seller_verification_status,
           COALESCE((p.metadata->>'trending_score')::int, 0) AS score
         FROM product p
+        LEFT JOIN seller_seller_product_product ssp ON ssp.product_id = p.id AND ssp.deleted_at IS NULL
+        LEFT JOIN seller s ON s.id = ssp.seller_id
         WHERE p.status = 'published'
           AND p.deleted_at IS NULL
         ORDER BY score DESC, p.created_at DESC
@@ -93,6 +99,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       trending_score: row.score ?? 0,
       avg_rating: row.metadata?.avg_rating ?? null,
       review_count: row.metadata?.review_count ?? 0,
+      seller_verified: row.seller_verification_status === "verified",
     }))
 
     return res.json({ products, count: products.length })
