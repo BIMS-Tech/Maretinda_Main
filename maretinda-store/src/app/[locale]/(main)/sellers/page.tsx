@@ -80,7 +80,7 @@ function SellerCard({ seller, index }: { seller: SellerProps; index: number }) {
         {/* Name + verified */}
         <div className="mt-3 flex items-center gap-1.5">
           <h4 className="text-[15px] font-extrabold text-[#1B1B1B] truncate">{seller.name}</h4>
-          {seller.store_status === 'ACTIVE' && <VerifiedBadge />}
+          {seller.verification_status === 'verified' && <VerifiedBadge />}
         </div>
 
         {seller.description ? (

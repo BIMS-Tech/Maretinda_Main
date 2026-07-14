@@ -19,4 +19,5 @@ export type SellerProps = SellerAddress & {
 	products?: Product[];
 	email?: string;
 	store_status?: 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+	verification_status?: 'unverified' | 'pending_review' | 'verified' | 'rejected';
 };

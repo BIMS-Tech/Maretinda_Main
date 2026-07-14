@@ -56,6 +56,8 @@ export const EditShippingOptionForm = ({
     queryKey: ["shipping_profiles"],
     getOptions: (data) =>
       (data ?? [])
+        // The vendor list endpoint wraps each row as { shipping_profile: {...} }
+        .map((row: any) => row?.shipping_profile ?? row)
         .filter((profile: any) => profile?.id)
         .map((profile: any) => ({
           label: profile.name?.includes(":")

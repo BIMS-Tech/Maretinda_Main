@@ -26,6 +26,12 @@ export interface Storeseller {
   country_code?: string
   tax_id?: string
   store_status?: "ACTIVE" | "SUSPENDED" | "INACTIVE"
+  // Business verification (documents completed here in Store settings)
+  form_of_organization?: string
+  business_documents?: Record<string, string>
+  verification_status?: "unverified" | "pending_review" | "verified" | "rejected"
+  verified_at?: string | null
+  verification_notes?: string | null
   // Settlement Bank Information (New)
   bank_name?: string
   account_number?: string

@@ -87,14 +87,17 @@ export const WishlistItem = ({
 			{/* Content */}
 			<div className="px-3.5 pt-3 pb-4">
 				{/* Verified Seller */}
-				<div className="flex items-center gap-1.5 mb-1.5">
-					<svg fill="#432C63" height="11" viewBox="0 0 24 24" width="11">
-						<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-					</svg>
-					<span className="text-[10px] font-bold text-gray-400 tracking-[0.1em] uppercase">
-						Verified Seller
-					</span>
-				</div>
+				{(api_product?.seller?.verification_status === 'verified' ||
+					(product as any)?.seller?.verification_status === 'verified') && (
+					<div className="flex items-center gap-1.5 mb-1.5">
+						<svg fill="#432C63" height="11" viewBox="0 0 24 24" width="11">
+							<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+						</svg>
+						<span className="text-[10px] font-bold text-gray-400 tracking-[0.1em] uppercase">
+							Verified Seller
+						</span>
+					</div>
+				)}
 
 				{/* Title */}
 				<LocalizedClientLink href={`/products/${product.handle}`}>

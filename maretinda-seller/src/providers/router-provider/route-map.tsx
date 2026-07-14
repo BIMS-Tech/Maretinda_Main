@@ -1219,6 +1219,10 @@ export const RouteMap: RouteObject[] = [
                 lazy: () => import("../../routes/store/store-edit-company"),
               },
               {
+                path: "verification",
+                lazy: () => import("../../routes/store/store-edit-verification"),
+              },
+              {
                 path: "currencies",
                 lazy: () => import("../../routes/store/store-add-currencies"),
               },

@@ -23,6 +23,13 @@ const Seller = model.define("seller", {
   dft_beneficiary_code: model.text().nullable(),
   dft_beneficiary_address: model.text().nullable(),
   dft_account_number: model.text().nullable(),
+
+  // Business verification (collected in Store settings, confirmed by an admin)
+  form_of_organization: model.text().nullable(),
+  business_documents: model.json().nullable(),
+  verification_status: model.text().default("unverified"),
+  verified_at: model.dateTime().nullable(),
+  verification_notes: model.text().nullable(),
 })
 
 export default Seller

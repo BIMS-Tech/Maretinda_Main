@@ -12,6 +12,7 @@ export interface TrendingProduct {
   trending_score: number
   avg_rating: number | null
   review_count: number
+  seller_verified?: boolean
 }
 
 export async function getTrendingProducts({

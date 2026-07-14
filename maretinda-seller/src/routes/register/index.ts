@@ -1,1 +1,1 @@
-export { Register as Component } from "./register"
+export { RegisterChat as Component } from "./register-chat"

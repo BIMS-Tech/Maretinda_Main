@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { createSellerWorkflow } from "@mercurjs/b2c-core/workflows"
+import { isVerificationComplete } from "../../../../lib/seller-verification"
 
 function getDb(req: any) {
   return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
@@ -66,6 +67,40 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
         },
       })
       createdSellerId = (seller as any)?.id
+
+      // Carry business context onto the new seller so Store settings knows
+      // which documents to require for verification. TIN + documents are
+      // normally completed later in Store settings (they're no longer part of
+      // registration), but copy anything an older application already captured.
+      if (createdSellerId) {
+        let docs: Record<string, string> | null = null
+        if (app.documents) {
+          try {
+            docs = typeof app.documents === "string" ? JSON.parse(app.documents) : app.documents
+          } catch {
+            docs = null
+          }
+        }
+        const complete = isVerificationComplete({
+          tax_id: app.business_tin,
+          form_of_organization: app.form_of_organization,
+          business_documents: docs,
+        })
+        const sellerUpdate: Record<string, unknown> = {
+          form_of_organization: app.form_of_organization || null,
+          verification_status: complete ? "pending_review" : "unverified",
+          updated_at: new Date(),
+        }
+        if (app.business_tin) sellerUpdate.tax_id = app.business_tin
+        if (docs) sellerUpdate.business_documents = JSON.stringify(docs)
+        if (app.business_address) sellerUpdate.address_line = app.business_address
+        if (app.business_mobile) sellerUpdate.phone = app.business_mobile
+        try {
+          await db("seller").where("id", createdSellerId).update(sellerUpdate)
+        } catch (e) {
+          console.error("[SellerApplication] failed to seed seller verification context", e)
+        }
+      }
     }
 
     const [updated] = await db("seller_application")

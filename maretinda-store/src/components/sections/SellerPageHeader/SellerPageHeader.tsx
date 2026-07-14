@@ -97,7 +97,7 @@ export const SellerPageHeader = ({
 				{/* Name + verified */}
 				<div className="flex items-center gap-2 mb-1">
 					<h1 className="text-[22px] font-extrabold text-[#1B1B1B]">{seller.name}</h1>
-					{seller.store_status === 'ACTIVE' && <VerifiedBadge />}
+					{seller.verification_status === 'verified' && <VerifiedBadge />}
 				</div>
 
 				{/* Rating */}

@@ -113,12 +113,14 @@ export function TrendingNowClient({ products }: { products: TrendingProduct[] })
 
 							{/* Info */}
 							<div className="p-3">
-								<div className="flex items-center gap-1 text-[10.5px] text-[#737373] mb-1">
-									<VerifiedBadge />
-									<span className="font-semibold uppercase tracking-wider truncate">
-										Verified seller
-									</span>
-								</div>
+								{product.seller_verified && (
+									<div className="flex items-center gap-1 text-[10.5px] text-[#737373] mb-1">
+										<VerifiedBadge />
+										<span className="font-semibold uppercase tracking-wider truncate">
+											Verified seller
+										</span>
+									</div>
+								)}
 								<div className="text-[13.5px] font-semibold leading-snug line-clamp-2 min-h-[38px] text-[#1B1B1B]">
 									{product.title}
 								</div>
