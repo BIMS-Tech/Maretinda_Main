@@ -9,6 +9,7 @@ import { INavItem, NavItem } from "../nav-item"
 import { Shell } from "../shell"
 
 import { useDashboardExtension } from "../../../extensions"
+import { useSetupTasks } from "../../../hooks/api/setup-tasks"
 import { UserMenu } from "../user-menu"
 
 export const SettingsLayout = () => {
@@ -21,12 +22,14 @@ export const SettingsLayout = () => {
 
 const useSettingRoutes = (): INavItem[] => {
   const { t } = useTranslation()
+  const { pendingCount } = useSetupTasks()
 
   return useMemo(
     () => [
       {
         label: t("store.domain"),
         to: "/settings/store",
+        badge: pendingCount,
       },
       {
         label: "Team",
@@ -45,7 +48,7 @@ const useSettingRoutes = (): INavItem[] => {
         to: "/settings/locations",
       },
     ],
-    [t]
+    [t, pendingCount]
   )
 }
 

@@ -61,6 +61,18 @@ export const useSubscriptionStatus = () => {
   })
 }
 
+export const isSubscriptionActive = (
+  data?: SubscriptionStatusResponse
+): boolean =>
+  data?.has_subscription === true && data?.subscription?.status === "active"
+
+/**
+ * `/subscription` is the one page an unsubscribed seller may open. Matched
+ * exactly so sibling routes like `/subscription-products` stay gated.
+ */
+export const isSubscriptionRoute = (pathname: string): boolean =>
+  pathname === "/subscription" || pathname.startsWith("/subscription/")
+
 export const useSubscriptionPlans = () => {
   return useQuery<{ plans: SubscriptionPlan[] }>({
     queryKey: PLANS_KEY,

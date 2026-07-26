@@ -5,6 +5,11 @@ import { Container, Heading, Table, Text, Badge } from "@medusajs/ui";
 import { useSellerApplications, type SellerApplication } from "@hooks/api/seller-applications";
 import { usesellerRequests } from "@hooks/api/requests";
 import type { AdminRequest } from "@custom-types/requests";
+import {
+  legacyRequestEmail,
+  legacyRequestName,
+  normalizeLegacyStatus,
+} from "@lib/seller-requests";
 import { RequestSellerDetail } from "./components/request-seller-detail";
 
 const PAGE_SIZE = 20;
@@ -18,12 +23,6 @@ export type LegacyRow = { _source: "legacy" } & AdminRequest & {
   _submittedAt: string;
 };
 export type UnifiedRow = NewAppRow | LegacyRow;
-
-function normalizeLegacyStatus(s?: string): "pending" | "approved" | "rejected" {
-  if (s === "accepted") return "approved";
-  if (s === "rejected") return "rejected";
-  return "pending";
-}
 
 function statusBadge(status: "pending" | "approved" | "rejected") {
   if (status === "approved") return <Badge color="green">Approved</Badge>;
@@ -58,19 +57,14 @@ export const RequestSellerList = () => {
   // Normalize legacy rows
   const legacyRows: LegacyRow[] = useMemo(() => {
     if (!Array.isArray(legacyRequests)) return [];
-    return legacyRequests.map((req: AdminRequest) => {
-      const data = (req.data ?? {}) as any;
-      const name = data?.member?.name || data?.seller?.name || "";
-      const email = data?.member?.email || data?.seller?.email || data?.provider_identity_id || "";
-      return {
-        _source: "legacy" as const,
-        _name: name,
-        _email: email,
-        _normalizedStatus: normalizeLegacyStatus(req.status),
-        _submittedAt: req.created_at ?? "",
-        ...req,
-      };
-    });
+    return legacyRequests.map((req: AdminRequest) => ({
+      _source: "legacy" as const,
+      _name: legacyRequestName(req),
+      _email: legacyRequestEmail(req),
+      _normalizedStatus: normalizeLegacyStatus(req.status),
+      _submittedAt: req.created_at ?? "",
+      ...req,
+    }));
   }, [legacyRequests]);
 
   // Filter legacy rows by status (since they're client-side)

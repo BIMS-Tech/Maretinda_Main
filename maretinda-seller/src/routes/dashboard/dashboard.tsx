@@ -5,6 +5,7 @@ import { DashboardCharts } from "./components/dashboard-charts"
 import { DashboardOnboarding } from "./components/dashboard-onboarding"
 import { ChartSkeleton } from "./components/chart-skeleton"
 import { useReviews } from "../../hooks/api/review"
+import { SetupChecklist } from "../../components/common/setup-checklist"
 
 export const Dashboard = () => {
   const [isClient, setIsClient] = useState(false)
@@ -39,26 +40,29 @@ export const Dashboard = () => {
     throw error
   }
 
-  if (
+  const onboardingIncomplete =
     !onboarding?.products ||
     !onboarding?.locations_shipping ||
     !onboarding?.store_information
-  )
-    return (
-      <DashboardOnboarding
-        products={onboarding?.products}
-        locations_shipping={onboarding?.locations_shipping}
-        store_information={onboarding?.store_information}
-      />
-    )
 
   return (
-    <DashboardCharts
-      notFulfilledOrders={notFulfilledOrders}
-      fulfilledOrders={fulfilledOrders}
-      reviewsToReply={reviewsToReply}
-      analyticsLevel={analyticsLevel}
-      canExport={canExport}
-    />
+    <div className="flex flex-col gap-y-3">
+      <SetupChecklist />
+      {onboardingIncomplete ? (
+        <DashboardOnboarding
+          products={onboarding?.products}
+          locations_shipping={onboarding?.locations_shipping}
+          store_information={onboarding?.store_information}
+        />
+      ) : (
+        <DashboardCharts
+          notFulfilledOrders={notFulfilledOrders}
+          fulfilledOrders={fulfilledOrders}
+          reviewsToReply={reviewsToReply}
+          analyticsLevel={analyticsLevel}
+          canExport={canExport}
+        />
+      )}
+    </div>
   )
 }

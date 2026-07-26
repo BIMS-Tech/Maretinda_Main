@@ -1,6 +1,7 @@
 import {
   ArrowPath,
   Bolt,
+  MediaPlay,
   Buildings,
   ChevronDownMini,
   CogSixTooth,
@@ -25,34 +26,31 @@ import { Skeleton } from "../../common/skeleton"
 import { INavItem, NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
 
-import { Navigate, useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { useMe } from "../../../hooks/api"
 
 import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { ImageAvatar } from "../../common/image-avatar"
-import { useSubscriptionStatus } from "../../../hooks/api/subscription"
+import {
+  isSubscriptionActive,
+  useSubscriptionStatus,
+} from "../../../hooks/api/subscription"
+import { useSetupTasks } from "../../../hooks/api/setup-tasks"
+import { CompletionBar } from "../../common/completion-bar"
 import { usePlanLimits } from "../../../hooks/api/plan-limits"
 import { useChatConversations } from "../../../hooks/api/chat"
 
 export const MainLayout = () => {
-  const { data, isLoading } = useSubscriptionStatus()
-  const location = useLocation()
-
-  const isActive =
-    !isLoading &&
-    data?.has_subscription === true &&
-    data?.subscription?.status === "active"
-
-  const isOnSubscription = location.pathname.startsWith("/subscription")
-
-  if (!isLoading && !isActive && !isOnSubscription) {
-    return <Navigate to="/subscription" replace />
-  }
+  /**
+   * Already resolved by `ProtectedRoute`, which also handles the redirect — this
+   * reads from cache, so the sidebar renders its final shape on first paint.
+   */
+  const { data } = useSubscriptionStatus()
 
   return (
     <Shell>
-      <MainSidebar subscriptionActive={isLoading || isActive} />
+      <MainSidebar subscriptionActive={isSubscriptionActive(data)} />
     </Shell>
   )
 }
@@ -80,6 +78,7 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
           </div>
           {subscriptionActive && (
           <>
+            <SetupWidget />
             <SupportWidget />
             <UtilitySection />
           </>
@@ -196,6 +195,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <Bolt />,
       label: "Flash Sales",
       to: "/flash-sales",
+    },
+    {
+      icon: <MediaPlay />,
+      label: "Reels",
+      to: "/reels",
     },
     {
       icon: <ArrowPath />,
@@ -444,9 +448,37 @@ const SupportWidget = () => {
   )
 }
 
+const SetupWidget = () => {
+  const { pendingCount, progress } = useSetupTasks()
+
+  if (!pendingCount) {
+    return null
+  }
+
+  return (
+    <Link
+      to="/settings/store"
+      className="mx-3 mb-2 block rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-red-800">Finish store setup</p>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-medium leading-none text-white">
+          {pendingCount}
+        </span>
+      </div>
+      <p className="mt-1 text-xs text-red-600">
+        {progress.percent}% complete — {progress.completedCount} of{" "}
+        {progress.totalCount} details added.
+      </p>
+      <CompletionBar percent={progress.percent} size="small" className="mt-2" />
+    </Link>
+  )
+}
+
 const UtilitySection = () => {
   const location = useLocation()
   const { t } = useTranslation()
+  const { pendingCount } = useSetupTasks()
 
   return (
     <div className="flex flex-col gap-y-0.5 py-3">
@@ -455,6 +487,7 @@ const UtilitySection = () => {
         to="/settings"
         from={location.pathname}
         icon={<CogSixTooth />}
+        badge={pendingCount}
       />
     </div>
   )

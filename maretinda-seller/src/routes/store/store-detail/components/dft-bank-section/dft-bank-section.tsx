@@ -2,28 +2,21 @@ import { Container, Heading, Text, Badge } from "@medusajs/ui"
 import { Storeseller } from "../../../../../types/user"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Pencil } from "@medusajs/icons"
+import { getSettlementInfo } from "../../../../../lib/settlement"
 
 export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
-  // Check if settlement information is complete - these are the minimum required fields
-  const bankName = seller.bank_name || seller.dft_bank_name || ""
-  const accountNumber = seller.account_number || seller.dft_account_number || ""
-  const accountName = seller.account_name || seller.dft_beneficiary_name || ""
-  const branchName = seller.branch_name || ""
-  const isMetrobank = bankName.toLowerCase().includes('metrobank')
-  
-  // Required fields for all banks
-  const hasBasicInfo = bankName && accountNumber && accountName && branchName
-  
-  // Additional required fields for non-Metrobank
-  const swiftCode = seller.swift_code || seller.dft_swift_code || ""
-  const beneficiaryAddress = seller.beneficiary_address || seller.dft_beneficiary_address || ""
-  const beneficiaryBankAddress = seller.beneficiary_bank_address || seller.dft_bank_address || ""
-  
-  const hasNonMetrobankInfo = isMetrobank || (swiftCode && beneficiaryAddress && beneficiaryBankAddress)
-  
-  const isSettlementComplete = hasBasicInfo && hasNonMetrobankInfo
-  
-  const settlementType = isMetrobank ? "TAMA (Metrobank)" : bankName ? "DFT (Non-Metrobank)" : "Not Set"
+  const {
+    bankName,
+    accountNumber,
+    accountName,
+    branchName,
+    swiftCode,
+    beneficiaryAddress,
+    beneficiaryBankAddress,
+    isMetrobank,
+    isComplete: isSettlementComplete,
+    settlementType,
+  } = getSettlementInfo(seller)
 
   return (
     <Container className="divide-y p-0">

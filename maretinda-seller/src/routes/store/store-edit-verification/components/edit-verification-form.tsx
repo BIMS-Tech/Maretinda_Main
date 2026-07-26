@@ -12,6 +12,8 @@ import { Storeseller } from "../../../../types/user"
 import { useUpdateVerification } from "../../../../hooks/api"
 import { backendUrl, publishableApiKey } from "../../../../lib/client/client"
 import { ORG_TYPES, requiredDocsFor, isVerificationComplete } from "../../../../lib/business-documents"
+import { getVerificationProgress } from "../../../../hooks/api/setup-tasks"
+import { CompletionBar } from "../../../../components/common/completion-bar"
 
 const Schema = z.object({
   tax_id: z.string().optional(),
@@ -119,6 +121,13 @@ export const EditVerificationForm = ({ seller }: { seller: Storeseller }) => {
     business_documents: docs,
   })
 
+  // Reflects unsaved edits, so the bar advances as each document is attached.
+  const progress = getVerificationProgress({
+    tax_id: taxId,
+    form_of_organization: org,
+    business_documents: docs,
+  })
+
   const { mutateAsync, isPending } = useUpdateVerification()
 
   const setDoc = (key: string, url: string) =>
@@ -162,6 +171,19 @@ export const EditVerificationForm = ({ seller }: { seller: Storeseller }) => {
               Once complete, your business is submitted for review and earns a Verified badge on your
               storefront after approval.
             </Text>
+
+            <div className="flex flex-col gap-y-2">
+              <div className="flex items-center justify-between">
+                <Text size="small" weight="plus" className="text-ui-fg-base">
+                  Completion
+                </Text>
+                <Text size="small" className="text-ui-fg-subtle">
+                  {progress.percent}% ({progress.completedCount} of{" "}
+                  {progress.totalCount})
+                </Text>
+              </div>
+              <CompletionBar percent={progress.percent} />
+            </div>
 
             <Form.Field
               name="tax_id"

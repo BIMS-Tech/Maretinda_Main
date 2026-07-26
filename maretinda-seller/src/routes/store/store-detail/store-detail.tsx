@@ -11,6 +11,7 @@ import { CompanySection } from "./components/company-section/company-section.tsx
 import { BusinessVerificationSection } from "./components/business-verification-section/index.ts"
 import { DftBankSection } from "./components/dft-bank-section/index.ts"
 import { useMe } from "../../../hooks/api/users.tsx"
+import { SetupChecklist } from "../../../components/common/setup-checklist/index.ts"
 
 export const StoreDetail = () => {
   const initialData = useLoaderData() as Awaited<ReturnType<typeof storeLoader>>
@@ -40,6 +41,7 @@ export const StoreDetail = () => {
       data={store}
       hasOutlet
     >
+      <SetupChecklist />
       <StoreGeneralSection seller={seller} />
       <CompanySection seller={seller} />
       <BusinessVerificationSection seller={seller} />

@@ -37,8 +37,15 @@ import { useExtension } from "../../../providers/extension-provider";
 import { useSearch } from "../../../providers/search-provider";
 import { UserMenu } from "../user-menu";
 import { useDocumentDirection } from "../../../hooks/use-document-direction";
+import {
+  useMarkSectionSeenOnVisit,
+  useNavBadges,
+  usePendingRequestCounts,
+} from "../../../hooks/use-nav-badges";
 
 export const MainLayout = () => {
+  useMarkSectionSeenOnVisit();
+
   return (
     <Shell>
       <MainSidebar />
@@ -185,6 +192,8 @@ const Header = () => {
 
 const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation();
+  const badges = useNavBadges();
+  const requestCounts = usePendingRequestCounts();
 
   return [
     {
@@ -196,6 +205,7 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <ShoppingCart />,
       label: t("orders.domain"),
       to: "/orders",
+      badge: badges.orders,
       items: [
         // TODO: Enable when domin is introduced
         // {
@@ -243,6 +253,7 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <Users />,
       label: t("customers.domain"),
       to: "/customers",
+      badge: badges.customers,
       items: [
         {
           label: t("customerGroups.domain"),
@@ -305,14 +316,17 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <BottomToTop />,
       label: t("requests.domain"),
       to: "requests/seller",
+      badge: badges.requests,
       items: [
         {
           label: t("requests.seller"),
           to: "/requests/seller",
+          badge: requestCounts.sellerApplications,
         },
         {
           label: "Seller Verifications",
           to: "/requests/seller-verification",
+          badge: requestCounts.sellerVerifications,
         },
         {
           label: t("requests.product"),
