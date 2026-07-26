@@ -2,7 +2,9 @@ import { Container, Heading, Text, Badge } from "@medusajs/ui"
 import { CheckCircleSolid, XCircleSolid, Pencil } from "@medusajs/icons"
 import { Storeseller } from "../../../../../types/user"
 import { ActionMenu } from "../../../../../components/common/action-menu"
+import { CompletionBar } from "../../../../../components/common/completion-bar"
 import { requiredDocsFor, isVerificationComplete } from "../../../../../lib/business-documents"
+import { buildSetupTasks } from "../../../../../hooks/api/setup-tasks"
 
 const STATUS_META: Record<string, { label: string; color: "green" | "orange" | "red" | "grey" }> = {
   verified: { label: "Verified", color: "green" },
@@ -17,6 +19,12 @@ export const BusinessVerificationSection = ({ seller }: { seller: Storeseller })
   const docs = seller.business_documents || {}
   const required = requiredDocsFor(seller.form_of_organization)
   const complete = isVerificationComplete(seller)
+
+  // Same requirement set the sidebar and dashboard checklist count, so the
+  // percentages an admin and a seller see can't disagree.
+  const verificationTask = buildSetupTasks(seller).find(
+    (task) => task.key === "verification"
+  )
 
   return (
     <Container className="divide-y p-0">
@@ -46,6 +54,22 @@ export const BusinessVerificationSection = ({ seller }: { seller: Storeseller })
           ]}
         />
       </div>
+
+      {/* Completion progress */}
+      {verificationTask && status !== "verified" && (
+        <div className="flex flex-col gap-y-2 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
+              Verification details completed
+            </Text>
+            <Text size="small" leading="compact" className="text-ui-fg-subtle">
+              {verificationTask.progress}% ({verificationTask.completedCount} of{" "}
+              {verificationTask.totalCount})
+            </Text>
+          </div>
+          <CompletionBar percent={verificationTask.progress} />
+        </div>
+      )}
 
       {/* Status hint */}
       {status === "verified" ? (

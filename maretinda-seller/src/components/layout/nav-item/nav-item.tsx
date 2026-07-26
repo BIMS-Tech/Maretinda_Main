@@ -27,6 +27,20 @@ export type INavItem = {
   type?: ItemType
   from?: string
   nested?: string
+  /** Red count pill, e.g. outstanding setup steps. Hidden when 0 or undefined. */
+  badge?: number
+}
+
+const NavBadge = ({ count }: { count?: number }) => {
+  if (!count) {
+    return null
+  }
+
+  return (
+    <span className="bg-ui-tag-red-bg text-ui-tag-red-text border-ui-tag-red-border ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-[11px] font-medium leading-none">
+      {count > 99 ? "99+" : count}
+    </span>
+  )
 }
 
 const BASE_NAV_LINK_CLASSES =
@@ -90,6 +104,7 @@ export const NavItem = ({
   items,
   type = "core",
   from,
+  badge,
 }: INavItem) => {
   const { pathname } = useLocation()
   const [open, setOpen] = useState(getIsOpen(to, items, pathname))
@@ -159,6 +174,7 @@ export const NavItem = ({
           <Text size="small" weight="plus" leading="compact">
             {label}
           </Text>
+          <NavBadge count={badge} />
         </NavLink>
       </NavItemTooltip>
       {items && items.length > 0 && (
@@ -175,6 +191,7 @@ export const NavItem = ({
             <Text size="small" weight="plus" leading="compact">
               {label}
             </Text>
+            <NavBadge count={badge} />
           </RadixCollapsible.Trigger>
           <RadixCollapsible.Content>
             <div className="flex flex-col gap-y-0.5 pb-2 pt-0.5">
