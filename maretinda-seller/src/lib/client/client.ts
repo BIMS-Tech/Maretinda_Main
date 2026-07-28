@@ -72,6 +72,42 @@ export const uploadFilesQuery = async (files: any[]) => {
   }
 }
 
+/**
+ * Uploads a reel video (and optional poster frame) to GCS. Separate from
+ * uploadFilesQuery because reels hit /uploads-vendor/video, which allows a
+ * 150MB body and skips the WebP conversion for the video itself.
+ */
+export const uploadReelVideoQuery = async (
+  video: File,
+  poster?: File | null
+): Promise<{
+  video: { url: string; name: string; size: number } | null
+  poster: { url: string } | null
+  errors?: { filename: string; error: string }[]
+}> => {
+  const formData = new FormData()
+  formData.append("files", video)
+  if (poster) formData.append("files", poster)
+
+  const bearer = window.localStorage.getItem("medusa_auth_token") || ""
+
+  const response = await fetch(`${backendUrl}/uploads-vendor/video`, {
+    method: "POST",
+    body: formData,
+    headers: {
+      authorization: `Bearer ${bearer}`,
+      "x-publishable-api-key": publishableApiKey,
+    },
+  })
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null)
+    throw new Error(payload?.message || `Upload failed: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export const fetchQuery = async (
   url: string,
   {
