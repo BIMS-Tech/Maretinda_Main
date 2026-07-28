@@ -732,6 +732,29 @@ export const RouteMap: RouteObject[] = [
             ],
           },
           {
+            path: "/reels",
+            errorElement: <ErrorBoundary />,
+            handle: {
+              breadcrumb: () => "Reels",
+            },
+            children: [
+              {
+                path: "",
+                lazy: () => import("../../routes/reels/reel-list"),
+                children: [
+                  {
+                    path: "create",
+                    lazy: () => import("../../routes/reels/reel-create"),
+                  },
+                ],
+              },
+              {
+                path: ":id",
+                lazy: () => import("../../routes/reels/reel-detail"),
+              },
+            ],
+          },
+          {
             path: "/subscription-products",
             errorElement: <ErrorBoundary />,
             handle: {

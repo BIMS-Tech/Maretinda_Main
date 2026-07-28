@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { SellerReviewTab } from '@/components/cells';
 import { TabsContent } from '@/components/molecules';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import { ReelsSection } from '@/components/sections/ReelsSection/ReelsSection';
 import type { SellerProps } from '@/types/seller';
 
 import { ProductListingSkeleton } from '../ProductListingSkeleton/ProductListingSkeleton';
@@ -28,6 +29,7 @@ export const SellerTabs = async ({
 }) => {
 	const tabLinks = [
 		{ label: 'products', link: `/sellers/${seller.handle}/` },
+		{ label: 'reels', link: `/sellers/${seller.handle}/reels` },
 		{ label: 'reviews', link: `/sellers/${seller.handle}/reviews` },
 	];
 
@@ -65,6 +67,17 @@ export const SellerTabs = async ({
 							seller_handle={seller.handle}
 						/>
 					)}
+				</Suspense>
+			</TabsContent>
+			<TabsContent activeTab={tab} value="reels">
+				<Suspense>
+					<ReelsSection
+						heading={`Reels from ${seller.name}`}
+						hideWhenEmpty={false}
+						limit={30}
+						seller_id={seller.id}
+						subheading="Watch products in action, then message the seller"
+					/>
 				</Suspense>
 			</TabsContent>
 			<TabsContent activeTab={tab} value="reviews">

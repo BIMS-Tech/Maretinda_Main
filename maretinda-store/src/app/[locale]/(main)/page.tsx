@@ -12,6 +12,7 @@ import {
 	TrustSection,
 } from '@/components/sections';
 import CampaignBanners from '@/components/sections/CampaignBanners/CampaignBanners';
+import { ReelsSection } from '@/components/sections/ReelsSection/ReelsSection';
 import { getHeroContent } from '@/lib/data/hero';
 
 export const metadata: Metadata = {
@@ -76,7 +77,18 @@ export default async function Home({
 			{/* 4. Trending Now — 6-card product grid with filter pills */}
 			<TrendingNowSection searchParams={resolvedSearchParams} />
 
-			{/* 5. Featured Collections — editorial 12-col grid */}
+			{/* 5. Reels — seller videos; renders nothing until sellers post */}
+			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6">
+				<ReelsSection
+					heading="Reels"
+					limit={10}
+					showSeller
+					subheading="Watch products in action from sellers you love"
+					viewAllHref="/reels"
+				/>
+			</div>
+
+			{/* 6. Featured Collections — editorial 12-col grid */}
 			<FeaturedCollectionsSection />
 
 			{/* 6. Top sellers — 4-card seller grid */}
