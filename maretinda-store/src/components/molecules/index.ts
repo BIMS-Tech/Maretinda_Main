@@ -31,6 +31,7 @@ import { SellerInfo } from './SellerInfo/SellerInfo';
 import { SellerReview } from './SellerReview/SellerReview';
 import { SellerReviewList } from './SellerReviewList/SellerReviewList';
 import { SellerScore } from './SellerScore/SellerScore';
+import { ShareButton } from './ShareButton/ShareButton';
 import { TabsContent } from './TabsContent/TabsContent';
 import { TabsList } from './TabsList/TabsList';
 import { UserNavigation } from './UserNavigation/UserNavigation';
@@ -38,6 +39,6 @@ import { UserNavigation } from './UserNavigation/UserNavigation';
 export {
 	Accordion, AddressForm, CartDropdownItem, CategoryNavbar, DeleteCartItemButton,
 	Dropdown, ErrorMessage, FilterCheckboxOption, GalleryCarouselItem, HeaderCategoryNavbar, LoginForm, Modal, NavbarSearch, ParcelAccordion, PrimeCategoryNavbar, ProductCarouselIndicator, ProductPageAccordion, ProductPageAccordionMultiple, ProductPostedDate,
-	ProductReportButton, ProductTags, ProductVariants, ProdutMeasurementRow, ProfileDetails, RegisterForm, ReportListingForm, ReportSellerForm, ReviewForm, SelectField, SellerInfo, SellerReview, SellerReviewList, SellerScore, TabsContent, TabsList, UserNavigation
+	ProductReportButton, ProductTags, ProductVariants, ProdutMeasurementRow, ProfileDetails, RegisterForm, ReportListingForm, ReportSellerForm, ReviewForm, SelectField, SellerInfo, SellerReview, SellerReviewList, SellerScore, ShareButton, TabsContent, TabsList, UserNavigation
 };
 

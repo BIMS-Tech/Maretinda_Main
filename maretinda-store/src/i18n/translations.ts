@@ -128,6 +128,9 @@ export const translations = {
 		helpCenter: {
 			heading: 'How can we help you?',
 			subheading: 'Search our help articles or browse by topic below.',
+			videoHeading: 'Watch and learn',
+			videoSubheading: 'Short walkthroughs for shoppers and sellers — no reading required.',
+			videoResults: 'Video tutorials',
 			placeholder: 'Search — e.g. "track order", "refund", "COD"',
 			stillNeedHelp: 'Still need help?',
 			stillNeedHelpDesc: 'Our support team is available Monday–Saturday, 8 AM–8 PM (Philippine time).',
@@ -341,6 +344,9 @@ export const translations = {
 		helpCenter: {
 			heading: 'Paano ka namin matutulungan?',
 			subheading: 'Hanapin ang aming mga artikulo o mag-browse ayon sa paksa.',
+			videoHeading: 'Manood at matuto',
+			videoSubheading: 'Maiikling gabay para sa mga mamimili at nagbebenta — hindi na kailangang magbasa.',
+			videoResults: 'Mga video tutorial',
 			placeholder: 'Maghanap — hal. "subaybayan ang order", "refund", "COD"',
 			stillNeedHelp: 'Kailangan pa rin ng tulong?',
 			stillNeedHelpDesc: 'Ang aming support team ay available Lunes–Sabado, 8 AM–8 PM (Philippine time).',

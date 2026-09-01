@@ -8,6 +8,9 @@ const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : 
 
 import { useLanguage } from '@/providers/LanguageProvider';
 
+import { searchVideos } from './helpVideos';
+import { VideoLibrary, VideoResults } from './VideoLibrary';
+
 const TOPICS = [
 	{
 		icon: (
@@ -190,7 +193,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'What fees does Maretinda charge sellers?',
-			a: 'Maretinda charges a 5% commission per completed sale. There are no listing fees or monthly subscriptions. Detailed fee breakdown is available in the Seller Dashboard.',
+			a: 'Maretinda charges a flat monthly subscription — there is no commission on sales and no listing fees, so you keep what you earn (minus standard payment processing). Your first month is free, and you can upgrade, downgrade, or cancel anytime. Plans and pricing are shown during registration and in the Seller Dashboard.',
 		},
 		{
 			q: 'How do I get paid as a seller?',
@@ -262,6 +265,7 @@ export const HelpCenter = () => {
 		return () => window.removeEventListener('hashchange', applyHash);
 	}, []);
 
+	const matchingVideos = searchVideos(query);
 	const filteredFaqs = query.trim().length >= 2
 		? SECTION_IDS.flatMap((sec) =>
 			FAQS[sec]
@@ -314,9 +318,19 @@ export const HelpCenter = () => {
 				{filteredFaqs !== null ? (
 					<div>
 						<p className="text-[13px] mb-5" style={{ color: '#737373' }}>
-							{filteredFaqs.length} {filteredFaqs.length !== 1 ? s.results_plural : s.results} for &ldquo;<strong>{query}</strong>&rdquo;
+							{filteredFaqs.length + matchingVideos.length}{' '}
+							{filteredFaqs.length + matchingVideos.length !== 1 ? s.results_plural : s.results} for &ldquo;<strong>{query}</strong>&rdquo;
 						</p>
-						{filteredFaqs.length === 0 ? (
+
+						{matchingVideos.length > 0 && (
+							<div className="mb-8">
+								<h2 className="text-[13px] font-extrabold uppercase tracking-wider mb-3" style={{ color: '#432C63' }}>
+									{s.videoResults}
+								</h2>
+								<VideoResults videos={matchingVideos} />
+							</div>
+						)}
+						{filteredFaqs.length === 0 && matchingVideos.length === 0 ? (
 							<div className="text-center py-16">
 								<div className="flex justify-center mb-4">
 									<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#C4BBD6" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -328,7 +342,7 @@ export const HelpCenter = () => {
 									{s.noResultsDesc}
 								</p>
 							</div>
-						) : (
+						) : filteredFaqs.length > 0 ? (
 							<div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#EDEAE3' }}>
 								{filteredFaqs.map(({ q, a, section }, i) => (
 									<div key={i}>
@@ -341,7 +355,7 @@ export const HelpCenter = () => {
 									</div>
 								))}
 							</div>
-						)}
+						) : null}
 					</div>
 				) : (
 					<>
@@ -370,6 +384,9 @@ export const HelpCenter = () => {
 								);
 							})}
 						</div>
+
+						{/* Video tutorials */}
+						<VideoLibrary heading={s.videoHeading} subheading={s.videoSubheading} />
 
 						{/* FAQ accordion */}
 						<div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: '#EDEAE3' }}>

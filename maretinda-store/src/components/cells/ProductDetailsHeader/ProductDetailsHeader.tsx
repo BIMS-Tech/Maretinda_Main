@@ -6,7 +6,11 @@ import { useState } from 'react';
 
 import { Button, StarRating, Tag } from '@/components/atoms';
 import { FlashSaleCountdown } from '@/components/sections/FlashSaleSection/FlashSaleCountdown';
-import { ErrorMessage, ProductVariants } from '@/components/molecules';
+import {
+	ErrorMessage,
+	ProductVariants,
+	ShareButton,
+} from '@/components/molecules';
 import { UpdateItemQuantityButton } from '@/components/molecules/UpdateItemQuantityButton/UpdateItemQuantityButton';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart, addFlashSaleItemToCart } from '@/lib/data/cart';
@@ -292,6 +296,16 @@ export const ProductDetailsHeader = ({
 					productId={product.id}
 					user={user}
 					wishlist={wishlist}
+				/>
+				<ShareButton
+					image={product.thumbnail ?? undefined}
+					price={
+						flashSalePrice !== null
+							? `₱${flashSalePrice.toLocaleString()}`
+							: variantPrice?.calculated_price
+					}
+					title={product.title}
+					variantParams={selectedVariant}
 				/>
 			</div>
 
