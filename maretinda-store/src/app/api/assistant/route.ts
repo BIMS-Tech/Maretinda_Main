@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 	let upstream: Response;
 	try {
 		upstream = await fetch(`${MEDUSA_BACKEND_URL}/store/assistant`, {
-			method: 'POST',
+			body: JSON.stringify(body),
 			headers: {
 				'Content-Type': 'application/json',
 				'x-publishable-api-key': PUBLISHABLE_KEY,
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 					? { authorization: authHeaders.authorization }
 					: {}),
 			},
-			body: JSON.stringify(body),
+			method: 'POST',
 			// Forward the abort so closing the widget mid-answer stops the
 			// backend's model call instead of leaving it streaming to nobody.
 			signal: request.signal,
@@ -61,16 +61,16 @@ export async function POST(request: Request) {
 	if (!upstream.ok || !upstream.body) {
 		const text = await upstream.text().catch(() => '');
 		return new Response(text || '{"message":"Assistant error"}', {
-			status: upstream.status,
 			headers: { 'Content-Type': 'application/json' },
+			status: upstream.status,
 		});
 	}
 
 	return new Response(upstream.body, {
 		headers: {
-			'Content-Type': 'text/event-stream',
 			'Cache-Control': 'no-cache, no-transform',
 			Connection: 'keep-alive',
+			'Content-Type': 'text/event-stream',
 			'X-Accel-Buffering': 'no',
 		},
 	});
