@@ -1,115 +1,89 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
-const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
-const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
-const PRICING_URL = `${ABOUT_SITE_URL}/#pricing`;
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useLanguage } from '@/providers/LanguageProvider';
+
+type Source = { title: string; url: string };
 
 type Message = {
 	id: number;
 	from: 'bot' | 'user';
 	text: string;
-	links?: { label: string; href: string }[];
+	sources?: Source[];
+	/** Set while tokens are still arriving, so the bubble can show a caret. */
+	streaming?: boolean;
+	error?: boolean;
 };
 
-
-type BotResponse = {
-	text: string;
-	links?: { label: string; href: string }[];
+/** What the backend system prompt should answer in. */
+const LANGUAGE_NAMES: Record<string, string> = {
+	en: 'English',
+	fil: 'Filipino (Tagalog)',
 };
-
-const RESPONSES: Record<string, BotResponse> = {
-	track: {
-		text: 'To track your order, go to My Account → Orders. Each order shows a tracking number once shipped — click it to follow your package on the courier\'s site.',
-		links: [{ label: 'View my orders', href: '/user/orders' }],
-	},
-	returns: {
-		text: 'You can return most items within 7 days of delivery. Go to My Account → Orders → select the order → "Request return." Refunds are processed within 1–10 business days depending on your payment method.',
-		links: [
-			{ label: 'Start a return', href: '/user/orders' },
-			{ label: 'Refund policy', href: '/refund-policy' },
-		],
-	},
-	shipping: {
-		text: 'Delivery times: Metro Manila 1–3 days · Luzon 3–5 days · Visayas & Mindanao 5–7 days. Couriers used include LBC, J&T, Ninja Van, and Lalamove. Free shipping promos are shown in the Flash Sale section.',
-		links: [{ label: 'Shop now', href: '/categories' }],
-	},
-	payments: {
-		text: 'Checkout is powered by GiyaPay. We accept GCash, Maya, credit/debit cards (Visa & Mastercard), InstaPay, QR Ph, and Cash on Delivery (COD). COD is available nationwide for most sellers. Split payment is not yet supported.',
-		links: [{ label: 'Help Center — Payments', href: '/help-center#payments' }],
-	},
-	seller: {
-		text: 'Selling on Maretinda runs on a simple subscription — there is no per-sale commission and no listing fees, so you keep what you earn. Register your shop, upload a valid ID, and you will be approved within 1–2 business days. Your first month is free, so you can set up and start selling before paying anything.',
-		links: [
-			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
-			{ label: 'Plans & pricing', href: PRICING_URL },
-		],
-	},
-	fees: {
-		text: 'Maretinda charges a flat monthly subscription instead of taking a commission on your sales — you keep what you earn (minus standard payment processing). Your first month is free, and you can upgrade, downgrade, or cancel your plan anytime.',
-		links: [
-			{ label: 'See plans & pricing', href: PRICING_URL },
-			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
-		],
-	},
-	password: {
-		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',
-		links: [{ label: 'Go to login', href: '/login' }],
-	},
-	greeting: {
-		text: 'Hello! I\'m Maretinda\'s virtual assistant. I can help with orders, shipping, returns, payments, selling, and more. What can I help you with today?',
-	},
-	fallback: {
-		text: 'I\'m not sure about that one! For detailed help, visit our Help Center or email our support team at support@maretinda.com.',
-		links: [{ label: 'Visit Help Center', href: '/help-center' }],
-	},
-};
-
-const INTENT_MAP: [RegExp, string][] = [
-	[/track|where.*order|order.*status|hasn.*arrived|not.*received/i, 'track'],
-	[/return|refund|exchange|money back|wrong item|damaged/i, 'returns'],
-	[/ship|deliver|courier|how long|how many days|lbc|j&t|ninja|lalamove/i, 'shipping'],
-	[/pay|payment|gcash|maya|cod|cash on delivery|credit|debit|visa|mastercard|card/i, 'payments'],
-	[/subscription|commission|fee|fees|plan|pricing|price|how much.*sell|cost.*sell/i, 'fees'],
-	[/sell|seller|vendor|shop|listing|payout/i, 'seller'],
-	[/password|forgot|reset|login|can.*log|sign in/i, 'password'],
-	[/hi|hello|hey|good morning|good afternoon|good evening|help/i, 'greeting'],
-];
-
-function matchIntent(input: string): string {
-	for (const [pattern, key] of INTENT_MAP) {
-		if (pattern.test(input)) return key;
-	}
-	return 'fallback';
-}
 
 let _id = 0;
 const uid = () => ++_id;
 
+/**
+ * Renders assistant text. The model emits plain prose with occasional "- " lists,
+ * so paragraphs and list items are handled directly — pulling in a markdown
+ * renderer for this would be more surface than the output justifies.
+ */
+function AssistantText({ text }: { text: string }) {
+	const blocks = text.split(/\n{2,}/);
+	return (
+		<>
+			{blocks.map((block, bi) => {
+				const lines = block.split('\n');
+				const isList = lines.every((l) => /^\s*[-*]\s+/.test(l)) && lines.length > 0;
+
+				if (isList) {
+					return (
+						<ul key={bi} className={bi > 0 ? 'mt-2 space-y-1' : 'space-y-1'}>
+							{lines.map((l, li) => (
+								<li key={li} className="flex gap-1.5">
+									<span aria-hidden style={{ color: '#9B80D2' }}>
+										•
+									</span>
+									<span>{l.replace(/^\s*[-*]\s+/, '')}</span>
+								</li>
+							))}
+						</ul>
+					);
+				}
+
+				return (
+					<p key={bi} className={bi > 0 ? 'mt-2' : undefined}>
+						{block}
+					</p>
+				);
+			})}
+		</>
+	);
+}
+
 export const Chatbot = () => {
-	const { t } = useLanguage();
+	const { lang, t } = useLanguage();
 	const s = t.chatbot;
 
 	const quickReplies = [
-		{ label: s.quickReplies.track, key: 'track' },
-		{ label: s.quickReplies.returns, key: 'returns' },
-		{ label: s.quickReplies.shipping, key: 'shipping' },
-		{ label: s.quickReplies.payments, key: 'payments' },
-		{ label: s.quickReplies.seller, key: 'seller' },
-		{ label: s.quickReplies.password, key: 'password' },
+		s.quickReplies.track,
+		s.quickReplies.returns,
+		s.quickReplies.shipping,
+		s.quickReplies.payments,
+		s.quickReplies.seller,
+		s.quickReplies.password,
 	];
 
 	const [open, setOpen] = useState(false);
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [input, setInput] = useState('');
-	const [typing, setTyping] = useState(false);
+	const [busy, setBusy] = useState(false);
 	const bottomRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const abortRef = useRef<AbortController | null>(null);
 
 	useEffect(() => {
 		setMessages([{ id: uid(), from: 'bot', text: s.greeting }]);
@@ -123,42 +97,146 @@ export const Chatbot = () => {
 
 	useEffect(() => {
 		bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-	}, [messages, typing]);
+	}, [messages]);
 
-	const sendMessage = (text: string) => {
-		if (!text.trim()) return;
+	// Abandoning the conversation should stop the model call, not leave it
+	// streaming into a closed widget.
+	useEffect(() => () => abortRef.current?.abort(), []);
 
-		const userMsg: Message = { id: uid(), from: 'user', text: text.trim() };
-		setMessages((prev) => [...prev, userMsg]);
-		setInput('');
-		setTyping(true);
+	const ask = useCallback(
+		async (question: string) => {
+			const trimmed = question.trim();
+			if (!trimmed || busy) return;
 
-		setTimeout(() => {
-			const key = matchIntent(text);
-			const response = RESPONSES[key];
-			setTyping(false);
+			// Snapshot the history *before* adding this turn — the backend expects
+			// prior turns only, with the new question passed separately.
+			const history = messages
+				.filter((m) => !m.error && m.text)
+				.slice(1) // drop the canned greeting; it isn't part of the conversation
+				.slice(-8)
+				.map((m) => ({
+					role: m.from === 'user' ? ('user' as const) : ('assistant' as const),
+					content: m.text,
+				}));
+
+			const botId = uid();
 			setMessages((prev) => [
 				...prev,
-				{ id: uid(), from: 'bot', text: response.text, links: response.links },
+				{ id: uid(), from: 'user', text: trimmed },
+				{ id: botId, from: 'bot', text: '', streaming: true },
 			]);
-		}, 700 + Math.random() * 400);
-	};
+			setInput('');
+			setBusy(true);
 
-	// Quick replies carry their own intent key, so respond directly instead of
-	// re-matching the (emoji-free) label text.
-	const sendQuickReply = (key: string, label: string) => {
-		const response = RESPONSES[key] ?? RESPONSES.fallback;
-		setMessages((prev) => [...prev, { id: uid(), from: 'user', text: label }]);
-		setTyping(true);
+			const controller = new AbortController();
+			abortRef.current = controller;
 
-		setTimeout(() => {
-			setTyping(false);
-			setMessages((prev) => [
-				...prev,
-				{ id: uid(), from: 'bot', text: response.text, links: response.links },
-			]);
-		}, 700 + Math.random() * 400);
-	};
+			const fail = (text: string) =>
+				setMessages((prev) =>
+					prev.map((m) =>
+						m.id === botId ? { ...m, text, streaming: false, error: true } : m,
+					),
+				);
+
+			try {
+				const res = await fetch('/api/assistant', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						question: trimmed,
+						history,
+						language: LANGUAGE_NAMES[lang] || 'English',
+					}),
+					signal: controller.signal,
+				});
+
+				if (!res.ok || !res.body) {
+					const body = await res.json().catch(() => null);
+					fail(
+						body?.message ||
+							'Sorry — I could not answer that right now. Please try again.',
+					);
+					return;
+				}
+
+				const reader = res.body.getReader();
+				const decoder = new TextDecoder();
+				let buffer = '';
+
+				// SSE frames are separated by a blank line. A chunk can split a frame
+				// anywhere, so hold the remainder in `buffer` rather than parsing
+				// per-chunk.
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+
+					buffer += decoder.decode(value, { stream: true });
+					const frames = buffer.split('\n\n');
+					buffer = frames.pop() ?? '';
+
+					for (const frame of frames) {
+						const line = frame.split('\n').find((l) => l.startsWith('data: '));
+						if (!line) continue;
+
+						let event: any;
+						try {
+							event = JSON.parse(line.slice(6));
+						} catch {
+							continue;
+						}
+
+						if (event.type === 'delta') {
+							setMessages((prev) =>
+								prev.map((m) =>
+									m.id === botId ? { ...m, text: m.text + event.text } : m,
+								),
+							);
+						} else if (event.type === 'sources') {
+							setMessages((prev) =>
+								prev.map((m) => (m.id === botId ? { ...m, sources: event.sources } : m)),
+							);
+						} else if (event.type === 'error') {
+							fail(event.message);
+							return;
+						}
+					}
+				}
+
+				setMessages((prev) =>
+					prev.map((m) =>
+						m.id === botId
+							? {
+									...m,
+									streaming: false,
+									// A stream that ends without producing text is a failure the
+									// customer would otherwise see as an empty bubble.
+									text:
+										m.text ||
+										'Sorry — I could not answer that right now. Please try again, or email support@maretinda.com.',
+									error: !m.text,
+								}
+							: m,
+					),
+				);
+			} catch (err) {
+				if ((err as Error)?.name === 'AbortError') {
+					// Keep whatever already streamed — the customer has read it. Only an
+					// empty bubble is worth removing.
+					setMessages((prev) =>
+						prev.flatMap((m) =>
+							m.id !== botId ? [m] : m.text ? [{ ...m, streaming: false }] : [],
+						),
+					);
+					return;
+				}
+				fail('Connection lost. Please check your network and try again.');
+			} finally {
+				setBusy(false);
+				abortRef.current = null;
+			}
+		},
+		[busy, lang, messages],
+	);
 
 	return (
 		<>
@@ -178,7 +256,6 @@ export const Chatbot = () => {
 						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
 					</svg>
 				)}
-				{/* Unread dot when closed */}
 				{!open && (
 					<span className="absolute top-0.5 right-0.5 w-3 h-3 rounded-full border-2 border-white" style={{ backgroundColor: '#FFC533' }} />
 				)}
@@ -229,21 +306,47 @@ export const Chatbot = () => {
 										style={
 											msg.from === 'user'
 												? { backgroundColor: '#432C63', color: 'white', borderBottomRightRadius: '4px' }
-												: { backgroundColor: 'white', color: '#1B1B1B', border: '1px solid #EDEAE3', borderBottomLeftRadius: '4px' }
+												: {
+														backgroundColor: 'white',
+														color: msg.error ? '#8A5A5A' : '#1B1B1B',
+														border: `1px solid ${msg.error ? '#EFD9D9' : '#EDEAE3'}`,
+														borderBottomLeftRadius: '4px',
+													}
 										}
 									>
-										{msg.text}
+										{msg.from === 'bot' ? <AssistantText text={msg.text} /> : msg.text}
+
+										{/* Typing indicator lives inside the bubble that is being written,
+										    so the answer grows in place instead of replacing a separate bubble. */}
+										{msg.streaming && !msg.text && (
+											<span className="flex items-center gap-1 py-0.5">
+												{[0, 1, 2].map((i) => (
+													<span
+														key={i}
+														className="w-1.5 h-1.5 rounded-full animate-bounce"
+														style={{ backgroundColor: '#9B80D2', animationDelay: `${i * 0.15}s` }}
+													/>
+												))}
+											</span>
+										)}
+										{msg.streaming && msg.text && (
+											<span
+												className="inline-block w-[2px] h-[13px] align-middle ml-0.5 animate-pulse"
+												style={{ backgroundColor: '#9B80D2' }}
+											/>
+										)}
 									</div>
-									{msg.links && msg.links.length > 0 && (
+
+									{msg.sources && msg.sources.length > 0 && (
 										<div className="flex flex-wrap gap-1.5 mt-1.5">
-											{msg.links.map(({ label, href }) => (
+											{msg.sources.map(({ title, url }) => (
 												<Link
-													key={href}
-													href={href}
+													key={url}
+													href={url}
 													className="text-[11.5px] font-semibold px-3 py-1 rounded-full transition-colors hover:bg-[#432C63] hover:text-white"
 													style={{ backgroundColor: '#F0EBF8', color: '#432C63', border: '1px solid #E0D6F0' }}
 												>
-													{label} →
+													{title} →
 												</Link>
 											))}
 										</div>
@@ -251,32 +354,17 @@ export const Chatbot = () => {
 								</div>
 							</div>
 						))}
-
-						{typing && (
-							<div className="flex justify-start">
-								<div className="px-4 py-3 rounded-2xl" style={{ backgroundColor: 'white', border: '1px solid #EDEAE3', borderBottomLeftRadius: '4px' }}>
-									<div className="flex items-center gap-1">
-										{[0, 1, 2].map((i) => (
-											<span
-												key={i}
-												className="w-1.5 h-1.5 rounded-full animate-bounce"
-												style={{ backgroundColor: '#9B80D2', animationDelay: `${i * 0.15}s` }}
-											/>
-										))}
-									</div>
-								</div>
-							</div>
-						)}
 						<div ref={bottomRef} />
 					</div>
 
 					{/* Quick replies */}
 					<div className="px-3 py-2 flex gap-1.5 overflow-x-auto no-scrollbar flex-shrink-0" style={{ backgroundColor: 'white', borderTop: '1px solid #EDEAE3' }}>
-						{quickReplies.map(({ label, key }) => (
+						{quickReplies.map((label) => (
 							<button
-								key={key}
-								onClick={() => sendQuickReply(key, label)}
-								className="flex-shrink-0 text-[11.5px] font-semibold px-3 py-1.5 rounded-full transition-colors hover:bg-[#432C63] hover:text-white whitespace-nowrap"
+								key={label}
+								onClick={() => ask(label)}
+								disabled={busy}
+								className="flex-shrink-0 text-[11.5px] font-semibold px-3 py-1.5 rounded-full transition-colors hover:bg-[#432C63] hover:text-white whitespace-nowrap disabled:opacity-40 disabled:hover:bg-[#F0EBF8] disabled:hover:text-[#432C63]"
 								style={{ backgroundColor: '#F0EBF8', color: '#432C63', border: '1px solid #E0D6F0' }}
 							>
 								{label}
@@ -288,7 +376,7 @@ export const Chatbot = () => {
 					<form
 						className="flex items-center gap-2 px-3 py-3 flex-shrink-0"
 						style={{ backgroundColor: 'white', borderTop: '1px solid #F0EBF8' }}
-						onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
+						onSubmit={(e) => { e.preventDefault(); ask(input); }}
 					>
 						<input
 							ref={inputRef}
@@ -296,19 +384,33 @@ export const Chatbot = () => {
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
 							placeholder={s.placeholder}
-							className="flex-1 text-[13px] outline-none bg-transparent"
+							maxLength={1000}
+							disabled={busy}
+							className="flex-1 text-[13px] outline-none bg-transparent disabled:opacity-60"
 							style={{ color: '#1B1B1B' }}
 						/>
-						<button
-							type="submit"
-							disabled={!input.trim()}
-							className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity disabled:opacity-40"
-							style={{ backgroundColor: '#432C63' }}
-						>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-								<line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-							</svg>
-						</button>
+						{busy ? (
+							<button
+								type="button"
+								onClick={() => abortRef.current?.abort()}
+								aria-label="Stop generating"
+								className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+								style={{ backgroundColor: '#432C63' }}
+							>
+								<span className="block w-3 h-3 rounded-[2px]" style={{ backgroundColor: 'white' }} />
+							</button>
+						) : (
+							<button
+								type="submit"
+								disabled={!input.trim()}
+								className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity disabled:opacity-40"
+								style={{ backgroundColor: '#432C63' }}
+							>
+								<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+									<line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+								</svg>
+							</button>
+						)}
 					</form>
 				</div>
 			)}

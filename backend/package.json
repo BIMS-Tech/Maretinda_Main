@@ -15,8 +15,9 @@
   "scripts": {
     "build": "npm run build:giyapay && medusa build && npm run postbuild:copy",
     "build:giyapay": "cd src/modules/payment-giyapay && npm install && npm run build",
-    "postbuild:copy": "mkdir -p .medusa/server/src/modules/payment-giyapay && cp -r src/modules/payment-giyapay/dist .medusa/server/src/modules/payment-giyapay/ && cp src/modules/payment-giyapay/package.json .medusa/server/src/modules/payment-giyapay/",
+    "postbuild:copy": "mkdir -p .medusa/server/src/modules/payment-giyapay && cp -r src/modules/payment-giyapay/dist .medusa/server/src/modules/payment-giyapay/ && cp src/modules/payment-giyapay/package.json .medusa/server/src/modules/payment-giyapay/ && mkdir -p .medusa/server/src/lib/assistant/knowledge && cp src/lib/assistant/knowledge/*.md .medusa/server/src/lib/assistant/knowledge/",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "assistant:index": "medusa exec ./src/scripts/index-assistant-knowledge.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "db:init": "npx tsx src/scripts/init-database.ts",
@@ -36,6 +37,7 @@
     "prod:run": "bash scripts/run-production-command.sh"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.4",
     "@google-cloud/storage": "^7.18.0",
     "@medusajs/admin-sdk": "2.11.2",
     "@medusajs/auth-emailpass": "^2.13.4",
