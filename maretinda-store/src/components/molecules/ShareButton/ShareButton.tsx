@@ -34,6 +34,14 @@ const ICONS: Record<
 	x: XIcon,
 };
 
+/**
+ * True only where touch is the primary input. A touchscreen laptop driven by a
+ * mouse reports `fine` and so keeps the in-page menu, which is what we want.
+ */
+const isTouchPrimary = () =>
+	typeof window !== 'undefined' &&
+	window.matchMedia?.('(pointer: coarse)').matches === true;
+
 export const ShareButton = ({
 	title,
 	price,
@@ -87,9 +95,13 @@ export const ShareButton = ({
 	const handleShare = async () => {
 		const url = buildShareUrl(variantParams);
 
-		// On mobile the OS share sheet covers Messenger, Viber, Instagram and
-		// everything else the user actually has installed, so prefer it.
-		if (typeof navigator !== 'undefined' && navigator.share) {
+		// Prefer the OS share sheet on touch devices only — there it surfaces
+		// Messenger, Viber and Instagram from the apps the user actually has
+		// installed. `navigator.share` on its own is NOT a mobile test: desktop
+		// Safari and Edge both expose it, and calling it there replaces this menu
+		// with an OS sheet offering AirDrop and Notes, hiding Copy link and every
+		// network row.
+		if (isTouchPrimary() && navigator.share) {
 			try {
 				await navigator.share({ text: title, title, url });
 				return;
