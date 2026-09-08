@@ -166,6 +166,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@anthropic-ai/sdk@npm:^0.112.4":
+  version: 0.112.4
+  resolution: "@anthropic-ai/sdk@npm:0.112.4"
+  dependencies:
+    json-schema-to-ts: ^3.1.1
+    standardwebhooks: ^1.0.0
+  peerDependencies:
+    zod: ^3.25.0 || ^4.0.0
+  peerDependenciesMeta:
+    zod:
+      optional: true
+  bin:
+    anthropic-ai-sdk: bin/cli
+  checksum: 8642059038f1597dd008f9346d1a51965f79426a99284874b43ba00b03d8e42eca6e2aec50587ed0d0b846f4eae28ca7e45631d47c78baa8ee5ceb8c7d632fa7
+  languageName: node
+  linkType: hard
+
 "@ardatan/relay-compiler@npm:^13.0.1":
   version: 13.0.1
   resolution: "@ardatan/relay-compiler@npm:13.0.1"
@@ -1057,7 +1074,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.22.10, @babel/runtime@npm:^7.22.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.23.8, @babel/runtime@npm:^7.29.2":
+"@babel/runtime@npm:^7.13.10, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.22.10, @babel/runtime@npm:^7.22.5, @babel/runtime@npm:^7.23.2, @babel/runtime@npm:^7.23.8, @babel/runtime@npm:^7.29.2":
   version: 7.29.7
   resolution: "@babel/runtime@npm:7.29.7"
   checksum: bc311855c6dbf5356030979584ca0f8b6cee39fe058175b02e85a73e246fc76ae30248b0d40e70c2652101faeb43279468ed2d086a670673eb9783c1fee1df2b
@@ -11018,6 +11035,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"json-schema-to-ts@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "json-schema-to-ts@npm:3.1.1"
+  dependencies:
+    "@babel/runtime": ^7.18.3
+    ts-algebra: ^2.0.0
+  checksum: b616f1c2d7492502e11eec4f8e4539ee1e897543a679d929494afdc164d9557275cead8372747b73f239b1e68056ffbf551b03ae82d0047bba0dfe2bbd6b64f4
+  languageName: node
+  linkType: hard
+
 "json-schema-traverse@npm:^1.0.0":
   version: 1.0.0
   resolution: "json-schema-traverse@npm:1.0.0"
@@ -11470,6 +11497,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "medusa-starter-default@workspace:."
   dependencies:
+    "@anthropic-ai/sdk": ^0.112.4
     "@google-cloud/storage": ^7.18.0
     "@medusajs/admin-sdk": 2.11.2
     "@medusajs/auth-emailpass": ^2.13.4
@@ -14008,7 +14036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"standardwebhooks@npm:1.0.0":
+"standardwebhooks@npm:1.0.0, standardwebhooks@npm:^1.0.0":
   version: 1.0.0
   resolution: "standardwebhooks@npm:1.0.0"
   dependencies:
@@ -14472,6 +14500,13 @@ __metadata:
   version: 1.4.1
   resolution: "triple-beam@npm:1.4.1"
   checksum: 2e881a3e8e076b6f2b85b9ec9dd4a900d3f5016e6d21183ed98e78f9abcc0149e7d54d79a3f432b23afde46b0885bdcdcbff789f39bc75de796316961ec07f61
+  languageName: node
+  linkType: hard
+
+"ts-algebra@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "ts-algebra@npm:2.0.0"
+  checksum: 970b0e7db49cf8c1a8ff2a816eb047fac8add47511f5e4995e4998c56c6f7b226399284412de88f3e137ab55c857a4262c0d8f02f0765730e7d3a021de2ea7ef
   languageName: node
   linkType: hard
 
