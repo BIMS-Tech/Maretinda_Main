@@ -34,12 +34,15 @@ export default async function trendingScoreJob(
     const salesResult = await pg.raw(`
       SELECT
         oli.product_id,
-        SUM(oli.quantity)::int AS sold_7d
-      FROM order_line_item oli
-      JOIN "order" o ON o.id = oli.order_id
+        SUM(oi.quantity)::int AS sold_7d
+      FROM order_item oi
+      JOIN order_line_item oli ON oli.id = oi.item_id
+      JOIN "order" o ON o.id = oi.order_id AND o.version = oi.version
       WHERE
         o.created_at >= NOW() - INTERVAL '7 days'
         AND o.status NOT IN ('canceled', 'archived')
+        AND o.deleted_at IS NULL
+        AND oi.deleted_at IS NULL
         AND oli.product_id IS NOT NULL
       GROUP BY oli.product_id
     `)
