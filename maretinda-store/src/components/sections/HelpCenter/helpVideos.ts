@@ -49,7 +49,7 @@ export const HELP_VIDEOS: HelpVideo[] = [
 	},
 	{
 		id: 'seller-onboarding',
-		youtubeId: '',
+		youtubeId: 'ETqLSys2kUo',
 		title: 'How to onboard as a seller',
 		description:
 			'Create your shop, pick a subscription plan, and get your storefront ready for its first sale.',
