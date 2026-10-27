@@ -19,7 +19,7 @@ on:
       services:
         description: "What to deploy"
         type: choice
-        options: [all, backend, store, admin, seller, server-config]
+        options: [all, backend, store, admin, seller, panels, server-config]
         default: all
 
 concurrency:
@@ -79,6 +79,7 @@ jobs:
               name=$s; [ "$s" = config ] && name=server-config
               # Server deploys always sync the compose files first
               if [ "$SELECTED" = all ] || [ "$SELECTED" = "$name" ] \
+                || { [ "$SELECTED" = panels ] && { [ "$s" = admin ] || [ "$s" = seller ]; }; } \
                 || { [ "$s" = config ] && { [ "$SELECTED" = backend ] || [ "$SELECTED" = store ]; }; }; then
                 v=true
               else
@@ -217,6 +218,13 @@ jobs:
           VITE_MEDUSA_STOREFRONT_URL: ${{ env.STORE_URL }}
           VITE_MEDUSA_BASE: /
           VITE_MEDUSA_B2B_PANEL: "true"
+      # Creates the Pages project on the first deploy; fails harmlessly once it exists
+      - uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create maretinda-admin --production-branch=main
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -246,6 +254,13 @@ jobs:
           VITE_MEDUSA_BASE: /
           VITE_MEDUSA_B2B_PANEL: "false"
           VITE_PUBLISHABLE_API_KEY: ${{ env.PUBLISHABLE_KEY }}
+      # Creates the Pages project on the first deploy; fails harmlessly once it exists
+      - uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create maretinda-seller --production-branch=main
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
