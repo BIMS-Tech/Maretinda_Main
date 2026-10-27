@@ -97,7 +97,7 @@ export default async function trendingScoreJob(
          SET metadata = COALESCE(metadata, '{}'::jsonb)
            || jsonb_build_object(
                'trending_score',  :score::int,
-               'avg_rating',      :rating,
+               'avg_rating',      :rating::numeric,
                'review_count',    :reviewCount::int,
                'trending_updated_at', NOW()::text
              )
