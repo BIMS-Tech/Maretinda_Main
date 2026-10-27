@@ -46,6 +46,9 @@ services:
     env_file: backend.env
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Medusa assumes SSL for any host but localhost; this postgres container
+      # speaks plain TCP on the private compose network (see medusa-config.ts)
+      DATABASE_SSL: "false"
       REDIS_URL: redis://redis:6379
       # "shared" runs API + background jobs in one process (stage 0).
       # Stage 1: set MEDUSA_WORKER_MODE=server and COMPOSE_PROFILES=split in .env
@@ -64,6 +67,7 @@ services:
     env_file: backend.env
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_SSL: "false"
       REDIS_URL: redis://redis:6379
       MEDUSA_WORKER_MODE: worker
     depends_on:
