@@ -113,10 +113,17 @@ jobs:
           rsync -rlt --exclude README.md --exclude '*.example' --exclude .gitignore \
             deploy/ "deploy@$HOST:/opt/maretinda/"
           # Recreates caddy/postgres/redis only if their definition changed;
-          # backend/store are switched by release.sh, not here.
+          # backend/store are switched by release.sh, not here. Caddy waits
+          # for the Cloudflare origin cert so a missing cert doesn't block
+          # backend/store deploys.
           ssh "deploy@$HOST" 'cd /opt/maretinda && chmod +x scripts/*.sh \
-            && docker compose up -d postgres redis caddy \
-            && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile'
+            && docker compose up -d --wait postgres redis \
+            && if [ -f certs/origin.pem ] && [ -f certs/origin.key ]; then \
+                 docker compose up -d caddy \
+                 && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile; \
+               else \
+                 echo "::warning::certs/origin.pem or origin.key missing on the server, Caddy not started"; \
+               fi'
 
   # ── Backend (Medusa): build → load on server → migrate → swap ───────────
   backend:
