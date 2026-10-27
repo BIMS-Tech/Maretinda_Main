@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
 			hostname: 'storage.googleapis.com',
 			protocol: 'https',
 		},
+		{
+			hostname: 'media.maretinda.com',
+			protocol: 'https',
+		},
 	],
 },
 	logging: {

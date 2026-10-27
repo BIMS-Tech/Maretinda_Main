@@ -93,15 +93,34 @@ module.exports = defineConfig({
     {
       resolve: '@mercurjs/b2c-core/modules/wishlist'
     },
+    // Cloudflare R2 through Medusa's S3 provider when S3_* is set (production
+    // on DigitalOcean), otherwise the GCS provider. Only one file provider can
+    // be active. utils/google-cloud-storage.ts makes the same choice for the
+    // custom upload routes.
     {
       resolve: '@medusajs/medusa/file',
       options: {
         providers: [
-          {
-            resolve: './src/modules/file-gcs',
-            id: 'gcs',
-            options: {}
-          }
+          process.env.S3_ENDPOINT && process.env.S3_BUCKET
+            ? {
+                resolve: '@medusajs/medusa/file-s3',
+                id: 's3',
+                options: {
+                  file_url: process.env.S3_FILE_URL,
+                  access_key_id: process.env.S3_ACCESS_KEY_ID,
+                  secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+                  region: process.env.S3_REGION || 'auto',
+                  bucket: process.env.S3_BUCKET,
+                  endpoint: process.env.S3_ENDPOINT,
+                  // Same key layout as the GCS provider, so migrated objects keep their paths
+                  prefix: 'medusa/public/'
+                }
+              }
+            : {
+                resolve: './src/modules/file-gcs',
+                id: 'gcs',
+                options: {}
+              }
         ]
       }
     },

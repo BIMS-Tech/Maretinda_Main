@@ -1,0 +1,102 @@
+# Maretinda production on a single DigitalOcean droplet.
+# Lives at /opt/maretinda on the server; see deploy/README.md for the runbook.
+#
+# backend and store images are never pulled from a registry: CI streams them
+# over SSH (`docker load`) and scripts/release.sh tags the active one `:live`.
+# `pull_policy: never` also stops compose from ever fetching a same-named
+# image from Docker Hub.
+
+name: maretinda
+
+services:
+  postgres:
+    # pgvector is needed by the support assistant's migration (CREATE EXTENSION vector)
+    image: pgvector/pgvector:0.8.0-pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    # BullMQ (Medusa's event bus and workflow engine) requires noeviction
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  backend:
+    image: maretinda/backend:live
+    pull_policy: never
+    restart: unless-stopped
+    env_file: backend.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      # "shared" runs API + background jobs in one process (stage 0).
+      # Stage 1: set MEDUSA_WORKER_MODE=server and COMPOSE_PROFILES=split in .env
+      MEDUSA_WORKER_MODE: ${MEDUSA_WORKER_MODE:-shared}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    profiles: [split]
+    image: maretinda/backend:live
+    pull_policy: never
+    restart: unless-stopped
+    env_file: backend.env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      MEDUSA_WORKER_MODE: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  store:
+    image: maretinda/store:live
+    pull_policy: never
+    restart: unless-stopped
+    env_file:
+      - path: store.env
+        required: false
+
+  caddy:
+    image: caddy:2.8.4-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+      STORE_DOMAIN: ${STORE_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./certs:/etc/caddy/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  redisdata:
+  caddy_data:
+  caddy_config:

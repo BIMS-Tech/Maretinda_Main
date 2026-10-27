@@ -18,6 +18,7 @@
  */
 
 import { Storage } from '@google-cloud/storage'
+import { R2StorageService } from './r2-storage'
 
 export interface GCSConfig {
   projectId: string
@@ -350,8 +351,33 @@ class GoogleCloudStorageService {
   }
 }
 
-// Create GCS service instance
-export const createGCSService = (): GoogleCloudStorageService | null => {
+// Create the object storage service. Cloudflare R2 (S3_* env) takes priority;
+// otherwise Google Cloud Storage (GCS_* env). Both expose the same methods.
+export const createGCSService = (): GoogleCloudStorageService | R2StorageService | null => {
+  const {
+    S3_ENDPOINT,
+    S3_BUCKET,
+    S3_REGION,
+    S3_ACCESS_KEY_ID,
+    S3_SECRET_ACCESS_KEY,
+    S3_FILE_URL,
+  } = process.env
+
+  if (S3_ENDPOINT && S3_BUCKET) {
+    if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_FILE_URL) {
+      console.warn('[R2] Missing configuration. Set S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY and S3_FILE_URL')
+      return null
+    }
+    return new R2StorageService({
+      endpoint: S3_ENDPOINT,
+      bucketName: S3_BUCKET,
+      region: S3_REGION || 'auto',
+      accessKeyId: S3_ACCESS_KEY_ID,
+      secretAccessKey: S3_SECRET_ACCESS_KEY,
+      publicUrl: S3_FILE_URL,
+    })
+  }
+
   const projectId = process.env.GCS_PROJECT_ID
   const bucketName = process.env.GCS_BUCKET_NAME
   

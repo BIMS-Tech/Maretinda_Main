@@ -1,0 +1,24 @@
+# HTTPS terminates at Cloudflare. Cloudflare → this server uses a Cloudflare
+# Origin Certificate (SSL/TLS mode "Full (strict)"), saved on the server as
+# certs/origin.pem + certs/origin.key. Because the cert is supplied here,
+# Caddy never requests one from Let's Encrypt.
+
+(origin) {
+	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
+	encode zstd gzip
+}
+
+{$API_DOMAIN} {
+	import origin
+	reverse_proxy backend:9000
+}
+
+{$STORE_DOMAIN} {
+	import origin
+	reverse_proxy store:3000
+}
+
+www.{$STORE_DOMAIN} {
+	import origin
+	redir https://{$STORE_DOMAIN}{uri} permanent
+}
