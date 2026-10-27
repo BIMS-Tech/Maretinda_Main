@@ -13,12 +13,12 @@ const shops = [
     position: "object-[50%_40%]",
   },
   {
-    src: "/media/shop-groceries.png",
-    alt: "A paper bag and a basket full of fresh produce, bread and dairy",
-    label: "Groceries & palengke",
-    note: "Fresh produce, pantry staples and sari-sari restocks.",
+    src: "/media/shop-home.png",
+    alt: "A grey upholstered armchair with two cushions",
+    label: "Home & living",
+    note: "Furniture, kitchenware and the little things that make a home.",
     className: "lg:col-span-7 aspect-[4/5] lg:aspect-auto",
-    position: "object-contain p-8 sm:p-12",
+    position: "object-contain p-10 sm:p-16",
     sand: true,
   },
   {
