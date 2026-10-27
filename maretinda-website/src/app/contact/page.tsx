@@ -2,30 +2,24 @@
 
 import { useState } from "react";
 import {
-  FiMail, FiPhone, FiMapPin, FiArrowRight, FiCheckCircle, FiSend,
+  FiMail, FiMapPin, FiArrowRight, FiCheckCircle, FiSend,
 } from "react-icons/fi";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { SELLER_REGISTER_URL } from "@/lib/site";
+import { CONTACT_EMAIL, OFFICE_ADDRESS, SELLER_REGISTER_URL } from "@/lib/site";
 
 const channels = [
   {
     icon: FiMail,
     label: "Email us",
-    value: "hello@maretinda.com",
-    href: "mailto:hello@maretinda.com",
-  },
-  {
-    icon: FiPhone,
-    label: "Call us",
-    value: "+63 2 8888 0000",
-    href: "tel:+63288880000",
+    value: CONTACT_EMAIL,
+    href: `mailto:${CONTACT_EMAIL}`,
   },
   {
     icon: FiMapPin,
     label: "Visit us",
-    value: "Makati City, Philippines",
+    value: OFFICE_ADDRESS,
     href: undefined,
   },
 ];
@@ -44,35 +38,23 @@ export default function ContactPage() {
       <Navbar />
       <main>
         {/* Hero header */}
-        <section
-          className="relative pt-[132px] pb-16 overflow-hidden"
-          style={{ background: "linear-gradient(150deg,#2A1B3E,#432C63 60%,#5C3E88)" }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 50% 50% at 0% 100%, rgba(255,197,51,.10) 0%, transparent 60%)",
-            }}
-          />
-          <div className="relative z-10 max-w-[1160px] mx-auto px-6 text-center">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-yellow bg-white/10 border border-white/15 px-3.5 py-1.5 rounded-full mb-4">
-              Get in touch
-            </span>
+        <section className="bg-paper pt-[132px] pb-14 border-b border-line">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+            <p className="eyebrow text-brand-purple">Get in touch</p>
             <h1
-              className="font-display font-bold text-white leading-tight mb-3"
-              style={{ fontSize: "clamp(2rem,4vw,3rem)", letterSpacing: "-0.02em" }}
+              className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
+              style={{ fontSize: "clamp(38px, 5vw, 64px)" }}
             >
-              We&apos;d love to hear from you
+              We&apos;d love to hear from you.
             </h1>
-            <p className="text-white/55 text-[15px] max-w-[520px] mx-auto leading-relaxed">
+            <p className="mt-4 text-muted text-[16px] max-w-[560px] leading-relaxed">
               Questions about selling, your account, or a partnership? Send us a
               message and our team will get back to you.
             </p>
           </div>
         </section>
 
-        <div className="max-w-[1160px] mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-10">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-16 grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-10">
           {/* Contact channels */}
           <div>
             <h2 className="font-display font-bold text-[22px] text-[#1A1228] mb-5">
@@ -108,7 +90,7 @@ export default function ContactPage() {
 
             <div
               className="rounded-2xl p-6"
-              style={{ background: "linear-gradient(135deg,#F6F4FB,#fff)", border: "1.5px solid rgba(67,44,99,.1)" }}
+              style={{ background: "#FBF9FC", border: "1px solid rgba(67,44,99,.12)" }}
             >
               <h3 className="font-display font-bold text-[17px] text-[#1A1228] mb-1.5">
                 Want to start selling?
@@ -119,8 +101,8 @@ export default function ContactPage() {
               </p>
               <a
                 href={SELLER_REGISTER_URL}
-                className="inline-flex items-center gap-1.5 font-semibold text-[13.5px] px-5 py-2.5 rounded-full text-[#2A1B3E]"
-                style={{ background: "linear-gradient(135deg,#FFC533,#F2B230)" }}
+                className="inline-flex items-center gap-1.5 font-semibold text-[13.5px] px-5 py-2.5 rounded-full text-brand-purple"
+                style={{ background: "#FFC533" }}
               >
                 Start selling <FiArrowRight size={13} />
               </a>
@@ -159,8 +141,8 @@ export default function ContactPage() {
                 </div>
                 <button
                   type="submit"
-                  className="mt-1 inline-flex items-center justify-center gap-2 font-semibold text-[14.5px] py-3.5 rounded-full text-[#2A1B3E] transition-all duration-200 hover:-translate-y-0.5"
-                  style={{ background: "linear-gradient(135deg,#FFC533,#F2B230)", boxShadow: "0 4px 16px rgba(255,197,51,.35)" }}
+                  className="mt-1 inline-flex items-center justify-center gap-2 font-semibold text-[14.5px] py-3.5 rounded-full text-brand-purple transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ background: "#FFC533" }}
                 >
                   Send message <FiSend size={15} />
                 </button>

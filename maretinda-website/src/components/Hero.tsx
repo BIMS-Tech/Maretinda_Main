@@ -1,199 +1,117 @@
-"use client";
+import Image from "next/image";
+import { FiArrowRight } from "react-icons/fi";
 
-import { useEffect, useRef } from "react";
-import { FiArrowRight, FiPlayCircle } from "react-icons/fi";
-import Typewriter from "./Typewriter";
-import { SELLER_REGISTER_URL } from "@/lib/site";
+import { SELLER_REGISTER_URL, STORE_URL } from "@/lib/site";
 
 export default function Hero() {
-  const particleRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = particleRef.current;
-    if (!container) return;
-    const particles: HTMLDivElement[] = [];
-
-    for (let i = 0; i < 22; i++) {
-      const p = document.createElement("div");
-      const size = Math.random() * 3 + 1;
-      p.className = "particle";
-      p.style.cssText = `
-        width:${size}px; height:${size}px;
-        left:${Math.random() * 100}%;
-        animation-duration:${Math.random() * 14 + 9}s;
-        animation-delay:${Math.random() * 12}s;
-        opacity:${Math.random() * 0.4 + 0.1};
-      `;
-      container.appendChild(p);
-      particles.push(p);
-    }
-    return () => particles.forEach((p) => p.remove());
-  }, []);
-
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: "#1E1130" }}
-    >
-      {/* Mesh gradient */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(ellipse 90% 70% at 50% -5%, rgba(108,48,200,.55) 0%, transparent 55%),
-            radial-gradient(ellipse 55% 70% at -10% 85%, rgba(67,44,99,.85) 0%, transparent 55%),
-            radial-gradient(ellipse 45% 55% at 105% 55%, rgba(92,62,136,.5) 0%, transparent 55%),
-            #1E1130
-          `,
-        }}
-      />
+    <section id="hero" className="relative bg-paper pt-[68px] overflow-hidden">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6 pt-12 lg:pt-20 pb-16 lg:pb-24 grid grid-cols-12 gap-y-14 lg:gap-x-10 items-center">
+        {/* Copy */}
+        <div className="col-span-12 lg:col-span-7">
+          <p className="eyebrow text-brand-purple">Sell on Maretinda</p>
 
-      {/* Dot grid overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* Orbs */}
-      <div
-        className="absolute rounded-full float-orb pointer-events-none"
-        style={{ width:520, height:520, top:-120, right:-80,
-          background:"radial-gradient(circle, rgba(255,197,51,.12), transparent 70%)",
-          filter:"blur(70px)" }}
-      />
-      <div
-        className="absolute rounded-full float-orb-slow pointer-events-none"
-        style={{ width:380, height:380, bottom:-40, left:-60,
-          background:"radial-gradient(circle, rgba(155,128,210,.22), transparent 70%)",
-          filter:"blur(65px)" }}
-      />
-      <div
-        className="absolute rounded-full float-orb-rev pointer-events-none"
-        style={{ width:260, height:260, top:"38%", left:"42%",
-          background:"radial-gradient(circle, rgba(124,58,237,.18), transparent 70%)",
-          filter:"blur(50px)" }}
-      />
-
-      {/* Particles */}
-      <div ref={particleRef} className="absolute inset-0 pointer-events-none" />
-
-      {/* Content */}
-      <div className="relative z-10 max-w-[1160px] mx-auto px-6 pt-28 pb-20 w-full">
-        <div className="max-w-[780px] mx-auto text-center">
-
-          {/* Headline */}
           <h1
-            data-aos="fade-up"
-            data-aos-delay="80"
-            className="font-display text-white tracking-tight mb-4"
-            style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.25rem)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-0.025em" }}
+            className="font-display text-ink mt-6 leading-[0.98] tracking-[-0.02em]"
+            style={{ fontSize: "clamp(44px, 5.5vw, 80px)" }}
           >
-            Your Business,
+            Open your shop.
             <br />
-            <Typewriter />
+            <span className="text-brand-purple">
+              Reach the <span className="scribble">whole</span> Philippines.
+            </span>
           </h1>
 
-          {/* Sub */}
-          <p
-            data-aos="fade-up"
-            data-aos-delay="160"
-            className="text-white/65 mx-auto mb-9 leading-relaxed"
-            style={{ fontSize: "clamp(1rem, 1.6vw, 1.125rem)", maxWidth: 580 }}
-          >
-            Maretinda is the Philippines&apos; most powerful e-commerce platform —
-            built to help sellers launch, scale, and dominate the digital market
-            with tools that actually deliver results.
+          <p className="mt-7 text-[17px] leading-[1.65] text-muted max-w-[500px]">
+            Maretinda is the marketplace where Filipino shops sell everything from palengke
+            staples to local fashion. List your products, take GCash and card payments, and
+            ship nationwide from one seller panel.
           </p>
 
-          {/* CTA buttons */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="240"
-            className="flex items-center justify-center gap-3 flex-wrap mb-12"
-          >
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <a
               href={SELLER_REGISTER_URL}
-              className="inline-flex items-center gap-2 font-semibold text-[15px] px-8 py-3.5 rounded-full text-[#2A1B3E] transition-all duration-250 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(255,197,51,.5)]"
-              style={{ background: "linear-gradient(135deg,#FFC533,#F2B230)", boxShadow: "0 4px 18px rgba(255,197,51,.38)" }}
+              className="inline-flex items-center gap-2 h-[52px] px-7 rounded-full text-[15px] font-bold bg-brand-yellow text-brand-purple hover:bg-brand-yellow-deep transition-colors"
             >
-              Start Selling Free
-              <FiArrowRight size={16} />
+              Start selling <FiArrowRight size={16} />
             </a>
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 font-medium text-[15px] px-8 py-3.5 rounded-full text-white/88 border border-white/22 hover:bg-white/8 hover:border-white/40 transition-all duration-200"
+              className="inline-flex items-center h-[52px] px-7 rounded-full text-[15px] font-semibold text-brand-purple border border-brand-purple/30 hover:border-brand-purple transition-colors"
             >
-              <FiPlayCircle size={16} />
-              See How It Works
+              How it works
             </a>
           </div>
 
-          {/* Social proof */}
-          <div
-            data-aos="fade-up"
-            data-aos-delay="320"
-            className="flex items-center justify-center gap-4"
-          >
-            <div className="flex">
-              {["T","M","J","A","R"].map((letter, i) => (
-                <div
-                  key={i}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[12px] border-2 border-[rgba(255,255,255,.35)]"
-                  style={{
-                    background: ["#5C3E88","#9B80D2","#432C63","#2A1B3E","#F2B230"][i],
-                    marginLeft: i === 0 ? 0 : -9,
-                    boxShadow: "0 2px 8px rgba(0,0,0,.35)",
-                  }}
+          <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] font-medium text-[#3D3748]">
+            {["First month free", "No listing fees", "No commission on sales"].map((t) => (
+              <li key={t} className="inline-flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Collage */}
+        <div className="col-span-12 lg:col-span-5 relative">
+          <div className="relative mx-auto w-full max-w-[560px] aspect-[1/1.02]">
+            {/* Sand panel, same surface as the storefront hero */}
+            <div className="absolute right-0 top-0 w-[78%] h-[84%] rounded-[28px] sand-stripes" />
+
+            {/* Main photo */}
+            <figure className="absolute left-0 bottom-0 w-[72%] h-[82%] rounded-[24px] overflow-hidden shadow-[0_30px_60px_-30px_rgba(42,27,62,.55)]">
+              <Image
+                src="/media/shop-fashion.jpg"
+                alt="A shopper in a floral blouse and pleated skirt"
+                fill
+                sizes="(min-width: 1024px) 400px, 72vw"
+                className="object-cover object-[50%_30%]"
+                priority
+              />
+              <figcaption className="absolute left-4 bottom-4 right-4 flex items-center justify-between gap-3 rounded-2xl bg-white/92 backdrop-blur px-4 py-3">
+                <span>
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">Selling now</span>
+                  <span className="block text-[14px] font-semibold text-ink">Fashion &amp; apparel</span>
+                </span>
+                <a
+                  href={`${STORE_URL}/categories`}
+                  className="text-[12.5px] font-bold text-brand-purple whitespace-nowrap hover:underline"
                 >
-                  {letter}
-                </div>
-              ))}
+                  Browse shops
+                </a>
+              </figcaption>
+            </figure>
+
+            {/* Real seller panel crop */}
+            <div className="absolute right-0 lg:right-[-6%] top-[9%] w-[58%] rounded-2xl overflow-hidden bg-white border border-line shadow-[0_24px_50px_-24px_rgba(42,27,62,.5)] rotate-[1.5deg]">
+              <div className="flex items-center gap-1.5 px-3 h-7 border-b border-line bg-[#F7F5FA]">
+                <span className="w-2 h-2 rounded-full bg-[#E5DFEC]" />
+                <span className="w-2 h-2 rounded-full bg-[#E5DFEC]" />
+                <span className="w-2 h-2 rounded-full bg-[#E5DFEC]" />
+                <span className="ml-2 text-[10px] text-muted truncate">seller.maretinda.com/dashboard</span>
+              </div>
+              <div className="relative aspect-[16/10]">
+                <Image
+                  src="/media/seller-dashboard.png"
+                  alt="The Maretinda seller dashboard showing orders, revenue and actions required"
+                  fill
+                  sizes="(min-width: 1024px) 330px, 58vw"
+                  className="object-cover object-left-top scale-[1.9] origin-[12%_0%]"
+                />
+              </div>
             </div>
-            <p className="text-white/60 text-[14px]">
-              <strong className="text-white font-semibold">2,500+</strong> sellers already growing
-            </p>
+
+            {/* Price sticker */}
+            <div className="absolute left-[-3%] top-[8%] w-[104px] h-[104px] rounded-full bg-brand-purple text-white flex flex-col items-center justify-center text-center -rotate-[10deg] shadow-lg">
+              <span className="font-display text-[30px] leading-none text-brand-yellow">₱0</span>
+              <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] mt-1 leading-tight">
+                to open
+                <br />
+                your shop
+              </span>
+            </div>
           </div>
-        </div>
-
-        {/* Floating stat chips */}
-        <div
-          data-aos="zoom-in"
-          data-aos-delay="440"
-          className="hidden lg:flex justify-center gap-4 mt-14"
-        >
-          {[
-            { label: "Total GMV", value: "₱2.5B+" },
-            { label: "Uptime", value: "99.9%" },
-            { label: "Avg. Setup", value: "< 1 hr" },
-            { label: "Satisfaction", value: "4.9 ★" },
-          ].map((s) => (
-            <div
-              key={s.label}
-              className="flex flex-col items-center px-6 py-3 rounded-2xl"
-              style={{
-                background: "rgba(255,255,255,.06)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,.1)",
-              }}
-            >
-              <span className="text-white font-bold text-[18px] font-display">{s.value}</span>
-              <span className="text-white/50 text-[12px] mt-0.5 font-medium">{s.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-10">
-        <div
-          className="w-5 h-8 rounded-full border border-white/20 flex items-start justify-center pt-1.5"
-          style={{ background: "rgba(255,255,255,.05)" }}
-        >
-          <div className="w-1 h-2 rounded-full bg-white/50 scroll-bob" />
         </div>
       </div>
     </section>
