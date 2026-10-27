@@ -10,7 +10,8 @@ name: Deploy to DigitalOcean (production)
 #
 # backend and store images are built here and streamed to the server over SSH
 # (docker save | docker load), so there is no container registry to pay for.
-# admin and seller are static builds published to Cloudflare Pages.
+# admin, seller and the marketing website are static builds published to
+# Cloudflare Pages.
 on:
   push:
     branches: [production]
@@ -19,7 +20,7 @@ on:
       services:
         description: "What to deploy"
         type: choice
-        options: [all, backend, store, admin, seller, panels, server-config]
+        options: [all, backend, store, admin, seller, panels, website, server-config]
         default: all
 
 concurrency:
@@ -44,6 +45,7 @@ jobs:
       store: ${{ steps.pick.outputs.store }}
       admin: ${{ steps.pick.outputs.admin }}
       seller: ${{ steps.pick.outputs.seller }}
+      website: ${{ steps.pick.outputs.website }}
     steps:
       - uses: actions/checkout@v4
       # Diff against the previous tip of `production` (not main), so a full
@@ -64,6 +66,8 @@ jobs:
               - 'maretinda-admin/**'
             seller:
               - 'maretinda-seller/**'
+            website:
+              - 'maretinda-website/**'
       - id: pick
         env:
           EVENT: ${{ github.event_name }}
@@ -73,8 +77,9 @@ jobs:
           F_STORE: ${{ steps.filter.outputs.store }}
           F_ADMIN: ${{ steps.filter.outputs.admin }}
           F_SELLER: ${{ steps.filter.outputs.seller }}
+          F_WEBSITE: ${{ steps.filter.outputs.website }}
         run: |
-          for s in config backend store admin seller; do
+          for s in config backend store admin seller website; do
             if [ "$EVENT" = workflow_dispatch ]; then
               name=$s; [ "$s" = config ] && name=server-config
               # Server deploys always sync the compose files first
@@ -266,3 +271,38 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy maretinda-seller/dist --project-name=maretinda-seller --branch=main
+
+  # ── Marketing website, about.maretinda.com (static export) → Cloudflare Pages
+  website:
+    needs: changes
+    if: ${{ needs.changes.outputs.website == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maretinda-website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: maretinda-website/package-lock.json
+      - run: npm ci --legacy-peer-deps
+      - run: npm run build
+        env:
+          NEXT_OUTPUT: export
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_STORE_URL: ${{ env.STORE_URL }}
+          NEXT_PUBLIC_SELLER_URL: https://seller.maretinda.com
+      # Creates the Pages project on the first deploy; fails harmlessly once it exists
+      - uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create maretinda-website --production-branch=main
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy maretinda-website/out --project-name=maretinda-website --branch=main

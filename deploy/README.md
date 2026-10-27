@@ -8,6 +8,7 @@ Production moves off GCP to a single droplet. Target cost: **~$24/month** plus p
 | Storefront (Next.js) | Droplet, Docker | maretinda.com |
 | Postgres 17 + pgvector, Redis | Droplet, Docker | — (not exposed) |
 | Admin panel, seller panel | Cloudflare Pages | admin.maretinda.com, seller.maretinda.com |
+| Marketing website (static export) | Cloudflare Pages | about.maretinda.com |
 | Uploaded images, videos, seller documents | Cloudflare R2 bucket `maretinda-media` | media.maretinda.com |
 | Nightly DB backups | Cloudflare R2 bucket `maretinda-backups` | — |
 
@@ -38,7 +39,7 @@ Files here:
 2. SSL/TLS → Overview → mode **Full (strict)**.
 3. SSL/TLS → Origin Server → **Create certificate** for `maretinda.com, *.maretinda.com`, 15 years. Save the two blocks as `origin.pem` and `origin.key`.
 4. R2 → enable it, create buckets **`maretinda-backups`** and **`maretinda-media`** (location hint: Asia-Pacific). On `maretinda-media` → Settings → **Custom Domains** → connect `media.maretinda.com` (this makes the media public; backups stay private). Then *Manage R2 API tokens* → **Object Read & Write**, scoped to those two buckets. Note the Access Key ID, Secret, and Account ID.
-5. Workers & Pages → create two **Pages** projects by *Direct Upload*: `maretinda-admin` and `maretinda-seller`, production branch `main`. In each, Custom domains → add `admin.maretinda.com` / `seller.maretinda.com`.
+5. Workers & Pages → create three **Pages** projects by *Direct Upload*: `maretinda-admin`, `maretinda-seller` and `maretinda-website`, production branch `main`. In each, Custom domains → add `admin.maretinda.com` / `seller.maretinda.com` / `about.maretinda.com`. (CI also creates a missing project on its first deploy, but the custom domain is always a dashboard step.)
 6. My Profile → API Tokens → create a token with **Account › Cloudflare Pages › Edit** (for CI).
 
 **DigitalOcean**
@@ -83,7 +84,7 @@ The restore prints any SQL errors. Errors mentioning `cloudsql*` roles or "alrea
 | A | `api` | droplet IP |
 | CNAME | `www` | `maretinda.com` |
 
-(`admin` and `seller` records are created by Pages in step 1.5.)
+(`admin`, `seller` and `about` records are created by Pages in step 1.5.)
 
 ## 3. CI
 
