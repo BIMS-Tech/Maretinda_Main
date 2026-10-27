@@ -47,16 +47,17 @@ WORKDIR /app/src/modules/payment-giyapay
 RUN npm install
 RUN npm run build
 
-# Build file-gcs module
+# Build file-gcs and notification-resend modules (dist is excluded by
+# .dockerignore, so they must be compiled here). No per-module `npm install`:
+# neither has a lockfile, so it re-resolved "@medusajs/framework@^2.0.0" to the
+# newest release on every build and broke when npm could not resolve it. Their
+# dependencies are all in the root package.json, which is also what they load
+# at runtime, so compile them with the root TypeScript.
 WORKDIR /app/src/modules/file-gcs
-RUN npm install
-RUN npm run build
+RUN /app/node_modules/.bin/tsc -p tsconfig.json --outDir dist
 
-# Build notification-resend module (dist is excluded by .dockerignore, so it
-# must be compiled here; medusa-config resolves ./src/modules/notification-resend)
 WORKDIR /app/src/modules/notification-resend
-RUN npm install
-RUN npx tsc -p tsconfig.json
+RUN /app/node_modules/.bin/tsc -p tsconfig.json
 
 # Build main application
 WORKDIR /app
