@@ -41,6 +41,12 @@ if [ "$SERVICE" = backend ]; then
     rollback_tag
     exit 1
   fi
+  # db:migrate skips src/migrations; this applies each of those once
+  if ! docker compose run --rm --no-deps backend node .medusa/server/src/scripts/run-custom-migrations.js; then
+    echo "custom migration failed — keeping the previous version" >&2
+    rollback_tag
+    exit 1
+  fi
   # `config --services` lists only services in active profiles
   if docker compose config --services | grep -qx worker; then
     SERVICES+=(worker)
