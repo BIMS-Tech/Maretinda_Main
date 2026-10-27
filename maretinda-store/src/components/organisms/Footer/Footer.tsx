@@ -233,7 +233,7 @@ export function Footer() {
 					<div className="flex items-center gap-4 text-[11.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
 						<Link href="/privacy" className="hover:text-[#FFC533] transition-colors">Privacy</Link>
 						<Link href="/terms" className="hover:text-[#FFC533] transition-colors">Terms</Link>
-						<Link href="/cookies" className="hover:text-[#FFC533] transition-colors">Cookies</Link>
+						<Link href="/privacy#collect"className="hover:text-[#FFC533] transition-colors">Cookies</Link>
 					</div>
 				</div>
 			</div>
