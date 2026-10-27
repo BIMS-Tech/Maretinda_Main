@@ -9,7 +9,10 @@ const ProductTabDetails = ({
 		attribute_values?: AdditionalAttributeProps[];
 	};
 }) => {
-	const metaItems = product.metadata
+	// Only the legacy [{ key, value }] form is shown. Medusa metadata is
+	// normally an object, and the backend keeps internal values there
+	// (trending_score, avg_rating, ...) that buyers should not see.
+	const metaItems = Array.isArray(product.metadata)
 		? (
 				product.metadata as unknown as {
 					key: string;
