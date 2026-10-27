@@ -19,6 +19,12 @@ module.exports = defineConfig({
     ...(process.env.DB_HOST ? {
       databaseDriverOptions: { host: process.env.DB_HOST }
     } : {}),
+    // Modules default to SSL for any database host other than localhost (the
+    // URL's ssl_mode is stripped before they see it), so the DigitalOcean
+    // compose stack's private Postgres needs SSL turned off explicitly.
+    ...(process.env.DATABASE_SSL === 'false' ? {
+      databaseDriverOptions: { connection: { ssl: false } }
+    } : {}),
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
