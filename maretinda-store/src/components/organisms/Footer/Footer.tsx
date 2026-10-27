@@ -8,6 +8,10 @@ const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
 const SELLER_DASHBOARD_URL = `${SELLER_PANEL_URL}/dashboard`;
 const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
+// BIR registration of the operating company — same seal and RSN as the marketing site footer.
+const OPERATOR_NAME = 'BIMS Technologies, Inc.';
+const BIR_RSN = '081RC20230000006303';
+
 const SHOP_LINKS = [
 	{ label: 'New arrivals', href: '/categories' },
 	{ label: 'Flash sales', href: '/flash-sale' },
@@ -222,13 +226,38 @@ export function Footer() {
 					</div>
 				</div>
 
+				{/* BIR registration */}
+				<div
+					className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center py-8"
+					style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
+				>
+					<div>
+						<h3 className="text-[15px] font-semibold text-white">BIR Registered Business</h3>
+						<p className="mt-2 text-[13px] leading-relaxed max-w-[480px]" style={{ color: 'rgba(255,255,255,0.60)' }}>
+							Maretinda is operated by {OPERATOR_NAME}, registered with the Bureau of Internal Revenue of the
+							Philippines. Scan the QR code to verify our registration.
+						</p>
+						<p className="mt-3 text-[13px] font-semibold tracking-wide text-white">RSN {BIR_RSN}</p>
+					</div>
+					<div className="w-full max-w-[420px] lg:justify-self-end rounded-xl bg-white p-3">
+						<Image
+							src="/certificates/bir-registration-seal.png"
+							alt={`BIR registered business seal for ${OPERATOR_NAME}, RSN ${BIR_RSN}, with verification QR code`}
+							width={1540}
+							height={480}
+							sizes="420px"
+							className="w-full h-auto"
+						/>
+					</div>
+				</div>
+
 				{/* Legal bottom bar */}
 				<div
 					className="flex flex-col sm:flex-row items-center justify-between gap-3 py-4"
 					style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
 				>
 					<p className="text-[11.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-						© 2026 Maretinda Inc. · DTI 123-4567-89 · BIR 001-234-567 · Powered by BIMS Technologies
+						© {new Date().getFullYear()} Maretinda · Operated by {OPERATOR_NAME} All rights reserved.
 					</p>
 					<div className="flex items-center gap-4 text-[11.5px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
 						<Link href="/privacy" className="hover:text-[#FFC533] transition-colors">Privacy</Link>

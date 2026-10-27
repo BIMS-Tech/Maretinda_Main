@@ -19,36 +19,24 @@ export default function BlogIndex() {
     <>
       <Navbar />
       <main>
-        {/* Hero header (dark, so the transparent navbar stays legible) */}
-        <section
-          className="relative pt-[132px] pb-16 overflow-hidden"
-          style={{ background: "linear-gradient(150deg,#2A1B3E,#432C63 60%,#5C3E88)" }}
-        >
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 50% 50% at 100% 0%, rgba(255,197,51,.10) 0%, transparent 60%)",
-            }}
-          />
-          <div className="relative z-10 max-w-[1160px] mx-auto px-6 text-center">
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-brand-yellow bg-white/10 border border-white/15 px-3.5 py-1.5 rounded-full mb-4">
-              Maretinda Blog
-            </span>
+        {/* Hero header */}
+        <section className="bg-paper pt-[132px] pb-14 border-b border-line">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
+            <p className="eyebrow text-brand-purple">Maretinda blog</p>
             <h1
-              className="font-display font-bold text-white leading-tight mb-3"
-              style={{ fontSize: "clamp(2rem,4vw,3rem)", letterSpacing: "-0.02em" }}
+              className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
+              style={{ fontSize: "clamp(38px, 5vw, 64px)" }}
             >
-              Stories &amp; guides for Filipino sellers
+              Stories &amp; guides for Filipino sellers.
             </h1>
-            <p className="text-white/55 text-[15px] max-w-[520px] mx-auto leading-relaxed">
+            <p className="mt-4 text-muted text-[16px] max-w-[560px] leading-relaxed">
               Practical advice on pricing, growth, shipping, and everything else
               that helps your shop succeed.
             </p>
           </div>
         </section>
 
-        <div className="max-w-[1160px] mx-auto px-6 py-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-16">
           {/* Featured post */}
           <Link
             href={`/blogs/${featured.slug}`}

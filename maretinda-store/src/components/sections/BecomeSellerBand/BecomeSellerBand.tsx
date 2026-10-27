@@ -1,8 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
+// Same env vars and production fallbacks as the Footer.
+const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
+const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
+const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
 // Launch-stage value props instead of vanity scale metrics — honest for a new platform.
 // These restate claims already made elsewhere on this section (free trial, no listing
@@ -55,7 +57,7 @@ export const BecomeSellerBand = () => (
 							</svg>
 						</Link>
 						<Link
-							href={SELLER_REGISTER_URL}
+							href={`${ABOUT_SITE_URL}/#how-it-works`}
 							className="h-12 px-7 rounded-full text-[14px] font-bold border border-white/40 text-white hover:border-white hover:bg-white/10 transition-colors flex items-center gap-2"
 						>
 							How it works

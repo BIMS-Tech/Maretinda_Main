@@ -1,149 +1,106 @@
-"use client";
-
 import Image from "next/image";
-import {
-  FiFacebook, FiInstagram, FiTwitter,
-  FiArrowRight, FiMail, FiMapPin, FiPhone
-} from "react-icons/fi";
+import { FiFacebook, FiInstagram, FiArrowUpRight } from "react-icons/fi";
 import { RiTiktokLine } from "react-icons/ri";
 
-import { SELLER_LOGIN_URL, SELLER_REGISTER_URL } from "@/lib/site";
+import {
+  BIR_RSN,
+  BIR_SEAL_SRC,
+  CONTACT_EMAIL,
+  HELP_CENTER_URL,
+  OFFICE_ADDRESS,
+  OPERATOR_NAME,
+  PRIVACY_URL,
+  SELLER_LOGIN_URL,
+  SELLER_REGISTER_URL,
+  SOCIAL_LINKS,
+  STORE_URL,
+  TERMS_URL,
+} from "@/lib/site";
 
-const footerLinks = {
-  Platform: [
-    { label: "Features", href: "/#features" },
-    { label: "Pricing", href: "/#pricing" },
-    { label: "How It Works", href: "/#how-it-works" },
-    { label: "FAQ", href: "/#faq" },
-    { label: "Blog", href: "/blogs" },
-  ],
-  sellers: [
-    { label: "Start Selling", href: SELLER_REGISTER_URL },
-    { label: "Seller Portal", href: SELLER_LOGIN_URL },
-    { label: "Pricing", href: "/#pricing" },
-    { label: "Success Stories", href: "/#testimonials" },
-    { label: "Contact", href: "/contact" },
-  ],
-  Company: [
-    { label: "About Us", href: "/#about" },
-    { label: "Blog", href: "/blogs" },
-    { label: "Contact", href: "/contact" },
-    { label: "Pricing", href: "/#pricing" },
-    { label: "FAQ", href: "/#faq" },
-  ],
-  Legal: [
-    { label: "Terms of Service", href: "#" },
-    { label: "Privacy Policy", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-    { label: "seller Agreement", href: "#" },
-  ],
-};
-
-const socials = [
-  { label: "Facebook",  icon: FiFacebook,   href: "#" },
-  { label: "Instagram", icon: FiInstagram,  href: "#" },
-  { label: "Twitter",   icon: FiTwitter,    href: "#" },
-  { label: "TikTok",    icon: RiTiktokLine, href: "#" },
+const columns = [
+  {
+    title: "Sell",
+    links: [
+      { label: "Start selling", href: SELLER_REGISTER_URL },
+      { label: "Seller sign in", href: SELLER_LOGIN_URL },
+      { label: "Seller panel", href: "/#features" },
+      { label: "How it works", href: "/#how-it-works" },
+      { label: "Pricing", href: "/#pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Maretinda", href: "/#sellers" },
+      { label: "Blog", href: "/blogs" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Contact us", href: "/contact" },
+    ],
+  },
+  {
+    title: "Shop",
+    links: [
+      { label: "maretinda.com", href: STORE_URL },
+      { label: "Categories", href: `${STORE_URL}/categories` },
+      { label: "Flash sales", href: `${STORE_URL}/flash-sale` },
+      { label: "Help center", href: HELP_CENTER_URL },
+    ],
+  },
 ];
 
+const socialIcons = { Facebook: FiFacebook, Instagram: FiInstagram, TikTok: RiTiktokLine } as const;
+
 export default function Footer() {
+  const year = new Date().getFullYear();
+
   return (
-    <footer style={{ background: "#0D0A18" }} className="pt-16">
-      <div className="max-w-[1160px] mx-auto px-6">
-
-        {/* Newsletter bar */}
-        <div
-          className="rounded-3xl p-7 mb-14 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5"
-          style={{ background:"linear-gradient(135deg,#2A1B3E,#432C63)", border:"1px solid rgba(155,128,210,.2)" }}
-        >
-          <div>
-            <h4 className="font-display font-bold text-white text-[17px] mb-1">Get seller tips in your inbox</h4>
-            <p className="text-white/50 text-[13px]">Weekly insights on growing your online store in the Philippines.</p>
-          </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-[260px]">
-              <FiMail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/35" />
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="w-full pl-9 pr-4 py-3 rounded-xl text-[14px] text-white/80 outline-none placeholder-white/30"
-                style={{ background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)" }}
-              />
-            </div>
-            <button
-              className="flex-shrink-0 flex items-center gap-1.5 font-semibold text-[13px] px-4 py-3 rounded-xl text-[#2A1B3E] transition-all duration-200 hover:opacity-90"
-              style={{ background:"linear-gradient(135deg,#FFC533,#F2B230)" }}
-            >
-              Subscribe <FiArrowRight size={13} />
-            </button>
-          </div>
-        </div>
-
+    <footer className="bg-footer text-white">
+      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         {/* Main grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-10 pb-14 border-b border-white/6">
-          {/* Brand col */}
-          <div>
-            <div className="relative h-8 w-[148px] mb-5">
-              <Image
-                src="/Logo-maretinda-white.svg"
-                alt="Maretinda"
-                fill
-                className="object-contain object-left"
-              />
-            </div>
-            <p className="text-white/40 text-[13.5px] leading-[1.7] mb-5 max-w-[230px]">
-              The Philippines&apos; most powerful platform for sellers to grow, sell, and succeed online.
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-10 pt-16 pb-14">
+          <div className="col-span-2 md:col-span-5 lg:col-span-4">
+            <a href="/" className="relative block h-9 w-[160px]" aria-label="Maretinda for sellers — home">
+              <Image src="/Logo-maretinda-white.svg" alt="Maretinda" fill className="object-contain object-left" />
+            </a>
+            <p className="mt-5 text-[14.5px] leading-[1.7] text-white/65 max-w-[340px]">
+              The Philippine marketplace for local shops. Open yours, list your products, and sell
+              to buyers nationwide.
             </p>
-
-            {/* Contact info */}
-            <div className="flex flex-col gap-2 mb-6">
-              {[
-                { icon: FiMail, text: "hello@maretinda.com" },
-                { icon: FiPhone, text: "+63 2 8888 0000" },
-                { icon: FiMapPin, text: "Makati City, Philippines" },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 text-[13px] text-white/38">
-                  <Icon size={12} className="text-brand-yellow/60 flex-shrink-0" />
-                  {text}
-                </div>
-              ))}
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              <a
+                href={SELLER_REGISTER_URL}
+                className="inline-flex items-center h-10 px-5 rounded-full text-[13.5px] font-bold bg-brand-yellow text-brand-purple hover:bg-white transition-colors"
+              >
+                Start selling
+              </a>
+              <a
+                href={STORE_URL}
+                className="inline-flex items-center gap-1 h-10 px-5 rounded-full text-[13.5px] font-semibold border border-white/25 hover:border-white transition-colors"
+              >
+                Shop Maretinda <FiArrowUpRight size={14} />
+              </a>
             </div>
-
-            {/* Socials */}
-            <div className="flex gap-2.5">
-              {socials.map(({ label, icon: Icon, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white/40 transition-all duration-200 hover:text-white hover:-translate-y-0.5"
-                  style={{ background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.07)" }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = "#432C63";
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor = "#432C63";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = "rgba(255,255,255,.05)";
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(255,255,255,.07)";
-                  }}
-                >
-                  <Icon size={15} />
-                </a>
-              ))}
-            </div>
+            {SOCIAL_LINKS.length > 0 && (
+              <div className="mt-6 flex items-center gap-4">
+                {SOCIAL_LINKS.map(({ label, href }) => {
+                  const Icon = socialIcons[label as keyof typeof socialIcons];
+                  return (
+                    <a key={label} href={href} aria-label={label} className="text-white/80 hover:text-brand-yellow transition-colors">
+                      <Icon size={22} />
+                    </a>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Link columns */}
-          {Object.entries(footerLinks).map(([title, links]) => (
-            <div key={title}>
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-white/28 mb-4">{title}</h4>
-              <ul className="flex flex-col gap-2">
-                {links.map((link) => (
+          {columns.map((col) => (
+            <div key={col.title} className="md:col-span-2">
+              <h4 className="text-[15px] font-semibold text-white">{col.title}</h4>
+              <ul className="mt-5 flex flex-col gap-3">
+                {col.links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-[13.5px] text-white/42 transition-all duration-200 hover:text-white hover:pl-1 inline-block"
-                    >
+                    <a href={link.href} className="text-[14.5px] text-white/70 hover:text-brand-yellow transition-colors">
                       {link.label}
                     </a>
                   </li>
@@ -151,12 +108,49 @@ export default function Footer() {
               </ul>
             </div>
           ))}
+
+          <div className="col-span-2 md:col-span-12 lg:col-span-2">
+            <h4 className="text-[15px] font-semibold text-white">Visit us</h4>
+            <p className="mt-5 text-[14px] leading-[1.65] text-white/70">{OFFICE_ADDRESS}</p>
+            <a href={`mailto:${CONTACT_EMAIL}`} className="mt-3 inline-block text-[14px] text-white/70 hover:text-brand-yellow transition-colors break-all">
+              {CONTACT_EMAIL}
+            </a>
+          </div>
+        </div>
+
+        {/* BIR registration */}
+        <div className="border-t border-white/12 py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-6">
+            <h4 className="text-[17px] font-semibold">BIR Registered Business</h4>
+            <p className="mt-3 text-[14.5px] leading-[1.7] text-white/70 max-w-[520px]">
+              Maretinda is operated by {OPERATOR_NAME}, registered with the Bureau of Internal
+              Revenue of the Philippines. Scan the QR code to verify our registration.
+            </p>
+            <p className="mt-4 text-[14px] font-semibold tracking-wide">RSN {BIR_RSN}</p>
+          </div>
+          <div className="lg:col-span-6 lg:justify-self-end w-full max-w-[460px]">
+            <div className="rounded-2xl bg-white p-3 sm:p-4">
+              <Image
+                src={BIR_SEAL_SRC}
+                alt={`BIR registered business seal for ${OPERATOR_NAME}, RSN ${BIR_RSN}, with verification QR code`}
+                width={1540}
+                height={480}
+                sizes="460px"
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 py-5 text-[12.5px] text-white/25">
-          <p>© 2025 Maretinda. All rights reserved. Made with ❤️ in the Philippines 🇵🇭</p>
-          <p>Empowering Filipino entrepreneurs, one store at a time.</p>
+        <div className="border-t border-white/12 py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13.5px] text-white/60">
+          <p>
+            © {year} Maretinda · Operated by {OPERATOR_NAME} All rights reserved.
+          </p>
+          <div className="flex items-center gap-6">
+            <a href={PRIVACY_URL} className="hover:text-white transition-colors">Privacy Policy</a>
+            <a href={TERMS_URL} className="hover:text-white transition-colors">Terms of Use</a>
+          </div>
         </div>
       </div>
     </footer>
