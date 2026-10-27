@@ -11498,6 +11498,8 @@ __metadata:
   resolution: "medusa-starter-default@workspace:."
   dependencies:
     "@anthropic-ai/sdk": ^0.112.4
+    "@aws-sdk/client-s3": ^3.556.0
+    "@aws-sdk/s3-request-presigner": ^3.556.0
     "@google-cloud/storage": ^7.18.0
     "@medusajs/admin-sdk": 2.11.2
     "@medusajs/auth-emailpass": ^2.13.4

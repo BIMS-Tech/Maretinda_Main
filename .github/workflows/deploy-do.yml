@@ -1,0 +1,246 @@
+name: Deploy to DigitalOcean (production)
+
+# Successor to prod-deploy.yml (GCP). See deploy/README.md.
+#
+# - Manual runs (Actions tab → Run workflow) always work: use them for the
+#   first deploy and for testing before cutover.
+# - Pushes to `production` deploy only once the repository variable
+#   DO_DEPLOY_ENABLED is "true". Flip it at cutover and disable
+#   prod-deploy.yml in the same step, so the two pipelines never both run.
+#
+# backend and store images are built here and streamed to the server over SSH
+# (docker save | docker load), so there is no container registry to pay for.
+# admin and seller are static builds published to Cloudflare Pages.
+on:
+  push:
+    branches: [production]
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "What to deploy"
+        type: choice
+        options: [all, backend, store, admin, seller, server-config]
+        default: all
+
+concurrency:
+  group: do-deploy
+  cancel-in-progress: false
+
+env:
+  API_URL: https://api.maretinda.com
+  STORE_URL: https://maretinda.com
+  PUBLISHABLE_KEY: pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27
+  ALGOLIA_ID: S9HSUC6UM1
+  ALGOLIA_SEARCH_KEY: f5416cfd0b945c3d7fc8c88942b5084d
+  TALKJS_APP_ID: t7Ja6Dzg
+
+jobs:
+  changes:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.DO_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      config: ${{ steps.pick.outputs.config }}
+      backend: ${{ steps.pick.outputs.backend }}
+      store: ${{ steps.pick.outputs.store }}
+      admin: ${{ steps.pick.outputs.admin }}
+      seller: ${{ steps.pick.outputs.seller }}
+    steps:
+      - uses: actions/checkout@v4
+      # Diff against the previous tip of `production` (not main), so a full
+      # main → production merge still deploys what changed.
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: ${{ github.event_name == 'push' }}
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            config:
+              - 'deploy/**'
+            backend:
+              - 'backend/**'
+            store:
+              - 'maretinda-store/**'
+            admin:
+              - 'maretinda-admin/**'
+            seller:
+              - 'maretinda-seller/**'
+      - id: pick
+        env:
+          EVENT: ${{ github.event_name }}
+          SELECTED: ${{ github.event.inputs.services }}
+          F_CONFIG: ${{ steps.filter.outputs.config }}
+          F_BACKEND: ${{ steps.filter.outputs.backend }}
+          F_STORE: ${{ steps.filter.outputs.store }}
+          F_ADMIN: ${{ steps.filter.outputs.admin }}
+          F_SELLER: ${{ steps.filter.outputs.seller }}
+        run: |
+          for s in config backend store admin seller; do
+            if [ "$EVENT" = workflow_dispatch ]; then
+              name=$s; [ "$s" = config ] && name=server-config
+              # Server deploys always sync the compose files first
+              if [ "$SELECTED" = all ] || [ "$SELECTED" = "$name" ] \
+                || { [ "$s" = config ] && { [ "$SELECTED" = backend ] || [ "$SELECTED" = store ]; }; }; then
+                v=true
+              else
+                v=false
+              fi
+            else
+              var="F_${s^^}"; v=${!var:-false}
+            fi
+            echo "$s=$v" >> "$GITHUB_OUTPUT"
+          done
+
+  # ── Compose file, Caddyfile and scripts → /opt/maretinda ────────────────
+  config:
+    needs: changes
+    if: ${{ needs.changes.outputs.config == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH access
+        env:
+          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DO_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Sync and reload
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+        run: |
+          # No --delete: .env, backend.env and certs/ exist only on the server
+          rsync -rlt --exclude README.md --exclude '*.example' --exclude .gitignore \
+            deploy/ "deploy@$HOST:/opt/maretinda/"
+          # Recreates caddy/postgres/redis only if their definition changed;
+          # backend/store are switched by release.sh, not here.
+          ssh "deploy@$HOST" 'cd /opt/maretinda && chmod +x scripts/*.sh \
+            && docker compose up -d postgres redis caddy \
+            && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile'
+
+  # ── Backend (Medusa): build → load on server → migrate → swap ───────────
+  backend:
+    needs: [changes, config]
+    if: ${{ !cancelled() && needs.changes.outputs.backend == 'true' && needs.config.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          tags: maretinda/backend:${{ github.sha }}
+          load: true
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+      - name: SSH access
+        env:
+          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DO_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Ship image and release
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+        run: |
+          docker save "maretinda/backend:$GITHUB_SHA" | gzip | ssh "deploy@$HOST" 'gunzip | docker load'
+          ssh "deploy@$HOST" "/opt/maretinda/scripts/release.sh backend $GITHUB_SHA"
+
+  # ── Storefront (Next.js SSR) ─────────────────────────────────────────────
+  store:
+    needs: [changes, config]
+    if: ${{ !cancelled() && needs.changes.outputs.store == 'true' && needs.config.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./maretinda-store
+          tags: maretinda/store:${{ github.sha }}
+          load: true
+          cache-from: type=gha,scope=store
+          cache-to: type=gha,mode=max,scope=store
+          build-args: |
+            NEXT_PUBLIC_MEDUSA_BACKEND_URL=${{ env.API_URL }}
+            MEDUSA_BACKEND_URL=${{ env.API_URL }}
+            NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${{ env.PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_BASE_URL=${{ env.STORE_URL }}
+            NEXT_PUBLIC_DEFAULT_REGION=ph
+            NEXT_PUBLIC_SITE_NAME=Maretinda
+            NEXT_PUBLIC_ALGOLIA_ID=${{ env.ALGOLIA_ID }}
+            NEXT_PUBLIC_ALGOLIA_SEARCH_KEY=${{ env.ALGOLIA_SEARCH_KEY }}
+            NEXT_PUBLIC_TALKJS_APP_ID=${{ env.TALKJS_APP_ID }}
+      - name: SSH access
+        env:
+          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DO_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Ship image and release
+        env:
+          HOST: ${{ secrets.DO_HOST }}
+        run: |
+          docker save "maretinda/store:$GITHUB_SHA" | gzip | ssh "deploy@$HOST" 'gunzip | docker load'
+          ssh "deploy@$HOST" "/opt/maretinda/scripts/release.sh store $GITHUB_SHA"
+
+  # ── Admin panel (static) → Cloudflare Pages ─────────────────────────────
+  admin:
+    needs: changes
+    if: ${{ needs.changes.outputs.admin == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maretinda-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: maretinda-admin/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build:preview
+        env:
+          VITE_MEDUSA_BACKEND_URL: ${{ env.API_URL }}
+          VITE_MEDUSA_STOREFRONT_URL: ${{ env.STORE_URL }}
+          VITE_MEDUSA_BASE: /
+          VITE_MEDUSA_B2B_PANEL: "true"
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy maretinda-admin/dist --project-name=maretinda-admin --branch=main
+
+  # ── Seller panel (static) → Cloudflare Pages ────────────────────────────
+  seller:
+    needs: changes
+    if: ${{ needs.changes.outputs.seller == 'true' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: maretinda-seller
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: maretinda-seller/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build:preview
+        env:
+          VITE_MEDUSA_BACKEND_URL: ${{ env.API_URL }}
+          VITE_MEDUSA_STOREFRONT_URL: ${{ env.STORE_URL }}
+          VITE_MEDUSA_BASE: /
+          VITE_MEDUSA_B2B_PANEL: "false"
+          VITE_PUBLISHABLE_API_KEY: ${{ env.PUBLISHABLE_KEY }}
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy maretinda-seller/dist --project-name=maretinda-seller --branch=main
