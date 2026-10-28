@@ -84,7 +84,11 @@ fi
 
 # Key-only SSH
 sed -i 's/^#\?PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
-systemctl reload ssh
+# Ubuntu 24.04 can run sshd per connection (ssh.socket), which reads the
+# config each time; reload only a running daemon
+if systemctl is-active --quiet ssh; then
+  systemctl reload ssh
+fi
 
 install -d -o deploy -g deploy /opt/maretinda /opt/maretinda/scripts /opt/maretinda/certs /var/backups/maretinda
 chmod 700 /opt/maretinda/certs
