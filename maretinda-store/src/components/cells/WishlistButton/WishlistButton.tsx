@@ -55,10 +55,7 @@ export const WishlistButton = ({
 						reference: 'product',
 						reference_id: productId,
 					})
-				: await removeWishlistItem({
-						product_id: productId,
-						wishlist_id: wishlist?.[0]?.id,
-					});
+				: await removeWishlistItem({ product_id: productId });
 			if (!result.ok) {
 				setIsWishlisted(!adding);
 				if (result.status === 401) sendToLogin();

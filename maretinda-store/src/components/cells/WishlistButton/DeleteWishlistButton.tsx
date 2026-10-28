@@ -31,10 +31,7 @@ export const DeleteWishlistButton = ({
 			setIsWishlistAdding(true);
 
 			// On success the action refreshes the page, which drops this card
-			const result = await removeWishlistItem({
-				product_id: productId,
-				wishlist_id: wishlist?.[0]?.id,
-			});
+			const result = await removeWishlistItem({ product_id: productId });
 			if (!result.ok) {
 				console.error(`Removing from wishlist failed (${result.status})`);
 			}
