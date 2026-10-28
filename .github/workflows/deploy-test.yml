@@ -1,0 +1,66 @@
+name: Deploy backend to test (Oracle)
+
+# Pushes to `main` rebuild the test backend at test-api.maretinda.com. The
+# test store, seller and admin panels are on Vercel and point at it.
+# Replaces backend-deploy.yml (Cloud Run in the maretinda-test GCP project,
+# gone since Oct 2026).
+#
+# The test server is an Oracle Cloud Always Free Ampere VM, which is ARM, so
+# the image is built on the server itself; building ARM on GitHub's x86
+# runners needs slow emulation. Only backend/ is sent (git archive), so the
+# server needs no repository access and there is no registry.
+#
+# Manual runs always work. Pushes deploy once the repository variable
+# TEST_DEPLOY_ENABLED is "true", so `main` stays green until the server exists.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "deploy/**"
+      - ".github/workflows/deploy-test.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: test-deploy
+  cancel-in-progress: false
+
+jobs:
+  backend:
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.TEST_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      HOST: ${{ secrets.TEST_HOST }}
+    steps:
+      - uses: actions/checkout@v4
+      # Same CI key as production; its public half is in the test server's
+      # /home/deploy/.ssh/authorized_keys
+      - name: SSH access
+        env:
+          SSH_KEY: ${{ secrets.DO_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.TEST_SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Sync server config
+        run: |
+          # No --delete: .env, backend.env and certs/ exist only on the server
+          rsync -rlt --exclude README.md --exclude '*.example' --exclude .gitignore \
+            --exclude gcp-export deploy/ "deploy@$HOST:/opt/maretinda/"
+          ssh "deploy@$HOST" 'cd /opt/maretinda && chmod +x scripts/*.sh \
+            && docker compose up -d --wait postgres redis \
+            && if [ -f certs/origin.pem ] && [ -f certs/origin.key ]; then \
+                 docker compose up -d caddy \
+                 && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile; \
+               else \
+                 echo "::warning::certs/origin.pem or origin.key missing on the server, Caddy not started"; \
+               fi'
+      - name: Build on the server
+        run: |
+          git archive --format=tar HEAD backend \
+            | ssh "deploy@$HOST" 'rm -rf ~/build && mkdir -p ~/build && tar -x -C ~/build'
+          # The server's layer cache makes rebuilds after the first one quick
+          ssh "deploy@$HOST" "docker build -t maretinda/backend:$GITHUB_SHA ~/build/backend"
+      - name: Release
+        run: ssh "deploy@$HOST" "/opt/maretinda/scripts/release.sh backend $GITHUB_SHA"
