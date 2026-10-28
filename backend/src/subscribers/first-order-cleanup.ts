@@ -3,6 +3,7 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { FIRST_TIME_BUYERS_GROUP } from "./customer-created"
 
 /**
@@ -12,22 +13,26 @@ import { FIRST_TIME_BUYERS_GROUP } from "./customer-created"
 export default async function firstOrderCleanupHandler({
   event: { data },
   container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs<OrderPlacedData>) {
   try {
-    const orderId = data.id
+    const orderIds = placedOrderIds(data)
+    if (!orderIds.length) return
+
     const orderService = container.resolve(Modules.ORDER)
-    const order = await orderService.retrieveOrder(orderId)
+    const order = await orderService.retrieveOrder(orderIds[0])
 
     if (!order.customer_id) return
 
     const customerService = container.resolve(Modules.CUSTOMER)
 
-    // Count this customer's orders — if this is their first, clean up group
+    // Count this customer's orders — if this is their first checkout, clean
+    // up the group. A first checkout split across sellers creates several
+    // orders in one event, so compare against this event's order count.
     const [, orderCount] = await orderService.listAndCountOrders({
       customer_id: order.customer_id,
     })
 
-    if (orderCount !== 1) return
+    if (orderCount !== orderIds.length) return
 
     const groups = await customerService.listCustomerGroups({
       name: FIRST_TIME_BUYERS_GROUP,
