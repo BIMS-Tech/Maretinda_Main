@@ -4,6 +4,10 @@
 #   scp deploy/scripts/bootstrap-server.sh root@<droplet-ip>:
 #   ssh root@<droplet-ip> bash bootstrap-server.sh
 #
+# Test server (Oracle Cloud, no nightly backups into the production bucket):
+#
+#   ssh ubuntu@<ip> sudo MARETINDA_ENV=test bash bootstrap-server.sh
+#
 # Safe to re-run. Creates the `deploy` user that CI logs in as.
 set -euo pipefail
 
@@ -37,6 +41,17 @@ cat > /etc/docker/daemon.json << 'JSON'
 JSON
 systemctl restart docker
 
+# Oracle Cloud's Ubuntu images ship iptables rules that reject everything but
+# SSH, on top of the VCN security list. Open 80/443 ahead of the REJECT rule
+# and persist it; other providers have no such rules file.
+if [ -f /etc/iptables/rules.v4 ] && grep -q -- '-j REJECT' /etc/iptables/rules.v4; then
+  for port in 80 443; do
+    iptables -C INPUT -p tcp --dport "$port" -m state --state NEW -j ACCEPT 2> /dev/null \
+      || iptables -I INPUT 5 -p tcp --dport "$port" -m state --state NEW -j ACCEPT
+  done
+  netfilter-persistent save
+fi
+
 # 2 GB swap: headroom for memory spikes on a 4 GB droplet
 if ! swapon --show | grep -q /swapfile; then
   fallocate -l 2G /swapfile
@@ -54,8 +69,14 @@ if ! id deploy > /dev/null 2>&1; then
 fi
 usermod -aG docker deploy
 install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
-if [ -f /root/.ssh/authorized_keys ]; then
-  cat /root/.ssh/authorized_keys >> /home/deploy/.ssh/authorized_keys
+# Under sudo (Oracle's `ubuntu` user) copy that user's keys: Oracle prefixes
+# root's keys with a command that refuses the login
+KEYS=/root/.ssh/authorized_keys
+if [ -n "${SUDO_USER:-}" ] && [ -f "/home/$SUDO_USER/.ssh/authorized_keys" ]; then
+  KEYS="/home/$SUDO_USER/.ssh/authorized_keys"
+fi
+if [ -f "$KEYS" ]; then
+  cat "$KEYS" >> /home/deploy/.ssh/authorized_keys
   sort -u -o /home/deploy/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
   chown deploy:deploy /home/deploy/.ssh/authorized_keys
   chmod 600 /home/deploy/.ssh/authorized_keys
@@ -68,9 +89,12 @@ systemctl reload ssh
 install -d -o deploy -g deploy /opt/maretinda /opt/maretinda/scripts /opt/maretinda/certs /var/backups/maretinda
 chmod 700 /opt/maretinda/certs
 
-# Nightly backup at 19:00 UTC (03:00 Manila)
-CRON='0 19 * * * /opt/maretinda/scripts/backup-db.sh >> /var/backups/maretinda/backup.log 2>&1'
-( crontab -u deploy -l 2> /dev/null | grep -v backup-db.sh || true; echo "$CRON" ) | crontab -u deploy -
+# Nightly backup at 19:00 UTC (03:00 Manila). Not on the test server: its
+# data is a scrubbed copy of production, and the backup bucket is production's.
+if [ "${MARETINDA_ENV:-production}" != test ]; then
+  CRON='0 19 * * * /opt/maretinda/scripts/backup-db.sh >> /var/backups/maretinda/backup.log 2>&1'
+  ( crontab -u deploy -l 2> /dev/null | grep -v backup-db.sh || true; echo "$CRON" ) | crontab -u deploy -
+fi
 
 echo
 echo "Server ready. Next: copy the deploy/ folder to /opt/maretinda and add .env, backend.env and certs/ (see deploy/README.md)."
