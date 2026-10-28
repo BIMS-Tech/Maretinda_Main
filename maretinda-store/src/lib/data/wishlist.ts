@@ -87,11 +87,8 @@ export const addWishlistItem = async ({
 };
 
 export const removeWishlistItem = async ({
-	wishlist_id,
 	product_id,
 }: {
-	// Callers rendered before the customer's first add have no id yet
-	wishlist_id?: string;
 	product_id: string;
 }): Promise<WishlistActionResult> => {
 	const headers = {
@@ -101,13 +98,10 @@ export const removeWishlistItem = async ({
 			.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
 	};
 
-	const id = wishlist_id || (await getUserWishlists()).wishlists[0]?.id;
-	if (!id) {
-		return { ok: false, status: 404 };
-	}
-
+	// Mercur 1.5 finds the wishlist from the signed-in customer; the old
+	// /store/wishlist/:id/product/:reference_id route no longer exists
 	const response = await fetch(
-		`${process.env.MEDUSA_BACKEND_URL}/store/wishlist/${id}/product/${product_id}`,
+		`${process.env.MEDUSA_BACKEND_URL}/store/wishlist/product/${product_id}`,
 		{
 			headers,
 			method: 'DELETE',
