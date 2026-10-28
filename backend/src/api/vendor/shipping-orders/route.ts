@@ -70,6 +70,21 @@ function normalizeAddress(a: any = {}) {
   }
 }
 
+/**
+ * Flying Tigers only accepts PH mobiles as +639XXXXXXXXX. Sellers and buyers
+ * usually type the local 09XX form, so convert the common spellings and
+ * return null for anything that is not a PH mobile.
+ */
+function toPhMobile(phone: string): string | null {
+  const digits = String(phone ?? '').replace(/[^\d]/g, '')
+  const local = digits.startsWith('63')
+    ? digits.slice(2)
+    : digits.startsWith('0')
+      ? digits.slice(1)
+      : digits
+  return /^9\d{9}$/.test(local) ? `+63${local}` : null
+}
+
 /** Normalize parcel dimensions/weight, accepting multiple field spellings. */
 function normalizeParcel(p: any = {}) {
   const num = (...vals: any[]) => {
@@ -325,6 +340,19 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         const ftTo = normalizeAddress(orderData.to)
         const ftParcel = normalizeParcel(orderData.parcel)
 
+        const senderMobile = toPhMobile(ftFrom.phone)
+        const receiverMobile = toPhMobile(ftTo.phone)
+        for (const [who, raw, mobile] of [
+          ['Sender', ftFrom.phone, senderMobile],
+          ['Recipient', ftTo.phone, receiverMobile],
+        ] as const) {
+          if (!mobile) {
+            return res.status(400).json({
+              message: `${who} phone "${raw}" is not a Philippine mobile number. Use 09XX XXX XXXX or +63 9XX XXX XXXX.`,
+            })
+          }
+        }
+
         // Map our service level to FT's deliveryType. FT only accepts
         // "intra city" | "next day" | "same day" — it has no "standard"/
         // "express", so those map to the closest supported option (next day).
@@ -367,8 +395,8 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           declaredValueInPesos: ftParcel.declared_value ?? 0,
           isCashOnDelivery: ftParcel.is_cod ?? false,
           remarks: ftParcel.description,
-          sender: toFtAddress(ftFrom, orderData.from),
-          receiver: toFtAddress(ftTo, orderData.to),
+          sender: toFtAddress({ ...ftFrom, phone: senderMobile }, orderData.from),
+          receiver: toFtAddress({ ...ftTo, phone: receiverMobile }, orderData.to),
           packages: [
             {
               weightInKg: ftParcel.weight_kg,
