@@ -3,6 +3,7 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
 const BUYER_NEW_ORDER_TEMPLATE = "buyerNewOrderEmailTemplate"
@@ -15,9 +16,17 @@ const storefrontUrl = () =>
 export default async function orderPlacedBuyerHandler({
   event: { data },
   container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs<OrderPlacedData>) {
+  for (const orderId of placedOrderIds(data)) {
+    await sendBuyerConfirmation(container, orderId)
+  }
+}
+
+async function sendBuyerConfirmation(
+  container: SubscriberArgs<OrderPlacedData>["container"],
+  orderId: string
+) {
   try {
-    const orderId = data.id
     const orderService = container.resolve(Modules.ORDER)
     const order = await orderService.retrieveOrder(orderId, {
       relations: ["items", "shipping_address", "billing_address", "shipping_methods"],

@@ -3,6 +3,7 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
@@ -80,9 +81,17 @@ async function getSellersForProductIds(
 export default async function orderPlacedSellerHandler({
   event: { data },
   container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs<OrderPlacedData>) {
+  for (const orderId of placedOrderIds(data)) {
+    await notifySellers(container, orderId)
+  }
+}
+
+async function notifySellers(
+  container: SubscriberArgs<OrderPlacedData>["container"],
+  orderId: string
+) {
   try {
-    const orderId = data.id
     const orderService = container.resolve(Modules.ORDER)
     const order = await orderService.retrieveOrder(orderId, {
       relations: ["items", "shipping_address", "billing_address"],
