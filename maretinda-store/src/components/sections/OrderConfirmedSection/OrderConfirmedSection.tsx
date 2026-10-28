@@ -2,6 +2,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { useEffect, useState } from 'react';
+import { isManual, paymentInfoMap } from '@/lib/constants';
 import { convertToLocale } from '@/lib/helpers/money';
 import { getImageUrl } from '@/lib/helpers/get-image-url';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -20,7 +21,15 @@ export const OrderConfirmedSection = ({
 		description?: string;
 	}>(null);
 
+	// retrieveOrder loads payments, not sessions
+	const paymentCollection = order.payment_collections?.[0];
+	const providerId =
+		paymentCollection?.payments?.[0]?.provider_id ??
+		paymentCollection?.payment_sessions?.[0]?.provider_id;
+
 	useEffect(() => {
+		// Cash on delivery has no GiyaPay transaction to look up
+		if (isManual(providerId)) return;
 		const run = async () => {
 			try {
 				// For marketplace orders, use the order_set ID to lookup transaction
@@ -52,7 +61,7 @@ export const OrderConfirmedSection = ({
 			}
 		};
 		run();
-	}, [order?.id]);
+	}, [order?.id, providerId]);
 
 	// Format delivery date (estimated 3-5 business days from now)
 	const deliveryDate = new Date();
@@ -69,9 +78,8 @@ export const OrderConfirmedSection = ({
 			return txn.gateway;
 		}
 		// Fallback to order payment collection
-		const paymentSession = order.payment_collections?.[0]?.payment_sessions?.[0];
-		if (paymentSession?.provider_id) {
-			const providerId = paymentSession.provider_id;
+		if (providerId) {
+			if (paymentInfoMap[providerId]) return paymentInfoMap[providerId].title;
 			if (providerId.includes('gcash')) return 'GCash';
 			if (providerId.includes('visa')) return 'Visa';
 			if (providerId.includes('mastercard')) return 'Mastercard';

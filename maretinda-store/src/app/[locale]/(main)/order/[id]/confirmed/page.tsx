@@ -27,7 +27,10 @@ export default async function OrderConfirmedPage(props: Props) {
 		if (orderSet?.orders && orderSet.orders.length > 0) {
 			// Use the first order for display
 			// In a marketplace, the OrderConfirmedSection should handle displaying all orders
-			order = orderSet.orders[0];
+			// The order-set route returns a fixed field list with no payment
+			// details; the order itself carries the checkout's payment collection
+			const first = orderSet.orders[0];
+			order = (await retrieveOrder(first.id).catch(() => null)) ?? first;
 			// Attach the full order set for reference
 			order.order_set = orderSet;
 		}
