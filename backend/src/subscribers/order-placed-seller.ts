@@ -85,7 +85,7 @@ export default async function orderPlacedSellerHandler({
     const orderId = data.id
     const orderService = container.resolve(Modules.ORDER)
     const order = await orderService.retrieveOrder(orderId, {
-      relations: ["items", "items.product", "shipping_address", "billing_address"],
+      relations: ["items", "shipping_address", "billing_address"],
     })
 
     const storeService = container.resolve(Modules.STORE)
