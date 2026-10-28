@@ -45,13 +45,22 @@ export const getUserWishlists = async () => {
 	}
 };
 
+// Server actions return a status instead of throwing: Next.js hides thrown
+// messages from the client in production builds.
+export type WishlistActionResult = { ok: boolean; status: number };
+
+// The wishlist feeds the header count, every product card's heart and the
+// wishlist page, so refresh the whole tree rather than one path (the pages
+// live under /[locale], so a bare '/wishlist' never matched anything).
+const refreshWishlistViews = () => revalidatePath('/', 'layout');
+
 export const addWishlistItem = async ({
 	reference_id,
 	reference,
 }: {
 	reference_id: string;
 	reference: 'product';
-}) => {
+}): Promise<WishlistActionResult> => {
 	const headers = {
 		...(await getAuthHeaders()),
 		'Content-Type': 'application/json',
@@ -69,18 +78,22 @@ export const addWishlistItem = async ({
 			headers,
 			method: 'POST',
 		},
-	).then(() => {
-		revalidatePath('/wishlist');
-	});
+	);
+
+	if (response.ok) {
+		refreshWishlistViews();
+	}
+	return { ok: response.ok, status: response.status };
 };
 
 export const removeWishlistItem = async ({
 	wishlist_id,
 	product_id,
 }: {
-	wishlist_id: string;
+	// Callers rendered before the customer's first add have no id yet
+	wishlist_id?: string;
 	product_id: string;
-}) => {
+}): Promise<WishlistActionResult> => {
 	const headers = {
 		...(await getAuthHeaders()),
 		'Content-Type': 'application/json',
@@ -88,13 +101,21 @@ export const removeWishlistItem = async ({
 			.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
 	};
 
+	const id = wishlist_id || (await getUserWishlists()).wishlists[0]?.id;
+	if (!id) {
+		return { ok: false, status: 404 };
+	}
+
 	const response = await fetch(
-		`${process.env.MEDUSA_BACKEND_URL}/store/wishlist/${wishlist_id}/product/${product_id}`,
+		`${process.env.MEDUSA_BACKEND_URL}/store/wishlist/${id}/product/${product_id}`,
 		{
 			headers,
 			method: 'DELETE',
 		},
-	).then(() => {
-		revalidatePath('/wishlist');
-	});
+	);
+
+	if (response.ok) {
+		refreshWishlistViews();
+	}
+	return { ok: response.ok, status: response.status };
 };
