@@ -1,11 +1,11 @@
 "use client";
 
 import type { HttpTypes } from "@medusajs/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/atoms";
 import { Trash } from "@medusajs/icons";
-import { addWishlistItem, removeWishlistItem } from "@/lib/data/wishlist";
+import { removeWishlistItem } from "@/lib/data/wishlist";
 import { cn } from "@/lib/utils";
 import type { Wishlist } from "@/types/wishlist";
 
@@ -21,16 +21,6 @@ export const DeleteWishlistButton = ({
 	className?: string;
 }) => {
 	const [isWishlistAdding, setIsWishlistAdding] = useState(false);
-	const [isWishlisted, setIsWishlisted] = useState(
-		wishlist?.[0]?.products?.some((item) => item.id === productId),
-	);
-
-	useEffect(() => {
-		setIsWishlisted(
-			wishlist?.[0]?.products?.some((item) => item.id === productId),
-		);
-	}, [wishlist, productId]);
-
 	// TODO: COMMENTED OUT FOR DESIGN PURPOSES
 	// if (!user) {
 	// 	return null;
@@ -40,10 +30,14 @@ export const DeleteWishlistButton = ({
 		try {
 			setIsWishlistAdding(true);
 
-			await removeWishlistItem({
+			// On success the action refreshes the page, which drops this card
+			const result = await removeWishlistItem({
 				product_id: productId,
-				wishlist_id: wishlist?.[0].id!,
+				wishlist_id: wishlist?.[0]?.id,
 			});
+			if (!result.ok) {
+				console.error(`Removing from wishlist failed (${result.status})`);
+			}
 		} catch (error) {
 			console.error(error);
 		} finally {

@@ -1,6 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/atoms';
@@ -20,6 +21,7 @@ export const WishlistButton = ({
 	user?: HttpTypes.StoreCustomer | null;
 	className?: string;
 }) => {
+	const router = useRouter();
 	const [isWishlistAdding, setIsWishlistAdding] = useState(false);
 	const [isWishlisted, setIsWishlisted] = useState(
 		wishlist?.[0]?.products?.some((item) => item.id === productId),
@@ -36,29 +38,33 @@ export const WishlistButton = ({
 	// 	return null;
 	// }
 
-	const handleAddToWishlist = async () => {
-		try {
-			setIsWishlistAdding(true);
-			await addWishlistItem({
-				reference: 'product',
-				reference_id: productId,
-			});
-		} catch (error) {
-			console.error(error);
-		} finally {
-			setIsWishlistAdding(false);
-		}
+	const sendToLogin = () => {
+		const currentPath = window.location.pathname + window.location.search;
+		router.push(`/user?returnTo=${encodeURIComponent(currentPath)}`);
 	};
 
-	const handleRemoveFromWishlist = async () => {
+	// Flip the heart right away and undo it if the request fails; the server
+	// action refreshes the page data, which the effect above then syncs from
+	const toggleWishlist = async () => {
+		const adding = !isWishlisted;
+		setIsWishlistAdding(true);
+		setIsWishlisted(adding);
 		try {
-			setIsWishlistAdding(true);
-
-			await removeWishlistItem({
-				product_id: productId,
-				wishlist_id: wishlist?.[0].id!,
-			});
+			const result = adding
+				? await addWishlistItem({
+						reference: 'product',
+						reference_id: productId,
+					})
+				: await removeWishlistItem({
+						product_id: productId,
+						wishlist_id: wishlist?.[0]?.id,
+					});
+			if (!result.ok) {
+				setIsWishlisted(!adding);
+				if (result.status === 401) sendToLogin();
+			}
 		} catch (error) {
+			setIsWishlisted(!adding);
 			console.error(error);
 		} finally {
 			setIsWishlistAdding(false);
@@ -72,11 +78,7 @@ export const WishlistButton = ({
 			className={cn(baseClasses, className)}
 			disabled={isWishlistAdding}
 			loading={isWishlistAdding}
-			onClick={
-				isWishlisted
-					? () => handleRemoveFromWishlist()
-					: () => handleAddToWishlist()
-			}
+			onClick={toggleWishlist}
 			variant="tonal"
 		>
 			{isWishlisted ? (
