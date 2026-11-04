@@ -100,9 +100,6 @@ COPY --from=builder --chown=medusa:nodejs /app/src/modules/file-gcs/package.json
 # Copy source files (for scripts and loaders)
 COPY --from=builder --chown=medusa:nodejs /app/src ./src
 
-# Copy static and config files
-COPY --from=builder --chown=medusa:nodejs /app/config ./config
-
 # Set environment variables
 ENV NODE_ENV=production \
     PORT=9000 \
