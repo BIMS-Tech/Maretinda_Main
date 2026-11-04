@@ -2,9 +2,11 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import multer from "multer"
 import { createGCSService } from "../../utils/google-cloud-storage"
 import { optimizeImage } from "../../utils/image-optimizer"
+import { fileMatchesDeclaredType } from "../../lib/file-signature"
+import { verifyUploader } from "../../lib/uploader-token"
 
 const ALLOWED_MIMES = [
-  "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+  "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp",
 ]
 
 const upload = multer({
@@ -18,6 +20,10 @@ const upload = multer({
 
 export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<void> {
   try {
+    if (!verifyUploader(req)) {
+      return res.status(401).json({ message: "Unauthorized" }) as any
+    }
+
     const gcs = createGCSService()
     if (!gcs) {
       return res.status(500).json({ message: "Cloud storage not configured" }) as any
@@ -34,6 +40,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       if (!files?.length) {
         return res.status(400).json({ message: "No files uploaded" })
       }
+      if (files.some((f) => !fileMatchesDeclaredType(f.buffer, f.mimetype))) {
+        return res.status(400).json({ message: "File contents don't match its type" })
+      }
 
       const uploadPromises = files.map(async (file) => {
         let buffer = file.buffer
@@ -41,12 +50,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
         let filename = file.originalname
 
         // Optimize images to WebP
-        if (file.mimetype !== "image/svg+xml") {
-          const optimized = await optimizeImage(buffer, { format: "webp", quality: 85 })
-          buffer = optimized.buffer
-          contentType = optimized.contentType
-          filename = filename.replace(/\.[^.]+$/, "") + ".webp"
-        }
+        const optimized = await optimizeImage(buffer, { format: "webp", quality: 85 })
+        buffer = optimized.buffer
+        contentType = optimized.contentType
+        filename = filename.replace(/\.[^.]+$/, "") + ".webp"
 
         const result = await gcs.uploadFile(buffer, filename, {
           folder: "uploads/images",

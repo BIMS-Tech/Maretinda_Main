@@ -417,16 +417,6 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       ...gatewayData,
       signature: signature.substring(0, 10) + '...',
       merchant_secret: '***', // Hidden for security
-      merchant_id: gatewayData.merchant_id, // Log full merchant_id to verify
-      merchant_id_length: gatewayData.merchant_id?.length || 0,
-      merchant_id_preview: gatewayData.merchant_id ? (gatewayData.merchant_id.substring(0, 10) + "...") : "MISSING",
-      // Verify full values are being used
-      merchantIdUsed: config.merchantId,
-      merchantIdUsedLength: config.merchantId?.length || 0,
-      merchantSecretUsed: config.merchantSecret ? (config.merchantSecret.substring(0, 4) + "..." + config.merchantSecret.substring(config.merchantSecret.length - 4)) : "MISSING",
-      merchantSecretLength: config.merchantSecret?.length || 0,
-      merchantSecretFirst4: config.merchantSecret?.substring(0, 4) || "N/A",
-      merchantSecretLast4: config.merchantSecret ? config.merchantSecret.substring(config.merchantSecret.length - 4) : "N/A",
     })
 
     return {
@@ -434,6 +424,7 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
       data: {
         checkout_url: checkoutUrl,
         form_data: gatewayData,
+        session_id: (input.data as any)?.session_id,
         cart_id: cartId,
         order_id: orderId,
         session_data: gatewayData,
@@ -443,16 +434,59 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
     }
   }
 
+  /**
+   * The session → cart link comes from Medusa's own tables, and the payment from
+   * a transaction /giyapay/verify recorded after checking GiyaPay's signature,
+   * so nothing the shopper sends can satisfy this. Returns null when in doubt:
+   * the cart stays open instead of becoming an unpaid order.
+   */
+  private async findVerifiedPayment(sessionId?: string): Promise<{ reference_number: string } | null> {
+    if (!sessionId) return null
+    try {
+      const pg = (this.container_ as any)[ContainerRegistrationKeys.PG_CONNECTION]
+      const sessions = await pg.raw(
+        `SELECT ps.amount, cpc.cart_id
+           FROM payment_session ps
+           JOIN cart_payment_collection cpc ON cpc.payment_collection_id = ps.payment_collection_id
+          WHERE ps.id = ? AND cpc.deleted_at IS NULL
+          LIMIT 1`,
+        [sessionId]
+      )
+      const session = sessions.rows?.[0]
+      if (!session?.cart_id) return null
+
+      const payments = await pg.raw(
+        `SELECT reference_number FROM giyapay_transaction
+          WHERE cart_id = ? AND status = 'SUCCESS' AND amount + 0.005 >= ?
+          ORDER BY created_at DESC
+          LIMIT 1`,
+        [session.cart_id, session.amount]
+      )
+      return payments.rows?.[0] ?? null
+    } catch (error) {
+      console.error('[GiyaPay] Could not check payment for session:', sessionId, error)
+      return null
+    }
+  }
+
   async authorizePayment(
     input: AuthorizePaymentInput
   ): Promise<AuthorizePaymentOutput> {
-    console.log('[GiyaPay] Authorizing payment:', input)
-    
+    const sessionId =
+      (input.context as any)?.idempotency_key || (input.data as any)?.session_id
+    const payment = await this.findVerifiedPayment(sessionId)
+
+    if (!payment) {
+      console.warn('[GiyaPay] Refused to authorize unpaid session:', sessionId)
+      return { status: PaymentSessionStatus.PENDING, data: input.data ?? {} }
+    }
+
     return {
       status: PaymentSessionStatus.AUTHORIZED,
       data: {
-        id: input.data?.reference_number || crypto.randomUUID(),
-        ...input.data
+        ...input.data,
+        id: payment.reference_number,
+        reference_number: payment.reference_number,
       }
     }
   }
@@ -470,8 +504,6 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
   }
 
   async capturePayment(input: CapturePaymentInput): Promise<CapturePaymentOutput> {
-    console.log('[GiyaPay] Capturing payment:', input)
-    
     return {
       data: {
         id: input.data?.id || crypto.randomUUID(),
@@ -530,18 +562,15 @@ class GiyaPayProviderService extends AbstractPaymentProvider<GiyaPayOptions> {
     }
   }
 
+  /**
+   * GiyaPay reports payments by redirecting the shopper, not by webhook. Anything
+   * arriving on /hooks/payment/giyapay is unauthenticated, so it must never be
+   * able to authorize a session and complete a cart.
+   */
   async getWebhookActionAndData(
-    data: Record<string, unknown>
+    _data: Record<string, unknown>
   ): Promise<WebhookActionResult> {
-    console.log('[GiyaPay] Processing webhook:', data)
-    
-    return {
-      action: "authorized",
-      data: {
-        session_id: String(data.session_id || ''),
-        amount: Number(data.amount || 0),
-      }
-    }
+    return { action: "not_supported" }
   }
 }
 

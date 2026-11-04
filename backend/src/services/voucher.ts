@@ -1,4 +1,5 @@
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { metadataForPromotions, sellersOfPromotions } from "../lib/promotion-metadata"
 
 export interface CustomerVoucher {
   id: string
@@ -36,6 +37,30 @@ export default class VoucherService {
   }
 
   /**
+   * Medusa's promotions carry no metadata of their own, so attach ours plus the
+   * owning seller. Everything below keeps reading promotion.metadata.
+   */
+  private async withMetadata(promotions: any[]): Promise<any[]> {
+    if (!promotions.length) return promotions
+    const pg = this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const ids = promotions.map((p) => p.id)
+    const [metadata, sellers] = await Promise.all([
+      metadataForPromotions(pg, ids),
+      sellersOfPromotions(pg, ids),
+    ])
+    return promotions.map((p) => {
+      const seller = sellers.get(p.id)
+      return {
+        ...p,
+        metadata: {
+          ...(metadata.get(p.id) ?? {}),
+          ...(seller ? { scope: "seller", seller_id: seller.seller_id, seller_name: seller.seller_name } : {}),
+        },
+      }
+    })
+  }
+
+  /**
    * List all promotions that are:
    * - status = "active"
    * - metadata.is_public = true  (admin sets this; seller promotions are always public)
@@ -48,9 +73,11 @@ export default class VoucherService {
   ): Promise<PromotionWithVoucher[]> {
     const promotionService = this.container.resolve(Modules.PROMOTION)
 
-    const promotions = await promotionService.listPromotions(
-      { status: ["active"] },
-      { take: 200, relations: ["application_method", "rules", "rules.values"] }
+    const promotions = await this.withMetadata(
+      await promotionService.listPromotions(
+        { status: ["active"] },
+        { take: 200, relations: ["application_method", "rules", "rules.values"] }
+      )
     )
 
     // Filter by seller scope, optional seller filter, and expiry
@@ -131,9 +158,11 @@ export default class VoucherService {
     const promotionService = this.container.resolve(Modules.PROMOTION)
     const promotionIds = collected.map((cv) => cv.promotion_id)
 
-    const promotions = await promotionService.listPromotions(
-      { id: promotionIds },
-      { take: promotionIds.length, relations: ["application_method", "rules", "rules.values"] }
+    const promotions = await this.withMetadata(
+      await promotionService.listPromotions(
+        { id: promotionIds },
+        { take: promotionIds.length, relations: ["application_method", "rules", "rules.values"] }
+      )
     )
 
     const promoMap = new Map(promotions.map((p: any) => [p.id, p]))
@@ -164,7 +193,7 @@ export default class VoucherService {
     await this.ensureTable()
     const promotionService = this.container.resolve(Modules.PROMOTION)
 
-    const [promotion] = await promotionService.listPromotions({ id: [promotionId] })
+    const [promotion] = await this.withMetadata(await promotionService.listPromotions({ id: [promotionId] }))
     if (!promotion) throw new Error("Promotion not found")
     if ((promotion as any).status !== "active") {
       throw new Error("This voucher is no longer available")

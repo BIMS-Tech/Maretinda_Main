@@ -41,6 +41,18 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       res.status(400).json({ message: "name, email, password, payment_reference and plan_name are all required" })
       return
     }
+    if ([name, email, password, payment_reference, plan_name].some((v) => typeof v !== "string" || v.length > 255)) {
+      res.status(400).json({ message: "Invalid registration details" })
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      res.status(400).json({ message: "Please enter a valid email address" })
+      return
+    }
+    if (password.length < 8) {
+      res.status(400).json({ message: "Password must be at least 8 characters" })
+      return
+    }
 
     let pgConnection: any
     try {
@@ -73,14 +85,35 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const parts = String(txn.order_id).split("_")
     const planSlug = parts.slice(1, parts.length - 1).join("_")
     const plans = await pgConnection("subscription_plan").where("status", "active")
+    // The plan comes from the signed payment, never from the request body.
     const plan = plans.find(
       (p: any) => p.name.toLowerCase().replace(/\s+/g, "_") === planSlug
-    ) || plans.find((p: any) => p.name === plan_name)
+    )
 
     if (!plan) {
       res.status(400).json({ message: "Subscription plan not found." })
       return
     }
+
+    if (Number(txn.amount) + 0.005 < Number(plan.price)) {
+      res.status(400).json({ message: "Payment amount does not cover this plan." })
+      return
+    }
+
+    // Claim the payment before creating anything, so two simultaneous requests
+    // can't register two sellers on one payment.
+    const claimed = await pgConnection("giyapay_transaction")
+      .where("reference_number", payment_reference)
+      .whereNull("seller_id")
+      .update({ seller_id: "pending_registration", updated_at: new Date() })
+    if (!claimed) {
+      res.status(409).json({ message: "This payment has already been used to create a seller account." })
+      return
+    }
+    const releaseClaim = () =>
+      pgConnection("giyapay_transaction")
+        .where({ reference_number: payment_reference, seller_id: "pending_registration" })
+        .update({ seller_id: null, updated_at: new Date() })
 
     // --- 3. Register the seller via Medusa auth API ---
     const backendUrl = (process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 9000}`).replace(/\/$/, "")
@@ -92,6 +125,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     })
 
     if (!authRes.ok) {
+      await releaseClaim()
       const authError = await authRes.json().catch(() => ({}))
       const errorMsg = (authError as any)?.message || "Registration failed"
 
@@ -107,6 +141,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const token: string = authData.token
 
     if (!token) {
+      await releaseClaim()
       res.status(500).json({ message: "Registration succeeded but no token was returned." })
       return
     }

@@ -1,6 +1,8 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { createPromotionsWorkflow } from "@medusajs/core-flows"
+import { productIdsOfSeller, scopeSellerPromotion, SellerPromotionError } from "../../../lib/seller-promotion"
+import { savePromotionMetadata } from "../../../lib/promotion-metadata"
 
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
@@ -57,7 +59,7 @@ export async function GET(
     res.status(200).json({ promotions, count, limit, offset })
   } catch (error: any) {
     console.error("[sellerListPromotions] Error:", error)
-    res.status(500).json({ message: "Failed to list promotions", error: error.message })
+    res.status(500).json({ message: "Failed to list promotions" })
   }
 }
 
@@ -79,9 +81,21 @@ export async function POST(
     const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const body = req.body as any
 
+    const { metadata, ...promotionData } = body
+    let scoped: any
+    try {
+      scoped = scopeSellerPromotion(promotionData, await productIdsOfSeller(pg, sellerId))
+    } catch (error) {
+      if (error instanceof SellerPromotionError) {
+        res.status(400).json({ message: error.message })
+        return
+      }
+      throw error
+    }
+
     const { result } = await createPromotionsWorkflow(req.scope).run({
       input: {
-        promotionsData: [body],
+        promotionsData: [scoped],
       },
     })
 
@@ -95,9 +109,14 @@ export async function POST(
       [sellerId, promotion.id]
     )
 
+    // Sellers may describe a voucher, but not set rules like first_order_only.
+    if (metadata?.description) {
+      await savePromotionMetadata(pg, promotion.id, { description: String(metadata.description).slice(0, 500) })
+    }
+
     res.status(201).json({ promotion })
   } catch (error: any) {
     console.error("[sellerCreatePromotion] Error:", error)
-    res.status(500).json({ message: "Failed to create promotion", error: error.message })
+    res.status(500).json({ message: "Failed to create promotion" })
   }
 }

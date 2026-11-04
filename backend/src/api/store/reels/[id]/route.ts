@@ -15,6 +15,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     res.json({ reel })
   } catch (error: any) {
     console.error("[storeGetReel]", error)
-    res.status(500).json({ message: "Failed to load reel", error: error.message })
+    res.status(500).json({ message: "Failed to load reel" })
   }
 }

@@ -124,6 +124,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     })
   } catch (error: any) {
     console.error("[Store Campaign Detail] Error:", error.message)
-    res.status(500).json({ message: "Failed to retrieve campaign", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve campaign" })
   }
 }

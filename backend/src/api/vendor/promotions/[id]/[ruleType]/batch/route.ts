@@ -80,6 +80,6 @@ export async function POST(
     res.status(200).json({ promotion: updatedPromotion, result })
   } catch (error: any) {
     console.error("[sellerBatchPromotionRules] Error:", error)
-    res.status(500).json({ message: "Failed to batch update promotion rules", error: error.message })
+    res.status(500).json({ message: "Failed to batch update promotion rules" })
   }
 }

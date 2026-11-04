@@ -100,8 +100,7 @@ export async function POST(
   } catch (error) {
     console.error('[BANK-INFO] ❌ Error:', error)
     res.status(500).json({
-      message: "Failed to update bank information",
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: "Failed to update bank information"
     })
   }
 }
@@ -182,8 +181,7 @@ export async function GET(
   } catch (error) {
     console.error('[BANK-INFO] Error:', error)
     res.status(500).json({
-      message: "Failed to fetch bank information",
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: "Failed to fetch bank information"
     })
   }
 }

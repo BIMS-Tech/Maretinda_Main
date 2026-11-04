@@ -103,6 +103,6 @@ export async function GET(
     res.status(200).json({ values: [] })
   } catch (error: any) {
     console.error("[sellerRuleValueOptions] Error:", error)
-    res.status(500).json({ message: "Failed to retrieve rule value options", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve rule value options" })
   }
 }

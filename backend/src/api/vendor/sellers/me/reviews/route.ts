@@ -130,7 +130,6 @@ export const GET = async (
     console.error('[seller Reviews] Error:', error)
     res.status(500).json({
       message: 'Failed to fetch reviews',
-      error: error instanceof Error ? error.message : 'Unknown error',
       reviews: [],
       count: 0
     })

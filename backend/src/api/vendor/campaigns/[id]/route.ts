@@ -39,7 +39,7 @@ export async function GET(
     res.status(200).json({ campaign })
   } catch (error: any) {
     console.error("[sellerGetCampaign] Error:", error)
-    res.status(500).json({ message: "Failed to retrieve campaign", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve campaign" })
   }
 }
 

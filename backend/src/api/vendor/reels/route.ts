@@ -31,7 +31,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     res.json(result)
   } catch (error: any) {
     console.error("[vendorListReels]", error)
-    res.status(500).json({ message: "Failed to list reels", error: error.message })
+    res.status(500).json({ message: "Failed to list reels" })
   }
 }
 
@@ -67,6 +67,6 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     res.status(201).json({ reel })
   } catch (error: any) {
     console.error("[vendorCreateReel]", error)
-    res.status(500).json({ message: "Failed to create reel", error: error.message })
+    res.status(500).json({ message: "Failed to create reel" })
   }
 }

@@ -19,6 +19,6 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     res.json(result)
   } catch (error: any) {
     console.error("[storeToggleReelLike]", error)
-    res.status(500).json({ message: "Failed to update like", error: error.message })
+    res.status(500).json({ message: "Failed to update like" })
   }
 }

@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { getReelsService } from "../../../services/reels"
 import { getOptionalCustomerId } from "../../../utils/optional-customer"
+import { clampInt } from "../../../lib/pagination"
 
 /**
  * GET /store/reels — public reel feed. Optional `seller_id` narrows it to a
@@ -14,14 +15,14 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const { reels: rows, count } = await reels.listReels({
       seller_id: query.seller_id || undefined,
       status: "published",
-      limit: Math.min(Number(query.limit) || 20, 50),
-      offset: Number(query.offset) || 0,
+      limit: clampInt(query.limit, { fallback: 20, min: 1, max: 50 }),
+      offset: clampInt(query.offset, { fallback: 0, max: 100000 }),
       viewer_id: getOptionalCustomerId(req) || undefined,
     })
 
     res.json({ reels: rows, count })
   } catch (error: any) {
     console.error("[storeListReels]", error)
-    res.status(500).json({ message: "Failed to load reels", error: error.message })
+    res.status(500).json({ message: "Failed to load reels" })
   }
 }

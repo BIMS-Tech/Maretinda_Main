@@ -19,7 +19,8 @@ export async function GET(
     // Security check: ensure the path is within the static directory
     const staticDir = path.join(process.cwd(), "static")
     const resolvedPath = path.resolve(fullPath)
-    if (!resolvedPath.startsWith(staticDir)) {
+    // The separator matters: without it "../static-private/x" passes this check.
+    if (!resolvedPath.startsWith(staticDir + path.sep)) {
       return res.status(403).json({ message: "Access denied" })
     }
 
@@ -40,7 +41,6 @@ export async function GET(
       '.png': 'image/png',
       '.gif': 'image/gif',
       '.webp': 'image/webp',
-      '.svg': 'image/svg+xml',
       '.pdf': 'application/pdf',
     }
 

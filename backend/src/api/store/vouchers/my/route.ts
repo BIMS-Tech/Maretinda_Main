@@ -17,6 +17,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     res.status(200).json({ vouchers })
   } catch (error: any) {
     console.error("[Store Vouchers] GET my error:", error.message)
-    res.status(500).json({ message: "Failed to retrieve your vouchers", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve your vouchers" })
   }
 }

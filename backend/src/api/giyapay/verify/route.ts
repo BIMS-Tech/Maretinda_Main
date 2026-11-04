@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import crypto from "crypto"
 import GiyaPayService from "../../../services/giyapay"
+import { giyapayCallbackSignature, giyapaySignaturesMatch } from "../../../lib/giyapay-signature"
 
 /**
  * Resolve the owning seller for a GiyaPay transaction from its cart (preferred)
@@ -50,12 +50,20 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     const { nonce, order_id, refno, timestamp, amount, signature, payment_method, cart_id } = req.body as any
 
-    if (!signature || !nonce || !refno || !order_id) {
+    const isText = (v: unknown) => typeof v === 'string' && v.length > 0 && v.length <= 512
+    if (![signature, nonce, refno, order_id].every(isText)) {
       console.error('[GiyaPay Verify] Missing required parameters')
       return res.status(400).json({
         success: false,
         message: 'Missing required parameters',
       })
+    }
+
+    if (cart_id !== undefined && typeof cart_id !== 'string') {
+      return res.status(400).json({ success: false, message: 'Invalid cart_id' })
+    }
+    if (!/^\d+(\.\d+)?$/.test(String(amount)) || !isText(String(timestamp))) {
+      return res.status(400).json({ success: false, message: 'Invalid amount or timestamp' })
     }
 
     const container = req.scope
@@ -112,17 +120,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     // We reconstruct the URL-without-signature part from the individual params we received.
     const storefrontUrl = (process.env.STOREFRONT_URL || process.env.STORE_CORS?.split(",")[0] || "http://localhost:3000").replace(/\/$/, "")
     const callbackUrl = `${storefrontUrl}/giyapay/success`
-    const urlWithoutSignature = `${callbackUrl}?nonce=${nonce}&order_id=${order_id}&refno=${refno}&timestamp=${timestamp}&amount=${amount}`
 
-    const expectedSignature = crypto
-      .createHash('sha512')
-      .update(urlWithoutSignature + merchantSecret)
-      .digest('hex')
+    const expectedSignature = giyapayCallbackSignature(
+      callbackUrl,
+      { nonce, order_id, refno, timestamp, amount },
+      merchantSecret
+    )
 
-    if (signature !== expectedSignature) {
+    if (!giyapaySignaturesMatch(signature, expectedSignature)) {
       console.error('[GiyaPay Verify] Signature mismatch for order:', order_id)
-      console.error('[GiyaPay Verify] Expected:', expectedSignature.substring(0, 16) + '...')
-      console.error('[GiyaPay Verify] Received:', String(signature).substring(0, 16) + '...')
       return res.status(400).json({
         success: false,
         message: 'Invalid signature',
@@ -131,44 +137,58 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
     console.log('[GiyaPay Verify] Signature verified for order:', order_id, '| ref:', refno)
 
-    // Record the transaction
-    try {
-      const amountInPesos = amount ? Number(amount) / 100 : 0
+    const amountInPesos = Number(amount) / 100
 
-      // Guard against a missing id arriving as the literal string "undefined"
-      // (truthy, so it would otherwise be stored and render as the word
-      // "undefined" — and poison cart_id, breaking seller attribution).
-      const isBogus = (v: any) => {
-        const s = String(v ?? "").trim().toLowerCase()
-        return !s || s === "undefined" || s === "null"
-      }
-      const cleanOrderId = isBogus(order_id) ? null : order_id
-      const cleanCartId = isBogus(cart_id) ? cleanOrderId : cart_id
-
-      // Attribute the transaction to its seller at creation time so it shows up
-      // in the seller panel even if the follow-up update-transaction call never
-      // fires. Skipped for subscription payments (vrenew_/vsub_), which aren't
-      // seller-order transactions.
-      const seller = isSubscriptionPayment
-        ? null
-        : await resolveSeller(container, cleanCartId || undefined, cleanOrderId || undefined)
-
-      await giyaPayService.createTransaction({
-        referenceNumber: refno,
-        orderId: cleanOrderId || undefined,
-        cartId: cleanCartId || undefined,
-        sellerId: seller?.sellerId,
-        amount: amountInPesos,
-        currency: 'PHP',
-        status: 'SUCCESS',
-        gateway: payment_method || 'GIYAPAY',
-        description: cleanOrderId ? `Payment for order ${cleanOrderId}` : 'GiyaPay payment',
-        paymentData: { nonce, timestamp, signature, payment_method },
-      })
-      console.log('[GiyaPay Verify] Transaction saved for reference:', refno, seller ? `(seller ${seller.sellerId})` : '(no seller resolved)')
-    } catch (txnError) {
-      console.error('[GiyaPay Verify] Failed to save transaction (non-fatal):', txnError)
+    // Guard against a missing id arriving as the literal string "undefined"
+    // (truthy, so it would otherwise be stored and render as the word
+    // "undefined" — and poison cart_id, breaking seller attribution).
+    const isBogus = (v: any) => {
+      const s = String(v ?? "").trim().toLowerCase()
+      return !s || s === "undefined" || s === "null"
     }
+    const cleanOrderId = isBogus(order_id) ? null : order_id
+    const cleanCartId = isBogus(cart_id) ? cleanOrderId : cart_id
+
+    // A payment pays for one cart, ever. The signature doesn't cover cart_id, so
+    // the first verified callback fixes the binding and replays can't move it.
+    const db = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const existing = await db('giyapay_transaction').where('reference_number', refno).first().catch(() => null)
+    if (existing) {
+      if (cleanCartId && existing.cart_id && existing.cart_id !== cleanCartId) {
+        console.error('[GiyaPay Verify] Refused to reuse payment', refno, 'for a second cart')
+        return res.status(409).json({ success: false, message: 'This payment was already used for another order' })
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Payment verified successfully',
+        order_id,
+        refno,
+      })
+    }
+
+    // Attribute the transaction to its seller at creation time so it shows up
+    // in the seller panel even if the follow-up update-transaction call never
+    // fires. Skipped for subscription payments (vrenew_/vsub_), which aren't
+    // seller-order transactions.
+    const seller = isSubscriptionPayment
+      ? null
+      : await resolveSeller(container, cleanCartId || undefined, cleanOrderId || undefined)
+
+    // Fatal: checkout only proceeds on this record, so a paid-but-unrecorded
+    // payment must surface as an error with its reference, not as success.
+    await giyaPayService.createTransaction({
+      referenceNumber: refno,
+      orderId: cleanOrderId || undefined,
+      cartId: cleanCartId || undefined,
+      sellerId: seller?.sellerId,
+      amount: amountInPesos,
+      currency: 'PHP',
+      status: 'SUCCESS',
+      gateway: payment_method || 'GIYAPAY',
+      description: cleanOrderId ? `Payment for order ${cleanOrderId}` : 'GiyaPay payment',
+      paymentData: { nonce, timestamp, signature, payment_method },
+    })
+    console.log('[GiyaPay Verify] Transaction saved for reference:', refno, seller ? `(seller ${seller.sellerId})` : '(no seller resolved)')
 
     return res.status(200).json({
       success: true,

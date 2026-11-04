@@ -11,10 +11,11 @@
 
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import multer from "multer"
-import { verify } from "jsonwebtoken"
 import { checkRateLimit } from "../../../utils/rate-limiter"
 import { createGCSService, isVideoFile } from "../../../utils/google-cloud-storage"
 import { optimizeImage } from "../../../utils/image-optimizer"
+import { fileMatchesDeclaredType } from "../../../lib/file-signature"
+import { verifyUploader } from "../../../lib/uploader-token"
 
 const MAX_FILE_SIZE = 150 * 1024 * 1024 // 150 MB
 const MAX_FILES = 2 // video + optional poster frame
@@ -49,20 +50,6 @@ const setCorsHeaders = (req: MedusaRequest, res: MedusaResponse) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-publishable-api-key")
 }
 
-const verifyAuth = (req: MedusaRequest): { valid: boolean; userId?: string; error?: string } => {
-  const authHeader = req.headers.authorization
-  if (!authHeader?.startsWith("Bearer ")) {
-    return { valid: false, error: "No authorization token provided" }
-  }
-  try {
-    const decoded = verify(authHeader.substring(7), process.env.JWT_SECRET || "supersecret") as any
-    if (!decoded.actor_id) return { valid: false, error: "Invalid token" }
-    return { valid: true, userId: decoded.actor_id }
-  } catch {
-    return { valid: false, error: "Invalid or expired token" }
-  }
-}
-
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: MAX_FILE_SIZE, files: MAX_FILES },
@@ -83,13 +70,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
   setCorsHeaders(req, res)
 
   try {
-    const auth = verifyAuth(req)
-    if (!auth.valid) {
-      res.status(401).json({ message: "Unauthorized", error: auth.error })
+    const uploaderId = verifyUploader(req)
+    if (!uploaderId) {
+      res.status(401).json({ message: "Unauthorized" })
       return
     }
 
-    const rateLimit = checkRateLimit(`upload-video:${auth.userId}`, {
+    const rateLimit = checkRateLimit(`upload-video:${uploaderId}`, {
       maxRequests: 10,
       windowMs: 60000,
     })
@@ -102,12 +89,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return
     }
 
-    const gcs = createGCSService()
-    if (!gcs) {
-      res.status(500).json({ message: "Cloud storage not configured", error: "GCS_NOT_CONFIGURED" })
-      return
-    }
-
     upload.array("files", MAX_FILES)(req as any, res as any, async (err) => {
       if (err) {
         if ((err as any).code === "LIMIT_FILE_SIZE") {
@@ -116,6 +97,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
             .json({ message: `File too large. Max ${MAX_FILE_SIZE / 1024 / 1024}MB` })
         }
         return res.status(400).json({ message: err.message })
+      }
+
+      const incoming = req.files as Express.Multer.File[]
+      if (incoming?.some((f) => !fileMatchesDeclaredType(f.buffer, f.mimetype))) {
+        return res.status(400).json({ message: "File contents don't match its type" })
+      }
+
+      const gcs = createGCSService()
+      if (!gcs) {
+        return res.status(500).json({ message: "Cloud storage not configured", error: "GCS_NOT_CONFIGURED" })
       }
 
       const files = req.files as Express.Multer.File[]
@@ -150,7 +141,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
               folder,
               contentType,
               metadata: {
-                userId: auth.userId!,
+                userId: uploaderId!,
                 originalName: file.originalname,
                 kind: isVideoFile(file.mimetype) ? "reel-video" : "reel-poster",
               },

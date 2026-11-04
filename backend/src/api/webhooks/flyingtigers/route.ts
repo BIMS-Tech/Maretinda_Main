@@ -22,17 +22,14 @@ import { FT_STATUS_MAP } from '../../../services/flyingtigers'
 
 /**
  * Verify the HMAC-SHA256 signature on a Flying Tigers webhook delivery.
- * Returns true when valid, false when invalid. When no secret is configured
- * it returns true but logs a warning, so the endpoint still works before the
- * secret is wired up (do configure it in production).
+ * Fails closed: with no secret configured every delivery is rejected, because
+ * accepting them would let anyone mark any parcel as delivered.
  */
 function verifySignature(req: MedusaRequest): boolean {
   const secret = process.env.FLYINGTIGERS_WEBHOOK_SECRET
   if (!secret) {
-    console.warn(
-      '[FlyingTigers Webhook] FLYINGTIGERS_WEBHOOK_SECRET not set — skipping signature verification',
-    )
-    return true
+    console.error('[FlyingTigers Webhook] FLYINGTIGERS_WEBHOOK_SECRET not set — rejecting delivery')
+    return false
   }
 
   const timestamp = req.headers['x-fte-webhook-timestamp']
@@ -99,7 +96,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     const event = payload.event ?? payload.event_type ?? payload.type ?? payload.status ?? ''
     const timestamp = payload.timestamp ?? new Date().toISOString()
 
-    if (!trackingNo) {
+    if (!trackingNo || typeof trackingNo !== 'string') {
       // Could be a transaction/wallet event or a test ping — acknowledge.
       console.log('[FlyingTigers Webhook] Event without tracking number:', event || payload)
       return res.json({ received: true })
@@ -140,6 +137,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   } catch (error) {
     console.error('[FlyingTigers Webhook] Error:', error)
     // Acknowledge with 200 so FT doesn't hammer retries on a transient error.
-    res.json({ received: true, error: (error as Error).message })
+    res.json({ received: true })
   }
 }

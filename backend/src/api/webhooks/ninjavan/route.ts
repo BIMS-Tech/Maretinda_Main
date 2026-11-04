@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
@@ -25,9 +26,38 @@ const STATUS_MAP: Record<string, string> = {
 }
 
 /**
+ * Ninja Van signs each delivery: X-Ninjavan-Hmac-Sha256 is the base64 HMAC-SHA256
+ * of the raw body, keyed with the shipper's client secret. Fails closed, because
+ * accepting unsigned calls lets anyone mark any parcel as delivered.
+ */
+async function verifySignature(req: MedusaRequest, pg: any): Promise<boolean> {
+  let secret = process.env.NINJAVAN_WEBHOOK_SECRET
+  if (!secret) {
+    const provider = await pg('platform_shipping_provider')
+      .where({ provider_id: 'ninjavan' })
+      .whereNull('deleted_at')
+      .first()
+      .catch(() => null)
+    secret = provider?.credentials?.client_secret
+  }
+  if (!secret) {
+    console.error('[NinjaVan Webhook] No signing secret configured — rejecting delivery')
+    return false
+  }
+
+  const header = req.headers['x-ninjavan-hmac-sha256']
+  if (typeof header !== 'string') return false
+
+  const raw = (req as any).rawBody
+  const body = Buffer.isBuffer(raw) ? raw : Buffer.from(typeof raw === 'string' ? raw : JSON.stringify(req.body ?? {}))
+  const expected = crypto.createHmac('sha256', secret).update(body).digest()
+  const provided = Buffer.from(header, 'base64')
+  return provided.length === expected.length && crypto.timingSafeEqual(provided, expected)
+}
+
+/**
  * POST /webhooks/ninjavan
  * Receives status update webhooks from Ninja Van.
- * No authentication — Ninja Van posts directly to this URL.
  */
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
@@ -36,6 +66,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     } catch {
       pg = (req.scope as any).__pg_connection__ || (req.scope as any).pgConnection
+    }
+
+    if (!(await verifySignature(req, pg))) {
+      return res.status(401).json({ message: 'Invalid signature' })
     }
 
     const payload = req.body as {
@@ -48,7 +82,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     const { tracking_id, event, status, timestamp } = payload
 
-    if (!tracking_id) {
+    if (!tracking_id || typeof tracking_id !== 'string') {
       return res.status(400).json({ message: 'tracking_id is required' })
     }
 
@@ -75,7 +109,8 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     await pg('seller_shipping_order')
       .where({ id: shippingOrder.id })
       .update({
-        status: internalStatus,
+        // An event we don't recognize must not overwrite a real status.
+        status: internalStatus === 'unknown' ? shippingOrder.status : internalStatus,
         webhook_events: JSON.stringify(existingEvents),
         updated_at: new Date(),
       })
@@ -84,6 +119,6 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   } catch (error) {
     console.error('[NinjaVan Webhook] Error:', error)
     // Always return 200 to prevent Ninja Van from retrying
-    res.json({ received: true, error: (error as Error).message })
+    res.json({ received: true })
   }
 }

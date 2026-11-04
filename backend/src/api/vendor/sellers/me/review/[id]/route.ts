@@ -105,8 +105,7 @@ export const GET = async (
   } catch (error) {
     console.error('[seller Review Detail] Error:', error)
     res.status(500).json({
-      message: 'Failed to fetch review',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Failed to fetch review'
     })
   }
 }
@@ -158,8 +157,7 @@ export const POST = async (
   } catch (error) {
     console.error('[seller Review Update] Error:', error)
     res.status(500).json({
-      message: 'Failed to update review',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Failed to update review'
     })
   }
 }

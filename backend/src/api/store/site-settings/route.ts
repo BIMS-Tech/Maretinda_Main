@@ -23,6 +23,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     res.status(200).json({ key: row.rows[0].key, value: row.rows[0].value, updated_at: row.rows[0].updated_at })
   } catch (error: any) {
     console.error("[Store Site Settings] GET error:", error.message)
-    res.status(500).json({ message: "Failed to retrieve site settings", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve site settings" })
   }
 }

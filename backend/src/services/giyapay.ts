@@ -1,3 +1,4 @@
+import crypto from "crypto"
 import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
@@ -344,7 +345,9 @@ class GiyaPayService extends MedusaService({}) {
       await this.initializeTables(sharedContext)
       const manager = await this.getManager(sharedContext)
       
-      const transactionId = `giyapay_txn_${Date.now()}`
+      // Derived from the reference so two racing callbacks for one payment collide
+      // on the primary key instead of recording it twice.
+      const transactionId = `giyapay_txn_${crypto.createHash("sha256").update(data.referenceNumber).digest("hex").slice(0, 32)}`
       const now = new Date()
 
       const orderId = this.cleanId(data.orderId)

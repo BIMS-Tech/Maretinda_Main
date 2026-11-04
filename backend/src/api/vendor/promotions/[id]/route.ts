@@ -4,6 +4,7 @@ import {
   updatePromotionsWorkflow,
   deletePromotionsWorkflow,
 } from "@medusajs/core-flows"
+import { stripUnsafePromotionUpdate } from "../../../../lib/seller-promotion"
 
 async function getSellerIdFromMember(req: any): Promise<string | null> {
   const memberId = req.auth_context?.actor_id
@@ -56,7 +57,7 @@ export async function GET(
     res.status(200).json({ promotion })
   } catch (error: any) {
     console.error("[sellerGetPromotion] Error:", error)
-    res.status(500).json({ message: "Failed to retrieve promotion", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve promotion" })
   }
 }
 
@@ -83,7 +84,7 @@ export async function POST(
       return
     }
 
-    const body = req.body as any
+    const body = stripUnsafePromotionUpdate(req.body)
 
     const { result } = await updatePromotionsWorkflow(req.scope).run({
       input: {
@@ -96,7 +97,7 @@ export async function POST(
     res.status(200).json({ promotion })
   } catch (error: any) {
     console.error("[sellerUpdatePromotion] Error:", error)
-    res.status(500).json({ message: "Failed to update promotion", error: error.message })
+    res.status(500).json({ message: "Failed to update promotion" })
   }
 }
 
@@ -132,6 +133,6 @@ export async function DELETE(
     res.status(200).json({ id, deleted: true })
   } catch (error: any) {
     console.error("[sellerDeletePromotion] Error:", error)
-    res.status(500).json({ message: "Failed to delete promotion", error: error.message })
+    res.status(500).json({ message: "Failed to delete promotion" })
   }
 }

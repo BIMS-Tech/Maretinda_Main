@@ -3,6 +3,7 @@ import {
   MedusaResponse,
 } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { clampInt } from "../../../lib/pagination"
 
 /**
  * GET /store/trending
@@ -29,7 +30,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     return res.status(500).json({ message: "Database unavailable" })
   }
 
-  const limit = Math.min(Number(req.query.limit) || 12, 50)
+  const limit = clampInt(req.query.limit, { fallback: 12, min: 1, max: 50 })
   const category = (req.query.category as string) || null
 
   try {
@@ -109,8 +110,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
       error instanceof Error ? error.message : error
     )
     return res.status(500).json({
-      message: "Failed to fetch trending products",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Failed to fetch trending products"
     })
   }
 }

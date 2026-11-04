@@ -193,8 +193,7 @@ export async function POST(
   } catch (error) {
     console.error('[sellerUpdateSeller] ❌ Error updating seller:', error)
     res.status(500).json({
-      message: "Failed to update seller",
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: "Failed to update seller"
     })
   }
 }
@@ -279,8 +278,7 @@ export async function GET(
   } catch (error) {
     console.error('[sellerGetSeller] Error:', error)
     res.status(500).json({
-      message: "Failed to fetch seller",
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: "Failed to fetch seller"
     })
   }
 }

@@ -8,6 +8,9 @@ module.exports = {
       {
         jsc: {
           parser: { syntax: "typescript", decorators: true },
+          // @swc/jest defaults the target from the Node version (es2023 on
+          // Node 20), which the pinned @swc/core doesn't know yet.
+          target: "es2022",
         },
       },
     ],

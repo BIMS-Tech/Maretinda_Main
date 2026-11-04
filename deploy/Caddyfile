@@ -6,6 +6,11 @@
 (origin) {
 	tls /etc/caddy/certs/origin.pem /etc/caddy/certs/origin.key
 	encode zstd gzip
+	header {
+		-X-Powered-By
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
 }
 
 {$API_DOMAIN} {
