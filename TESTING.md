@@ -29,7 +29,7 @@ The suite runs against the test environment by default. Override it with `STORE_
 
 ## Known failures
 
-Tests marked `it.failing` / `test.fail` describe the correct behaviour of a known bug. They pass while the bug exists and start failing once it's fixed: at that point, remove the marker. Only one is left: the deployed test admin doesn't redirect logged-out visitors to login (`e2e/tests/admin/admin.spec.ts`).
+Tests marked `it.failing` / `test.fail` describe the correct behaviour of a known bug. They pass while the bug exists and start failing once it's fixed: at that point, remove the marker. None are marked right now.
 
 ## Still open
 

@@ -20,11 +20,7 @@ test.describe('admin panel (read-only)', () => {
     await expect(page.getByText(/invalid|incorrect|wrong|unauthorized/i).first()).toBeVisible()
   })
 
-  // KNOWN GAP (testadmin, 2026-11-03): /admin/users/me returns 401 but the
-  // page stays blank on /orders instead of redirecting, although
-  // ProtectedRoute and ErrorBoundary both navigate to /login on a 401 in
-  // source. Remove `.fail` once the deployed admin redirects.
-  test.fail('unauthenticated visitors are sent to login', async ({ page }) => {
+  test('unauthenticated visitors are sent to login', async ({ page }) => {
     await page.goto('/orders')
     await expect(page).toHaveURL(/\/login/)
   })
