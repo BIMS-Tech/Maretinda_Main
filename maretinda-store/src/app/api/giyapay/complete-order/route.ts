@@ -79,16 +79,10 @@ export async function POST(request: NextRequest) {
         const verifyError = await verifyResponse.json().catch(() => ({}));
         console.error('[GiyaPay] Signature verification failed:', verifyError);
         
-        // If backend verify endpoint doesn't exist, try completing order directly
-        // The backend payment provider will handle verification during order completion
-        if (verifyResponse.status === 404) {
-          console.log('[GiyaPay] Verify endpoint not found, proceeding with order completion');
-        } else {
-          return NextResponse.json(
-            { success: false, message: verifyError.message || 'Payment verification failed' },
-            { status: 400 }
-          );
-        }
+        return NextResponse.json(
+          { success: false, message: verifyError.message || 'Payment verification failed' },
+          { status: 400 }
+        );
       } else {
         const verifyData = await verifyResponse.json();
         console.log('[GiyaPay] Signature verified by backend:', verifyData);

@@ -16,6 +16,7 @@ import {
 import { Checkbox } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
+import { safeReturnTo } from '@/lib/helpers/safe-return-to';
 import Spinner from '@/icons/spinner';
 import { login } from '@/lib/data/customer';
 import { useLanguage } from '@/providers/LanguageProvider';
@@ -113,8 +114,7 @@ const Form = () => {
 			return;
 		}
 
-		const returnTo = searchParams.get('returnTo');
-		router.push(returnTo || '/user');
+		router.push(safeReturnTo(searchParams.get('returnTo'), '/user'));
 	};
 
 	return (
