@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import medusaError from '@/lib/helpers/medusa-error';
+import { toPhMobile } from '@/lib/helpers/ph-mobile';
 
 import { sdk } from '../config';
 import {
@@ -434,13 +435,15 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 			email: getStringValue(formData.get('email')),
 			shipping_address: {
 				address_1: getStringValue(formData.get('shipping_address.address_1')),
-				address_2: '',
+				address_2: getStringValue(formData.get('shipping_address.address_2')),
 				city: getStringValue(formData.get('shipping_address.city')),
 				company: getStringValue(formData.get('shipping_address.company')),
 				country_code: getStringValue(formData.get('shipping_address.country_code')),
 				first_name: getStringValue(formData.get('shipping_address.first_name')),
 				last_name: getStringValue(formData.get('shipping_address.last_name')),
-				phone: getStringValue(formData.get('shipping_address.phone')),
+				phone:
+					toPhMobile(getStringValue(formData.get('shipping_address.phone'))) ??
+					getStringValue(formData.get('shipping_address.phone')),
 				postal_code: getStringValue(formData.get('shipping_address.postal_code')),
 				province: getStringValue(formData.get('shipping_address.province')),
 			},

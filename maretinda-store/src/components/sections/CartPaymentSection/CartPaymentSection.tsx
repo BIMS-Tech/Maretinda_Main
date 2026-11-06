@@ -77,12 +77,10 @@ const CartPaymentSection = ({
 	const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
 		activeSession?.provider_id ?? '',
 	);
-	const [selectedGiyaSubMethod, setSelectedGiyaSubMethod] = useState<string>(() => {
-		if (typeof window !== 'undefined') {
-			return localStorage.getItem('giyapay_selected_method') || '';
-		}
-		return '';
-	});
+	const [selectedGiyaSubMethod, setSelectedGiyaSubMethod] = useState<string>('');
+	useEffect(() => {
+		setSelectedGiyaSubMethod(localStorage.getItem('giyapay_selected_method') || '');
+	}, []);
 	const [giyaPayEnabledMethods, setGiyaPayEnabledMethods] = useState<string[]>(DEFAULT_GIYAPAY_METHODS);
 
 	const searchParams = useSearchParams();

@@ -8,6 +8,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Input } from '@/components/atoms';
 import AddressSelect from '@/components/cells/AddressSelect/AddressSelect';
 import CountrySelect from '@/components/cells/CountrySelect/CountrySelect';
+import { SearchableSelect } from '@/components/cells/SearchableSelect/SearchableSelect';
+import { phCitiesOf, phProvinces } from '@/lib/helpers/ph-locations';
+import { phMobileLocalPart } from '@/lib/helpers/ph-mobile';
+
+// Same spellings toPhMobile accepts: 917..., 0917... and +63 917...
+const PH_MOBILE_PATTERN = '[\\s\\-]*(\\+?63|0)?[\\s\\-]*9([\\s\\-]*[0-9]){9}[\\s\\-]*';
 
 const ShippingAddress = ({
 	customer,
@@ -26,13 +32,14 @@ const ShippingAddress = ({
 	const [formData, setFormData] = useState<Record<string, any>>({
 		email: cart?.email || '',
 		'shipping_address.address_1': cart?.shipping_address?.address_1 || '',
+		'shipping_address.address_2': cart?.shipping_address?.address_2 || '',
 		'shipping_address.city': cart?.shipping_address?.city || '',
 		'shipping_address.company': cart?.shipping_address?.company || '',
 		'shipping_address.country_code':
 			cart?.shipping_address?.country_code || locale,
 		'shipping_address.first_name': cart?.shipping_address?.first_name || '',
 		'shipping_address.last_name': cart?.shipping_address?.last_name || '',
-		'shipping_address.phone': cart?.shipping_address?.phone || '',
+		'shipping_address.phone': phMobileLocalPart(cart?.shipping_address?.phone),
 		'shipping_address.postal_code':
 			cart?.shipping_address?.postal_code || '',
 		'shipping_address.province': cart?.shipping_address?.province || '',
@@ -55,13 +62,14 @@ const ShippingAddress = ({
 			setFormData((prevState: Record<string, any>) => ({
 				...prevState,
 				'shipping_address.address_1': address?.address_1 || '',
+				'shipping_address.address_2': address?.address_2 || '',
 				'shipping_address.city': address?.city || '',
 				'shipping_address.company': address?.company || '',
 				'shipping_address.country_code':
 					address?.country_code || locale,
 				'shipping_address.first_name': address?.first_name || '',
 				'shipping_address.last_name': address?.last_name || '',
-				'shipping_address.phone': address?.phone || '',
+				'shipping_address.phone': phMobileLocalPart(address?.phone),
 				'shipping_address.postal_code': address?.postal_code || '',
 				'shipping_address.province': address?.province || '',
 			}));
@@ -139,16 +147,21 @@ const ShippingAddress = ({
 				/>
 			</div>
 
-			{/* Ph Number, Email Address */}
+			{/* Mobile Number, Email Address */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 				<Input
-					autoComplete="tel"
+					autoComplete="tel-national"
+					className="pl-[56px]"
 					data-testid="shipping-phone-input"
-					label="Ph Number *"
+					icon={<span className="text-base text-black/70">+63</span>}
+					inputMode="tel"
+					label="Mobile Number *"
 					name="shipping_address.phone"
 					onChange={handleChange}
-					placeholder="Enter your ph number..."
+					pattern={PH_MOBILE_PATTERN}
+					placeholder="917 123 4567"
 					required
+					title="Enter a valid PH mobile number, e.g. 917 123 4567"
 					value={formData['shipping_address.phone']}
 				/>
 				<Input
@@ -165,48 +178,9 @@ const ShippingAddress = ({
 				/>
 			</div>
 
-			{/* Street Address, Company */}
+			{/* Country/Region, Street Address */}
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-				<Input
-					autoComplete="address-line1"
-					data-testid="shipping-address-input"
-					label="Street Address *"
-					name="shipping_address.address_1"
-					onChange={handleChange}
-					placeholder="Enter your address..."
-					required
-					value={formData['shipping_address.address_1']}
-				/>
-				<Input
-					autoComplete="organization"
-					data-testid="shipping-company-input"
-					label="Company"
-					name="shipping_address.company"
-					onChange={handleChange}
-					placeholder="Enter your company name..."
-					value={formData['shipping_address.company']}
-				/>
-			</div>
-
-			{/* City/Town, Country/Region */}
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-				<Input
-					autoComplete="address-level2"
-					data-testid="shipping-city-input"
-					label="City/Town *"
-					name="shipping_address.city"
-					onChange={handleChange}
-					placeholder="Enter your city..."
-					required
-					value={formData['shipping_address.city']}
-				/>
 				<div>
-					{/* <label
-						className="block text-sm font-medium mb-2"
-						style={{ color: '#374151' }}
-					>
-						Country/Region *
-					</label> */}
 					<CountrySelect
 						autoComplete="country"
 						data-testid="shipping-country-select"
@@ -218,10 +192,78 @@ const ShippingAddress = ({
 						value={formData['shipping_address.country_code']}
 					/>
 				</div>
+				<Input
+					autoComplete="address-line1"
+					data-testid="shipping-address-input"
+					label="Street Address *"
+					name="shipping_address.address_1"
+					onChange={handleChange}
+					placeholder="Enter your address..."
+					required
+					value={formData['shipping_address.address_1']}
+				/>
 			</div>
 
-			{/* Postal Code - Full Width */}
-			<div className="mb-4">
+			{/* Province, City */}
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+				<SearchableSelect
+					important
+					label="Province"
+					labelClassName="label-md"
+					name="shipping_address.province"
+					onChange={(value) =>
+						setFormData((prev: Record<string, any>) =>
+							value === prev['shipping_address.province']
+								? prev
+								: {
+										...prev,
+										'shipping_address.city': '',
+										'shipping_address.province': value,
+									},
+						)
+					}
+					options={phProvinces}
+					placeholder="Choose a province"
+					required
+					testId="shipping-province-select"
+					value={formData['shipping_address.province']}
+				/>
+				<SearchableSelect
+					disabled={!formData['shipping_address.province']}
+					important
+					label="City/Municipality"
+					labelClassName="label-md"
+					name="shipping_address.city"
+					onChange={(value) =>
+						setFormData((prev: Record<string, any>) => ({
+							...prev,
+							'shipping_address.city': value,
+						}))
+					}
+					options={phCitiesOf(formData['shipping_address.province'])}
+					placeholder={
+						formData['shipping_address.province']
+							? 'Choose a city'
+							: 'Choose a province first'
+					}
+					required
+					testId="shipping-city-select"
+					value={formData['shipping_address.city']}
+				/>
+			</div>
+
+			{/* Barangay, Postal Code */}
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+				<Input
+					autoComplete="address-line2"
+					data-testid="shipping-barangay-input"
+					label="Barangay *"
+					name="shipping_address.address_2"
+					onChange={handleChange}
+					placeholder="Enter your barangay..."
+					required
+					value={formData['shipping_address.address_2']}
+				/>
 				<Input
 					autoComplete="postal-code"
 					data-testid="shipping-postal-code-input"
@@ -231,6 +273,19 @@ const ShippingAddress = ({
 					placeholder="Enter your code..."
 					required
 					value={formData['shipping_address.postal_code']}
+				/>
+			</div>
+
+			{/* Company */}
+			<div className="mb-4">
+				<Input
+					autoComplete="organization"
+					data-testid="shipping-company-input"
+					label="Company"
+					name="shipping_address.company"
+					onChange={handleChange}
+					placeholder="Enter your company name..."
+					value={formData['shipping_address.company']}
 				/>
 			</div>
 		</>

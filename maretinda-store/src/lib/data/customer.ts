@@ -165,6 +165,7 @@ export async function transferCart() {
 export const addCustomerAddress = async (formData: FormData): Promise<any> => {
 	const address = {
 		address_1: formData.get('address_1') as string,
+		address_2: formData.get('address_2') as string,
 		address_name: formData.get('address_name') as string,
 		city: formData.get('city') as string,
 		company: formData.get('company') as string,

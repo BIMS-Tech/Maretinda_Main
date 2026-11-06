@@ -1,7 +1,7 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/atoms';
 import { ErrorMessage } from '@/components/molecules';
@@ -27,12 +27,12 @@ const GiyaPayButton = ({
 }: GiyaPayButtonProps) => {
 	const [submitting, setSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const selectedMethod =
-		typeof window !== 'undefined'
-			? localStorage.getItem('giyapay_selected_method')
-			: null;
-	const buttonLabel = selectedMethod
-		? `Pay with ${METHOD_LABELS[selectedMethod] || selectedMethod}`
+	const [labelMethod, setLabelMethod] = useState<string | null>(null);
+	useEffect(() => {
+		setLabelMethod(localStorage.getItem('giyapay_selected_method'));
+	}, []);
+	const buttonLabel = labelMethod
+		? `Pay with ${METHOD_LABELS[labelMethod] || labelMethod}`
 		: 'Pay with GiyaPay';
 
 	const handlePayment = async () => {

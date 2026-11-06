@@ -46,7 +46,8 @@ const AddressSelect = ({
 						<>
 							<span className="block truncate">
 								{selectedAddress
-									? selectedAddress.address_name
+									? selectedAddress.address_name ||
+										selectedAddress.address_1
 									: 'Choose an address'}
 							</span>
 							<ChevronUpDown
@@ -79,7 +80,8 @@ const AddressSelect = ({
 									value={address.id}
 								>
 									<span className="font-semibold">
-										{address.address_name}
+										{address.address_name ||
+											address.address_1}
 									</span>
 									<div className="grid grid-cols-2 gap-3 ">
 										<div>

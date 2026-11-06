@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { HttpTypes } from '@medusajs/types';
 import { useState } from 'react';
 import {
+	Controller,
 	type FieldError,
 	type FieldValues,
 	FormProvider,
@@ -14,7 +15,10 @@ import {
 import { Button } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import CountrySelect from '@/components/cells/CountrySelect/CountrySelect';
+import { SearchableSelect } from '@/components/cells/SearchableSelect/SearchableSelect';
 import { addCustomerAddress, updateCustomerAddress } from '@/lib/data/customer';
+import { phCitiesOf, phProvinces } from '@/lib/helpers/ph-locations';
+import { toPhMobile } from '@/lib/helpers/ph-mobile';
 
 import { type AddressFormData, addressSchema } from './schema';
 
@@ -28,10 +32,10 @@ interface Props {
 export const emptyDefaultAddressValues = {
 	address: '',
 	addressName: '',
+	barangay: '',
 	city: '',
 	company: '',
-	countryCode: '',
-	email: '',
+	countryCode: 'ph',
 	firstName: '',
 	lastName: '',
 	phone: '',
@@ -57,9 +61,12 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 	const {
 		handleSubmit,
 		register,
+		control,
 		formState: { errors },
+		setValue,
 		watch,
 	} = useFormContext();
+	const province = watch('province');
 
 	const region = {
 		countries: regions.flatMap((region) => region.countries),
@@ -68,16 +75,16 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 	const submit = async (data: FieldValues) => {
 		const formData = new FormData();
 		formData.append('addressId', data.addressId || '');
-		formData.append('address_name', data.addressName);
+		formData.append('address_name', data.addressName || '');
 		formData.append('first_name', data.firstName);
 		formData.append('last_name', data.lastName);
-		formData.append('email', data.email);
 		formData.append('address_1', data.address);
+		formData.append('address_2', data.barangay);
 		formData.append('city', data.city);
 		formData.append('country_code', data.countryCode);
 		formData.append('postal_code', data.postalCode);
-		formData.append('company', data.company);
-		formData.append('phone', data.phone);
+		formData.append('company', data.company || '');
+		formData.append('phone', toPhMobile(data.phone) ?? data.phone);
 		formData.append('province', data.province);
 
 		const res = data.addressId
@@ -116,42 +123,19 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 					<LabeledInput
 						error={errors.phone as FieldError}
 						important
-						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="Ph Number"
-						placeholder="Enter your ph number..."
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white pl-[56px]"
+						icon={<span className="text-base text-black/70">+63</span>}
+						inputMode="tel"
+						label="Mobile Number"
+						placeholder="917 123 4567"
 						{...register('phone')}
 					/>
 					<LabeledInput
-						error={errors.email as FieldError}
-						important
+						error={errors.addressName as FieldError}
 						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="Email Address"
-						placeholder="Enter your email address..."
-						{...register('email')}
-					/>
-					<LabeledInput
-						error={errors.address as FieldError}
-						important
-						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="Street Address"
-						placeholder="Enter your address..."
-						{...register('address')}
-					/>
-					<LabeledInput
-						error={errors.company as FieldError}
-						important
-						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="Company"
-						placeholder="Enter your company..."
-						{...register('company')}
-					/>
-					<LabeledInput
-						error={errors.city as FieldError}
-						important
-						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="City/Town"
-						placeholder="Enter your city..."
-						{...register('city')}
+						label="Address Label"
+						placeholder="e.g. Home, Office"
+						{...register('addressName')}
 					/>
 					<div>
 						<CountrySelect
@@ -168,23 +152,63 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 						)}
 					</div>
 					<LabeledInput
-						error={errors.province as FieldError}
+						error={errors.address as FieldError}
 						important
 						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="State/Province"
-						placeholder="Enter your state..."
-						{...register('province')}
+						label="Street Address"
+						placeholder="Enter your address..."
+						{...register('address')}
+					/>
+					<Controller
+						control={control}
+						name="province"
+						render={({ field, fieldState }) => (
+							<SearchableSelect
+								error={fieldState.error}
+								important
+								label="Province"
+								onChange={(value) => {
+									if (value === field.value) return;
+									field.onChange(value);
+									setValue('city', '');
+								}}
+								options={phProvinces}
+								placeholder="Choose a province"
+								testId="address-province-select"
+								value={field.value}
+							/>
+						)}
+					/>
+					<Controller
+						control={control}
+						name="city"
+						render={({ field, fieldState }) => (
+							<SearchableSelect
+								disabled={!province}
+								error={fieldState.error}
+								important
+								label="City/Municipality"
+								onChange={field.onChange}
+								options={phCitiesOf(province)}
+								placeholder={
+									province
+										? 'Choose a city'
+										: 'Choose a province first'
+								}
+								testId="address-city-select"
+								value={field.value}
+							/>
+						)}
 					/>
 					<LabeledInput
-						error={errors.province as FieldError}
+						error={errors.barangay as FieldError}
 						important
 						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
-						label="Address Name"
-						placeholder="Enter your address name..."
-						{...register('addressName')}
+						label="Barangay"
+						placeholder="Enter your barangay..."
+						{...register('barangay')}
 					/>
 					<LabeledInput
-						className="col-span-2"
 						error={errors.postalCode as FieldError}
 						important
 						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
@@ -192,11 +216,20 @@ const Form: React.FC<Props> = ({ regions, handleClose }) => {
 						placeholder="Enter your postal code..."
 						{...register('postalCode')}
 					/>
+					<LabeledInput
+						className="col-span-2"
+						error={errors.company as FieldError}
+						inputClassName="focus:border-[#2563EB] focus:outline-none focus:ring-2 border border-black/10 bg-white"
+						label="Company"
+						placeholder="Enter your company..."
+						{...register('company')}
+					/>
 				</div>
 				{error && <p className="label-md text-negative">{error}</p>}
 				<div className="flex justify-end gap-2">
 					<Button
 						className="w-fit px-2 py-1 bg-white !text-[13px] rounded-[6px] border border-black/10 shadow-sm !font-medium"
+						onClick={handleClose}
 						type="button"
 					>
 						Cancel
