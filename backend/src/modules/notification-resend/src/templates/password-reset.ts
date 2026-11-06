@@ -1,3 +1,5 @@
+import { emailLogo } from "./logo"
+
 export function passwordResetTemplate(data: {
   user_name?: string
   store_name?: string
@@ -30,7 +32,7 @@ export function passwordResetTemplate(data: {
                 <!-- Header banner -->
                 <tr>
                   <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="42" style="display:inline-block;border:0;max-width:220px;margin-bottom:22px;">
+                    ${emailLogo(storeName, 22)}
                     <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Account Security</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">Password Reset</p>
                     <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>

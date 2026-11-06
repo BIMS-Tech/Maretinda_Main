@@ -5,6 +5,7 @@ import {
 import { Modules } from "@medusajs/framework/utils"
 import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { BRAND_NAME } from "../lib/brand"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
 const SELLER_NEW_ORDER_TEMPLATE = "sellerNewOrderEmailTemplate"
@@ -97,10 +98,7 @@ async function notifySellers(
       relations: ["items", "shipping_address", "billing_address"],
     })
 
-    const storeService = container.resolve(Modules.STORE)
-    const stores = await storeService.listStores()
-    const store = stores[0]
-    const storeName = store?.name || "Maretinda Marketplace"
+    const storeName = BRAND_NAME
     const baseUrl = storefrontUrl()
     const vendorBaseUrl = vendorUrl()
 

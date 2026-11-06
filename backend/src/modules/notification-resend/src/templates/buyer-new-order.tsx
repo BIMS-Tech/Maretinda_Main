@@ -1,3 +1,5 @@
+import { emailLogo } from "./logo"
+
 export function buyerNewOrderTemplate(data: {
   user_name?: string
   order_address?: string
@@ -134,7 +136,7 @@ export function buyerNewOrderTemplate(data: {
                 <!-- Header banner -->
                 <tr>
                   <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${store_name}" height="42" style="display:inline-block;border:0;max-width:220px;margin-bottom:22px;">
+                    ${emailLogo(store_name, 22)}
                     <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Order Confirmed</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">#${display_id}</p>
                     <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>

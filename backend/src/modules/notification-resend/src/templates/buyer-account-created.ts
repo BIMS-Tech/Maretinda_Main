@@ -1,3 +1,5 @@
+import { emailLogo } from "./logo"
+
 export function buyerAccountCreatedTemplate(data: {
   user_name?: string
   store_name?: string
@@ -31,7 +33,7 @@ export function buyerAccountCreatedTemplate(data: {
                 <tr>
                   <td style="background:#432C63;padding:38px 40px 34px;text-align:center;">
                     <p style="margin:0 0 20px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Welcome to</p>
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${storeName}" height="48" style="display:inline-block;border:0;max-width:260px;">
+                    ${emailLogo(storeName)}
                     <div style="width:40px;height:3px;background:#FFC533;margin:18px auto 0;border-radius:2px;"></div>
                   </td>
                 </tr>
