@@ -51,7 +51,7 @@ export function buyerNewOrderTemplate(data: {
     new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: currency_code || "PHP",
-    }).format(amount / 100)
+    }).format(amount)
 
   const itemsTotal = items.reduce(
     (sum, item) => sum + (item.unit_price || 0) * (item.quantity || 1),
