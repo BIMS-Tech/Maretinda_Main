@@ -3,6 +3,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import { useEffect, useState } from 'react';
 import { isManual, paymentInfoMap } from '@/lib/constants';
+import { giyapayMethodTitle } from '@/lib/helpers/giyapay-method';
 import { convertToLocale } from '@/lib/helpers/money';
 import { getImageUrl } from '@/lib/helpers/get-image-url';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
@@ -75,7 +76,7 @@ export const OrderConfirmedSection = ({
 	// Get payment method name
 	const getPaymentMethodName = () => {
 		if (txn?.gateway) {
-			return txn.gateway;
+			return giyapayMethodTitle(txn.gateway);
 		}
 		// Fallback to order payment collection
 		if (providerId) {

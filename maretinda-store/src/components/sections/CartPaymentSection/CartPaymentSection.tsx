@@ -15,33 +15,35 @@ import {
 	isStripe as isStripeFunc,
 	paymentInfoMap,
 } from '../../../lib/constants';
+import { GIYAPAY_METHOD_TITLES } from '../../../lib/helpers/giyapay-method';
 import PaymentContainer, {
 	StripeCardContainer,
 } from '../../organisms/PaymentContainer/PaymentContainer';
 
+// Titles live in the helper so the order confirmation page shows the same names
 const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
 	'INSTAPAY': {
-		title: 'InstaPay',
+		title: GIYAPAY_METHOD_TITLES.INSTAPAY,
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-instapay.png" alt="InstaPay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'MASTERCARD/VISA': {
-		title: 'Visa / Mastercard',
+		title: GIYAPAY_METHOD_TITLES['MASTERCARD/VISA'],
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-mastercard-visa.png" alt="Visa/Mastercard" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'GCASH': {
-		title: 'GCash',
+		title: GIYAPAY_METHOD_TITLES.GCASH,
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-gcash.png" alt="GCash" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'QRPH': {
-		title: 'QR Ph',
+		title: GIYAPAY_METHOD_TITLES.QRPH,
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-qrph.png" alt="QR Ph" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'WECHATPAY': {
-		title: 'WeChat Pay',
+		title: GIYAPAY_METHOD_TITLES.WECHATPAY,
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-wechatpay.png" alt="WeChat Pay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 	'UNIONPAY': {
-		title: 'UnionPay',
+		title: GIYAPAY_METHOD_TITLES.UNIONPAY,
 		icon: <span style={{ background: '#fff', borderRadius: 4, padding: '2px 5px', border: '1px solid #e5e7eb', display: 'inline-flex', alignItems: 'center' }}><img src="https://pay.giyapay.com/images/select-unionpay.png" alt="UnionPay" style={{ height: 16, width: 'auto', objectFit: 'contain' }} /></span>,
 	},
 };
