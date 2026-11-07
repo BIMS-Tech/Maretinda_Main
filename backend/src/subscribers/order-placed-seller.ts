@@ -6,6 +6,7 @@ import { Modules } from "@medusajs/framework/utils"
 import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { BRAND_NAME } from "../lib/brand"
+import { getSellerPaymentState } from "../lib/seller-order-payment"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
 const SELLER_NEW_ORDER_TEMPLATE = "sellerNewOrderEmailTemplate"
@@ -136,6 +137,11 @@ async function notifySellers(
       })),
     }
 
+    const paymentState = await getSellerPaymentState(
+      container.resolve(ContainerRegistrationKeys.QUERY),
+      orderId
+    )
+
     const notificationService = container.resolve(Modules.NOTIFICATION)
 
     for (const seller of sellers) {
@@ -159,6 +165,7 @@ async function notifySellers(
               store_name: storeName,
               storefront_url: baseUrl,
               vendor_url: vendorBaseUrl,
+              payment_state: paymentState,
             },
           },
         })

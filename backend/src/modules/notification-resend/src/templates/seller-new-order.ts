@@ -3,6 +3,8 @@ import { emailLogo } from "./logo"
 export function sellerNewOrderTemplate(data: {
   store_name?: string
   vendor_url?: string
+  /** Left out when the payment could not be determined. */
+  payment_state?: "cash_on_delivery" | "paid"
   order?: {
     display_id?: string | number
     seller?: { name?: string; email?: string }
@@ -26,6 +28,13 @@ export function sellerNewOrderTemplate(data: {
   const customerName =
     [order.customer?.first_name, order.customer?.last_name].filter(Boolean).join(" ") || "Customer"
   const items = order.items || []
+  const isCod = data.payment_state === "cash_on_delivery"
+
+  const badge = isCod
+    ? { background: "#FEF3C7", color: "#92400E", text: "Cash on Delivery &mdash; not yet paid" }
+    : data.payment_state === "paid"
+      ? { background: "#D1FAE5", color: "#065F46", text: "&#10003; &nbsp;Payment received &mdash; ready to fulfill" }
+      : { background: "#EDE9F5", color: "#432C63", text: "Ready to fulfill" }
 
   const itemsHtml = items
     .map(
@@ -87,8 +96,8 @@ export function sellerNewOrderTemplate(data: {
                   <td style="padding:32px 40px 0;text-align:center;">
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
-                        <td style="background:#D1FAE5;border-radius:20px;padding:8px 20px;">
-                          <p style="margin:0;font-size:13px;font-weight:700;color:#065F46;">&#10003; &nbsp;Payment received &mdash; ready to fulfill</p>
+                        <td style="background:${badge.background};border-radius:20px;padding:8px 20px;">
+                          <p style="margin:0;font-size:13px;font-weight:700;color:${badge.color};">${badge.text}</p>
                         </td>
                       </tr>
                     </table>
@@ -174,6 +183,18 @@ export function sellerNewOrderTemplate(data: {
                           Mark the order as shipped and enter the tracking number
                         </td>
                       </tr>
+                      ${
+                        isCod
+                          ? `<tr>
+                        <td style="padding:6px 0;vertical-align:top;width:24px;">
+                          <div style="width:22px;height:22px;background:#FFC533;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#111827;line-height:22px;">4</div>
+                        </td>
+                        <td style="padding:6px 0 6px 12px;font-size:14px;color:#374151;vertical-align:top;line-height:1.6;">
+                          Once the cash is collected, open the order and click <strong>Capture Payment</strong>
+                        </td>
+                      </tr>`
+                          : ""
+                      }
                     </table>
                   </td>
                 </tr>
