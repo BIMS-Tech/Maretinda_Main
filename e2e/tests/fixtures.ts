@@ -178,13 +178,36 @@ export async function adminPage(browser: import('@playwright/test').Browser) {
   return page
 }
 
-/** Signs a seller in through the seller panel and waits for the panel to load. */
+/**
+ * Signs a seller in through the seller panel and waits for it to load.
+ * Seller sign-ins are rate limited per account, so a working session is
+ * cached per seller and reused for a few hours.
+ */
 export async function signInSeller(page: Page, email: string, password: string) {
+  const file = cacheFile(`seller-${email.replace(/[^a-z0-9]/gi, '_')}`)
+  const ready = page.getByRole('link', { name: 'Orders' }).or(page.getByRole('heading', { name: 'Choose a Plan' })).first()
+  const loginForm = page.locator('input[name="email"]')
+
+  if (fresh(file)) {
+    const state = JSON.parse(fs.readFileSync(file, 'utf8'))
+    await page.context().addCookies(state.cookies)
+    const origin = state.origins?.[0]
+    if (origin) {
+      await page.addInitScript((items: { name: string; value: string }[]) => {
+        for (const { name, value } of items) window.localStorage.setItem(name, value)
+      }, origin.localStorage)
+    }
+    await page.goto('/dashboard')
+    await expect(ready.or(loginForm)).toBeVisible({ timeout: 60_000 })
+    if (await ready.isVisible()) return
+  }
+
   await page.goto('/login')
-  await page.locator('input[name="email"]').fill(email)
+  await loginForm.fill(email)
   await page.locator('input[name="password"]').fill(password)
   await page.getByRole('button', { name: 'Sign In' }).click()
-  await expect(page.getByRole('link', { name: 'Orders' }).or(page.getByRole('heading', { name: 'Choose a Plan' })).first()).toBeVisible({ timeout: 60_000 })
+  await expect(ready).toBeVisible({ timeout: 60_000 })
+  await page.context().storageState({ path: file })
 }
 
 /**
