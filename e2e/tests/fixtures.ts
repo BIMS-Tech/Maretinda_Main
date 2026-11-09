@@ -1,3 +1,7 @@
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
 import { test as base, expect, type Page } from '@playwright/test'
 
 /**
@@ -136,10 +140,40 @@ export async function placeCodOrder(page: Page) {
   return page.url().match(/\/order\/([^/]+)\/confirmed/)![1]
 }
 
+// Admin sign-ins are rate limited per account, so the token and the browser
+// session are made once and reused across specs for a few hours
+const cacheFile = (name: string) => path.join(os.tmpdir(), `maretinda-e2e-${name}.json`)
+const fresh = (file: string) => fs.existsSync(file) && Date.now() - fs.statSync(file).mtimeMs < 6 * 3600_000
+
 /** Admin API token for read checks (order payment status etc.). */
 export async function adminToken(request: import('@playwright/test').APIRequestContext) {
+  const file = cacheFile('admin-token')
+  if (fresh(file)) return JSON.parse(fs.readFileSync(file, 'utf8')).token as string
   const res = await request.post(`${API_URL}/auth/user/emailpass`, {
     data: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD },
   })
-  return (await res.json()).token as string
+  const { token } = await res.json()
+  if (!token) throw new Error(`admin sign-in failed: ${res.status()}`)
+  fs.writeFileSync(file, JSON.stringify({ token }))
+  return token as string
+}
+
+/** A page in the admin panel, signed in once and reused. */
+export async function adminPage(browser: import('@playwright/test').Browser) {
+  const { urls } = await import('../playwright.config')
+  const file = cacheFile('admin-state')
+  const context = await browser.newContext({ baseURL: urls.admin, ...(fresh(file) ? { storageState: file } : {}) })
+  const page = await context.newPage()
+  await page.goto('/orders')
+  // The panel redirects to /login only after it has loaded
+  const loginForm = page.locator('input[name="email"]')
+  await expect(loginForm.or(page.getByRole('link', { name: 'Orders' }).first())).toBeVisible({ timeout: 60_000 })
+  if (await loginForm.isVisible()) {
+    await page.locator('input[name="email"]').fill(process.env.E2E_ADMIN_EMAIL!)
+    await page.locator('input[name="password"]').fill(process.env.E2E_ADMIN_PASSWORD!)
+    await page.getByRole('button', { name: /sign in|continue|log in/i }).first().click()
+    await expect(page).not.toHaveURL(/\/login/, { timeout: 60_000 })
+    await context.storageState({ path: file })
+  }
+  return page
 }
