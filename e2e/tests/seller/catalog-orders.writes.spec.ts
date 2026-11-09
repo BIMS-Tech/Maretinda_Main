@@ -5,6 +5,7 @@ import {
   expect,
   sellerProducts,
   sellerToken,
+  signInBuyer,
   signInSeller,
   test,
   writesAllowed,
@@ -67,5 +68,35 @@ test.describe('seller orders (writes)', () => {
     await expect(page.getByText(/captured/i).first()).toBeVisible()
 
     expect(await settledPaymentStatus(request, order.orderId)).toBe('captured')
+  })
+
+  test('SOP-05 fulfil, ship and deliver; the buyer sees each step', async ({ page, browser }) => {
+    await signInSeller(page, process.env.E2E_SELLER_EMAIL!, process.env.E2E_SELLER_PASSWORD!)
+    await page.goto(`/orders/${order.orderId}`)
+    await page.getByRole('button', { name: 'Fulfill items' }).click()
+    await page.getByRole('button', { name: 'Create Fulfillment' }).click()
+    await expect(page.getByText(/Awaiting shipping/i).first()).toBeVisible({ timeout: 60_000 })
+
+    await page.getByRole('button', { name: 'Mark as shipped' }).click()
+    const shipDialog = page.getByRole('dialog')
+    await expect(shipDialog.getByRole('heading', { name: 'Mark fulfillment shipped' })).toBeVisible()
+    await shipDialog.getByRole('button', { name: 'Save' }).click()
+    await expect(shipDialog).toHaveCount(0, { timeout: 60_000 })
+    await expect(page.getByText(/Awaiting shipping/i)).toHaveCount(0, { timeout: 60_000 })
+
+    await page.getByRole('button', { name: 'Mark as delivered' }).click()
+    const confirm = page.getByRole('alertdialog')
+    if (await confirm.waitFor({ timeout: 5_000 }).then(() => true, () => false)) {
+      await confirm.getByRole('button').last().click()
+    }
+    await expect(page.getByText(/delivered/i).first()).toBeVisible({ timeout: 60_000 })
+    await expect(page.getByRole('button', { name: 'Mark as delivered' })).toHaveCount(0)
+
+    const { urls } = await import('../../playwright.config')
+    const store = await browser.newPage({ baseURL: urls.store })
+    await signInBuyer(store, order.email, order.password)
+    await store.goto('/ph/user/orders')
+    await expect(store.getByText(/delivered/i).first()).toBeVisible({ timeout: 60_000 })
+    await store.close()
   })
 })
