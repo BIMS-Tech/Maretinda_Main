@@ -275,14 +275,15 @@ export default class VoucherService {
       }
     }
 
-    // Determine min order from rules (values are objects with a .value property)
+    // Min order from the subtotal rule, in pesos like the cart.subtotal Medusa
+    // compares it with (values are objects with a .value property)
     let min_order: number | undefined
     const subtotalRule = p.rules?.find((r: any) => r.attribute === "subtotal")
     if (subtotalRule?.values?.[0]) {
       const raw = subtotalRule.values[0]
       const scalar = typeof raw === "object" ? raw.value : raw
       const parsed = Number(scalar)
-      if (!isNaN(parsed) && parsed > 0) min_order = parsed / 100
+      if (!isNaN(parsed) && parsed > 0) min_order = parsed
     }
 
     const meta = p.metadata || {}

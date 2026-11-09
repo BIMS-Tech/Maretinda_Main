@@ -23,19 +23,20 @@ export default function CartPromotionCode({
 	const appliedCodes =
 		cart?.promotions?.map((p: any) => p.code as string) ?? [];
 
-	const handleApply = async (code: string) => {
-		if (!code.trim()) return;
+	const handleApply = async (input: string) => {
+		const code = input.trim();
+		if (!code) return;
 		setIsLoading(true);
 		try {
-			const allCodes = [...new Set([...appliedCodes, code.trim()])];
-			const res = await applyPromotions(allCodes);
-			if (res) {
-				toast.success({ title: `${code} applied` });
+			const allCodes = [...new Set([...appliedCodes, code])];
+			const res = await applyPromotions(allCodes, code);
+			if (res.applied) {
+				toast.success({ title: `${res.code} applied` });
 			} else {
-				toast.error({ title: 'Voucher code not valid or conditions not met' });
+				toast.error({ title: res.message });
 			}
 		} catch {
-			toast.error({ title: 'Failed to apply voucher' });
+			toast.error({ title: "We couldn't reach the server. Please try again." });
 		} finally {
 			setIsLoading(false);
 		}

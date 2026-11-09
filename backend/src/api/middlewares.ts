@@ -8,7 +8,7 @@ import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
 import { PRODUCT_RULE_ATTRIBUTE, productIdsOfSeller } from '../lib/seller-promotion'
 import { sellerIdOfMember } from '../lib/seller-ownership'
 import { authRateLimit, rateLimit } from '../lib/rate-limit'
-import { refusedPromoCode } from '../lib/promotion-metadata'
+import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -57,15 +57,22 @@ const guardSellerPromotionRules = async (req: MedusaRequest, res: MedusaResponse
   }
 }
 
-/** First-order vouchers are enforced when applied, not just when collected. */
+/**
+ * Matches codes ignoring case, and enforces first-order vouchers when applied,
+ * not just when collected.
+ */
 const guardPromoCodes = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
   try {
     const codes = (req.body as any)?.promo_codes
     if (!Array.isArray(codes) || !codes.length) return next()
 
     const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const stored = await storedPromoCodes(db, codes.map(String))
+    ;(req.body as any).promo_codes = stored
+    if ((req as any).validatedBody?.promo_codes) (req as any).validatedBody.promo_codes = stored
+
     const cart = await db('cart').where('id', req.params.id).first()
-    const refused = await refusedPromoCode(db, codes.map(String), cart?.customer_id)
+    const refused = await refusedPromoCode(db, stored, cart?.customer_id)
     if (refused) return res.status(400).json({ type: 'invalid_data', message: refused })
     next()
   } catch (error) {

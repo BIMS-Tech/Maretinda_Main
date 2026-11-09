@@ -29,7 +29,10 @@ async function sendBuyerConfirmation(
 ) {
   try {
     const orderService = container.resolve(Modules.ORDER)
+    // Totals are only calculated when selected; without this the email fell
+    // back to items + shipping and ignored vouchers
     const order = await orderService.retrieveOrder(orderId, {
+      select: ["id", "display_id", "email", "customer_id", "currency_code", "total", "discount_total"],
       relations: ["items", "shipping_address", "billing_address", "shipping_methods"],
     })
 
@@ -58,6 +61,7 @@ async function sendBuyerConfirmation(
     const orderForTemplate = {
       display_id: (order as any).display_id ?? order.id,
       total: (order as any).total ?? 0,
+      discount_total: (order as any).discount_total ?? 0,
       currency_code: (order as any).currency_code ?? "USD",
       email: order.email,
       items: items.map((item: any) => ({

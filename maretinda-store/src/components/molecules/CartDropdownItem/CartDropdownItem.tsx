@@ -16,7 +16,7 @@ export const CartDropdownItem = ({
 	});
 
 	const total = convertToLocale({
-		amount: item.total || 0,
+		amount: item.subtotal || 0,
 		currency_code,
 	});
 

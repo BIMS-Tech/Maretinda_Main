@@ -8,6 +8,7 @@ export function buyerNewOrderTemplate(data: {
   order?: {
     display_id?: string | number
     total?: number
+    discount_total?: number
     currency_code?: string
     items?: Array<{
       thumbnail?: string
@@ -39,6 +40,7 @@ export function buyerNewOrderTemplate(data: {
   const {
     display_id = "0000",
     total = 0,
+    discount_total = 0,
     currency_code = "PHP",
     items = [],
     shipping_methods = [],
@@ -59,7 +61,7 @@ export function buyerNewOrderTemplate(data: {
   )
   const shippingAmount = shipping_methods[0]?.amount || 0
   const shippingName = shipping_methods[0]?.name || "Standard Shipping"
-  const orderTotal = total || itemsTotal + shippingAmount
+  const orderTotal = total || itemsTotal + shippingAmount - discount_total
 
   const itemsHtml = items
     .map(
@@ -205,6 +207,14 @@ export function buyerNewOrderTemplate(data: {
                         <td style="padding:6px 0;font-size:14px;color:#6B7280;">Shipping &mdash; ${shippingName}</td>
                         <td style="padding:6px 0;text-align:right;font-size:14px;color:#374151;">${formatCurrency(shippingAmount)}</td>
                       </tr>
+                      ${
+                        discount_total > 0
+                          ? `<tr>
+                        <td style="padding:6px 0;font-size:14px;color:#6B7280;">Voucher discount</td>
+                        <td style="padding:6px 0;text-align:right;font-size:14px;color:#059669;">−${formatCurrency(discount_total)}</td>
+                      </tr>`
+                          : ""
+                      }
                       <tr>
                         <td colspan="2" style="padding:10px 0;">
                           <div style="height:1px;background:#E5E7EB;"></div>

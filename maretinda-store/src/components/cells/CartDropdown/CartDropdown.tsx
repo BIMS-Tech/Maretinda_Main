@@ -30,7 +30,7 @@ export const CartDropdown = ({
 	const pathname = usePathname();
 
 	const total = convertToLocale({
-		amount: cart?.item_total || 0,
+		amount: cart?.item_subtotal || 0,
 		currency_code: cart?.currency_code || 'eur',
 	});
 

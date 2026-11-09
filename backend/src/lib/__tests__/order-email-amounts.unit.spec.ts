@@ -32,3 +32,26 @@ describe("buyer order confirmation email", () => {
     expect(html).toContain("₱430.00")
   })
 })
+
+describe("buyer order confirmation email with a voucher", () => {
+  const withVoucher = {
+    ...order,
+    items: [{ product_title: "Jacket", unit_price: 770, quantity: 2 }],
+    shipping_methods: [{ name: "Express Delivery", amount: 10 }],
+    total: 1350,
+    discount_total: 200,
+  }
+
+  it("lists the voucher discount so the lines add up to the total", () => {
+    const html = buyerNewOrderTemplate({ order: withVoucher })
+
+    expect(html).toContain("₱1,540.00")
+    expect(html).toContain("Voucher discount")
+    expect(html).toContain("−₱200.00")
+    expect(html).toContain("₱1,350.00")
+  })
+
+  it("leaves the discount line out when there is none", () => {
+    expect(buyerNewOrderTemplate({ order })).not.toContain("Voucher discount")
+  })
+})

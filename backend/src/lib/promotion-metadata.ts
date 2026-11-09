@@ -62,11 +62,33 @@ export async function refusedPromoCode(
     .select("p.code")
   if (!restricted.length) return null
 
-  if (!customerId) return "Sign in to use this first-order voucher"
+  // Medusa gives every guest checkout email a customer record, so a customer id
+  // alone doesn't mean signed in. Without this a new email each time would get
+  // the first-order discount every time.
+  const customer = customerId
+    ? await pg("customer").where("id", customerId).whereNull("deleted_at").first("has_account")
+    : null
+  if (!customer?.has_account) return "Sign in to use this first-order voucher"
 
   const previous = await pg.raw(
     `SELECT 1 FROM "order" WHERE customer_id = ? AND status NOT IN ('canceled', 'archived') LIMIT 1`,
     [customerId]
   )
   return previous.rows.length ? "This voucher is only for first-time buyers" : null
+}
+
+/**
+ * The codes as stored, matched ignoring case and spaces: Medusa only finds exact
+ * matches, so "hellomrtd" was "invalid". Unknown codes pass through unchanged
+ * for Medusa to report.
+ */
+export async function storedPromoCodes(pg: any, codes: string[]): Promise<string[]> {
+  const wanted = uniq(codes.map((c) => String(c).trim()))
+  if (!wanted.length) return []
+  const rows = await pg("promotion")
+    .whereNull("deleted_at")
+    .whereRaw("upper(code) = ANY(?)", [wanted.map((c) => c.toUpperCase())])
+    .select("code")
+  const byUpper = new Map<string, string>(rows.map((r: any) => [r.code.toUpperCase(), r.code]))
+  return wanted.map((c) => byUpper.get(c.toUpperCase()) ?? c)
 }

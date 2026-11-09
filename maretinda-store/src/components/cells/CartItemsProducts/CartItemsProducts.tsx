@@ -37,7 +37,7 @@ export const CartItemsProducts = ({
 					});
 
 					const subtotal = convertToLocale({
-						amount: product.total || 0,
+						amount: product.subtotal || 0,
 						currency_code,
 					});
 

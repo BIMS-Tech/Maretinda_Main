@@ -186,7 +186,7 @@ export const OrderConfirmedSection = ({
 								<div className="text-right flex-shrink-0">
 									<p className="font-bold text-base text-gray-900">
 										{convertToLocale({
-											amount: item.total || 0,
+											amount: item.subtotal || 0,
 											currency_code: currency,
 										})}
 									</p>
@@ -201,7 +201,7 @@ export const OrderConfirmedSection = ({
 							<div className="flex justify-between text-gray-600 text-sm">
 								<span>Subtotal</span>
 								<span className="font-medium text-gray-800">
-									{convertToLocale({ amount: order.item_total || 0, currency_code: currency })}
+									{convertToLocale({ amount: order.item_subtotal || 0, currency_code: currency })}
 								</span>
 							</div>
 							<div className="flex justify-between text-gray-600 text-sm">

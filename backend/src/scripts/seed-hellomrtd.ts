@@ -1,60 +1,14 @@
 import { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { savePromotionMetadata } from "../lib/promotion-metadata"
 
 /**
- * Run with: npx medusa exec src/scripts/seed-hellomrtd.ts
- *
- * Creates the HELLOMRTD welcome promotion:
- *   ₱200 fixed discount on first order over ₱1,500
- *   Only usable by customers in the "First Time Buyers" group
+ * The welcome voucher the hero and newsletter advertise: ₱200 off a first
+ * order over ₱1,500. Amounts are pesos, like every Medusa amount here.
+ * First-order-only is enforced by the promo-code guards in api/middlewares.ts.
  */
-export default async function seedHelloMrtd({ container }: ExecArgs) {
-  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
-  const promotionService = container.resolve(Modules.PROMOTION)
-  const customerService = container.resolve(Modules.CUSTOMER)
-
-  // Check if already seeded
-  const existing = await promotionService.listPromotions({
-    code: ["HELLOMRTD"],
-  })
-  if (existing.length > 0) {
-    logger.info("HELLOMRTD promotion already exists — skipping.")
-    return
-  }
-
-  // Resolve the First Time Buyers customer group
-  const groups = await customerService.listCustomerGroups({
-    name: "First Time Buyers",
-  })
-
-  let groupId: string | null = null
-  if (groups.length > 0) {
-    groupId = groups[0].id
-    logger.info(`Found 'First Time Buyers' group: ${groupId}`)
-  } else {
-    logger.warn(
-      "No 'First Time Buyers' group found — promotion will be created without group restriction. Run the app to auto-create the group on first customer signup."
-    )
-  }
-
-  const rules: any[] = [
-    // Minimum cart subtotal: ₱1,500 (in centavos = 150,000)
-    {
-      operator: "gte",
-      attribute: "subtotal",
-      values: ["150000"],
-    },
-  ]
-
-  if (groupId) {
-    rules.push({
-      operator: "in",
-      attribute: "customer.groups.id",
-      values: [groupId],
-    })
-  }
-
-  const promotion = await promotionService.createPromotions({
+export const HELLOMRTD = {
+  promotion: {
     code: "HELLOMRTD",
     type: "standard",
     is_automatic: false,
@@ -62,20 +16,27 @@ export default async function seedHelloMrtd({ container }: ExecArgs) {
     application_method: {
       type: "fixed",
       target_type: "order",
-      // ₱200 = 20,000 centavos
-      value: 20000,
+      allocation: "across",
+      value: 200,
       currency_code: "php",
-      apply_to_quantity: 1,
-      max_quantity: 1,
     },
-    rules,
-  } as any)
+    rules: [{ attribute: "subtotal", operator: "gte", values: ["1500"] }],
+  },
+  metadata: {
+    first_order_only: true,
+    description: "₱200 off your first order over ₱1,500",
+  },
+}
 
-  logger.info(`✅ Created HELLOMRTD promotion with ID: ${(promotion as any).id}`)
+/** Run with: npx medusa exec src/scripts/seed-hellomrtd.ts (safe to re-run) */
+export default async function seedHelloMrtd({ container }: ExecArgs) {
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+  const promotionService = container.resolve(Modules.PROMOTION)
+  const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
 
-  if (!groupId) {
-    logger.warn(
-      "Re-run this script after the first customer signs up to add the group restriction."
-    )
-  }
+  const [existing] = await promotionService.listPromotions({ code: [HELLOMRTD.promotion.code] })
+  const promotion = existing ?? (await promotionService.createPromotions(HELLOMRTD.promotion as any))
+
+  await savePromotionMetadata(pg, promotion.id, HELLOMRTD.metadata)
+  logger.info(`${existing ? "Kept" : "Created"} HELLOMRTD (${promotion.id}) and set it to first orders only`)
 }

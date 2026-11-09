@@ -85,13 +85,14 @@ describe("VoucherService.formatPromotion", () => {
     expect(service.formatPromotion(promo({ application_method: null })).discount_label).toBe("Voucher")
   })
 
-  it("converts the subtotal rule (centavos) into a peso min_order", () => {
-    const p = promo({ rules: [{ attribute: "subtotal", values: [{ value: "50000" }] }] })
-    expect(service.formatPromotion(p).min_order).toBe(500)
+  // Medusa compares the rule with cart.subtotal, which is in pesos
+  it("reads the subtotal rule as a peso min_order", () => {
+    const p = promo({ rules: [{ attribute: "subtotal", values: [{ value: "1500" }] }] })
+    expect(service.formatPromotion(p).min_order).toBe(1500)
   })
 
   it("accepts scalar rule values", () => {
-    const p = promo({ rules: [{ attribute: "subtotal", values: [100000] }] })
+    const p = promo({ rules: [{ attribute: "subtotal", values: [1000] }] })
     expect(service.formatPromotion(p).min_order).toBe(1000)
   })
 

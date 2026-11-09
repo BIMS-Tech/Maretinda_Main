@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 
 import medusaError from '@/lib/helpers/medusa-error';
 import { toPhMobile } from '@/lib/helpers/ph-mobile';
+import { voucherErrorMessage, voucherNotAppliedMessage } from '@/lib/helpers/voucher-message';
 
 import { sdk } from '../config';
 import {
@@ -17,6 +18,7 @@ import {
 	setCartId,
 } from './cookies';
 import { getRegion } from './regions';
+import { getAvailableVouchers } from './vouchers';
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -42,7 +44,7 @@ export async function retrieveCart(cartId?: string) {
 			query: {
 				fields:
 					'*items,*region,*region.countries, *items.product, *items.variant, *items.variant.options, items.variant.options.option.title,' +
-					'*items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name',
+					'*items.thumbnail, *items.metadata, +items.total, +items.subtotal, +item_subtotal, *promotions, +shipping_methods.name',
 			},
 		})
 		.then(({ cart }) => cart)
@@ -324,11 +326,18 @@ export async function initiatePaymentSession(
 		.catch(medusaError);
 }
 
-export async function applyPromotions(codes: string[]) {
+export type ApplyVoucherResult = { applied: true; code: string } | { applied: false; message: string };
+
+/**
+ * Returns the reason instead of throwing: Next.js strips error messages from
+ * server actions in production, so a thrown reason never reached the buyer.
+ * `code` is the one being added; `codes` also carries those already applied.
+ */
+export async function applyPromotions(codes: string[], code: string): Promise<ApplyVoucherResult> {
 	const cartId = await getCartId();
 
 	if (!cartId) {
-		throw new Error('No existing cart found');
+		return { applied: false, message: 'Your cart has expired. Please refresh the page.' };
 	}
 
 	const headers = {
@@ -347,15 +356,20 @@ export async function applyPromotions(codes: string[]) {
 	);
 
 	if (!res.ok) {
-		const err = await res.json().catch(() => ({ message: 'Failed to apply promotion' }));
-		throw new Error(err.message || 'Failed to apply promotion');
+		const err = await res.json().catch(() => ({}));
+		return { applied: false, message: voucherErrorMessage(err.message, code) };
 	}
 
 	const { cart } = await res.json();
 	const cartCacheTag = await getCacheTag('carts');
 	revalidateTag(cartCacheTag);
 
-	return cart.promotions?.some((p: any) => codes.includes(p.code)) ?? false;
+	// The backend matches codes ignoring case, so the cart may hold HELLOMRTD for "hellomrtd"
+	const applied = cart.promotions?.find((p: any) => p.code?.toUpperCase() === code.toUpperCase());
+	if (applied) return { applied: true, code: applied.code };
+
+	const voucher = (await getAvailableVouchers()).find((v) => v.code.toUpperCase() === code.toUpperCase());
+	return { applied: false, message: voucherNotAppliedMessage(code, cart.subtotal ?? 0, voucher) };
 }
 
 export async function removeShippingMethod(shippingMethodId: string) {
