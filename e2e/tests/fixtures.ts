@@ -177,3 +177,58 @@ export async function adminPage(browser: import('@playwright/test').Browser) {
   }
   return page
 }
+
+/** Signs a seller in through the seller panel and waits for the panel to load. */
+export async function signInSeller(page: Page, email: string, password: string) {
+  await page.goto('/login')
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill(password)
+  await page.getByRole('button', { name: 'Sign In' }).click()
+  await expect(page.getByRole('link', { name: 'Orders' }).or(page.getByRole('heading', { name: 'Choose a Plan' })).first()).toBeVisible({ timeout: 60_000 })
+}
+
+/**
+ * Places a cash-on-delivery order through the store API for a new buyer.
+ * Faster than the UI when a seller or admin spec just needs an order.
+ */
+export async function apiCodOrder(request: import('@playwright/test').APIRequestContext, variantId: string, quantity = 1) {
+  const headers = { 'x-publishable-api-key': PUBLISHABLE_KEY }
+  const call = async (method: 'get' | 'post', url: string, data?: unknown, token?: string) => {
+    const res = await request[method](`${API_URL}${url}`, {
+      headers: { ...headers, ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      ...(data ? { data } : {}),
+    })
+    if (!res.ok()) throw new Error(`${method.toUpperCase()} ${url} → ${res.status()} ${(await res.text()).slice(0, 200)}`)
+    return res.json()
+  }
+  const email = uniqueEmail('apiorder')
+  const password = `E2e!${Date.now()}`
+  const { token: regToken } = await call('post', '/auth/customer/emailpass/register', { email, password })
+  await call('post', '/store/customers', { email, first_name: 'API', last_name: 'Buyer' }, regToken)
+  const { token } = await call('post', '/auth/customer/emailpass', { email, password })
+  const { regions } = await call('get', '/store/regions')
+  const { cart } = await call('post', '/store/carts', { region_id: regions[0].id }, token)
+  await call('post', `/store/carts/${cart.id}/line-items`, { variant_id: variantId, quantity }, token)
+  await call('post', `/store/carts/${cart.id}`, {
+    email,
+    shipping_address: {
+      first_name: 'API', last_name: 'Buyer', address_1: '1 Rizal St', address_2: 'Balibago', city: 'Angeles City',
+      province: 'Pampanga', postal_code: '2009', country_code: 'ph', phone: '+639171234567',
+    },
+  }, token)
+  const { shipping_options } = await call('get', `/store/shipping-options?cart_id=${cart.id}`, undefined, token)
+  const standard = shipping_options.find((o: { name: string }) => /standard/i.test(o.name)) ?? shipping_options[0]
+  await call('post', `/store/carts/${cart.id}/shipping-methods`, { option_id: standard.id }, token)
+  const { payment_collection } = await call('post', '/store/payment-collections', { cart_id: cart.id }, token)
+  await call('post', `/store/payment-collections/${payment_collection.id}/payment-sessions`, { provider_id: 'pp_system_default' }, token)
+  const done = await call('post', `/store/carts/${cart.id}/complete`, {}, token)
+  const order = done.order ?? done.order_set?.orders?.[0]
+  const { order: full } = await call('get', `/store/orders/${order.id}?fields=id,display_id,total`, undefined, token)
+  return { orderId: full.id as string, displayId: full.display_id as number, total: full.total as number, email, password, token }
+}
+
+/** Seller API token, e.g. for ownership checks against another seller's data. */
+export async function sellerToken(request: import('@playwright/test').APIRequestContext, email: string, password: string) {
+  const res = await request.post(`${API_URL}/auth/seller/emailpass`, { data: { email, password } })
+  return (await res.json()).token as string
+}
