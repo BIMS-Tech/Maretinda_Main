@@ -107,6 +107,7 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 					currency_code={cart?.currency_code || ''}
 					item_subtotal={cart?.item_subtotal || 0}
 					shipping_total={cart?.shipping_total || 0}
+					has_shipping_method={(cart?.shipping_methods?.length ?? 0) > 0}
 					tax={cart?.tax_total || 0}
 					total={cart?.total || 0}
 					totalItems={totalItems}

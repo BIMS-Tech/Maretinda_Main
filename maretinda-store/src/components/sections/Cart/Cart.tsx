@@ -45,6 +45,7 @@ export const Cart = async () => {
 							discount={cart?.discount_total || 0}
 							item_subtotal={cart?.item_subtotal || 0}
 							shipping_total={cart?.shipping_total || 0}
+					has_shipping_method={(cart?.shipping_methods?.length ?? 0) > 0}
 							tax={cart?.tax_total || 0}
 							total={cart?.total || 0}
 							totalItems={totalItems}

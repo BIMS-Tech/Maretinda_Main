@@ -10,6 +10,7 @@ export const CartSummary = ({
 	tax,
 	totalItems,
 	discount,
+	has_shipping_method = true,
 }: {
 	/** Items before discount: the discount has its own line below */
 	item_subtotal: number;
@@ -19,6 +20,8 @@ export const CartSummary = ({
 	tax: number;
 	totalItems?: number;
 	discount?: number;
+	/** False until the buyer picks a delivery option; "Free" before then was untrue */
+	has_shipping_method?: boolean;
 }) => {
 	const money = (amount: number) => convertToLocale({ amount, currency_code });
 	const hasDiscount = (discount || 0) > 0;
@@ -41,7 +44,9 @@ export const CartSummary = ({
 				{/* Shipping */}
 				<div className="flex justify-between">
 					<span className="text-[#6b7280]">Shipping</span>
-					{shipping_total > 0 ? (
+					{!has_shipping_method ? (
+						<span className="text-[#6b7280]">Calculated at checkout</span>
+					) : shipping_total > 0 ? (
 						<span className="font-medium text-[#111827]">{money(shipping_total)}</span>
 					) : (
 						<span className="font-semibold text-emerald-600">Free</span>

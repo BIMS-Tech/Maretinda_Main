@@ -17,6 +17,7 @@ export const DeleteCartItemButton = ({ id }: { id: string }) => {
 	};
 	return (
 		<Button
+			aria-label="Remove item"
 			className="w-10 h-10 flex items-center justify-center p-0"
 			disabled={isDeleting}
 			loading={isDeleting}

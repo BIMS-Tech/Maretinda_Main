@@ -36,6 +36,7 @@ export const UpdateCartItemButton = ({
 		return (
 			<div className="flex items-center border border-gray-300 rounded-md h-9 bg-white">
 				<Button
+					aria-label="Decrease quantity"
 					className="w-8 h-8 flex items-center justify-center !bg-transparent hover:bg-gray-100 rounded-l-md rounded-r-none !p-0 disabled:border-none"
 					disabled={quantity === 1 || isChanging}
 					onClick={() =>
@@ -60,6 +61,7 @@ export const UpdateCartItemButton = ({
 					{quantity}
 				</span>
 				<Button
+					aria-label="Increase quantity"
 					className="w-8 h-8 flex items-center justify-center !bg-transparent hover:bg-gray-100 rounded-r-md rounded-l-none !p-0 !border-none"
 					disabled={isChanging}
 					onClick={() =>
@@ -87,6 +89,7 @@ export const UpdateCartItemButton = ({
 			className={`flex items-center gap-4 mt-2 ${isProductPage && 'border border-black rounded-sm h-[46px] !mt-0 px-3'}`}
 		>
 			<Button
+				aria-label="Decrease quantity"
 				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
 				disabled={quantity === 1}
 				onClick={() =>
@@ -99,6 +102,7 @@ export const UpdateCartItemButton = ({
 			</Button>
 			<span className="text-primary font-medium">{quantity}</span>
 			<Button
+				aria-label="Increase quantity"
 				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
 				onClick={() =>
 					!isChanging &&
