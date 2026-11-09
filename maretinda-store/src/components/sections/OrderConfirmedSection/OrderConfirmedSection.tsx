@@ -94,6 +94,8 @@ export const OrderConfirmedSection = ({
 
 	const currency = order.currency_code || 'PHP';
 	const orderId = order.id;
+	// The buyer's order page is keyed by the order set (one per checkout)
+	const orderSetId: string | undefined = (order as any).order_set?.id;
 	const summaryFields = [
 		{ label: 'Order ID', value: `#${order.display_id || order.id?.slice(-8).toUpperCase()}` },
 		{ label: 'Payment Method', value: getPaymentMethodName() },
@@ -238,7 +240,7 @@ export const OrderConfirmedSection = ({
 						Continue Shopping
 					</LocalizedClientLink>
 					<LocalizedClientLink
-						href={orderId ? `/user/orders/${orderId}` : '/user/orders'}
+						href={orderSetId ? `/user/orders/${orderSetId}` : '/user/orders'}
 						className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-brandPurple text-white font-semibold px-6 py-3 text-center transition-colors hover:bg-brandPurple/90"
 					>
 						<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
