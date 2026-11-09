@@ -72,6 +72,8 @@ export const WishlistButton = ({
 
 	return (
 		<Button
+			aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+			aria-pressed={!!isWishlisted}
 			className={cn(baseClasses, className)}
 			disabled={isWishlistAdding}
 			loading={isWishlistAdding}
