@@ -1,10 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { SELLER_PANEL_URL, SELLER_REGISTER_URL, SOCIAL_LINKS } from '@/lib/helpers/cross-links';
 
+const SOCIAL_ICON_PATHS: Record<string, string> = {
+	Facebook: 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z',
+	Instagram: 'M22.56 6.33A10 10 0 0 0 17.67 1.44 10 10 0 0 0 12 0a10 10 0 0 0-5.67 1.44A10 10 0 0 0 1.44 6.33 10 10 0 0 0 0 12a10 10 0 0 0 1.44 5.67A10 10 0 0 0 6.33 22.56 10 10 0 0 0 12 24a10 10 0 0 0 5.67-1.44A10 10 0 0 0 22.56 17.67 10 10 0 0 0 24 12a10 10 0 0 0-1.44-5.67zM12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7zm6.5-.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z',
+	TikTok: 'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z',
+};
 // Seller panel (seller.maretinda.com) and the marketing site (about.maretinda.com).
 // Env vars win when present; otherwise fall back to the production domains.
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
-const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
 const SELLER_DASHBOARD_URL = `${SELLER_PANEL_URL}/dashboard`;
 const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
@@ -74,26 +78,26 @@ export function Footer() {
 							Your complete Philippine marketplace — from fresh palengke finds to fashion-forward local brands, all in one place.
 						</p>
 
-						{/* Social icons */}
-						<div className="flex items-center gap-3 mt-6">
-							{[
-								{ label: 'Facebook', path: 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z' },
-								{ label: 'Instagram', path: 'M22.56 6.33A10 10 0 0 0 17.67 1.44 10 10 0 0 0 12 0a10 10 0 0 0-5.67 1.44A10 10 0 0 0 1.44 6.33 10 10 0 0 0 0 12a10 10 0 0 0 1.44 5.67A10 10 0 0 0 6.33 22.56 10 10 0 0 0 12 24a10 10 0 0 0 5.67-1.44A10 10 0 0 0 22.56 17.67 10 10 0 0 0 24 12a10 10 0 0 0-1.44-5.67zM12 7a5 5 0 1 1 0 10A5 5 0 0 1 12 7zm6.5-.75a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5z' },
-								{ label: 'TikTok', path: 'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.73a4.85 4.85 0 0 1-1.01-.04z' },
-							].map(({ label, path }) => (
-								<a
-									key={label}
-									href="#"
-									aria-label={label}
-									className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-white/20"
-									style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
-								>
-									<svg width="15" height="15" viewBox="0 0 24 24" fill="white">
-										<path d={path} />
-									</svg>
-								</a>
-							))}
-						</div>
+						{/* Social icons: only the profiles that are configured */}
+						{SOCIAL_LINKS.length > 0 && (
+							<div className="flex items-center gap-3 mt-6">
+								{SOCIAL_LINKS.map(({ label, href }) => (
+									<a
+										key={label}
+										href={href}
+										target="_blank"
+										rel="noopener noreferrer"
+										aria-label={label}
+										className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-white/20"
+										style={{ backgroundColor: 'rgba(255,255,255,0.10)' }}
+									>
+										<svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+											<path d={SOCIAL_ICON_PATHS[label]} />
+										</svg>
+									</a>
+								))}
+							</div>
+						)}
 
 						{/* App download buttons — coming soon */}
 						<div className="mt-6">

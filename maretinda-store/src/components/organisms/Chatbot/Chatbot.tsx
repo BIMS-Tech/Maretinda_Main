@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
-const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
 const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 const PRICING_URL = `${ABOUT_SITE_URL}/#pricing`;
 
 import { useLanguage } from '@/providers/LanguageProvider';
+import { SELLER_PANEL_URL, SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 type Message = {
 	id: number;

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
+import { SELLER_PANEL_URL } from '@/lib/helpers/cross-links';
 
 // ---------------------------------------------------------------------------
 // This page handles THREE distinct GiyaPay success flows:
@@ -85,8 +86,7 @@ function SuccessContent() {
 
           const sellerPanelUrl =
             (typeof window !== 'undefined' && (window as any).__ENV__?.VITE_seller_PANEL_URL) ||
-            process.env.NEXT_PUBLIC_seller_PANEL_URL ||
-            '';
+            SELLER_PANEL_URL;
 
           setTimeout(() => {
             if (sellerPanelUrl) {
@@ -217,7 +217,7 @@ function SuccessContent() {
               <p className="text-gray-600">{message}</p>
               <button
                 onClick={() => {
-                  const url = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+                  const url = SELLER_PANEL_URL;
                   if (url) window.location.href = `${url}/subscription`;
                   else router.push(`/${locale}`);
                 }}

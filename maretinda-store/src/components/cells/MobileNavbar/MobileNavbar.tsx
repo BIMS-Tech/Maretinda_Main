@@ -8,11 +8,10 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { CloseIcon, CollapseIcon, HamburgerMenuIcon } from '@/icons';
 import { NavText } from '@/i18n/NavText';
 import { sortCategories } from '@/lib/utils';
+import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 type Category = HttpTypes.StoreProductCategory;
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
 
 const MobileCategoryItem = ({
 	category,

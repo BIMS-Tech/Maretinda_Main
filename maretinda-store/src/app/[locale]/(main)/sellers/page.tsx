@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { listSellers } from '@/lib/data/seller'
 import type { SellerProps } from '@/types/seller'
+import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links'
 
 export const metadata: Metadata = {
   title: 'Browse Sellers — Maretinda',
@@ -11,8 +12,6 @@ export const metadata: Metadata = {
 
 export const revalidate = 300
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || ''
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#'
 
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 14px)'
 const BANNER_COLORS = ['#E8DEF7', '#E2D9C7', '#D9EAE2', '#F2D9E2', '#D9E5F0', '#F0E4CC', '#FFE2D2', '#D8EAD9']

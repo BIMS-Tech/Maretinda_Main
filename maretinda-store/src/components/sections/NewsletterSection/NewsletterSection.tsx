@@ -21,7 +21,7 @@ export const NewsletterSection = () => {
 							Stay in the loop
 						</div>
 						<h2 className="font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: 'clamp(26px, 3vw, 36px)' }}>
-							Get ₱100 off your first order
+							Get ₱200 off your first order over ₱1,500
 						</h2>
 						<p className="mt-2 text-[14px] max-w-[400px]" style={{ color: '#404040' }}>
 							Subscribe for exclusive deals, new local seller spotlights, and flash sale early access.
@@ -33,10 +33,10 @@ export const NewsletterSection = () => {
 						{submitted ? (
 							<div
 								className="rounded-2xl px-8 py-6 text-center"
-								style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+								style={{ backgroundColor: 'white', border: '1px solid #ECE6F1' }}
 							>
-								<div className="text-white font-extrabold text-[18px]">You're in!</div>
-								<div className="text-white/70 text-[13px] mt-1">Check your inbox for your ₱100 voucher.</div>
+								<div className="font-extrabold text-[18px]" style={{ color: '#432C63' }}>Thanks for signing up!</div>
+								<div className="text-[13px] mt-1" style={{ color: '#404040' }}>Use code HELLOMRTD at checkout for ₱200 off your first order over ₱1,500.</div>
 							</div>
 						) : (
 							<form onSubmit={handleSubmit} className="flex gap-2">

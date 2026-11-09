@@ -5,11 +5,10 @@ import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { useLanguage } from '@/providers/LanguageProvider';
+import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 type Lang = 'en' | 'fil';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
 
 function readLangCookie(): Lang {
 	if (typeof document === 'undefined') return 'en';

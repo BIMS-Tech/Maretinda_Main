@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { SELLER_PANEL_URL } from '@/lib/helpers/cross-links';
 
 // ---------------------------------------------------------------------------
 // This page is ONLY accessible after a successful GiyaPay subscription payment.
@@ -157,7 +158,7 @@ function RegisterContent() {
           <p className="text-sm text-gray-500 mb-6">{errorMsg}</p>
           <button
             onClick={() => {
-              const url = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+              const url = SELLER_PANEL_URL;
               if (url) window.location.href = `${url}/subscription`;
               else router.push(`/${locale}`);
             }}
@@ -172,7 +173,7 @@ function RegisterContent() {
 
   // Success screen
   if (state === 'success') {
-    const sellerPanelUrl = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
+    const sellerPanelUrl = SELLER_PANEL_URL;
     return (
       <div className="min-h-screen flex items-center justify-center bg-indigo-50 px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -318,7 +319,7 @@ function RegisterContent() {
           <p className="mt-5 text-center text-xs text-gray-400">
             Already have an account?{' '}
             <a
-              href={process.env.NEXT_PUBLIC_seller_PANEL_URL || '#'}
+              href={SELLER_PANEL_URL}
               className="text-indigo-600 font-medium hover:underline"
             >
               Sign in

@@ -1,9 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 // Same env vars and production fallbacks as the Footer.
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
-const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
 const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
 // Launch-stage value props instead of vanity scale metrics — honest for a new platform.

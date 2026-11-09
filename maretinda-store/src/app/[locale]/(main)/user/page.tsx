@@ -5,10 +5,8 @@ import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedL
 import { Layout } from '@/components/organisms';
 import { CartIcon, HouseIcon, SettingIcon } from '@/icons/navigation';
 import { retrieveCustomer } from '@/lib/data/customer';
+import { SELLER_PANEL_URL, SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
-const SELLER_PANEL_URL =
-	process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
-const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
 
 const quickLinks = [
 	{

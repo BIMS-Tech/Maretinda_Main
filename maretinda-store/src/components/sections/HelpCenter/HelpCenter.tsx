@@ -3,13 +3,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-const SELLER_PANEL_URL = process.env.NEXT_PUBLIC_seller_PANEL_URL || '';
-const SELLER_REGISTER_URL = SELLER_PANEL_URL ? `${SELLER_PANEL_URL}/register` : '#';
 
 import { useLanguage } from '@/providers/LanguageProvider';
 
 import { searchVideos } from './helpVideos';
 import { VideoLibrary, VideoResults } from './VideoLibrary';
+import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 const TOPICS = [
 	{
