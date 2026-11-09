@@ -34,9 +34,15 @@ export async function getAvailableVouchers(sellerId?: string): Promise<VoucherPr
     const url = sellerId
       ? `${BACKEND_URL}/store/vouchers?seller_id=${sellerId}`
       : `${BACKEND_URL}/store/vouchers`
+    // A signed-in shopper's list says which vouchers they've collected, so it
+    // can't come from the shared cache: a cached copy brought "Collect" back
+    // right after collecting
+    const signedIn = 'authorization' in authHeaders
     const res = await fetch(url, {
       headers: { ...baseHeaders(), ...authHeaders },
-      next: { revalidate: 60, tags: sellerId ? [`seller-vouchers-${sellerId}`] : ['vouchers'] },
+      ...(signedIn
+        ? { cache: 'no-store' as const }
+        : { next: { revalidate: 60, tags: sellerId ? [`seller-vouchers-${sellerId}`] : ['vouchers'] } }),
     })
     if (!res.ok) return []
     const data = await res.json()
