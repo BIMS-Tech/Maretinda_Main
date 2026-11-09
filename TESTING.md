@@ -23,6 +23,8 @@ Users are created through their module services and given JWTs signed with the t
 
 The suite runs against the test environment by default. Override it with `STORE_URL`, `SELLER_URL` and `ADMIN_URL`.
 
+Credentials live in `e2e/.env` (gitignored). Copy [e2e/.env.example](e2e/.env.example), fill it, and load it before running: `set -a && . ./.env && set +a && npx playwright test`. Use Resend's test inbox (`E2E_EMAIL=delivered@resend.dev`) so signups never email a real person.
+
 - `npm test` runs only read-only checks.
 - Signed-in seller and admin checks run when you set `E2E_SELLER_EMAIL`/`E2E_SELLER_PASSWORD` and `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD`.
 - `E2E_ALLOW_WRITES=1 E2E_EMAIL=you@yourdomain` registers a buyer and fills a cart. Adding `E2E_PLACE_ORDER=1` also places a COD order, which emails the seller. Never use this against production.
