@@ -70,7 +70,8 @@ export const ProductDetailsHeader = ({
 
 	const { cheapestVariant } = getProductPrice({ product });
 	const selectedVariant = {
-		...optionsAsKeymap(cheapestVariant.options ?? null),
+		// A product with no priced variant has no cheapest variant
+		...optionsAsKeymap(cheapestVariant?.options ?? null),
 		...allSearchParams,
 	};
 
