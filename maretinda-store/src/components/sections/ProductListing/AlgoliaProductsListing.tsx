@@ -210,6 +210,7 @@ const ProductsListing = ({
 							<SelectField
 								className="ml-1 flex-1 text-black bg-transparent border-none !font-medium !text-[15px] !p-0 !h-auto"
 								full
+								label="Sort by"
 								options={sortByDropdownOptions}
 								selectOption={refineSort}
 								selected={currentSort}
@@ -247,6 +248,7 @@ const ProductsListing = ({
 							<SelectField
 								className="ml-2 text-black bg-transparent border-none !font-medium !text-[20px] !p-0 !h-auto min-w-[192px]"
 								full
+								label="Sort by"
 								options={sortByDropdownOptions}
 								selectOption={refineSort}
 								selected={currentSort}
