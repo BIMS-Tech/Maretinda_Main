@@ -39,7 +39,7 @@ export const ActionMenu = ({
   children,
 }: ActionMenuProps) => {
   const inner = children ?? (
-    <IconButton size="small" variant={variant}>
+    <IconButton aria-label="Actions" size="small" variant={variant}>
       <EllipsisHorizontal />
     </IconButton>
   )
