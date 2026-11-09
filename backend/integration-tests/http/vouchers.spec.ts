@@ -204,6 +204,17 @@ medusaIntegrationTestRunner({
         expect((await apply(cart.id, "WELCOME")).status).toBe(400)
       })
 
+      it("refuses a guest checkout's customer record (it has no account)", async () => {
+        await promotion("WELCOME", { metadata: { first_order_only: true } })
+        const { customer } = await createCustomer(getContainer(), { has_account: false })
+        const cart = await cartFor(customer.id)
+
+        const res = await apply(cart.id, "WELCOME")
+
+        expect(res.status).toBe(400)
+        expect(res.data.message).toMatch(/Sign in/)
+      })
+
       it("lets a genuine first-time customer through the guard", async () => {
         await promotion("WELCOME", { metadata: { first_order_only: true } })
         const { customer } = await createCustomer(getContainer())

@@ -88,6 +88,8 @@ export async function createCustomer(container: any, over: Record<string, any> =
     email: `buyer${n}-${Date.now()}@example.test`,
     first_name: "Test",
     last_name: `Buyer ${n}`,
+    // A token means a signed-in, registered customer; guest checkouts have no account
+    has_account: true,
     ...over,
   })
   return { customer, token: tokenFor("customer", customer.id) }
