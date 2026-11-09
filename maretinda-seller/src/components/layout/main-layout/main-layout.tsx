@@ -423,7 +423,7 @@ const SupportWidget = () => {
           </a>
           <span className="text-blue-300">|</span>
           <a
-            href="https://maretinda.com/live-chat"
+            href="https://maretinda.com/ph/help-center"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-blue-600 hover:underline"
