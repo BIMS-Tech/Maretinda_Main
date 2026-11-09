@@ -5,6 +5,8 @@ export const voucherErrorMessage = (raw: string | undefined, code: string): stri
 	if (!raw) return `We couldn't apply ${code}. Please try again.`;
 	// Medusa's wording for a code that doesn't exist
 	if (/promotion code .* is invalid/i.test(raw)) return `${code} isn't a valid voucher code`;
+	// Mercur 1.5's wording for an unknown code, or a seller's code without that seller's items
+	if (/some of the promotion codes are invalid/i.test(raw)) return `${code} isn't a valid voucher code for this cart`;
 	return raw;
 };
 

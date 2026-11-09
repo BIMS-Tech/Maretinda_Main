@@ -9,6 +9,12 @@ describe('voucherErrorMessage', () => {
 		);
 	});
 
+	it("explains Mercur's refusal of an unknown or other seller's code", () => {
+		expect(voucherErrorMessage('Some of the promotion codes are invalid', 'NOPE')).toBe(
+			"NOPE isn't a valid voucher code for this cart",
+		);
+	});
+
 	it('passes on the reasons our backend already words for buyers', () => {
 		expect(voucherErrorMessage('Sign in to use this first-order voucher', 'HELLOMRTD')).toBe(
 			'Sign in to use this first-order voucher',
