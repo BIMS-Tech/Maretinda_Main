@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import { backendUrl, publishableApiKey, sdk } from "../../lib/client/client"
 import { useTheme } from "../../providers/theme-provider"
+import { submitSellerApplication } from "./submit-application"
 
 // ---------------------------------------------------------------------------
 // The assistant's persona
@@ -862,32 +863,27 @@ export const RegisterChat = () => {
     setSubmitting(true)
     setError("")
     try {
-      const token = await sdk.auth.register("seller", "emailpass", {
-        email: data.email,
-        password: data.password,
+      const result = await submitSellerApplication(data.email, data.password, {
+        register: async (email, password) =>
+          String(await sdk.auth.register("seller", "emailpass", { email, password })),
+        login: async (email, password) =>
+          String(await sdk.auth.login("seller", "emailpass", { email, password })),
+        postApplication: (token) =>
+          fetch(`${backendUrl}/store/seller-application`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-publishable-api-key": publishableApiKey,
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(data),
+          }),
       })
-      const appRes = await fetch(`${backendUrl}/store/seller-application`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-publishable-api-key": publishableApiKey,
-          ...(typeof token === "string" ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(data),
-      })
-      if (!appRes.ok) {
-        const detail = await appRes.text()
-        console.error("[register-chat] seller-application failed", appRes.status, detail)
-        throw new Error("Could not submit your application. Please try again.")
-      }
-      setPhase("success")
+      if (result.ok) setPhase("success")
+      else setError(result.message)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ""
-      if (/already exists/i.test(msg)) {
-        setError("An account with this email already exists. Tap the pencil on the Email field above to use a different address, or sign in instead.")
-      } else {
-        setError(msg || "Registration failed. Please try again.")
-      }
+      setError(msg || "Registration failed. Please try again.")
     } finally {
       setSubmitting(false)
     }
