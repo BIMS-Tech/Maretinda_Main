@@ -41,11 +41,15 @@ export const ProductCreateVariantsForm = ({
     defaultValue: [],
   })
 
-  const options = useWatch({
+  const watchedOptions = useWatch({
     control: form.control,
     name: "options",
     defaultValue: [],
   })
+  // useWatch hands back a new array on every form change; the columns only
+  // depend on the option titles
+  const optionTitles = watchedOptions.map((o) => o.title).join("\u0000")
+  const options = useMemo(() => watchedOptions, [optionTitles]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * NOTE: anything that goes to the datagrid component needs to be memoised otherwise DataGrid will rerender and inputs will loose focus
@@ -81,6 +85,13 @@ export const ProductCreateVariantsForm = ({
   )
 }
 
+// Shared empty defaults: a fresh [] on every render changed the column
+// memo's dependencies each time, so the grid remounted its cells on every
+// keystroke and dropped the first character typed (1499 became 499)
+const NO_CURRENCIES: string[] = []
+const NO_REGIONS: HttpTypes.AdminRegion[] = []
+const NO_PRICE_PREFERENCES: HttpTypes.AdminPricePreference[] = []
+
 const columnHelper = createDataGridHelper<
   ProductCreateVariantSchema,
   ProductCreateSchemaType
@@ -88,9 +99,9 @@ const columnHelper = createDataGridHelper<
 
 const useColumns = ({
   options,
-  currencies = [],
-  regions = [],
-  pricePreferences = [],
+  currencies = NO_CURRENCIES,
+  regions = NO_REGIONS,
+  pricePreferences = NO_PRICE_PREFERENCES,
 }: {
   options: ProductCreateOptionSchema[]
   currencies?: string[]

@@ -12,13 +12,19 @@ import {
 import { FieldContext } from "../../../../components/data-grid/types"
 import { ShippingOptionPriceCell } from "../components/shipping-option-price-cell"
 
+// Stable empty defaults: a fresh [] each render changes the column memo's
+// dependencies and remounts the grid's cells, which drops typed characters
+const NO_CURRENCIES: never[] = []
+const NO_REGIONS: never[] = []
+const NO_PRICE_PREFERENCES: never[] = []
+
 const columnHelper = createDataGridHelper()
 
 export const useShippingOptionPriceColumns = ({
   name,
-  currencies = [],
-  regions = [],
-  pricePreferences = [],
+  currencies = NO_CURRENCIES,
+  regions = NO_REGIONS,
+  pricePreferences = NO_PRICE_PREFERENCES,
 }: {
   name: string
   currencies?: string[]

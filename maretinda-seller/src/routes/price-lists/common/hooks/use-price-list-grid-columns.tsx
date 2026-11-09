@@ -12,15 +12,21 @@ import { createDataGridPriceColumns } from "../../../../components/data-grid/hel
 import { PricingCreateSchemaType } from "../../price-list-create/components/price-list-create-form/schema"
 import { isProductRow } from "../utils"
 
+// Stable empty defaults: a fresh [] each render changes the column memo's
+// dependencies and remounts the grid's cells, which drops typed characters
+const NO_CURRENCIES: never[] = []
+const NO_REGIONS: never[] = []
+const NO_PRICE_PREFERENCES: never[] = []
+
 const columnHelper = createDataGridHelper<
   HttpTypes.AdminProduct | HttpTypes.AdminProductVariant,
   PricingCreateSchemaType
 >()
 
 export const usePriceListGridColumns = ({
-  currencies = [],
-  regions = [],
-  pricePreferences = [],
+  currencies = NO_CURRENCIES,
+  regions = NO_REGIONS,
+  pricePreferences = NO_PRICE_PREFERENCES,
 }: {
   currencies?: HttpTypes.AdminStoreCurrency[]
   regions?: HttpTypes.AdminRegion[]
