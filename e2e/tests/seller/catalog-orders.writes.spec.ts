@@ -2,6 +2,7 @@ import {
   adminToken,
   API_URL,
   apiCodOrder,
+  PUBLISHABLE_KEY,
   expect,
   sellerProducts,
   sellerToken,
@@ -97,6 +98,47 @@ test.describe('seller orders (writes)', () => {
     await signInBuyer(store, order.email, order.password)
     await store.goto('/ph/user/orders')
     await expect(store.getByText(/delivered/i).first()).toBeVisible({ timeout: 60_000 })
+    await store.close()
+  })
+
+  test('SOP-01 a product created in the panel reaches the store at its price', async ({ page, browser, request }) => {
+    const title = `QA Panel Shirt ${Date.now()}`
+    await signInSeller(page, process.env.E2E_SELLER_EMAIL!, process.env.E2E_SELLER_PASSWORD!)
+    await page.goto('/products/create')
+    // The create modal is mounted twice (F33); the last one is on top
+    const dlg = page.locator('[role=dialog]').last()
+    await dlg.locator('input[name="title"]').fill(title)
+    await dlg.locator('textarea[name="description"]').fill('Created by the production-readiness test run.')
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
+    await dlg.locator('input[type=file]').setInputFiles({ name: 'shirt.png', mimeType: 'image/png', buffer: png })
+    await dlg.locator('button', { hasText: /^Continue$/ }).click()
+    await dlg.locator('button', { hasText: /^Continue$/ }).click()
+    // The price is a data-grid cell: select it and type, as a seller would
+    const priceCell = dlg.locator('[data-container-id="0:3"]')
+    await priceCell.click()
+    await page.keyboard.type('555')
+    await page.keyboard.press('Enter')
+    // F34: the first digit used to be dropped, saving ₱55
+    await expect(dlg.locator('input[name="variants.0.prices.php"]')).toHaveValue(/^555(\.00)?$/)
+    await dlg.locator('button', { hasText: /^Create Product$/ }).click()
+    await expect(page).toHaveURL(/\/products\/prod_/, { timeout: 60_000 })
+    const productId = new URL(page.url()).pathname.split('/').pop()!
+
+    // Proposed products are accepted automatically on test; wait until the store lists it
+    let handle = ''
+    await expect(async () => {
+      const res = await request.get(`${API_URL}/store/products/${productId}?fields=handle,status`, {
+        headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+      })
+      expect(res.status()).toBe(200)
+      handle = (await res.json()).product.handle
+    }).toPass({ timeout: 120_000 })
+
+    const { urls } = await import('../../playwright.config')
+    const store = await browser.newPage({ baseURL: urls.store })
+    await store.goto(`/ph/products/${handle}`)
+    await expect(store.getByRole('heading', { level: 1 })).toHaveText(title)
+    await expect(store.getByText('₱555.00').first()).toBeVisible()
     await store.close()
   })
 })
