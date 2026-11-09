@@ -28,3 +28,29 @@ export function uniqueEmail(tag: string) {
 export async function expectNoErrorBoundary(page: Page) {
   await expect(page.getByText(/something went wrong|application error|unexpected error/i)).toHaveCount(0)
 }
+
+/** Signs a buyer in through the storefront login form. */
+export async function signInBuyer(page: Page, email: string, password: string) {
+  await page.goto('/ph/login')
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('input[name="password"]').fill(password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page).not.toHaveURL(/\/login/)
+}
+
+/** Registers a new buyer through the storefront form and leaves them signed in. */
+export async function registerBuyer(page: Page, tag: string) {
+  const email = uniqueEmail(tag)
+  const password = `E2e!${Date.now()}`
+  await page.goto('/ph/register')
+  await page.locator('input[name="firstName"]').fill('E2E')
+  await page.locator('input[name="lastName"]').fill('Buyer')
+  await page.locator('input[name="email"]').fill(email)
+  await page.locator('select[name="countryCode"]').selectOption('+63')
+  await page.locator('input[name="phone"]').fill('9171234567')
+  await page.locator('input[name="password"]').fill(password)
+  await page.locator('input[name="terms"]').check()
+  await page.getByRole('button', { name: 'Create account' }).click()
+  await expect(page).not.toHaveURL(/\/register/, { timeout: 60_000 })
+  return { email, password }
+}

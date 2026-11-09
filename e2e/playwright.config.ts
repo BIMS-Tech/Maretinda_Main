@@ -34,7 +34,7 @@ export default defineConfig({
     {
       name: 'store-mobile',
       testDir: './tests/store',
-      testMatch: /smoke\.spec\.ts/,
+      testMatch: /(smoke|browse|checkout\.writes)\.spec\.ts/,
       use: { ...devices['Pixel 7'], baseURL: urls.store },
     },
     { name: 'seller', testDir: './tests/seller', use: { ...devices['Desktop Chrome'], baseURL: urls.seller } },
