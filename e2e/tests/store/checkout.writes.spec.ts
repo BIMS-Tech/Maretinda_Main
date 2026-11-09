@@ -1,62 +1,199 @@
-import { expect, test, uniqueEmail, writesAllowed } from '../fixtures'
+import {
+  addToCart,
+  adminToken,
+  API_URL,
+  chooseDelivery,
+  expect,
+  fillCheckoutAddress,
+  peso,
+  placeCodOrder,
+  registerBuyer,
+  sellerProducts,
+  test,
+  writesAllowed,
+} from '../fixtures'
 
 /**
- * Buyer journey that creates data: an account, a cart and (optionally) a COD
- * order. Opt in with E2E_ALLOW_WRITES=1 and E2E_EMAIL=<a mailbox you own> —
- * signups and orders send real email through Resend. Placing the order also
- * needs E2E_PLACE_ORDER=1 because it notifies the product's seller.
+ * Cart and checkout cases CHK-01 to CHK-09 and CHK-14 from
+ * docs/qa-test-cases.md, on seller A's ₱770 product (0.5 kg, Standard
+ * Delivery ₱120) and seller B's. Orders email the buyer and seller through
+ * Resend's test inbox. Placing orders needs E2E_PLACE_ORDER=1.
  */
-test.describe('buyer journey (writes)', () => {
-  test.skip(!writesAllowed, 'set E2E_ALLOW_WRITES=1 to run')
-  test.describe.configure({ mode: 'serial' })
+const placeOrders = process.env.E2E_PLACE_ORDER === '1'
 
-  const email = writesAllowed ? uniqueEmail('buyer') : ''
-  const password = `E2e!${Date.now()}`
+test.describe('cart and checkout (writes)', () => {
+  test.skip(!writesAllowed || !sellerProducts('A').length, 'set E2E_ALLOW_WRITES=1 and E2E_SELLER_PRODUCTS')
 
-  test('registers a new buyer account', async ({ page }) => {
-    await page.goto('/ph/register')
-    await page.locator('input[name="first_name"]').fill('E2E')
-    await page.locator('input[name="last_name"]').fill('Buyer')
-    await page.locator('input[name="email"]').fill(email)
-    await page.locator('input[name="password"]').fill(password)
-    const confirm = page.locator('input[name="confirmPassword"], input[name="confirm_password"]')
-    if (await confirm.count()) await confirm.fill(password)
-    const phone = page.locator('input[name="phone"]')
-    if (await phone.count()) await phone.fill('09171234567')
-    await page.getByRole('button', { name: /create account|sign up|register/i }).click()
-
-    await expect(page).not.toHaveURL(/\/register/)
-  })
-
-  test('adds a product to the cart and reaches checkout', async ({ page }) => {
-    await page.goto('/ph/login')
-    await page.locator('input[name="email"]').fill(email)
-    await page.locator('input[name="password"]').fill(password)
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    await expect(page).not.toHaveURL(/\/login/)
-
-    await page.goto('/ph')
-    const href = await page.locator('a[href*="/products/"]').first().getAttribute('href')
-    await page.goto(href!.startsWith('/ph') ? href! : `/ph${href}`)
-    await page.getByRole('button', { name: 'Add to Cart' }).click()
-
+  test('CHK-01 add, change quantity, remove', async ({ page }) => {
+    const [shirt] = sellerProducts('A')
+    await registerBuyer(page, 'chk01')
+    await addToCart(page, shirt.productId)
     await page.goto('/ph/cart')
-    await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
-    await expect(page.getByText(/₱\s?[\d,]+/).first()).toBeVisible()
-    await page.getByRole('button', { name: /checkout/i }).or(page.getByRole('link', { name: /checkout/i })).first().click()
-    await expect(page).toHaveURL(/\/checkout/)
+    const main = page.locator('main')
+    await expect(main.getByText(peso(shirt.price)).locator('visible=true').first()).toBeVisible()
+
+    await main.getByRole('button', { name: 'Increase quantity' }).first().click()
+    await expect(main.getByText(peso(shirt.price * 2)).locator('visible=true').first()).toBeVisible()
+
+    await main.getByRole('button', { name: 'Decrease quantity' }).first().click()
+    await expect(main.getByText(peso(shirt.price * 2))).toHaveCount(0)
+
+    await main.getByRole('button', { name: 'Remove item' }).first().click()
+    await expect(main.getByRole('heading', { name: /QA Linen Shirt/ })).toHaveCount(0)
   })
 
-  test('places a cash-on-delivery order', async ({ page }) => {
-    test.skip(process.env.E2E_PLACE_ORDER !== '1', 'set E2E_PLACE_ORDER=1 to place a real order')
+  test('CHK-02 signed-out cart asks to log in', async ({ page }) => {
+    await page.goto('/ph/cart')
+    await expect(page.getByRole('button', { name: 'Login to checkout' })).toBeVisible()
+  })
 
-    await page.goto('/ph/checkout')
-    await page.getByLabel(/cash on delivery/i).or(page.getByText(/cash on delivery/i)).first().click()
-    await page.getByRole('button', { name: /place order/i }).click()
+  test('CHK-03 shipping options and fee', async ({ page }) => {
+    const [shirt] = sellerProducts('A')
+    await registerBuyer(page, 'chk03')
+    await addToCart(page, shirt.productId)
+    await fillCheckoutAddress(page)
+    // Before a method is chosen the summary must not claim shipping is free
+    await expect(page.getByText('Shipping').locator('..').getByText('Free', { exact: true })).toHaveCount(0)
 
-    await expect(page).toHaveURL(/\/order\/.+\/confirmed/, { timeout: 120_000 })
-    // ed6abe82: confirmation used to show "Online Payment" for every order.
-    await expect(page.getByText(/cash on delivery/i).first()).toBeVisible()
-    await expect(page.getByText(/online payment/i)).toHaveCount(0)
+    await page.getByRole('button', { name: 'Choose Delivery Option' }).click()
+    for (const [name, fee] of [['Regular Delivery', 85], ['Standard Delivery', 120], ['Express Delivery', 200]] as const) {
+      await expect(page.getByRole('option', { name: new RegExp(`${name}.*${peso(fee).replace(/[.]/g, '\\.')}`) })).toBeVisible()
+    }
+    await page.getByRole('option', { name: /Standard Delivery/ }).click()
+    await expect(page.getByText(peso(shirt.price + 120)).first()).toBeVisible()
+  })
+
+  test('CHK-04 product without weight is explained at checkout', async ({ page }) => {
+    test.skip(true, 'Not applicable on test: every seller uses flat-rate delivery; only couriers (off on test) price by weight')
+    // IBITA Fashion's Denim Trouser has no weight on test
+    await registerBuyer(page, 'chk04')
+    await addToCart(page, 'prod_01KVNT9Q4B7GQEYHYXD02W391F')
+    await fillCheckoutAddress(page).catch(() => undefined)
+    await expect(page.getByText(/weight/i).first()).toBeVisible()
+  })
+
+  test.describe('orders', () => {
+    test.skip(!placeOrders, 'set E2E_PLACE_ORDER=1 to place real orders on test')
+
+    test('CHK-05 COD order, CHK-06 payment authorized, CHK-14 order history', async ({ page, request }) => {
+      const [shirt] = sellerProducts('A')
+      await registerBuyer(page, 'chk05')
+      await addToCart(page, shirt.productId)
+      await fillCheckoutAddress(page)
+      await chooseDelivery(page, 'Standard Delivery')
+      const orderId = await placeCodOrder(page)
+
+      await expect(page.getByText(/cash on delivery/i).first()).toBeVisible()
+      await expect(page.getByText(/online payment/i)).toHaveCount(0)
+      await expect(page.getByText(`Total${peso(shirt.price + 120)}`).or(page.getByText(peso(shirt.price + 120))).first()).toBeVisible()
+
+      // CHK-06: COD stays authorized until the seller collects the cash
+      const token = await adminToken(request)
+      const res = await request.get(`${API_URL}/admin/orders/${orderId}?fields=payment_status,total`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+      const { order } = await res.json()
+      expect(order.payment_status).toBe('authorized')
+      expect(order.total).toBe(shirt.price + 120)
+
+      // CHK-14: the confirmation's order link opens a page that agrees with it
+      await page.locator('main').getByRole('link', { name: /track order/i }).click()
+      await expect(page).toHaveURL(/\/user\/orders\/[^/]+$/)
+      await expect(page.getByText('Something went wrong')).toHaveCount(0)
+      await expect(page.getByText(peso(shirt.price + 120)).first()).toBeVisible()
+    })
+
+    test('CHK-09 two sellers in one cart make one order each', async ({ page, request }) => {
+      test.skip(!sellerProducts('B').length, 'set E2E_SELLER_B_PRODUCTS')
+      const [shirtA] = sellerProducts('A')
+      const [, toteB] = sellerProducts('B')
+      await registerBuyer(page, 'chk09')
+      await addToCart(page, shirtA.productId)
+      await addToCart(page, toteB.productId)
+      await fillCheckoutAddress(page)
+      await chooseDelivery(page, 'Standard Delivery')
+      await page.screenshot({ path: test.info().outputPath('payment-step.png'), fullPage: true })
+      const orderId = await placeCodOrder(page)
+
+      const token = await adminToken(request)
+      const res = await request.get(`${API_URL}/admin/orders/${orderId}?fields=email,created_at`, {
+        headers: { authorization: `Bearer ${token}` },
+      })
+      const { order } = await res.json()
+      const list = await request.get(
+        `${API_URL}/admin/orders?q=${encodeURIComponent(order.email)}&fields=id,email,total,*items`,
+        { headers: { authorization: `Bearer ${token}` } },
+      )
+      const orders = (await list.json()).orders.filter((o: { email: string }) => o.email === order.email)
+      expect(orders).toHaveLength(2)
+      // Each seller's order carries only its own item plus its own ₱120 shipping
+      const totals = orders.map((o: { total: number }) => o.total).sort((a: number, b: number) => a - b)
+      expect(totals).toEqual([toteB.price + 120, shirtA.price + 120].sort((a, b) => a - b))
+    })
+  })
+
+  test.describe('GiyaPay sandbox', () => {
+    // Test runs GiyaPay in sandbox mode (giyapay_config.sandbox_mode). Never run against production.
+    test.skip(
+      !placeOrders || process.env.E2E_GIYAPAY_SANDBOX_CONFIRMED !== '1',
+      'set E2E_PLACE_ORDER=1 and E2E_GIYAPAY_SANDBOX_CONFIRMED=1 after checking sandbox mode',
+    )
+
+    async function payWithGcash(page: import('@playwright/test').Page, outcome: 'Success' | 'Cancel') {
+      const [shirt] = sellerProducts('A')
+      await addToCart(page, shirt.productId)
+      await fillCheckoutAddress(page)
+      await chooseDelivery(page, 'Standard Delivery')
+      await page.getByText('GCash', { exact: true }).click()
+      await page.getByRole('button', { name: 'Continue to review' }).click()
+      await expect(page).toHaveURL(/step=review/)
+      await page.getByRole('button', { name: 'Pay with GCash' }).click()
+      await expect(page).toHaveURL(/sandbox\.giyapay\.com/, { timeout: 60_000 })
+      await page.getByText(outcome, { exact: true }).click()
+      await page.getByText('Continue', { exact: true }).click()
+    }
+
+    test('CHK-07 GCash payment returns to a confirmed order; SEC-02 reloading the return page adds nothing', async ({ page, request }) => {
+      const [shirt] = sellerProducts('A')
+      const { email } = await registerBuyer(page, 'chk07')
+      const started = Date.now()
+      await payWithGcash(page, 'Success')
+      await expect(page).toHaveURL(/\/order\/[^/]+\/confirmed/, { timeout: 120_000 })
+      await expect(page.locator('main').getByText('GCash').first()).toBeVisible()
+      await expect(page.locator('main').getByText(peso(shirt.price + 120)).first()).toBeVisible()
+
+      const token = await adminToken(request)
+      const auth = { headers: { authorization: `Bearer ${token}` } }
+      const tx = await (await request.get(`${API_URL}/admin/giyapay/transactions?status=SUCCESS&limit=20`, auth)).json()
+      const mine = (tx.transactions ?? []).filter(
+        (t: { created_at: string; amount: number }) => new Date(t.created_at).getTime() >= started - 60_000,
+      )
+      expect(mine.map((t: { amount: number }) => t.amount)).toContain(shirt.price + 120)
+
+      // SEC-02: going back to GiyaPay's return URL must not create a second order
+      await page.goBack()
+      await page.reload()
+      await page.waitForTimeout(5_000)
+      const list = await (await request.get(`${API_URL}/admin/orders?q=${encodeURIComponent(email)}&fields=id,email`, auth)).json()
+      expect(list.orders.filter((o: { email: string }) => o.email === email)).toHaveLength(1)
+    })
+
+    test('CHK-08 cancelling on GiyaPay creates no order', async ({ page, request }) => {
+      const { email } = await registerBuyer(page, 'chk08')
+      await payWithGcash(page, 'Cancel')
+      await expect(page).not.toHaveURL(/sandbox\.giyapay\.com/, { timeout: 60_000 })
+      await expect(page).not.toHaveURL(/\/confirmed/)
+      await page.waitForTimeout(5_000)
+      const token = await adminToken(request)
+      const list = await (
+        await request.get(`${API_URL}/admin/orders?q=${encodeURIComponent(email)}&fields=id,email`, {
+          headers: { authorization: `Bearer ${token}` },
+        })
+      ).json()
+      expect(list.orders.filter((o: { email: string }) => o.email === email)).toHaveLength(0)
+      // The cart is still there to try again
+      await page.goto('/ph/cart')
+      await expect(page.locator('main').getByText(/QA Linen Shirt/).locator('visible=true').first()).toBeVisible()
+    })
   })
 })

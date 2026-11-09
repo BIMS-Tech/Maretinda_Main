@@ -54,3 +54,92 @@ export async function registerBuyer(page: Page, tag: string) {
   await expect(page).not.toHaveURL(/\/register/, { timeout: 60_000 })
   return { email, password }
 }
+
+export const API_URL = process.env.API_URL || 'https://test-api.maretinda.com'
+export const PUBLISHABLE_KEY = 'pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27'
+
+/** product_id:variant_id:price entries from E2E_SELLER_PRODUCTS / E2E_SELLER_B_PRODUCTS. */
+export function sellerProducts(seller: 'A' | 'B' = 'A') {
+  const raw = seller === 'A' ? process.env.E2E_SELLER_PRODUCTS : process.env.E2E_SELLER_B_PRODUCTS
+  return (raw ?? '').split(',').filter(Boolean).map((entry) => {
+    const [productId, variantId, price] = entry.split(':')
+    return { productId, variantId, price: Number(price) }
+  })
+}
+
+/** "₱1,540.00" for 1540, as the storefront formats pesos. */
+export const peso = (amount: number) =>
+  `₱${amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+export async function addToCart(page: Page, productId: string) {
+  const res = await page.request.get(`${API_URL}/store/products/${productId}?fields=handle`, {
+    headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+  })
+  const { product } = await res.json()
+  await page.goto(`/ph/products/${product.handle}`)
+  await page.getByRole('button', { name: 'Add to Cart' }).click()
+  await expect(page.getByRole('button', { name: 'Add to Cart' })).toBeEnabled()
+  // The cart count in the header confirms the server action finished
+  await page.waitForTimeout(1500)
+}
+
+/** Fills the checkout address step with an Angeles City, Pampanga address and continues. */
+export async function fillCheckoutAddress(page: Page) {
+  await page.goto('/ph/checkout?step=address')
+  await page.getByTestId('shipping-first-name-input').fill('E2E')
+  await page.getByTestId('shipping-last-name-input').fill('Buyer')
+  await page.getByTestId('shipping-phone-input').fill('9171234567')
+  await page.getByTestId('shipping-address-input').fill('1 Rizal St')
+  // The pickers filter on keystrokes, so type rather than fill
+  await page.getByTestId('shipping-province-select').click()
+  await page.getByTestId('shipping-province-select').pressSequentially('Pamp', { delay: 50 })
+  await page.getByRole('option', { name: 'Pampanga', exact: true }).click()
+  await page.getByTestId('shipping-city-select').click()
+  await page.getByTestId('shipping-city-select').pressSequentially('Ange', { delay: 50 })
+  await page.getByRole('option', { name: 'Angeles City', exact: true }).click()
+  await page.getByTestId('shipping-barangay-input').fill('Balibago')
+  // Picking a city can reset the postal code a moment later, so re-check it
+  const postal = page.getByTestId('shipping-postal-code-input')
+  await expect(async () => {
+    if ((await postal.inputValue()) !== '2009') await postal.fill('2009')
+    await page.waitForTimeout(500)
+    expect(await postal.inputValue()).toBe('2009')
+  }).toPass({ timeout: 15_000 })
+  await page.getByTestId('submit-address-button').click()
+  await expect(page).toHaveURL(/step=delivery/)
+}
+
+/** Picks a delivery option for every seller in the cart and moves to payment. */
+export async function chooseDelivery(page: Page, option = 'Standard Delivery') {
+  // One picker per seller; each choice adds a "Method" line below them
+  const pickers = page.getByRole('button', { name: 'Choose Delivery Option' })
+  const sellers = await page.getByRole('heading', { name: /^Shipping from/ }).count()
+  for (let i = 0; i < sellers; i++) {
+    await pickers.nth(i).click()
+    await page.getByRole('option', { name: new RegExp(option) }).first().click()
+    await expect(page.getByText('Method', { exact: true })).toHaveCount(i + 1)
+  }
+  // The button ignores clicks while the chosen method is still saving
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Continue to payment' }).click()
+    await expect(page).toHaveURL(/step=payment/, { timeout: 5_000 })
+  }).toPass({ timeout: 60_000 })
+}
+
+/** Chooses Cash on Delivery, places the order and returns the confirmed order id. */
+export async function placeCodOrder(page: Page) {
+  await page.getByText('Cash on Delivery', { exact: true }).click()
+  await page.getByRole('button', { name: 'Continue to review' }).click()
+  await expect(page).toHaveURL(/step=review/)
+  await page.getByRole('button', { name: /place order/i }).click()
+  await expect(page).toHaveURL(/\/order\/[^/]+\/confirmed/, { timeout: 120_000 })
+  return page.url().match(/\/order\/([^/]+)\/confirmed/)![1]
+}
+
+/** Admin API token for read checks (order payment status etc.). */
+export async function adminToken(request: import('@playwright/test').APIRequestContext) {
+  const res = await request.post(`${API_URL}/auth/user/emailpass`, {
+    data: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD },
+  })
+  return (await res.json()).token as string
+}
