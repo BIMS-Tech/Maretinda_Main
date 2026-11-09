@@ -1,10 +1,23 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, toHandle } from "@medusajs/framework/utils"
 import { createSellerWorkflow } from "@mercurjs/b2c-core/workflows"
 import { isVerificationComplete } from "../../../../lib/seller-verification"
 
 function getDb(req: any) {
   return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+}
+
+/**
+ * Mercur builds the seller handle from the name and handles are unique, so a
+ * second shop with a taken name can't be created as is. Returns the name to
+ * create it under: the shop's own name, or "<name> 2", "<name> 3", …
+ */
+async function nameWithFreeHandle(db: any, name: string): Promise<string> {
+  for (let n = 1; ; n++) {
+    const candidate = n === 1 ? name : `${name} ${n}`
+    const taken = await db("seller").where("handle", toHandle(candidate)).whereNull("deleted_at").first("id")
+    if (!taken) return candidate
+  }
 }
 
 export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void> {
@@ -52,12 +65,14 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
         return
       }
       const fullName = `${app.first_name ?? ""} ${app.last_name ?? ""}`.trim()
+      const shopName = app.business_name || fullName || app.email
+      const createAs = await nameWithFreeHandle(db, shopName)
       const { result: seller } = await createSellerWorkflow.run({
         container: req.scope,
         input: {
           auth_identity_id: app.auth_identity_id,
           seller: {
-            name: app.business_name || fullName || app.email,
+            name: createAs,
             email: app.email,
           } as any,
           member: {
@@ -87,6 +102,8 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
           business_documents: docs,
         })
         const sellerUpdate: Record<string, unknown> = {
+          // Keep the unique handle but show the name the applicant chose
+          ...(createAs !== shopName ? { name: shopName } : {}),
           form_of_organization: app.form_of_organization || null,
           verification_status: complete ? "pending_review" : "unverified",
           updated_at: new Date(),
@@ -115,6 +132,8 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
 
     res.status(200).json({ application: updated })
   } catch (error) {
-    res.status(500).json({ message: error instanceof Error ? error.message : "Failed to update application" })
+    // Workflow failures arrive as plain objects, not Errors
+    const message = (error as { message?: string } | undefined)?.message
+    res.status(500).json({ message: message || "Failed to update application" })
   }
 }
