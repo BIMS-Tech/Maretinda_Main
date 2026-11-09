@@ -32,7 +32,10 @@ import {
   UpdateConditionalPriceSchema,
 } from "../../../common/schema"
 import { ConditionalPriceInfo } from "../../../common/types"
-import { buildShippingOptionPriceRules } from "../../../common/utils/price-rule-helpers"
+import {
+  buildShippingOptionPriceRules,
+  ensurePriceRules,
+} from "../../../common/utils/price-rule-helpers"
 
 type PriceRecord = {
   id?: string
@@ -186,7 +189,7 @@ export function EditShippingOptionsPricingForm({
     ]
 
     await mutateAsync(
-      { prices: allPrices },
+      { prices: ensurePriceRules(allPrices) },
       {
         onSuccess: () => {
           toast.success(t("general.success"))

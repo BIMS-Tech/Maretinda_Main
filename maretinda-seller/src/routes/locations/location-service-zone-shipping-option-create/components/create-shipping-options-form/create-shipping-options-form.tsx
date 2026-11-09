@@ -11,11 +11,11 @@ import {
 } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useCreateShippingOptions } from "../../../../../hooks/api/shipping-options"
-import { castNumber } from "../../../../../lib/cast-number"
 import {
   FulfillmentSetType,
   ShippingOptionPriceType,
 } from "../../../common/constants"
+import { buildShippingOptionPrices } from "../../../common/utils/price-rule-helpers"
 import { CreateShippingOptionDetailsForm } from "./create-shipping-option-details-form"
 import { CreateShippingOptionsPricesForm } from "./create-shipping-options-prices-form"
 import {
@@ -80,34 +80,6 @@ export function CreateShippingOptionsForm({
   const { mutateAsync, isPending: isLoading } = useCreateShippingOptions()
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    const currencyPrices = Object.entries(data.currency_prices)
-      .map(([code, value]) => {
-        if (!value) {
-          return undefined
-        }
-
-        return {
-          currency_code: code,
-          amount: castNumber(value),
-        }
-      })
-      .filter(
-        (p): p is { currency_code: string; amount: number } => !!p
-      )
-
-    const regionPrices = Object.entries(data.region_prices)
-      .map(([region_id, value]) => {
-        if (!value) {
-          return undefined
-        }
-
-        return {
-          region_id,
-          amount: castNumber(value),
-        }
-      })
-      .filter((p): p is { region_id: string; amount: number } => !!p)
-
     const fulfillmentOptionData = fulfillmentProviderOptions?.find(
       (fo) => fo.id === data.fulfillment_option_id
     )!
@@ -118,7 +90,7 @@ export function CreateShippingOptionsForm({
         service_zone_id: zone.id,
         shipping_profile_id: data.shipping_profile_id,
         provider_id: data.provider_id,
-        prices: [...currencyPrices, ...regionPrices],
+        prices: buildShippingOptionPrices(data.currency_prices, data.region_prices),
         data: fulfillmentOptionData as unknown as Record<string, unknown>,
         rules: [
           {

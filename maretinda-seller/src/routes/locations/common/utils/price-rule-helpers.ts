@@ -39,3 +39,32 @@ export const buildShippingOptionPriceRules = (rule: {
     createPriceRule(ITEM_TOTAL_ATTRIBUTE, operator, value)
   )
 }
+
+/**
+ * Turns the create form's per-currency and per-region inputs into the prices
+ * the vendor API takes. Each price carries an empty `rules` list because
+ * Mercur 1.5 requires one, even for a flat price.
+ */
+export const buildShippingOptionPrices = (
+  currencyPrices: Record<string, string | number | undefined>,
+  regionPrices: Record<string, string | number | undefined>
+) => [
+  ...Object.entries(currencyPrices)
+    .filter(([, value]) => value)
+    .map(([currency_code, value]) => ({
+      currency_code,
+      amount: castNumber(value!),
+      rules: [],
+    })),
+  ...Object.entries(regionPrices)
+    .filter(([, value]) => value)
+    .map(([region_id, value]) => ({
+      region_id,
+      amount: castNumber(value!),
+      rules: [],
+    })),
+]
+
+/** Gives flat prices the empty `rules` list Mercur 1.5 requires, keeping conditional ones as they are. */
+export const ensurePriceRules = <T extends object>(prices: T[]): T[] =>
+  prices.map((price) => ({ rules: [], ...price }))
