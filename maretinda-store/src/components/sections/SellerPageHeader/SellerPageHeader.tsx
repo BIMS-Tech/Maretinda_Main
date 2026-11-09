@@ -12,7 +12,7 @@ const AVATAR_COLORS = ['#9B80D2', '#D9CFB8', '#5FA88B', '#D98AA1', '#7FA8C9', '#
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)';
 
 const VerifiedBadge = () => (
-	<svg width="16" height="16" viewBox="0 0 24 24" fill="#7FA8C9">
+	<svg role="img" aria-label="Verified seller" width="16" height="16" viewBox="0 0 24 24" fill="#7FA8C9"><title>Verified seller</title>
 		<circle cx="12" cy="12" r="12" />
 		<path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" fill="none" />
 	</svg>

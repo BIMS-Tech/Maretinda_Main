@@ -19,7 +19,7 @@ const AVATAR_COLORS = ['#9B80D2', '#D9CFB8', '#5FA88B', '#D98AA1', '#7FA8C9', '#
 
 function VerifiedBadge() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="#432C63">
+    <svg role="img" aria-label="Verified seller" width="14" height="14" viewBox="0 0 24 24" fill="#432C63"><title>Verified seller</title>
       <circle cx="12" cy="12" r="12" />
       <path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" fill="none" />
     </svg>

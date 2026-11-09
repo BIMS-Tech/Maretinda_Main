@@ -10,7 +10,7 @@ const BANNER_COLORS = ['#E8DEF7', '#E2D9C7', '#D9EAE2', '#F2D9E2', '#D9E5F0', '#
 const AVATAR_COLORS = ['#9B80D2', '#D9CFB8', '#5FA88B', '#D98AA1', '#7FA8C9', '#E8B87A', '#E26D5C', '#6BBF8A'];
 
 const VerifiedBadge = () => (
-	<svg width="14" height="14" viewBox="0 0 24 24" fill="#7FA8C9">
+	<svg role="img" aria-label="Verified seller" width="14" height="14" viewBox="0 0 24 24" fill="#7FA8C9"><title>Verified seller</title>
 		<circle cx="12" cy="12" r="12" />
 		<path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" fill="none" />
 	</svg>

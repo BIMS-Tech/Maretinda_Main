@@ -10,7 +10,7 @@ const STRIPE = 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transp
 const BG_COLORS = ['#E8DEF7', '#FFE2D2', '#D9E8F0', '#F4D9E2', '#D9EBDC', '#F0E2C5'];
 
 const VerifiedBadge = () => (
-	<svg width="10" height="10" viewBox="0 0 24 24" fill="#7FA8C9">
+	<svg role="img" aria-label="Verified seller" width="10" height="10" viewBox="0 0 24 24" fill="#7FA8C9"><title>Verified seller</title>
 		<circle cx="12" cy="12" r="12" />
 		<path d="M7 12l3.5 3.5L17 9" stroke="white" strokeWidth="2.5" fill="none" />
 	</svg>
