@@ -78,8 +78,7 @@ export async function POST(
   } catch (error: any) {
     console.error("[sellerCampaignPromotionsBatch] POST error:", error.message)
     res.status(500).json({
-      message: "Failed to update campaign promotions",
-      error: error.message,
+      message: "Failed to update campaign promotions"
     })
   }
 }

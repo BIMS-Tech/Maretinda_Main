@@ -19,7 +19,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
   try {
     const { reference_number, order_id } = req.body as any
 
-    if (!reference_number || !order_id) {
+    if (typeof reference_number !== "string" || typeof order_id !== "string" || !reference_number || !order_id) {
       res.status(400).json({ success: false, message: "reference_number and order_id are required" })
       return
     }
@@ -51,6 +51,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     }
     if (txn.order_id !== order_id) {
       res.status(400).json({ success: false, message: "Order ID mismatch" })
+      return
+    }
+
+    // One payment buys one activation. Without this anyone holding a reference
+    // could replay it to extend a subscription indefinitely.
+    const alreadyUsed = await pgConnection("seller_subscription")
+      .where("payment_reference", reference_number)
+      .first()
+    if (txn.seller_id || alreadyUsed) {
+      res.status(409).json({ success: false, message: "This payment has already been used" })
       return
     }
 
@@ -91,6 +101,19 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       ? (plan.yearly_price ?? plan.price * 10)
       : plan.price
 
+    // The amount is covered by GiyaPay's signature; the plan in order_id is not
+    // tied to it, so make sure this payment actually covers that plan.
+    if (Number(txn.amount) + 0.005 < Number(price)) {
+      res.status(400).json({ success: false, message: "Payment amount does not cover this plan" })
+      return
+    }
+
+    const seller = await pgConnection("seller").where("id", sellerId).first()
+    if (!seller) {
+      res.status(404).json({ success: false, message: "Seller not found" })
+      return
+    }
+
     // Activate subscription
     const service = new SubscriptionService(req.scope)
     const subscription = await service.renewSubscription({
@@ -114,6 +137,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     })
   } catch (error) {
     console.error("[ActivateRenewal] Error:", error)
-    res.status(500).json({ success: false, message: error instanceof Error ? error.message : "Server error" })
+    res.status(500).json({ success: false, message: "Server error" })
   }
 }

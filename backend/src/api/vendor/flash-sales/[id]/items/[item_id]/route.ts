@@ -1,5 +1,5 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
-import FlashSaleService, { UpdateFlashSaleItemInput } from "../../../../../../services/flash-sale"
+import FlashSaleService, { UpdateFlashSaleItemInput, flashSaleItemError } from "../../../../../../services/flash-sale"
 
 async function getOwnedItem(service: FlashSaleService, itemId: string, sellerId: string) {
   const result = await (service as any).pgConnection.raw(
@@ -24,10 +24,18 @@ export async function PUT(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       return res.status(400).json({ message: "Only pending applications can be edited" })
     }
 
-    const item = await service.updateItem(item_id, req.body as UpdateFlashSaleItemInput)
+    const updates = req.body as UpdateFlashSaleItemInput
+    const invalid = flashSaleItemError({
+      discount_type: updates.discount_type ?? existing.discount_type,
+      discount_value: updates.discount_value ?? existing.discount_value,
+      stock_limit: updates.stock_limit,
+    })
+    if (invalid) return res.status(400).json({ message: invalid })
+
+    const item = await service.updateItem(item_id, updates)
     res.status(200).json({ item })
   } catch (error: any) {
-    res.status(500).json({ message: "Failed to update item", error: error.message })
+    res.status(500).json({ message: "Failed to update item" })
   }
 }
 
@@ -49,6 +57,6 @@ export async function DELETE(req: AuthenticatedMedusaRequest, res: MedusaRespons
     await service.removeItem(item_id)
     res.status(200).json({ id: item_id, deleted: true })
   } catch (error: any) {
-    res.status(500).json({ message: "Failed to withdraw application", error: error.message })
+    res.status(500).json({ message: "Failed to withdraw application" })
   }
 }

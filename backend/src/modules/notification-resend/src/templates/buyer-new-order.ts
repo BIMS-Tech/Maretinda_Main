@@ -1,3 +1,5 @@
+import { emailLogo } from "./logo"
+
 export function buyerNewOrderTemplate(data: {
   user_name?: string
   order_address?: string
@@ -6,6 +8,7 @@ export function buyerNewOrderTemplate(data: {
   order?: {
     display_id?: string | number
     total?: number
+    discount_total?: number
     currency_code?: string
     items?: Array<{
       thumbnail?: string
@@ -37,6 +40,7 @@ export function buyerNewOrderTemplate(data: {
   const {
     display_id = "0000",
     total = 0,
+    discount_total = 0,
     currency_code = "PHP",
     items = [],
     shipping_methods = [],
@@ -49,7 +53,7 @@ export function buyerNewOrderTemplate(data: {
     new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: currency_code || "PHP",
-    }).format(amount / 100)
+    }).format(amount)
 
   const itemsTotal = items.reduce(
     (sum, item) => sum + (item.unit_price || 0) * (item.quantity || 1),
@@ -57,7 +61,7 @@ export function buyerNewOrderTemplate(data: {
   )
   const shippingAmount = shipping_methods[0]?.amount || 0
   const shippingName = shipping_methods[0]?.name || "Standard Shipping"
-  const orderTotal = total || itemsTotal + shippingAmount
+  const orderTotal = total || itemsTotal + shippingAmount - discount_total
 
   const itemsHtml = items
     .map(
@@ -134,7 +138,7 @@ export function buyerNewOrderTemplate(data: {
                 <!-- Header banner -->
                 <tr>
                   <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
-                    <img src="https://maretinda.com/logo-m-2.png" alt="${store_name}" height="42" style="display:inline-block;border:0;max-width:220px;margin-bottom:22px;">
+                    ${emailLogo(store_name, 22)}
                     <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Order Confirmed</p>
                     <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">#${display_id}</p>
                     <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>
@@ -203,6 +207,14 @@ export function buyerNewOrderTemplate(data: {
                         <td style="padding:6px 0;font-size:14px;color:#6B7280;">Shipping &mdash; ${shippingName}</td>
                         <td style="padding:6px 0;text-align:right;font-size:14px;color:#374151;">${formatCurrency(shippingAmount)}</td>
                       </tr>
+                      ${
+                        discount_total > 0
+                          ? `<tr>
+                        <td style="padding:6px 0;font-size:14px;color:#6B7280;">Voucher discount</td>
+                        <td style="padding:6px 0;text-align:right;font-size:14px;color:#059669;">−${formatCurrency(discount_total)}</td>
+                      </tr>`
+                          : ""
+                      }
                       <tr>
                         <td colspan="2" style="padding:10px 0;">
                           <div style="height:1px;background:#E5E7EB;"></div>

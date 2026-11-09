@@ -5353,6 +5353,16 @@
           },
           "required": ["displayId", "refundableAmount", "returnableQuantity"],
           "additionalProperties": false
+        },
+        "actions": {
+          "type": "object",
+          "properties": {
+            "capturePayment": {
+              "type": "string"
+            }
+          },
+          "required": ["capturePayment"],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -5380,7 +5390,8 @@
         "refund",
         "customer",
         "activity",
-        "fields"
+        "fields",
+        "actions"
       ],
       "additionalProperties": false
     },
@@ -9837,7 +9848,9 @@
         "hint": {
           "type": "string"
         },
-        "notSellerYet": { "type": "string" }
+        "notSellerYet": {
+          "type": "string"
+        }
       },
       "required": ["forgotPassword", "title", "hint"],
       "additionalProperties": false
@@ -9845,9 +9858,15 @@
     "register": {
       "type": "object",
       "properties": {
-        "title": { "type": "string" },
-        "hint": { "type": "string" },
-        "alreadySeller": { "type": "string" }
+        "title": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        },
+        "alreadySeller": {
+          "type": "string"
+        }
       }
     },
     "invite": {

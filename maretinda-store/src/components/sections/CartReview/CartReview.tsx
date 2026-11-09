@@ -105,7 +105,7 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 			<div className="mb-6">
 				<CartSummary
 					currency_code={cart?.currency_code || ''}
-					item_total={cart?.item_total || 0}
+					item_subtotal={cart?.item_subtotal || 0}
 					shipping_total={cart?.shipping_total || 0}
 					tax={cart?.tax_total || 0}
 					total={cart?.total || 0}

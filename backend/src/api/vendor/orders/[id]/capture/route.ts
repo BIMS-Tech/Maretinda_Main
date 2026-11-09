@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { captureCodPayment } from "../../../../../lib/cod-payment"
+import { sellerIdOfMember, sellerOwnsOrder } from "../../../../../lib/seller-ownership"
 
 /**
  * POST /seller/orders/:id/capture
@@ -13,6 +14,12 @@ import { captureCodPayment } from "../../../../../lib/cod-payment"
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const orderId = req.params.id
   const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+
+  // Same answer as an unknown order, so this can't be used to probe order ids.
+  const sellerId = await sellerIdOfMember(pg, (req as any).auth_context?.actor_id)
+  if (!sellerId || !(await sellerOwnsOrder(pg, sellerId, orderId))) {
+    return res.status(404).json({ message: "No COD payment found for this order" })
+  }
 
   // Find the COD payment for this order
   const result = await pg.raw(

@@ -2,6 +2,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { useElements, useStripe } from '@stripe/react-stripe-js';
+import { useSearchParams } from 'next/navigation';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
@@ -29,6 +30,17 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 		(cart.shipping_methods?.length ?? 0) < 1;
 
 	const paymentSession = cart.payment_collection?.payment_sessions?.[0];
+	const step = useSearchParams().get('step');
+
+	// The cart only moves to a newly picked method on "Continue to review", so
+	// until then a pay button here would still charge the previous method.
+	if (step === 'address' || step === 'delivery' || step === 'payment') {
+		return (
+			<Button className="w-full" data-testid={dataTestId} disabled>
+				Finish the steps to place your order
+			</Button>
+		);
+	}
 
 	switch (true) {
 		case isStripe(paymentSession?.provider_id):
@@ -170,7 +182,13 @@ const StripePaymentButton = ({
 	);
 };
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const ManualTestPaymentButton = ({
+	notReady,
+	'data-testid': dataTestId,
+}: {
+	notReady: boolean;
+	'data-testid'?: string;
+}) => {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const onPaymentCompleted = async () => {
@@ -189,6 +207,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
 		<>
 			<Button
 				className="w-full py-2.5 !text-black !font-medium rounded-sm text-md"
+				data-testid={dataTestId}
 				disabled={notReady}
 				onClick={handlePayment}
 			>

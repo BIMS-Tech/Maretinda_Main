@@ -1,5 +1,6 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { getAssistantService, type AssistantMessage } from "../../../services/assistant"
+import { clientIp } from "../../../lib/client-ip"
 
 /**
  * POST /store/assistant
@@ -42,10 +43,7 @@ function rateLimited(key: string): boolean {
 
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const customerId = req.auth_context?.actor_id || null
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    "unknown"
+  const ip = clientIp(req as any)
 
   if (rateLimited(customerId || ip)) {
     return res.status(429).json({ message: "Too many requests — please slow down." })

@@ -26,6 +26,8 @@ import {
   FlyingTigersOrderPayload,
   FlyingTigersAddress,
 } from '../../../services/flyingtigers'
+import { toPhMobile } from '../../../lib/ph-mobile'
+import { sellerOwnsOrder } from '../../../lib/seller-ownership'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -68,21 +70,6 @@ function normalizeAddress(a: any = {}) {
     postal_code: postal,
     country: a.country ?? 'PH',
   }
-}
-
-/**
- * Flying Tigers only accepts PH mobiles as +639XXXXXXXXX. Sellers and buyers
- * usually type the local 09XX form, so convert the common spellings and
- * return null for anything that is not a PH mobile.
- */
-function toPhMobile(phone: string): string | null {
-  const digits = String(phone ?? '').replace(/[^\d]/g, '')
-  const local = digits.startsWith('63')
-    ? digits.slice(2)
-    : digits.startsWith('0')
-      ? digits.slice(1)
-      : digits
-  return /^9\d{9}$/.test(local) ? `+63${local}` : null
 }
 
 /** Normalize parcel dimensions/weight, accepting multiple field spellings. */
@@ -216,6 +203,12 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
     if (action === 'create-order') {
       if (!providerId || !orderData) {
         return res.status(400).json({ message: 'providerId and orderData are required' })
+      }
+
+      // A courier booking spends platform money and exposes the buyer's address,
+      // so it has to be for one of this seller's own orders.
+      if (orderData.medusa_order_id && !(await sellerOwnsOrder(pg, sellerId, orderData.medusa_order_id as string))) {
+        return res.status(404).json({ message: 'Order not found' })
       }
 
       // Guard against double-booking: an order that already has an active

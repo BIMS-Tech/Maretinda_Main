@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
+import { giyapayRequestSignature } from "../../../../lib/giyapay-signature"
 
 /**
  * POST /seller/subscription/checkout
@@ -106,8 +107,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const nonce = crypto.randomBytes(16).toString("hex")
     const timestamp = Math.floor(Date.now() / 1000).toString()
 
-    const signatureString = `${config.merchantId}${amountCentavos}PHP${orderId}${timestamp}${nonce}${config.merchantSecret}`
-    const signature = crypto.createHash("sha512").update(signatureString).digest("hex")
+    const signature = giyapayRequestSignature({
+      merchantId: config.merchantId,
+      amount: amountCentavos,
+      currency: "PHP",
+      orderId,
+      timestamp,
+      nonce,
+      secret: config.merchantSecret,
+    })
 
     const sellerPanelUrl = (
       process.env.SELLER_PANEL_URL ||

@@ -16,6 +16,7 @@ import {
 import { HideIcon } from '@/icons';
 import Spinner from '@/icons/spinner';
 import { updateCustomerPassword } from '@/lib/data/customer';
+import { safeReturnTo } from '@/lib/helpers/safe-return-to';
 
 import { type ResetPasswordFormData, resetPasswordSchema } from './schema';
 
@@ -111,8 +112,7 @@ const Form = ({
 					form.reset();
 					setIsSuccess(true);
 					setTimeout(() => {
-						const returnTo = searchParams.get('returnTo');
-						router.push(returnTo || '/login');
+						router.push(safeReturnTo(searchParams.get('returnTo'), '/login'));
 					}, 5000);
 				}
 			} catch {

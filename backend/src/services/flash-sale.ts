@@ -74,6 +74,32 @@ export interface UpdateFlashSaleItemInput {
   stock_limit?: number
 }
 
+/**
+ * What a seller may offer. A percentage over 100 or a fixed discount above the
+ * price would mean paying the buyer; a negative one is a hidden price increase.
+ */
+export function flashSaleItemError(input: {
+  discount_type?: unknown
+  discount_value?: unknown
+  stock_limit?: unknown
+}): string | null {
+  if (input.discount_type !== "percentage" && input.discount_type !== "fixed") {
+    return "discount_type must be percentage or fixed"
+  }
+  const value = Number(input.discount_value)
+  if (typeof input.discount_value === "boolean" || !Number.isFinite(value) || value <= 0) {
+    return "discount_value must be a positive number"
+  }
+  if (input.discount_type === "percentage" && value > 90) {
+    return "A percentage discount can't exceed 90%"
+  }
+  if (input.stock_limit !== undefined && input.stock_limit !== null) {
+    const limit = Number(input.stock_limit)
+    if (!Number.isInteger(limit) || limit < 1) return "stock_limit must be a positive whole number"
+  }
+  return null
+}
+
 function generateId(prefix: string): string {
   const ts = Date.now().toString(36)
   const rand = Math.random().toString(36).substring(2, 8)
@@ -426,6 +452,20 @@ class FlashSaleService {
       `UPDATE "flash_sale_item" SET sold_count = sold_count + ?, updated_at = NOW() WHERE id = ?`,
       [quantity, itemId]
     )
+  }
+
+  /**
+   * Atomically take stock from the sale's limit. Returns false when there isn't
+   * enough left, including when two shoppers race for the last unit.
+   */
+  async reserveStock(itemId: string, quantity: number): Promise<boolean> {
+    const result = await this.pgConnection.raw(
+      `UPDATE "flash_sale_item"
+          SET sold_count = sold_count + ?, updated_at = NOW()
+        WHERE id = ? AND (stock_limit IS NULL OR sold_count + ? <= stock_limit)`,
+      [quantity, itemId, quantity]
+    )
+    return (result.rowCount ?? 0) > 0
   }
 
   async processScheduled(): Promise<{ activated: number; ended: number }> {

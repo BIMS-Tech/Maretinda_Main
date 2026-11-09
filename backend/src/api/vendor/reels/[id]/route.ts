@@ -23,7 +23,7 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     res.json({ reel })
   } catch (error: any) {
     console.error("[vendorGetReel]", error)
-    res.status(500).json({ message: "Failed to load reel", error: error.message })
+    res.status(500).json({ message: "Failed to load reel" })
   }
 }
 
@@ -51,7 +51,7 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     res.json({ reel })
   } catch (error: any) {
     console.error("[vendorUpdateReel]", error)
-    res.status(500).json({ message: "Failed to update reel", error: error.message })
+    res.status(500).json({ message: "Failed to update reel" })
   }
 }
 
@@ -67,6 +67,6 @@ export async function DELETE(req: AuthenticatedMedusaRequest, res: MedusaRespons
     res.json({ id: req.params.id, object: "reel", deleted: true })
   } catch (error: any) {
     console.error("[vendorDeleteReel]", error)
-    res.status(500).json({ message: "Failed to delete reel", error: error.message })
+    res.status(500).json({ message: "Failed to delete reel" })
   }
 }

@@ -3,6 +3,7 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { BRAND_NAME } from "../lib/brand"
 
 /** Resend provider template name - must match @mercurjs/resend emailTemplates key */
 const BUYER_ACCOUNT_CREATED_TEMPLATE = "buyerAccountCreatedEmailTemplate"
@@ -41,11 +42,7 @@ export default async function customerCreatedHandler({
       console.error("⚠️ Failed to add customer to First Time Buyers group:", groupError)
     }
 
-    const storeService = container.resolve(Modules.STORE)
-    const stores = await storeService.listStores()
-    const store = stores[0]
-
-    const storeName = store?.name || "Maretinda Marketplace"
+    const storeName = BRAND_NAME
     const storefrontUrl =
       process.env.STOREFRONT_URL ||
       process.env.STORE_URL ||

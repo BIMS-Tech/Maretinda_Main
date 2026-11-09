@@ -12,6 +12,7 @@ import {
 	ShareButton,
 } from '@/components/molecules';
 import { UpdateItemQuantityButton } from '@/components/molecules/UpdateItemQuantityButton/UpdateItemQuantityButton';
+import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart, addFlashSaleItemToCart } from '@/lib/data/cart';
 import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
@@ -261,7 +262,7 @@ export const ProductDetailsHeader = ({
 			{product.description && (
 				<div
 					className="text-[14px] text-gray-500 leading-relaxed"
-					dangerouslySetInnerHTML={{ __html: product.description }}
+					dangerouslySetInnerHTML={{ __html: sanitizeSellerHtml(product.description) }}
 				/>
 			)}
 

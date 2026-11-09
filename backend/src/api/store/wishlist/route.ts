@@ -81,8 +81,7 @@ export const POST = async (
     
     console.error('[Wishlist POST] Error:', error)
     return res.status(500).json({
-      message: "Failed to add product to wishlist",
-      error: error.message
+      message: "Failed to add product to wishlist"
     })
   }
 }
@@ -194,7 +193,6 @@ export const GET = async (
     console.error('[Wishlist GET] Error:', error.message)
     return res.status(500).json({
       message: "Failed to retrieve wishlist",
-      error: error.message,
       wishlists: [],
       count: 0,
       offset: 0,

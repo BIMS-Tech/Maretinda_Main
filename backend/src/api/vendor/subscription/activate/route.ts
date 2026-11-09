@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import crypto from "crypto"
 import SubscriptionService from "../../../../services/subscription"
+import { giyapayCallbackSignature, giyapaySignaturesMatch } from "../../../../lib/giyapay-signature"
 
 function getsellerPanelUrl(): string {
   // Must resolve identically to the checkout route's success_callback — the
@@ -98,10 +98,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     // Verify GiyaPay signature:
     // sha512("{sellerPanelUrl}/subscription?nonce={nonce}&order_id={order_id}&refno={refno}&timestamp={timestamp}&amount={amount}" + merchantSecret)
     const successCallbackUrl = `${getsellerPanelUrl()}/subscription`
-    const urlWithoutSignature = `${successCallbackUrl}?nonce=${nonce}&order_id=${order_id}&refno=${refno}&timestamp=${timestamp}&amount=${amount}`
-    const expectedSignature = crypto.createHash("sha512").update(urlWithoutSignature + merchantSecret).digest("hex")
+    const expectedSignature = giyapayCallbackSignature(
+      successCallbackUrl,
+      { nonce, order_id, refno, timestamp, amount },
+      merchantSecret
+    )
 
-    if (signature !== expectedSignature) {
+    if (!giyapaySignaturesMatch(signature, expectedSignature)) {
       console.error("[Subscription Activate] Signature mismatch for order:", order_id)
       res.status(400).json({ message: "Payment verification failed — invalid signature" })
       return

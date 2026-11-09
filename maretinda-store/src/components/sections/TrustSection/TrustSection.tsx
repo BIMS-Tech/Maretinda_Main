@@ -9,7 +9,7 @@ const PILLARS = [
 		title: 'Buyer Protection',
 		body: 'Full refund if your order doesn\'t arrive or isn\'t as described. Shop with complete confidence — we\'ve got your back.',
 		cta: 'Learn more',
-		href: '/buyer-protection',
+		href: '/help-center#returns',
 	},
 	{
 		icon: (
@@ -23,7 +23,7 @@ const PILLARS = [
 		title: 'Nationwide Delivery',
 		body: 'Fast shipping to all 7,641 islands. Cash on delivery available everywhere. Free shipping on orders over ₱499.',
 		cta: 'Shipping info',
-		href: '/shipping',
+		href: '/help-center#shipping',
 	},
 	{
 		icon: (
@@ -36,7 +36,7 @@ const PILLARS = [
 		title: 'Pay Your Way',
 		body: 'GCash, Maya, credit & debit cards, online banking, or cash on delivery. Secure checkout powered by 256-bit SSL.',
 		cta: 'Payment options',
-		href: '/payment',
+		href: '/help-center#payments',
 	},
 ];
 

@@ -118,6 +118,11 @@ export const Header = async () => {
 					</nav>
 				</div>
 
+				{/* Search on phones and tablets; the search bar above only fits from lg up */}
+				<div className="lg:hidden px-4 pb-3" data-testid="mobile-search">
+					<NavbarSearch categories={categories} />
+				</div>
+
 				{/* Category nav strip */}
 				<div style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
 					<div className="max-w-[1360px] mx-auto px-6 h-11 hidden md:flex items-center gap-1 text-[13px]">

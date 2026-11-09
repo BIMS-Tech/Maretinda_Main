@@ -42,7 +42,7 @@ export async function GET(
     res.status(200).json({ campaigns, count, limit, offset })
   } catch (error: any) {
     console.error("[sellerListCampaigns] Error:", error)
-    res.status(500).json({ message: "Failed to list campaigns", error: error.message })
+    res.status(500).json({ message: "Failed to list campaigns" })
   }
 }
 

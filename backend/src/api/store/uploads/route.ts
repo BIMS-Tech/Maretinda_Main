@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import multer from "multer"
 import { createGCSService } from "../../../utils/google-cloud-storage"
+import { fileMatchesDeclaredType } from "../../../lib/file-signature"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = [
@@ -34,12 +35,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return res.status(400).json({ message: "No file uploaded" })
     }
 
+    const file = files[0]
+    if (!fileMatchesDeclaredType(file.buffer, file.mimetype)) {
+      return res.status(400).json({ message: "File contents don't match its type" })
+    }
+
     const gcs = createGCSService()
     if (!gcs) {
       return res.status(500).json({ message: "Cloud storage not configured" })
     }
 
-    const file = files[0]
     const result = await gcs.uploadFile(file.buffer, file.originalname, {
       folder: "seller-application-docs",
       contentType: file.mimetype,

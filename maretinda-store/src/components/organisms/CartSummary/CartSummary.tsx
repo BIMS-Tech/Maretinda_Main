@@ -3,7 +3,7 @@
 import { convertToLocale } from '@/lib/helpers/money';
 
 export const CartSummary = ({
-	item_total,
+	item_subtotal,
 	shipping_total,
 	total,
 	currency_code,
@@ -11,7 +11,8 @@ export const CartSummary = ({
 	totalItems,
 	discount,
 }: {
-	item_total: number;
+	/** Items before discount: the discount has its own line below */
+	item_subtotal: number;
 	shipping_total: number;
 	total: number;
 	currency_code: string;
@@ -34,7 +35,7 @@ export const CartSummary = ({
 				{/* Subtotal */}
 				<div className="flex justify-between">
 					<span className="text-[#6b7280]">Subtotal</span>
-					<span className="font-medium text-[#111827]">{money(item_total)}</span>
+					<span className="font-medium text-[#111827]">{money(item_subtotal)}</span>
 				</div>
 
 				{/* Shipping */}

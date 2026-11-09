@@ -2,6 +2,7 @@ import type { HttpTypes } from '@medusajs/types';
 import { format } from 'date-fns';
 import Image from 'next/image';
 
+import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import type { SellerProps } from '@/types/seller';
 
 import { Chat } from '../../organisms/Chat/Chat';
@@ -118,7 +119,7 @@ export const SellerPageHeader = ({
 					<p
 						className="text-[13.5px] mb-3 max-w-[600px]"
 						style={{ color: '#404040' }}
-						dangerouslySetInnerHTML={{ __html: seller.description }}
+						dangerouslySetInnerHTML={{ __html: sanitizeSellerHtml(seller.description) }}
 					/>
 				)}
 

@@ -240,6 +240,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     res.status(200).json({ welcome_promo, featured_campaign, site_settings, sellers_count })
   } catch (error: any) {
     console.error("[Store Hero Content] GET error:", error.message)
-    res.status(500).json({ message: "Failed to retrieve hero content", error: error.message })
+    res.status(500).json({ message: "Failed to retrieve hero content" })
   }
 }

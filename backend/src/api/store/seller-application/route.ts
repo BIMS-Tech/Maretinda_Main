@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
+import { verify } from "jsonwebtoken"
 
 function getDb(req: any) {
   try {
@@ -22,6 +23,9 @@ async function sendConfirmationEmail(notifService: any, email: string, name: str
   }
 }
 
+const MAX_FIELD_LENGTH = 2000
+const MAX_DOCUMENTS_LENGTH = 20000
+
 /**
  * POST /store/seller-application
  * Receives the multi-step registration form payload (JSON body) and an
@@ -31,6 +35,19 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
   try {
     const body = req.body as any
     const db = getDb(req)
+
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return res.status(400).json({ message: "Invalid application" }) as any
+    }
+    const tooLong = Object.entries(body).some(
+      ([key, value]) => key !== "documents" && typeof value === "string" && value.length > MAX_FIELD_LENGTH
+    )
+    if (tooLong || JSON.stringify(body.documents ?? null).length > MAX_DOCUMENTS_LENGTH) {
+      return res.status(400).json({ message: "One of the fields is too long" }) as any
+    }
+    if (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(body.email))) {
+      return res.status(400).json({ message: "Please enter a valid email address" }) as any
+    }
 
     const id = `sapp_${crypto.randomBytes(10).toString("hex")}`
 
@@ -42,10 +59,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       const authHeader = (req.headers["authorization"] as string) || ""
       const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
       if (token) {
-        const payload = JSON.parse(
-          Buffer.from(token.split(".")[1], "base64url").toString("utf-8")
-        )
-        authIdentityId = payload?.auth_identity_id || payload?.actor_id || null
+        // Verified, not just decoded: approving the application activates this
+        // identity, so an unsigned token could otherwise name someone else's.
+        const { projectConfig } = req.scope.resolve(ContainerRegistrationKeys.CONFIG_MODULE) as any
+        const payload = verify(token, projectConfig.http.jwtSecret as string) as any
+        authIdentityId = payload?.auth_identity_id || null
       }
     } catch {
       // best-effort; application can still be reviewed manually

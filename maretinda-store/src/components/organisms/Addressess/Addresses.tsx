@@ -9,6 +9,7 @@ import { AddressForm, Modal } from '@/components/molecules';
 import { emptyDefaultAddressValues } from '@/components/molecules/AddressForm/AddressForm';
 import type { AddressFormData } from '@/components/molecules/AddressForm/schema';
 import { deleteCustomerAddress } from '@/lib/data/customer';
+import { phMobileLocalPart } from '@/lib/helpers/ph-mobile';
 import { cn } from '@/lib/utils';
 
 export const Addresses = ({
@@ -36,13 +37,13 @@ export const Addresses = ({
 				address: address.address_1 || '',
 				addressId: addressId,
 				addressName: address.address_name || '',
+				barangay: address.address_2 || '',
 				city: address.city || '',
 				company: address.company || '',
 				countryCode: address.country_code || '',
-				email: user.email || '',
 				firstName: address.first_name || '',
 				lastName: address.last_name || '',
-				phone: address.phone || user.phone || '',
+				phone: phMobileLocalPart(address.phone || user.phone),
 				postalCode: address.postal_code || '',
 				province: address.province || '',
 			});
@@ -101,7 +102,7 @@ export const Addresses = ({
 							>
 								<div className="flex flex-col ">
 									<h4 className="text-2xl font-semibold text-primary mb-6">
-										{address.address_name}
+										{address.address_name || address.address_1}
 									</h4>
 									<p className="text-base text-primary">
 										{`${address.first_name} ${address.last_name}`}
@@ -112,7 +113,7 @@ export const Addresses = ({
 										</p>
 									)}
 									<p className="text-base text-primary">
-										{`${address.address_1}, ${address.postal_code} ${
+										{`${address.address_1}, ${address.address_2 ? `${address.address_2}, ` : ''}${address.postal_code} ${
 											address.city
 										}${address.province ? `, ${address.province}` : ''}${`, ${
 											countries.find(

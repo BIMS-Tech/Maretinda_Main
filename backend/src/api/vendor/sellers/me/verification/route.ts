@@ -68,8 +68,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
   } catch (error) {
     console.error("[verification] Error updating verification:", error)
     res.status(500).json({
-      message: "Failed to update verification",
-      error: error instanceof Error ? error.message : "Unknown error",
+      message: "Failed to update verification"
     })
   }
 }

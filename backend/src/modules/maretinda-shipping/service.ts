@@ -154,10 +154,10 @@ class MaretindaShippingProviderService extends AbstractFulfillmentProviderServic
 
     if (optionData.is_cod) ratePhp += COD_SURCHARGE_PHP
 
-    // Medusa stores amounts in smallest currency unit.
-    // PHP: 1 peso = 100 centavos → ₱99 is stored as 9900.
+    // Medusa v2 amounts are in major units: ₱99 is 99, as flat shipping options
+    // and every cart total are stored. Not centavos.
     return {
-      calculated_amount: ratePhp * 100,
+      calculated_amount: ratePhp,
       is_calculated_price_tax_inclusive: false,
     }
   }

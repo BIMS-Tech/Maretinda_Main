@@ -1,9 +1,55 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
-import { Button } from '@/components/atoms/Button/Button';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { Layout } from '@/components/organisms';
+import { CartIcon, HouseIcon, SettingIcon } from '@/icons/navigation';
 import { retrieveCustomer } from '@/lib/data/customer';
+
+const SELLER_PANEL_URL =
+	process.env.NEXT_PUBLIC_seller_PANEL_URL || 'https://seller.maretinda.com';
+const SELLER_REGISTER_URL = `${SELLER_PANEL_URL}/register`;
+
+const quickLinks = [
+	{
+		description: 'Track your purchases and see past orders.',
+		href: '/user/orders',
+		icon: <CartIcon size={22} />,
+		testId: 'dashboard-orders-link',
+		title: 'Recent orders',
+	},
+	{
+		description: 'Save delivery addresses for a faster checkout.',
+		href: '/user/addresses',
+		icon: <HouseIcon size={22} />,
+		testId: 'dashboard-addresses-link',
+		title: 'Addresses',
+	},
+	{
+		description: 'Update your name, phone number and password.',
+		href: '/user/settings',
+		icon: <SettingIcon size={22} />,
+		testId: 'dashboard-settings-link',
+		title: 'Account details',
+	},
+];
+
+const ArrowIcon = ({ className }: { className?: string }) => (
+	<svg
+		aria-hidden="true"
+		className={className}
+		fill="none"
+		height="16"
+		stroke="currentColor"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		strokeWidth="2.2"
+		viewBox="0 0 24 24"
+		width="16"
+	>
+		<path d="M5 12h14M13 5l7 7-7 7" />
+	</svg>
+);
 
 export default async function UserPage() {
 	const user = await retrieveCustomer();
@@ -14,61 +60,72 @@ export default async function UserPage() {
 
 	return (
 		<Layout>
-			<div className="md:col-span-3 user-content-wrapper text-black text-lg !font-normal">
-				<div className="flex flex-col gap-4 justify-start">
-					<h1 className="text-3xl capitalize text-black font-lora !font-bold">
-						Welcome {user.first_name}
-					</h1>
-					<p>Your account is ready to go!</p>
-				</div>
-				<div className="flex flex-col gap-4 mt-12">
-					<p>
-						From your account dashboard you can view your{' '}
-						<LocalizedClientLink
-							className="underline underline-offset-4"
-							href="#"
-						>
-							Recent orders
-						</LocalizedClientLink>
-						.
+			<div className="md:col-span-3 flex flex-col gap-5">
+				<section className="rounded-2xl border border-[#432C63]/[0.08] bg-gradient-to-br from-[#F6F2FB] to-white px-6 py-7 sm:px-8 sm:py-9 shadow-[0_4px_24px_rgba(67,44,99,0.08)]">
+					<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#432C63]/60">
+						Dashboard
 					</p>
-					<p>
-						Manage your{' '}
-						<LocalizedClientLink
-							className="underline underline-offset-4"
-							href="#"
-						>
-							Shipping and Billing addresses
-						</LocalizedClientLink>
-						.
+					<h2 className="mt-2 font-lora text-3xl !font-bold text-[#432C63] break-words sm:text-4xl">
+						{user.first_name
+							? `Welcome, ${user.first_name}`
+							: 'Welcome to Maretinda'}
+					</h2>
+					<p className="mt-3 max-w-xl text-base leading-relaxed text-black/65">
+						Your account is ready to go. Pick up where you left off
+						below.
 					</p>
-					<p>
-						Edit your{' '}
+				</section>
+
+				<nav
+					aria-label="Account shortcuts"
+					className="grid grid-cols-1 gap-4 lg:grid-cols-3"
+				>
+					{quickLinks.map((item) => (
 						<LocalizedClientLink
-							className="underline underline-offset-4"
-							href="#"
+							className="group flex items-center gap-4 rounded-2xl border border-[#432C63]/[0.08] bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[#432C63]/25 hover:shadow-[0_8px_24px_rgba(67,44,99,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#432C63] focus-visible:ring-offset-2 lg:flex-col lg:items-start lg:p-6"
+							data-testid={item.testId}
+							href={item.href}
+							key={item.href}
 						>
-							Password and Account details
+							<span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#432C63]/[0.07] text-[#432C63] transition-colors duration-200 group-hover:bg-[#432C63] group-hover:text-white">
+								{item.icon}
+							</span>
+							<span className="min-w-0 flex-1">
+								<span className="block text-[17px] font-semibold text-[#432C63]">
+									{item.title}
+								</span>
+								<span className="mt-1 block text-sm leading-relaxed text-black/60">
+									{item.description}
+								</span>
+							</span>
+							<ArrowIcon className="shrink-0 text-[#432C63]/40 transition duration-200 group-hover:translate-x-1 group-hover:text-[#432C63] lg:mt-auto" />
 						</LocalizedClientLink>
-						.
-					</p>
-				</div>
-				<div className="flex mt-14 lg:!px-6 !py-[22px] user-content-wrapper">
-					<div className="flex flex-col lg:flex-row lg:items-center justify-between lg:px-7 w-full gap-5 lg:gap-10">
-						<div className="flex flex-col justify-between gap-1">
-							<h4 className="text-xl !font-semibold">
-								Become a seller
-							</h4>
-							<p>
-								sellers can sell products and manage a store
-								with a seller dashboard.
-							</p>
-						</div>
-						<Button className="rounded-sm bg-action text-action-on-primary !font-medium h-[40px] w-fit min-w-[129px] text-[13px] px-3.5">
-							Become a Seller
-						</Button>
+					))}
+				</nav>
+
+				<section className="flex flex-col gap-5 rounded-2xl bg-gradient-to-br from-[#2A1B3E] to-[#432C63] px-6 py-7 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+					<div>
+						<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+							Sell on Maretinda
+						</p>
+						<h3 className="mt-2 text-xl font-bold text-white">
+							Have something to sell?
+						</h3>
+						<p className="mt-1 max-w-lg text-sm leading-relaxed text-white/75">
+							Open your own store and manage your products and
+							orders from a seller dashboard. Your first month is
+							free.
+						</p>
 					</div>
-				</div>
+					<Link
+						className="inline-flex h-11 w-fit shrink-0 items-center gap-2 rounded-full bg-[#FFC533] px-6 text-sm font-bold text-[#432C63] transition-opacity duration-200 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#432C63]"
+						data-testid="dashboard-seller-link"
+						href={SELLER_REGISTER_URL}
+					>
+						Become a Seller
+						<ArrowIcon />
+					</Link>
+				</section>
 			</div>
 		</Layout>
 	);

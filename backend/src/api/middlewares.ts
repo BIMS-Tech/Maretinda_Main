@@ -1,10 +1,105 @@
-import { defineMiddlewares } from '@medusajs/framework/http'
+import { defineMiddlewares, errorHandler } from '@medusajs/framework/http'
 import type {
   MedusaRequest,
   MedusaResponse,
   MedusaNextFunction,
 } from '@medusajs/framework/http'
-import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils'
+import { PRODUCT_RULE_ATTRIBUTE, productIdsOfSeller } from '../lib/seller-promotion'
+import { sellerIdOfMember } from '../lib/seller-ownership'
+import { authRateLimit, rateLimit } from '../lib/rate-limit'
+import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
+
+// A known default signs tokens anyone can forge, including admin ones. Medusa
+// falls back to 'supersecret' silently, so refuse to serve traffic instead.
+if (
+  process.env.NODE_ENV === 'production' &&
+  (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'supersecret')
+) {
+  throw new Error('JWT_SECRET must be set to a private value in production')
+}
+
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+
+/**
+ * The product rule is what keeps a seller's promotion on their own items, so it
+ * can be narrowed to other owned products but never removed or widened. Lives
+ * here rather than in our route because Mercur serves this same URL too.
+ */
+const guardSellerPromotionRules = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+    if (!sellerId) return res.status(401).json({ message: 'Unauthorized' })
+
+    const promotion: any = await req.scope.resolve(Modules.PROMOTION).retrievePromotion(req.params.id, {
+      relations: ['application_method', 'application_method.target_rules'],
+    } as any)
+    const body = req.body as any
+    const productRuleIds = (promotion.application_method?.target_rules ?? [])
+      .filter((r: any) => r.attribute === PRODUCT_RULE_ATTRIBUTE)
+      .map((r: any) => r.id)
+    if ((body?.delete ?? []).some((id: string) => productRuleIds.includes(id))) {
+      return res.status(400).json({ message: 'A promotion must stay limited to your own products' })
+    }
+
+    const owned = new Set(await productIdsOfSeller(db, sellerId))
+    const values = [...(body?.create ?? []), ...(body?.update ?? [])]
+      .filter((r: any) => r.attribute === PRODUCT_RULE_ATTRIBUTE || productRuleIds.includes(r.id))
+      .flatMap((r: any) => r.values ?? [])
+    if (values.some((v: any) => !owned.has(String(v?.value ?? v)))) {
+      return res.status(403).json({ message: 'A promotion can only target your own products' })
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Matches codes ignoring case, and enforces first-order vouchers when applied,
+ * not just when collected.
+ */
+const guardPromoCodes = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const codes = (req.body as any)?.promo_codes
+    if (!Array.isArray(codes) || !codes.length) return next()
+
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const stored = await storedPromoCodes(db, codes.map(String))
+    ;(req.body as any).promo_codes = stored
+    if ((req as any).validatedBody?.promo_codes) (req as any).validatedBody.promo_codes = stored
+
+    const cart = await db('cart').where('id', req.params.id).first()
+    const refused = await refusedPromoCode(db, stored, cart?.customer_id)
+    if (refused) return res.status(400).json({ type: 'invalid_data', message: refused })
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+/** And again at completion, in case an order was placed since the code was applied. */
+const guardCartPromotions = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const query: any = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+    const { data } = await query.graph({
+      entity: 'cart',
+      fields: ['customer_id', 'promotions.code'],
+      filters: { id: req.params.id },
+    })
+    const cart = data?.[0]
+    const codes = (cart?.promotions ?? []).map((p: any) => p?.code).filter(Boolean)
+
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const refused = await refusedPromoCode(db, codes, cart?.customer_id)
+    if (refused) return res.status(400).json({ type: 'invalid_data', message: refused })
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
 
 /**
  * Collect every seller object present in a store response body, across the
@@ -67,14 +162,82 @@ const enrichSellerVerification = (
  *
  * - Webhook routes need the raw, unparsed request body to verify HMAC signatures.
  * - Store seller/product responses are enriched with seller verification_status.
+ * - Public endpoints that cost money or send email are rate limited.
  */
+/** Medusa answers these with a 500, but they're the client's mistake. */
+const baseErrorHandler = errorHandler()
+
 export default defineMiddlewares({
+  errorHandler: (error: any, req: any, res: any, next: any) => {
+    if (error?.type === 'entity.parse.failed') {
+      return res.status(400).json({ type: 'invalid_data', message: 'Request body is not valid JSON' })
+    }
+    if (error?.type === 'entity.too.large') {
+      return res.status(413).json({ type: 'invalid_data', message: 'Request body is too large' })
+    }
+    return baseErrorHandler(error, req, res, next)
+  },
   routes: [
     {
       matcher: '/webhooks/flyingtigers',
       method: ['POST'],
       bodyParser: { preserveRawBody: true },
     },
+    {
+      matcher: '/webhooks/ninjavan',
+      method: ['POST'],
+      bodyParser: { preserveRawBody: true },
+    },
+    { matcher: '/auth/*', middlewares: [authRateLimit] },
+    {
+      matcher: '/store/seller-application',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'seller-application', max: 5, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/uploads',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'public-upload', max: 30, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/vendor/register',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'vendor-register', max: 10, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/chat',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'chat-start', max: 20, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/reviews',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'review', max: 20, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/reels/:id/view',
+      method: ['POST'],
+      middlewares: [
+        rateLimit({ name: 'reel-view', max: 10, windowMs: MINUTE, key: (req) => req.params?.id }),
+      ],
+    },
+    {
+      matcher: '/store/calculate-shipping',
+      middlewares: [rateLimit({ name: 'shipping-quote', max: 60, windowMs: MINUTE })],
+    },
+    {
+      matcher: '/giyapay/*',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'giyapay', max: 60, windowMs: MINUTE })],
+    },
+    {
+      matcher: '/vendor/promotions/:id/target-rules/batch',
+      method: ['POST'],
+      middlewares: [guardSellerPromotionRules],
+    },
+    { matcher: '/store/carts/:id', method: ['POST'], middlewares: [guardPromoCodes] },
+    { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
+    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [guardCartPromotions] },
     { matcher: '/store/seller', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/seller/*', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/products', method: ['GET'], middlewares: [enrichSellerVerification] },

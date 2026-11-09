@@ -1,0 +1,13 @@
+{
+  "name": "maretinda-e2e",
+  "private": true,
+  "description": "Browser end-to-end tests for the storefront, seller panel and admin panel",
+  "scripts": {
+    "test": "playwright test",
+    "test:writes": "E2E_ALLOW_WRITES=1 playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

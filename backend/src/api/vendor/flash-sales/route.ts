@@ -31,6 +31,6 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
 
     res.status(200).json({ flash_sales, count, limit: parseInt(limit), offset: parseInt(offset) })
   } catch (error: any) {
-    res.status(500).json({ message: "Failed to list flash sales", error: error.message })
+    res.status(500).json({ message: "Failed to list flash sales" })
   }
 }

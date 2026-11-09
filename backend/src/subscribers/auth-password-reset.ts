@@ -3,6 +3,7 @@ import {
   type SubscriberConfig,
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
+import { BRAND_NAME } from "../lib/brand"
 
 const PASSWORD_RESET_TEMPLATE = "passwordResetEmailTemplate"
 
@@ -23,9 +24,7 @@ export default async function authPasswordResetHandler({
 
     const resetUrl = `${storefrontUrl.replace(/\/$/, "")}/reset-password?token=${token}&email=${encodeURIComponent(email)}`
 
-    const storeService = container.resolve(Modules.STORE)
-    const stores = await storeService.listStores()
-    const storeName = stores[0]?.name || "Maretinda Marketplace"
+    const storeName = BRAND_NAME
 
     // Try to get user's name from customer service
     let userName = "Customer"

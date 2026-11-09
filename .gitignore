@@ -150,3 +150,6 @@ uploads/
 # Nested module node_modules (backend sub-modules)
 backend/src/modules/**/node_modules/
 backend/src/modules/**/dist/
+
+# Service account keys never belong in the repo
+backend/config/gcs-key.json

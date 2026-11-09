@@ -6,6 +6,7 @@ import { Input } from "@/components/atoms"
 import { cn } from "@/lib/utils"
 
 type LabeledInputProps = {
+  icon?: React.ReactNode
   inputClassName?: string
   important?: boolean
   label: string
