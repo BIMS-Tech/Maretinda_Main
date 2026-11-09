@@ -61,7 +61,10 @@ Maretinda is live at maretinda.com with real buyers and sellers. The owner wants
   - Test sends real email through Resend.
   - Test signups use Resend's test inboxes (`delivered+<label>@resend.dev`), which accept mail without hurting the sender reputation.
   - Email content is checked through the Resend API's sent-email log (read-only).
-- **Uploads:** image and video uploads fail on test because test has no storage bucket (`S3_*` unset). The cases affected are marked Blocked until a test R2 bucket exists.
+- **Uploads (owner's decision 2026-11-09):**
+  - Test shares production's media bucket, `maretinda-media`, with the same `S3_*` settings, copied into test's `backend.env`.
+  - Test uploads add new files there. Nothing in our code deletes stored files (checked), so test can't remove live images.
+  - Never use Medusa's own delete-upload actions (`DELETE /admin/uploads`, `/vendor/uploads`) on test: they would delete a file production uses.
 - **Search:** test's backend has no Algolia app configured, so search indexing can't be tested on test. Search results are checked read-only against production.
 - **Accounts:**
   - Use a test-only admin and test-only sellers created on test (`medusa user`, seller signup plus admin approval).
@@ -84,7 +87,6 @@ Maretinda is live at maretinda.com with real buyers and sellers. The owner wants
 - Fix order within a priority level.
 - New QA case IDs, continuing each section's numbering.
 
-## Open with the owner
+## Out of this round
 
-1. **Test uploads:** create a test R2 bucket and token now, so the upload, reel and seller-document cases can run, or leave those cases Blocked.
-2. **Google sign-in (ACC-05):** it needs a real Google account in a browser. I'll test up to Google's consent screen, and the owner confirms the last step by hand.
+- **Google sign-in (ACC-05):** dropped by the owner on 2026-11-09. Mark it "Not run (owner's decision)", not Blocked.
