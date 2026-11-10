@@ -12,3 +12,9 @@ export const safeReturnTo = (returnTo: string | null | undefined, fallback: stri
 	if (/[\u0000-\u001f]/.test(returnTo)) return fallback;
 	return returnTo;
 };
+
+/** The login page, carrying on to where the shopper was going if that's on this site. */
+export const loginPath = (returnTo: string | null | undefined) => {
+	const target = safeReturnTo(returnTo, '');
+	return target ? `/login?returnTo=${encodeURIComponent(target)}` : '/login';
+};

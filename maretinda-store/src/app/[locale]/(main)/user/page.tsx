@@ -6,6 +6,7 @@ import { Layout } from '@/components/organisms';
 import { CartIcon, HouseIcon, SettingIcon } from '@/icons/navigation';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { SELLER_PANEL_URL, SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
+import { loginPath } from '@/lib/helpers/safe-return-to';
 
 
 const quickLinks = [
@@ -49,11 +50,16 @@ const ArrowIcon = ({ className }: { className?: string }) => (
 	</svg>
 );
 
-export default async function UserPage() {
+export default async function UserPage({
+	searchParams,
+}: {
+	searchParams: Promise<{ returnTo?: string }>;
+}) {
 	const user = await retrieveCustomer();
 
 	if (!user) {
-		redirect('/login');
+		// Pages send signed-out shoppers here with ?returnTo=; keep it through login
+		redirect(loginPath((await searchParams).returnTo));
 	}
 
 	return (
