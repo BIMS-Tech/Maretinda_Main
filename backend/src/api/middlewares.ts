@@ -11,6 +11,7 @@ import { authRateLimit, rateLimit } from '../lib/rate-limit'
 import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
 import { withFreeShippingPrice } from '../lib/free-shipping'
 import { uniqueZoneName } from '../lib/unique-zone-name'
+import { activePlanOf, hasMarketing, maxProducts, maxStaff, productCount, staffCount } from '../lib/plan-features'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -199,6 +200,50 @@ const enrichSellerVerification = (
 /** Medusa answers these with a 500, but they're the client's mistake. */
 const baseErrorHandler = errorHandler()
 
+/** Plan caps and features, as the panel shows them; see lib/plan-features. */
+type PlanCheck = (db: any, sellerId: string, plan: NonNullable<Awaited<ReturnType<typeof activePlanOf>>>) =>
+  Promise<{ code: 'plan_limit' | 'plan_feature'; message: string } | null>
+
+const planCheck = (check: PlanCheck) => async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    if (req.method === 'GET') return next()
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+    // No plan at all is the plan gate's answer (requirePlanForVendorChanges)
+    const plan = sellerId ? await activePlanOf(db, sellerId) : null
+    const refusal = plan && sellerId ? await check(db, sellerId, plan) : null
+    if (refusal) return res.status(403).json({ type: 'not_allowed', ...refusal })
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+const productCap = planCheck(async (db, sellerId, plan) => {
+  const max = maxProducts(plan)
+  if (max === -1 || (await productCount(db, sellerId)) < max) return null
+  return {
+    code: 'plan_limit',
+    message: `Your ${plan.name} plan allows ${max} product${max === 1 ? '' : 's'}. Upgrade your plan under Subscription to add more.`,
+  }
+})
+
+const staffCap = planCheck(async (db, sellerId, plan) => {
+  const max = maxStaff(plan)
+  if (max === -1 || (await staffCount(db, sellerId)) < max) return null
+  return {
+    code: 'plan_limit',
+    message: `Your ${plan.name} plan includes ${max} staff account${max === 1 ? '' : 's'}. Upgrade your plan under Subscription to invite more.`,
+  }
+})
+
+const marketingFeature = (feature: string) =>
+  planCheck(async (_db, _sellerId, plan) =>
+    hasMarketing(plan)
+      ? null
+      : { code: 'plan_feature', message: `${feature} come with the Growth and Premium plans. Upgrade under Subscription to use them.` }
+  )
+
 /** Zone names are unique marketplace-wide; see lib/unique-zone-name. */
 const uniqueZoneNameFor = (table: 'fulfillment_set' | 'service_zone') =>
   async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
@@ -339,6 +384,14 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
+    { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap] },
+    { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap] },
+    { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
+    { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales')] },
+    { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers')] },
+    { matcher: '/vendor/promotions/*', middlewares: [marketingFeature('Promotions and vouchers')] },
+    { matcher: '/vendor/campaigns', middlewares: [marketingFeature('Campaigns')] },
+    { matcher: '/vendor/campaigns/*', middlewares: [marketingFeature('Campaigns')] },
     { matcher: '/vendor/stock-locations/:id/fulfillment-sets', method: ['POST'], middlewares: [uniqueZoneNameFor('fulfillment_set')] },
     { matcher: '/vendor/fulfillment-sets/:id/service-zones', method: ['POST'], middlewares: [uniqueZoneNameFor('service_zone')] },
     { matcher: '/store/account', middlewares: [authenticate('customer', ['bearer', 'session'])] },
