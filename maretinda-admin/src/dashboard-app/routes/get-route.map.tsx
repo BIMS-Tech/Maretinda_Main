@@ -53,6 +53,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/reels"),
             },
             {
+              path: "/newsletter",
+              errorElement: <ErrorBoundary />,
+              lazy: () => import("../../routes/newsletter"),
+            },
+            {
               path: "/shipping-orders",
               errorElement: <ErrorBoundary />,
               lazy: () => import("../../routes/shipping-orders"),

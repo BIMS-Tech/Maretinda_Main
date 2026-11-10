@@ -2,13 +2,23 @@
 
 import { useState } from 'react';
 
+import { subscribeToNewsletter } from '@/lib/data/newsletter';
+
 export const NewsletterSection = () => {
 	const [email, setEmail] = useState('');
 	const [submitted, setSubmitted] = useState(false);
+	const [sending, setSending] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (email.trim()) setSubmitted(true);
+		if (!email.trim()) return;
+		setSending(true);
+		setError(null);
+		const res = await subscribeToNewsletter(email.trim());
+		setSending(false);
+		if (res.ok) setSubmitted(true);
+		else setError(res.message ?? null);
 	};
 
 	return (
@@ -50,12 +60,18 @@ export const NewsletterSection = () => {
 								/>
 								<button
 									type="submit"
-									className="h-12 px-6 rounded-full text-[13.5px] font-bold flex-shrink-0 transition-opacity hover:opacity-90"
+									disabled={sending}
+									className="h-12 px-6 rounded-full text-[13.5px] font-bold flex-shrink-0 transition-opacity hover:opacity-90 disabled:opacity-60"
 									style={{ backgroundColor: '#432C63', color: 'white' }}
 								>
-									Subscribe
+									{sending ? 'Subscribing…' : 'Subscribe'}
 								</button>
 							</form>
+						)}
+						{error && (
+							<p className="mt-2 text-[12.5px] text-center lg:text-left" role="alert" style={{ color: '#B42318' }}>
+								{error}
+							</p>
 						)}
 						<p className="mt-3 text-[11.5px] text-center lg:text-left" style={{ color: '#9B80D2' }}>
 							No spam. Unsubscribe anytime. Use code <span className="font-bold" style={{ color: '#432C63' }}>HELLOMRTD</span> at checkout.

@@ -9,6 +9,7 @@ import {
   CogSixTooth,
   CurrencyDollar,
   DocumentText,
+  EnvelopeSolid,
   EllipsisHorizontal,
   MagnifyingGlass,
   MinusMini,
@@ -312,6 +313,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <PlaySolid />,
       label: "Seller Reels",
       to: "/reels",
+    },
+    {
+      icon: <EnvelopeSolid />,
+      label: "Newsletter",
+      to: "/newsletter",
     },
     {
       icon: <TruckFast />,

@@ -297,6 +297,11 @@ export default defineMiddlewares({
       middlewares: [rateLimit({ name: 'vendor-register', max: 10, windowMs: HOUR })],
     },
     {
+      matcher: '/store/newsletter',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'newsletter', max: 10, windowMs: HOUR })],
+    },
+    {
       matcher: '/store/chat',
       method: ['POST'],
       middlewares: [rateLimit({ name: 'chat-start', max: 20, windowMs: HOUR })],
