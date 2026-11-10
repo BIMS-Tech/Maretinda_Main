@@ -13,8 +13,9 @@ export const PRIVACY_URL = `${STORE_URL}/privacy`;
 export const TERMS_URL = `${STORE_URL}/terms`;
 export const HELP_CENTER_URL = `${STORE_URL}/help-center`;
 
-// Same contact details as the storefront footer.
-export const CONTACT_EMAIL = "maretinda@gmail.com";
+// General enquiries. Buyers and sellers needing help are pointed at
+// support@maretinda.com, as on the storefront.
+export const CONTACT_EMAIL = "info@maretinda.com";
 export const OFFICE_ADDRESS = "KMC | Skyrise 4A & 4B, Cebu IT Park, Cebu City, 6000 Cebu";
 
 // BIR registration of the operating company (BIMS Technologies, Inc.).

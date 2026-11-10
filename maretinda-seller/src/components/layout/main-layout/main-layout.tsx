@@ -401,7 +401,7 @@ const SupportWidget = () => {
       <div className="mx-3 mb-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5">
         <p className="text-xs font-semibold text-violet-800">Dedicated Account Manager</p>
         <a
-          href="mailto:accounts@maretinda.com?subject=Account%20Manager%20Request"
+          href="mailto:support@maretinda.com?subject=Account%20Manager%20Request"
           className="mt-1 block text-xs text-violet-600 hover:underline"
         >
           Contact your manager →
@@ -416,7 +416,7 @@ const SupportWidget = () => {
         <p className="text-xs font-semibold text-blue-800">Priority Support</p>
         <div className="mt-1 flex items-center gap-2">
           <a
-            href="mailto:priority@maretinda.com?subject=Priority%20Support"
+            href="mailto:support@maretinda.com?subject=Priority%20Support"
             className="text-xs text-blue-600 hover:underline"
           >
             Email →

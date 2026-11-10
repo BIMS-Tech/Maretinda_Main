@@ -190,8 +190,8 @@ export function Footer() {
 							<p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.40)' }}>
 								KMC | Skyrise 4A &amp; 4B, Cebu IT Park, Cebu City, 6000 Cebu
 							</p>
-							<a href="mailto:maretinda@gmail.com" className="block text-[12px] mt-2 hover:text-[#FFC533] transition-colors" style={{ color: 'rgba(255,255,255,0.50)' }}>
-								maretinda@gmail.com
+							<a href="mailto:support@maretinda.com" className="block text-[12px] mt-2 hover:text-[#FFC533] transition-colors" style={{ color: 'rgba(255,255,255,0.50)' }}>
+								support@maretinda.com
 							</a>
 						</div>
 					</div>
