@@ -468,6 +468,47 @@ class FlashSaleService {
     return (result.rowCount ?? 0) > 0
   }
 
+  /** Whether the sale still has `quantity` units left, without taking them. */
+  async hasStock(itemId: string, quantity: number): Promise<boolean> {
+    const result = await this.pgConnection.raw(
+      `SELECT 1 FROM "flash_sale_item" WHERE id = ? AND (stock_limit IS NULL OR sold_count + ? <= stock_limit)`,
+      [itemId, quantity]
+    )
+    return (result.rows?.length ?? 0) > 0
+  }
+
+  /**
+   * Set each item's sold count to the units in placed orders that aren't
+   * cancelled. Units in carts don't count: a cart can be abandoned, and a
+   * count taken at add-to-cart once sold out a sale nobody had bought from.
+   * Without ids, recounts every sale still running or ended within a day.
+   */
+  async recountSold(itemIds?: string[]): Promise<void> {
+    if (itemIds && !itemIds.length) return
+    await this.pgConnection.raw(
+      `UPDATE "flash_sale_item" fsi
+          SET sold_count = counted.units, updated_at = NOW()
+         FROM (
+           SELECT i.id, COALESCE((
+             SELECT SUM(oi.quantity)
+               FROM "order_line_item" oli
+               JOIN "order_item" oi ON oi.item_id = oli.id AND oi.deleted_at IS NULL
+               JOIN "order" o ON o.id = oi.order_id AND o.version = oi.version
+              WHERE oli.metadata->>'flash_sale_item_id' = i.id
+                AND oli.deleted_at IS NULL
+                AND o.deleted_at IS NULL
+                AND o.status <> 'canceled'
+           ), 0)::int AS units
+             FROM "flash_sale_item" i
+            ${itemIds
+              ? "WHERE i.id = ANY(?)"
+              : `WHERE i.flash_sale_id IN (SELECT id FROM "flash_sale" WHERE deleted_at IS NULL AND ends_at > NOW() - interval '1 day')`}
+         ) counted
+        WHERE fsi.id = counted.id AND fsi.sold_count <> counted.units`,
+      itemIds ? [itemIds] : []
+    )
+  }
+
   async processScheduled(): Promise<{ activated: number; ended: number }> {
     const now = new Date().toISOString()
 

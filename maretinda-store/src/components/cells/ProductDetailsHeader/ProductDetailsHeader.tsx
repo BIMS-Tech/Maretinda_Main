@@ -66,7 +66,14 @@ export const ProductDetailsHeader = ({
 		const timer = setTimeout(() => setSaleEnded(true), ms);
 		return () => clearTimeout(timer);
 	}, [cachedFlashSaleItem, saleEnded]);
-	const flashSaleItem = saleEnded ? null : cachedFlashSaleItem;
+	// Once its units are gone the sale is over for this product too
+	const [saleSoldOut, setSaleSoldOut] = useState(
+		() =>
+			!!cachedFlashSaleItem &&
+			cachedFlashSaleItem.stock_limit != null &&
+			cachedFlashSaleItem.sold_count >= cachedFlashSaleItem.stock_limit,
+	);
+	const flashSaleItem = saleEnded || saleSoldOut ? null : cachedFlashSaleItem;
 
 	const [isAdding, setIsAdding] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -113,19 +120,19 @@ export const ProductDetailsHeader = ({
 		}
 		setIsAdding(true);
 		setError(null);
-		try {
-			if (flashSaleItem) {
-				await addFlashSaleItemToCart({
+		const result = flashSaleItem
+			? await addFlashSaleItemToCart({
 					countryCode: locale,
 					quantity,
 					variantId,
 					flashSaleItemId: flashSaleItem.id,
-				});
-			} else {
-				await addToCart({ countryCode: locale, quantity, variantId });
-			}
-		} catch (err) {
-			setError((err as Error).message);
+				})
+			: await addToCart({ countryCode: locale, quantity, variantId });
+		if (result.code === 'flash_sale_sold_out') {
+			setSaleSoldOut(true);
+			setError('The flash sale just sold out. Add to cart again at the regular price.');
+		} else if (result.error) {
+			setError(result.error);
 		}
 		setIsAdding(false);
 	};
@@ -331,6 +338,12 @@ export const ProductDetailsHeader = ({
 					variantParams={selectedVariant}
 				/>
 			</div>
+
+			{saleSoldOut && !saleEnded && !error && (
+				<p className="text-sm text-secondary">
+					The flash sale for this product has sold out. It's available at the regular price.
+				</p>
+			)}
 
 			{shopClosed && (
 				<p className="text-sm text-secondary">

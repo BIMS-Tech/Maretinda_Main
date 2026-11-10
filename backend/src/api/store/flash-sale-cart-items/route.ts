@@ -93,11 +93,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       discountedPrice = Math.max(0, basePrice - Number(fsItem.discount_value))
     }
 
-    // Reserve before adding so the limit holds under concurrent shoppers; hand
-    // the units back if the cart rejects the item.
+    // Only check here: the units are claimed at checkout, so a cart that's
+    // never checked out doesn't use up the sale
     const flashSaleService = new FlashSaleService(req.scope as any)
-    if (!(await flashSaleService.reserveStock(flash_sale_item_id, units))) {
-      return res.status(400).json({ message: "Not enough stock left in this flash sale" })
+    if (!(await flashSaleService.hasStock(flash_sale_item_id, units))) {
+      return res.status(400).json({ code: "flash_sale_sold_out", message: "This flash sale has sold out" })
     }
 
     // Use the official addToCartWorkflow with unit_price override
@@ -119,9 +119,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           },
         ],
       },
-    }).catch(async (error: any) => {
-      await flashSaleService.incrementSoldCount(flash_sale_item_id, -units)
-      throw error
     })
 
     res.status(200).json({

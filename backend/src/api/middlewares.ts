@@ -13,6 +13,7 @@ import { withFreeShippingPrice } from '../lib/free-shipping'
 import { uniqueZoneName } from '../lib/unique-zone-name'
 import { activePlanOf, hasMarketing, maxProducts, maxStaff, productCount, staffCount } from '../lib/plan-features'
 import { SETUP_REQUIRED_CODE, sellerReadiness, setupRequiredMessage } from '../lib/seller-readiness'
+import FlashSaleService from '../services/flash-sale'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -319,6 +320,45 @@ const refuseClosedShopItems = (productIdsOf: (db: any, req: MedusaRequest) => Pr
     }
   }
 
+/**
+ * Flash-sale units are claimed at checkout, not when they go in a cart, so
+ * an abandoned cart can't sell out a sale. Refuses the checkout when the sale
+ * no longer has the units; the scheduled recount gives back any claimed by a
+ * checkout that then failed.
+ */
+const claimFlashSaleStock = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const lines = await db('cart_line_item')
+      .where('cart_id', req.params.id)
+      .whereNull('deleted_at')
+      .whereRaw("metadata->>'flash_sale_item_id' IS NOT NULL")
+      .select('title', 'quantity', db.raw("metadata->>'flash_sale_item_id' AS item_id"))
+    const wanted = new Map<string, { units: number; title: string }>()
+    for (const l of lines) {
+      const w = wanted.get(l.item_id) ?? { units: 0, title: l.title }
+      w.units += Number(l.quantity)
+      wanted.set(l.item_id, w)
+    }
+    const service = new FlashSaleService(req.scope as any)
+    const claimed: [string, number][] = []
+    for (const [itemId, { units, title }] of wanted) {
+      if (!(await service.reserveStock(itemId, units))) {
+        for (const [id, n] of claimed) await service.incrementSoldCount(id, -n)
+        return res.status(400).json({
+          type: 'not_allowed',
+          code: 'flash_sale_sold_out',
+          message: `The flash sale for ${title} has sold out. Remove it from your cart and add it again at the regular price.`,
+        })
+      }
+      claimed.push([itemId, units])
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
 const productOfAddedVariant = async (db: any, req: MedusaRequest) => {
   const variantId = (req.body as any)?.variant_id
   if (!variantId) return []
@@ -407,7 +447,7 @@ export default defineMiddlewares({
     { matcher: '/vendor/shipping-options/:id', method: ['POST'], middlewares: [addFreeShippingTier] },
     { matcher: '/store/carts/:id', method: ['POST'], middlewares: [guardPromoCodes] },
     { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
-    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
+    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions, claimFlashSaleStock] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
     { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap, requireReadyShop('publish products', publishing)] },

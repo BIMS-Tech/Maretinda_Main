@@ -117,7 +117,31 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
 		.catch(medusaError);
 }
 
-export async function addToCart({
+/**
+ * What adding to cart reports back. Server actions return their failures
+ * rather than throw them: a production build replaces a thrown message with a
+ * generic "An error occurred in the Server Components render".
+ */
+export type AddToCartResult = { error?: string; code?: string };
+
+const asResult = async (add: () => Promise<unknown>): Promise<AddToCartResult> => {
+	try {
+		await add();
+		return {};
+	} catch (err) {
+		return { error: (err as Error).message || 'Could not add to cart', code: (err as { code?: string }).code };
+	}
+};
+
+export async function addToCart(input: {
+	variantId: string;
+	quantity: number;
+	countryCode: string;
+}): Promise<AddToCartResult> {
+	return asResult(() => addLineToCart(input));
+}
+
+async function addLineToCart({
 	variantId,
 	quantity,
 	countryCode,
@@ -183,7 +207,16 @@ export async function addToCart({
 	}
 }
 
-export async function addFlashSaleItemToCart({
+export async function addFlashSaleItemToCart(input: {
+	variantId: string;
+	quantity: number;
+	countryCode: string;
+	flashSaleItemId: string;
+}): Promise<AddToCartResult> {
+	return asResult(() => addFlashSaleLineToCart(input));
+}
+
+async function addFlashSaleLineToCart({
 	variantId,
 	quantity,
 	countryCode,
@@ -226,7 +259,7 @@ export async function addFlashSaleItemToCart({
 
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({ message: 'Failed to add to cart' }))
-		throw new Error(err.message || 'Failed to add flash sale item to cart')
+		throw Object.assign(new Error(err.message || 'Failed to add flash sale item to cart'), { code: err.code })
 	}
 
 	const cartCacheTag = await getCacheTag('carts')
