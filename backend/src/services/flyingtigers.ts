@@ -168,6 +168,32 @@ export async function getFlyingTigersCoveredProvinces(
   return provinces
 }
 
+// ─── Webhooks ─────────────────────────────────────────────────────────────────
+
+/** Sandbox keys start fte_test_; anything else books real pickups. */
+export const flyingTigersMode = (apiKey: unknown): 'sandbox' | 'live' =>
+  typeof apiKey === 'string' && apiKey.trim().startsWith('fte_test_') ? 'sandbox' : 'live'
+
+export type FlyingTigersWebhook = { id: number; url: string; mode: string; signingSecret?: string }
+
+/**
+ * Point Flying Tigers' shipment events at `url`. Replaces the business's
+ * previous webhook for the same mode, and returns the signing secret, which
+ * Flying Tigers only ever shows this once.
+ */
+export async function registerFlyingTigersWebhook(
+  apiKey: string,
+  apiSecret: string,
+  url: string
+): Promise<FlyingTigersWebhook> {
+  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/webhooks/register`, {
+    method: 'POST',
+    headers: getAuthHeaders(apiKey, apiSecret),
+    body: JSON.stringify({ url, description: 'Maretinda shipment updates' }),
+  })
+  return handleResponse<FlyingTigersWebhook>(res, 'register the webhook')
+}
+
 // ─── Rate Calculation ─────────────────────────────────────────────────────────
 
 /**

@@ -21,6 +21,18 @@ export type PlatformProvider = {
   }[]
   dashboard_url: string
   docs_url: string
+  /** Flying Tigers: whether the saved keys are sandbox (fte_test_…) or live */
+  mode?: "sandbox" | "live"
+  /** Flying Tigers: the webhook registered for shipment updates, if any */
+  webhook?: { id: number; url: string; mode: string; registered_at: string } | null
+  webhook_ready?: boolean
+}
+
+/** What the setup checklist checks outside this page. */
+export type ShippingChecklist = {
+  ph_region: boolean
+  sellers_total: number
+  sellers_with_shipping: number
 }
 
 const PROVIDERS_QUERY_KEY = ["admin", "shipping-providers"]
@@ -30,10 +42,17 @@ export function useAdminShippingProviders() {
     queryKey: PROVIDERS_QUERY_KEY,
     queryFn: async () => {
       const result = await sdk.client.fetch("/admin/shipping-providers", { method: "GET" })
-      return result as { providers: PlatformProvider[]; active_count: number }
+      return result as { providers: PlatformProvider[]; active_count: number; checklist: ShippingChecklist | null }
     },
   })
-  return { providers: data?.providers ?? [], active_count: data?.active_count ?? 0, isLoading, isError, error }
+  return {
+    providers: data?.providers ?? [],
+    active_count: data?.active_count ?? 0,
+    checklist: data?.checklist ?? null,
+    isLoading,
+    isError,
+    error,
+  }
 }
 
 export function useAdminShippingProviderAction() {
@@ -41,8 +60,9 @@ export function useAdminShippingProviderAction() {
 
   return useMutation({
     mutationFn: async (payload: {
-      action: "save-credentials" | "test-credentials" | "activate" | "deactivate" | "remove"
+      action: "save-credentials" | "test-credentials" | "register-webhook" | "activate" | "deactivate" | "remove"
       provider_id: string
+      webhook_url?: string
       credentials?: Record<string, unknown>
       settings?: Record<string, unknown>
     }) => {

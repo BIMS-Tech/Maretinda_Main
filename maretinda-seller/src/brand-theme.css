@@ -1,5 +1,6 @@
 /*
- * Maretinda brand theme for the seller panel.
+ * Maretinda brand theme, shared by the seller and admin panels (keep the
+ * two copies the same).
  *
  * The panel is built on Medusa UI, which reads every colour, ring and shadow
  * from CSS variables. Overriding them here restyles all screens at once, in

@@ -8,6 +8,7 @@ import routeModule from "virtual:medusa/routes"
 import widgetModule from "virtual:medusa/widgets"
 
 import "./index.css"
+import "./brand-theme.css"
 
 const localPlugin = {
   widgetModule,

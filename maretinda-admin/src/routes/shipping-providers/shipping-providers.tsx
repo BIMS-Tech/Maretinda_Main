@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import {
   Badge,
   Button,
@@ -25,6 +26,7 @@ import {
   useAdminShippingProviders,
   useAdminShippingProviderAction,
   PlatformProvider,
+  ShippingChecklist,
 } from "../../hooks/api/shipping-providers"
 import { backendUrl } from "../../lib/client/client"
 
@@ -55,7 +57,7 @@ function CredentialForm({
         <div key={field.key} className="flex flex-col gap-1">
           <Label size="small" weight="plus">
             {field.label}
-            {field.required && <span className="text-red-500 ml-0.5">*</span>}
+            {field.required && <span className="text-ui-fg-error ml-0.5">*</span>}
           </Label>
 
           {field.type === "select" && field.options ? (
@@ -133,6 +135,52 @@ function CredentialForm({
   )
 }
 
+// ─── Shipment updates (Flying Tigers webhook) ─────────────────────────────────
+
+const FLYING_TIGERS_WEBHOOK_URL = `${backendUrl.replace(/\/$/, "")}/webhooks/flyingtigers`
+
+/**
+ * Flying Tigers pushes pickup and delivery updates to our webhook. Registering
+ * it from here tells Flying Tigers the URL and stores the signing secret it
+ * returns, so there's nothing to copy into its portal or the server.
+ */
+function WebhookStatus({ provider }: { provider: PlatformProvider }) {
+  const { mutateAsync, isPending } = useAdminShippingProviderAction()
+  const register = async () => {
+    try {
+      const result = await mutateAsync({
+        action: "register-webhook",
+        provider_id: provider.provider_id,
+        webhook_url: FLYING_TIGERS_WEBHOOK_URL,
+      })
+      toast.success(result.message)
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to register the webhook")
+    }
+  }
+  const registeredHere = provider.webhook?.url === FLYING_TIGERS_WEBHOOK_URL
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-ui-bg-subtle px-3 py-2">
+      {provider.webhook_ready && registeredHere ? (
+        <CheckCircle className="text-ui-tag-green-icon w-4 h-4" />
+      ) : (
+        <ExclamationCircle className="text-ui-tag-orange-icon w-4 h-4" />
+      )}
+      <Text size="xsmall" className="text-ui-fg-subtle flex-1">
+        {provider.webhook_ready && registeredHere
+          ? `Shipment updates connected (${provider.webhook!.mode}) since ${new Date(provider.webhook!.registered_at).toLocaleDateString()}`
+          : provider.webhook
+            ? "Shipment updates go to a different server. Register this one to receive them here."
+            : "Shipment updates aren't connected: bookings stay at pending pickup until Flying Tigers can notify us."}
+      </Text>
+      <Button size="small" variant="secondary" isLoading={isPending} onClick={register}>
+        {provider.webhook ? "Register again" : "Connect shipment updates"}
+      </Button>
+    </div>
+  )
+}
+
 // ─── Provider Card ────────────────────────────────────────────────────────────
 
 function ProviderCard({ provider }: { provider: PlatformProvider }) {
@@ -194,9 +242,9 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
           {/* Status icon */}
           <div className="mt-0.5">
             {provider.is_active ? (
-              <CheckCircle className="text-green-500 w-5 h-5" />
+              <CheckCircle className="text-ui-tag-green-icon w-5 h-5" />
             ) : provider.is_configured ? (
-              <ExclamationCircle className="text-amber-500 w-5 h-5" />
+              <ExclamationCircle className="text-ui-tag-orange-icon w-5 h-5" />
             ) : (
               <XCircle className="text-ui-fg-muted w-5 h-5" />
             )}
@@ -214,8 +262,14 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
               {!provider.is_configured && (
                 <Badge color="grey" size="2xsmall">Not configured</Badge>
               )}
+              {provider.mode === "sandbox" && (
+                <Badge color="orange" size="2xsmall">Sandbox keys</Badge>
+              )}
+              {provider.mode === "live" && (
+                <Badge color="purple" size="2xsmall">Live keys</Badge>
+              )}
               {provider.type === "standard" && provider.capabilities.includes("COD") && (
-                <Badge color="blue" size="2xsmall">COD</Badge>
+                <Badge color="grey" size="2xsmall">COD</Badge>
               )}
             </div>
 
@@ -228,6 +282,14 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
               <Text size="xsmall" className="text-ui-fg-muted mt-0.5">
                 Last updated: {new Date(provider.last_updated).toLocaleDateString()}
               </Text>
+            )}
+            {provider.mode === "sandbox" && (
+              <Text size="xsmall" className="text-ui-tag-orange-text mt-1">
+                Bookings made with sandbox keys are tests: they get a tracking number but no rider is sent.
+              </Text>
+            )}
+            {provider.provider_id === "flyingtigers" && provider.is_configured && (
+              <WebhookStatus provider={provider} />
             )}
           </div>
         </div>
@@ -310,10 +372,86 @@ function ProviderCard({ provider }: { provider: PlatformProvider }) {
   )
 }
 
+// ─── Setup Checklist ──────────────────────────────────────────────────────────
+
+function SetupChecklist({
+  activeCount,
+  checklist,
+  providers,
+}: {
+  activeCount: number
+  checklist: ShippingChecklist | null
+  providers: PlatformProvider[]
+}) {
+  const flyingTigers = providers.find((p) => p.provider_id === "flyingtigers" && p.is_active)
+  const items = [
+    {
+      done: activeCount > 0,
+      label: "Activate at least one carrier",
+      detail: "Save a carrier's credentials below and switch it on",
+    },
+    ...(flyingTigers
+      ? [
+          {
+            done: !!flyingTigers.webhook_ready,
+            label: "Connect Flying Tigers shipment updates",
+            detail: "So bookings move to picked up and delivered on their own",
+          },
+        ]
+      : []),
+    {
+      done: checklist?.ph_region,
+      label: "A region includes the Philippines",
+      detail: "Sellers need it to offer shipping at checkout",
+      link: "/settings/regions",
+    },
+    {
+      done: checklist ? checklist.sellers_with_shipping > 0 : undefined,
+      label: "Sellers can ship",
+      detail: checklist
+        ? `${checklist.sellers_with_shipping} of ${checklist.sellers_total} sellers have a warehouse with a shipping option. Each seller sets this up in their own panel.`
+        : "Each seller sets up a warehouse, a zone and shipping options in their own panel",
+    },
+  ]
+
+  return (
+    <Container className="p-5">
+      <Heading level="h3" className="mb-3">Platform Setup Checklist</Heading>
+      <div className="flex flex-col gap-3">
+        {items.map(({ done, label, detail, link }: any) => (
+          <div key={label} className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              {done === true ? (
+                <CheckCircle className="text-ui-tag-green-icon w-4 h-4" />
+              ) : done === false ? (
+                <XCircle className="text-ui-fg-muted w-4 h-4" />
+              ) : (
+                <div className="w-4 h-4 rounded-full border-2 border-ui-border-base" />
+              )}
+            </div>
+            <div>
+              <Text size="small" weight="plus">{label}</Text>
+              <Text size="xsmall" className="text-ui-fg-subtle">{detail}</Text>
+              {link && !done && (
+                <Link
+                  to={link}
+                  className="inline-flex items-center gap-1 mt-1 text-xs text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
+                >
+                  Open <ArrowRightMini className="w-3 h-3" />
+                </Link>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Container>
+  )
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ShippingProvidersPage() {
-  const { providers, active_count, isLoading } = useAdminShippingProviders()
+  const { providers, active_count, checklist, isLoading } = useAdminShippingProviders()
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -330,11 +468,11 @@ export default function ShippingProvidersPage() {
       </div>
 
       {/* Info banner */}
-      <Container className="bg-blue-500/10 border-blue-500/20 p-4">
+      <Container className="bg-ui-bg-highlight p-4">
         <div className="flex gap-3">
-          <ExclamationCircle className="text-blue-500 w-5 h-5 flex-shrink-0 mt-0.5" />
+          <ExclamationCircle className="text-ui-fg-interactive w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
-            <Text size="small" weight="plus" className="text-blue-600 dark:text-blue-400">
+            <Text size="small" weight="plus" className="text-ui-fg-interactive">
               Centralized Carrier Model
             </Text>
             <Text size="xsmall" className="text-ui-fg-subtle mt-0.5">
@@ -346,59 +484,7 @@ export default function ShippingProvidersPage() {
         </div>
       </Container>
 
-      {/* Platform Setup Checklist */}
-      <Container className="p-5">
-        <Heading level="h3" className="mb-3">Platform Setup Checklist</Heading>
-        <div className="flex flex-col gap-3">
-          {[
-            {
-              done: active_count > 0,
-              label: "Activate at least one carrier",
-              detail: "Configure credentials and toggle Active above",
-              link: null,
-            },
-            {
-              done: null,
-              label: "Verify Regions include Philippines (PH)",
-              detail: "Vendors need a PH region to create checkout shipping options",
-              link: "/settings/regions",
-            },
-            {
-              done: null,
-              label: "Vendors configure their own locations",
-              detail: "Each vendor creates their warehouse → Fulfillment Set → PH zone → shipping options",
-              link: null,
-              note: true,
-            },
-          ].map(({ done, label, detail, link, note }: any) => (
-            <div key={label} className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                {done === true ? (
-                  <CheckCircle className="text-green-500 w-4 h-4" />
-                ) : done === false ? (
-                  <XCircle className="text-ui-fg-muted w-4 h-4" />
-                ) : (
-                  <div className="w-4 h-4 rounded-full border-2 border-ui-border-base" />
-                )}
-              </div>
-              <div>
-                <Text size="small" weight={note ? "regular" : "plus"} className={note ? "text-ui-fg-muted" : ""}>
-                  {label}
-                </Text>
-                <Text size="xsmall" className="text-ui-fg-subtle">{detail}</Text>
-                {link && (
-                  <a
-                    href={link}
-                    className="inline-flex items-center gap-1 mt-1 text-xs text-blue-500 hover:text-blue-400"
-                  >
-                    Open <ArrowRightMini className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </Container>
+      <SetupChecklist activeCount={active_count} checklist={checklist} providers={providers} />
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -416,12 +502,12 @@ export default function ShippingProvidersPage() {
       <Container className="p-6">
         <Heading level="h3" className="mb-3">Webhook URLs</Heading>
         <Text size="small" className="text-ui-fg-subtle mb-4">
-          Register these URLs in each carrier's merchant portal to receive real-time shipment status updates.
+          Where each carrier sends shipment status updates. Ninja Van's is entered in its dashboard.
         </Text>
         <div className="flex flex-col gap-3">
           {[
             { carrier: "Ninja Van", path: "/webhooks/ninjavan", note: "Dashboard → Settings → Webhook" },
-            { carrier: "Flying Tigers", path: "/webhooks/flyingtigers", note: "Portal → Webhooks → HTTPS URL" },
+            { carrier: "Flying Tigers", path: "/webhooks/flyingtigers", note: "Connected from the Flying Tigers card above" },
           ].map(({ carrier, path, note }) => {
             const fullUrl = `${backendUrl.replace(/\/$/, "")}${path}`
             return (

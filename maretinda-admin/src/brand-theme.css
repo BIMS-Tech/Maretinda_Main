@@ -1,0 +1,235 @@
+/*
+ * Maretinda brand theme, shared by the seller and admin panels (keep the
+ * two copies the same).
+ *
+ * The panel is built on Medusa UI, which reads every colour, ring and shadow
+ * from CSS variables. Overriding them here restyles all screens at once, in
+ * light and dark, in the storefront's colours:
+ *
+ *   purple #432C63  primary: buttons, links, focus, the current page, info
+ *   yellow #FFC533  accent: highlights, plan badges, warnings
+ *   green / red     success / errors only (Medusa's tag tokens)
+ *
+ * Screens use these through Medusa's semantic classes (ui-bg-interactive,
+ * ui-fg-interactive, ui-bg-highlight, ui-tag-{purple,orange,green,red}-*)
+ * rather than Tailwind's palette, so nothing is off-brand in either theme.
+ * Loaded after index.css so these win over the preset's values.
+ */
+
+:root {
+  /* Space-separated so they work inside rgb(var(--x) / alpha) */
+  --brand-purple: 67 44 99; /* #432C63 */
+  --brand-purple-hover: 53 34 79;
+  --brand-purple-pressed: 42 27 63;
+  --brand-yellow: 255 197 51; /* #FFC533 */
+  --brand-yellow-soft: 255 246 220;
+  --brand-yellow-ink: 122 86 0;
+
+  /* A faint lavender page behind white cards, like the storefront */
+  --bg-subtle: rgba(250, 248, 252, 1);
+  --bg-subtle-hover: rgba(244, 240, 249, 1);
+  --bg-subtle-pressed: rgba(236, 230, 244, 1);
+
+  --bg-interactive: rgb(var(--brand-purple));
+  --fg-interactive: rgba(91, 58, 138, 1);
+  --fg-interactive-hover: rgb(var(--brand-purple));
+  --border-interactive: rgba(91, 58, 138, 1);
+  --bg-highlight: rgba(243, 238, 249, 1);
+  --bg-highlight-hover: rgba(234, 226, 245, 1);
+
+  /* Info and "purple" tags are the brand purple; "orange" tags the brand yellow */
+  --tag-purple-bg: rgba(243, 238, 249, 1);
+  --tag-purple-border: rgba(221, 208, 238, 1);
+  --tag-purple-icon: rgba(91, 58, 138, 1);
+  --tag-purple-text: rgba(67, 44, 99, 1);
+  --tag-blue-bg: rgba(243, 238, 249, 1);
+  --tag-blue-border: rgba(221, 208, 238, 1);
+  --tag-blue-icon: rgba(91, 58, 138, 1);
+  --tag-blue-text: rgba(67, 44, 99, 1);
+  --tag-orange-bg: rgba(255, 246, 220, 1);
+  --tag-orange-border: rgba(255, 222, 140, 1);
+  --tag-orange-icon: rgba(212, 154, 0, 1);
+  --tag-orange-text: rgba(122, 86, 0, 1);
+
+  /* Primary buttons */
+  --button-inverted: rgb(var(--brand-purple));
+  --button-inverted-hover: rgb(var(--brand-purple-hover));
+  --button-inverted-pressed: rgb(var(--brand-purple-pressed));
+  --buttons-inverted: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.2) inset, 0px 1px 2px 0px rgba(42, 27, 63, 0.35),
+    0px 0px 0px 1px rgb(var(--brand-purple-pressed));
+  --buttons-inverted-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.2) inset, 0px 1px 2px 0px rgba(42, 27, 63, 0.35),
+    0px 0px 0px 1px rgb(var(--brand-purple-pressed)), 0px 0px 0px 2px rgba(255, 255, 255, 1),
+    0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+
+  /* Focus rings */
+  --borders-focus: 0px 0px 0px 1px rgba(255, 255, 255, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.45);
+  --borders-interactive-with-focus: 0px 1px 2px 0px rgb(var(--brand-purple) / 0.25), 0px 0px 0px 1px rgba(91, 58, 138, 1),
+    0px 0px 0px 2px rgba(255, 255, 255, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+  --borders-interactive-with-active: 0px 0px 0px 1px rgba(91, 58, 138, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.2);
+  --borders-interactive-with-shadow: 0px 1px 2px 0px rgb(var(--brand-purple) / 0.25), 0px 0px 0px 1px rgba(91, 58, 138, 1);
+
+  /* Medusa's remaining focus rings, switch and tag hovers, off blue */
+  --buttons-neutral-focus: 0px 1px 2px 0px rgba(0, 0, 0, 0.12), 0px 0px 0px 1px rgba(0, 0, 0, 0.08),
+    0px 0px 0px 2px rgba(255, 255, 255, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+  --buttons-danger-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.2) inset, 0px 1px 2px 0px rgba(190, 18, 60, 0.4),
+    0px 0px 0px 1px rgba(190, 18, 60, 1), 0px 0px 0px 2px rgba(255, 255, 255, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+  --details-switch-background-focus: 0px 0px 0px 1px rgba(255, 255, 255, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.45),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.04) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.04) inset,
+    0px 0px 0px 0.75px rgba(0, 0, 0, 0.06) inset, 0px 0px 8px 0px rgba(0, 0, 0, 0.02) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+  --details-contrast-on-bg-interactive: 0px 1px 2px 0px rgb(42 27 63 / 0.6);
+  --tag-purple-bg-hover: rgba(234, 226, 245, 1);
+  --tag-blue-bg-hover: rgba(234, 226, 245, 1);
+  --tag-orange-bg-hover: rgba(255, 238, 190, 1);
+
+  /* Softer, slightly purple-tinted card shadows */
+  --elevation-card-rest: 0px 0px 0px 1px rgb(67 44 99 / 0.07), 0px 1px 2px -1px rgb(67 44 99 / 0.08),
+    0px 2px 6px 0px rgb(67 44 99 / 0.05);
+  --elevation-card-hover: 0px 0px 0px 1px rgb(67 44 99 / 0.1), 0px 2px 4px -1px rgb(67 44 99 / 0.1),
+    0px 8px 20px 0px rgb(67 44 99 / 0.1);
+}
+
+/* Dark: deep aubergine surfaces instead of Medusa's grey, lavender accents */
+.dark {
+  --brand-purple: 155 127 208;
+  --brand-purple-hover: 171 147 218;
+  --brand-purple-pressed: 186 166 226;
+  --brand-yellow-soft: 58 47 20;
+  --brand-yellow-ink: 255 214 110;
+
+  --bg-subtle: rgba(19, 15, 26, 1);
+  --bg-subtle-hover: rgba(27, 21, 36, 1);
+  --bg-subtle-pressed: rgba(33, 26, 44, 1);
+  --bg-base: rgba(27, 22, 36, 1);
+  --bg-base-hover: rgba(35, 29, 46, 1);
+  --bg-base-pressed: rgba(43, 36, 56, 1);
+  --bg-component: rgba(35, 29, 46, 1);
+  --bg-component-hover: rgba(43, 36, 56, 1);
+  --bg-component-pressed: rgba(51, 43, 65, 1);
+  --bg-field: rgba(35, 29, 46, 1);
+  --bg-field-hover: rgba(43, 36, 56, 1);
+  --bg-field-component: rgba(27, 22, 36, 1);
+  --bg-field-component-hover: rgba(35, 29, 46, 1);
+  --border-base: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --bg-interactive: rgb(var(--brand-purple));
+  --fg-interactive: rgba(190, 170, 232, 1);
+  --fg-interactive-hover: rgba(212, 197, 242, 1);
+  --border-interactive: rgba(190, 170, 232, 1);
+  --bg-highlight: rgba(47, 37, 66, 1);
+  --bg-highlight-hover: rgba(57, 45, 80, 1);
+
+  --tag-purple-bg: rgba(47, 37, 66, 1);
+  --tag-purple-border: rgba(78, 62, 107, 1);
+  --tag-purple-icon: rgba(190, 170, 232, 1);
+  --tag-purple-text: rgba(212, 197, 242, 1);
+  --tag-blue-bg: rgba(47, 37, 66, 1);
+  --tag-blue-border: rgba(78, 62, 107, 1);
+  --tag-blue-icon: rgba(190, 170, 232, 1);
+  --tag-blue-text: rgba(212, 197, 242, 1);
+  --tag-orange-bg: rgba(58, 47, 20, 1);
+  --tag-orange-border: rgba(110, 86, 30, 1);
+  --tag-orange-icon: rgba(255, 197, 51, 1);
+  --tag-orange-text: rgba(255, 214, 110, 1);
+  /* Success and error stay green and red, muted to sit on the dark surfaces */
+  --tag-green-bg: rgba(20, 40, 33, 1);
+  --tag-green-border: rgba(36, 74, 58, 1);
+  --tag-red-bg: rgba(50, 21, 30, 1);
+  --tag-red-border: rgba(92, 38, 52, 1);
+
+  --button-inverted: rgba(107, 76, 154, 1);
+  --button-inverted-hover: rgba(122, 90, 170, 1);
+  --button-inverted-pressed: rgba(137, 104, 186, 1);
+  --buttons-inverted: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.15) inset, 0px 1px 2px 0px rgba(0, 0, 0, 0.4),
+    0px 0px 0px 1px rgba(91, 64, 134, 1);
+  --buttons-inverted-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.15) inset, 0px 1px 2px 0px rgba(0, 0, 0, 0.4),
+    0px 0px 0px 1px rgba(91, 64, 134, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --borders-focus: 0px 0px 0px 1px rgba(19, 15, 26, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.6);
+  --borders-interactive-with-focus: 0px 1px 2px 0px rgba(0, 0, 0, 0.4), 0px 0px 0px 1px rgba(190, 170, 232, 1),
+    0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --borders-interactive-with-active: 0px 0px 0px 1px rgba(190, 170, 232, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.25);
+  --borders-interactive-with-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.4), 0px 0px 0px 1px rgba(190, 170, 232, 1);
+  --buttons-neutral-focus: 0px -1px 0px 0px rgba(255, 255, 255, 0.06), 0px 0px 0px 1px rgba(255, 255, 255, 0.06),
+    0px 0px 0px 1px rgba(43, 36, 56, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --buttons-danger-focus: 0px -1px 0px 0px rgba(255, 255, 255, 0.16), 0px 0px 0px 1px rgba(255, 255, 255, 0.12),
+    0px 0px 0px 1px rgba(159, 18, 57, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --details-switch-background-focus: 0px 0px 0px 1px rgba(19, 15, 26, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.6),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.1) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.1) inset,
+    0px 0px 0px 0.75px rgba(255, 255, 255, 0.12) inset, 0px 0px 8px 0px rgba(0, 0, 0, 0.1) inset;
+  --details-contrast-on-bg-interactive: 0px 1px 2px 0px rgba(0, 0, 0, 0.5);
+  --tag-purple-bg-hover: rgba(57, 45, 80, 1);
+  --tag-blue-bg-hover: rgba(57, 45, 80, 1);
+  --tag-orange-bg-hover: rgba(74, 60, 26, 1);
+
+  --elevation-card-rest: 0px 0px 0px 1px rgba(255, 255, 255, 0.06), 0px 1px 2px 0px rgba(0, 0, 0, 0.4),
+    0px 2px 6px 0px rgba(0, 0, 0, 0.25);
+  --elevation-card-hover: 0px 0px 0px 1px rgba(255, 255, 255, 0.1), 0px 2px 4px 0px rgba(0, 0, 0, 0.45),
+    0px 10px 24px 0px rgba(0, 0, 0, 0.35);
+}
+
+/* ─── Brand accent utilities (theme-aware) ─────────────────────────────── */
+.bg-brand-yellow {
+  background-color: rgb(var(--brand-yellow));
+  color: rgb(42 27 63);
+}
+.bg-brand-yellow-soft {
+  background-color: rgb(var(--brand-yellow-soft));
+}
+.text-brand-yellow-ink {
+  color: rgb(var(--brand-yellow-ink));
+}
+
+/* ─── Motion ──────────────────────────────────────────────────────────────
+ * Quick and quiet: nothing over 250 ms, nothing that blocks input.
+ */
+
+/* Buttons and pressable controls give a little under the finger */
+.transition-fg:not(:disabled):active {
+  transform: scale(0.98);
+}
+.transition-fg {
+  transition-property: color, background-color, border-color, box-shadow, transform;
+}
+
+/* Clickable cards lift on hover */
+.brand-card-hover {
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.brand-card-hover:hover {
+  box-shadow: var(--elevation-card-hover);
+  transform: translateY(-2px);
+}
+
+/* Loading placeholders shimmer instead of blinking */
+@keyframes brand-shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.brand-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--brand-purple) / 0.06) 25%,
+    rgb(var(--brand-purple) / 0.12) 37%,
+    rgb(var(--brand-purple) / 0.06) 63%
+  );
+  background-size: 400% 100%;
+  animation: brand-shimmer 1.4s ease infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .transition-fg:not(:disabled):active,
+  .brand-card-hover:hover {
+    transform: none;
+  }
+}

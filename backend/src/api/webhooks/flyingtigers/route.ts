@@ -12,7 +12,8 @@
  *       x-fte-webhook-signature : "v1=<hex>"  (HMAC-SHA256)
  *   - Verify by computing HMAC-SHA256 over `${timestamp}.${rawBody}` with the
  *     signing secret, then constant-time comparing to the hex after "v1=".
- *   - Secret is stored in FLYINGTIGERS_WEBHOOK_SECRET (never hard-code it).
+ *   - The secret comes back once when the admin registers the webhook and is
+ *     kept with the carrier's credentials; FLYINGTIGERS_WEBHOOK_SECRET is a fallback.
  */
 
 import crypto from 'crypto'
@@ -25,10 +26,9 @@ import { FT_STATUS_MAP } from '../../../services/flyingtigers'
  * Fails closed: with no secret configured every delivery is rejected, because
  * accepting them would let anyone mark any parcel as delivered.
  */
-function verifySignature(req: MedusaRequest): boolean {
-  const secret = process.env.FLYINGTIGERS_WEBHOOK_SECRET
+function verifySignature(req: MedusaRequest, secret: string | undefined): boolean {
   if (!secret) {
-    console.error('[FlyingTigers Webhook] FLYINGTIGERS_WEBHOOK_SECRET not set — rejecting delivery')
+    console.error('[FlyingTigers Webhook] No signing secret (register the webhook in the admin) — rejecting delivery')
     return false
   }
 
@@ -57,18 +57,29 @@ function verifySignature(req: MedusaRequest): boolean {
   return a.length === b.length && crypto.timingSafeEqual(a, b)
 }
 
+/** The secret Flying Tigers gave when the admin registered the webhook, else the env fallback. */
+async function signingSecret(pg: any): Promise<string | undefined> {
+  const row = await pg('platform_shipping_provider')
+    .where({ provider_id: 'flyingtigers' })
+    .whereNull('deleted_at')
+    .first('credentials')
+    .catch(() => null)
+  const creds = typeof row?.credentials === 'string' ? JSON.parse(row.credentials || '{}') : row?.credentials
+  return creds?.webhook_secret || process.env.FLYINGTIGERS_WEBHOOK_SECRET || undefined
+}
+
 export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
   try {
-    if (!verifySignature(req)) {
-      console.warn('[FlyingTigers Webhook] Invalid signature — rejecting')
-      return res.status(401).json({ message: 'Invalid signature' })
-    }
-
     let pg: any
     try {
       pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     } catch {
       pg = (req.scope as any).__pg_connection__ || (req.scope as any).pgConnection
+    }
+
+    if (!verifySignature(req, await signingSecret(pg))) {
+      console.warn('[FlyingTigers Webhook] Invalid signature — rejecting')
+      return res.status(401).json({ message: 'Invalid signature' })
     }
 
     const payload = req.body as {
