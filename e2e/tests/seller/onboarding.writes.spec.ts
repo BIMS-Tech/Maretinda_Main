@@ -42,6 +42,9 @@ async function answerChat(page: Page, email: string, password: string) {
 
 test.describe('seller onboarding (writes)', () => {
   test.skip(!writesAllowed, 'set E2E_ALLOW_WRITES=1 to run')
+  // testseller (Vercel) is built without VITE_PUBLISHABLE_API_KEY, so sign-up fails there (F27);
+  // run against a local panel on test-api: SELLER_URL=http://localhost:5173
+  test.skip(!process.env.SELLER_URL, 'set SELLER_URL to a seller panel built with the publishable key')
   test.describe.configure({ mode: 'serial' })
 
   const email = `delivered+e2e-chat-seller-${Date.now()}@resend.dev`

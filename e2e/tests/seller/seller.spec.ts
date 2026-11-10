@@ -48,7 +48,9 @@ test.describe('seller panel (signed in)', () => {
     test(`${path} loads`, async ({ page, pageErrors }) => {
       await page.goto(path)
       await expect(page).not.toHaveURL(/\/login/)
-      await page.waitForLoadState('networkidle')
+      // Messages keeps a live chat stream open, so the network never goes idle
+      await page.waitForLoadState('load')
+      await page.locator('main').first().waitFor()
       await expectNoErrorBoundary(page)
       expect(pageErrors).toEqual([])
     })
