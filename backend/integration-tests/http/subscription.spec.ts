@@ -1,5 +1,6 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import SubscriptionService from "../../src/services/subscription"
+import { giyapayCallbackSignature } from "../../src/lib/giyapay-signature"
 import {
   applyCustomMigrations,
   bearer,
@@ -17,7 +18,7 @@ const DAY = 24 * 60 * 60 * 1000
 
 medusaIntegrationTestRunner({
   inApp: true,
-  env: {},
+  env: { SELLER_PANEL_URL: "https://seller.example.test" },
   testSuite: ({ api, getContainer }) => {
     let pk: string
 
@@ -257,6 +258,44 @@ medusaIntegrationTestRunner({
 
         await expect(service.adminExtendTrial(paid.id, 5)).rejects.toThrow("not a trial")
         await expect(service.adminEndTrial(paid.id)).rejects.toThrow("not a trial")
+      })
+    })
+
+    describe("paying for a plan through GiyaPay", () => {
+      const SECRET = "subscription-secret"
+
+      async function payFor(token: string, sellerId: string, plan: string, amount: string) {
+        const checkout = await api.post("/vendor/subscription/checkout", { plan_name: plan, billing_period: "monthly" }, { headers: bearer(token), ...noThrow })
+        expect(checkout.status).toBe(200)
+        // GiyaPay sends back its own nonce and order_id=undefined, signed over the panel's URL
+        const params = { nonce: "gp-nonce", order_id: "undefined", refno: `REF-${Date.now()}`, timestamp: String(Date.now()), amount }
+        const signature = giyapayCallbackSignature("https://seller.example.test/subscription", params, SECRET)
+        return api.post("/vendor/subscription/activate", { ...params, signature }, { headers: bearer(token), ...noThrow })
+      }
+
+      beforeEach(async () => {
+        await pgOf(getContainer())("giyapay_subscription_config").insert({ id: `gsc_${Date.now()}`, merchant_id: "SUB", merchant_secret: SECRET, is_enabled: true })
+      })
+
+      it("activates the plan that was paid for", async () => {
+        const { seller, token } = await createSeller(getContainer())
+
+        const res = await payFor(token, seller.id, "Premium", "399900")
+
+        expect(res.status).toBe(200)
+        expect(res.data.subscription).toMatchObject({ plan_name: "Premium", status: "active" })
+      })
+
+      it("treats a checkout started again later as new, not expired", async () => {
+        const { seller, token } = await createSeller(getContainer())
+        // An earlier checkout the seller abandoned hours ago
+        await api.post("/vendor/subscription/checkout", { plan_name: "Starter", billing_period: "monthly" }, { headers: bearer(token) })
+        await pgOf(getContainer())("subscription_payment_intent").where({ seller_id: seller.id }).update({ created_at: new Date(Date.now() - 3 * 60 * 60 * 1000) })
+
+        const res = await payFor(token, seller.id, "Premium", "399900")
+
+        expect(res.status).toBe(200)
+        expect(res.data.subscription).toMatchObject({ plan_name: "Premium", status: "active" })
       })
     })
 

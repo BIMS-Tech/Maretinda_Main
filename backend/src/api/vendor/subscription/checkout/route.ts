@@ -175,6 +175,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
            price = EXCLUDED.price,
            order_id = EXCLUDED.order_id,
            nonce = EXCLUDED.nonce,
+           -- A new checkout starts the hour-long window again; keeping the first
+           -- attempt's time refused every later payment as "expired"
+           created_at = now(),
            updated_at = now()`,
         [sellerId, plan.name, plan.id, billing_period, price, orderId, nonce]
       )
