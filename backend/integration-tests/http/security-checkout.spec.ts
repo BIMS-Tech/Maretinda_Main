@@ -9,6 +9,7 @@ import {
   createSeller,
   noThrow,
   pgOf,
+  givePlan,
 } from "../helpers"
 
 jest.setTimeout(180 * 1000)
@@ -45,6 +46,7 @@ medusaIntegrationTestRunner({
     async function readyCart(providerId: string) {
       const container = getContainer()
       const { seller } = await createSeller(container)
+      await givePlan(container, seller.id)
       const { customer } = await createCustomer(container)
       const [product] = await container.resolve(Modules.PRODUCT).createProducts([
         {

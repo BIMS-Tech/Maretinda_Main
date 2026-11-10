@@ -117,6 +117,25 @@ export async function seedPlans(container: any) {
     .merge()
 }
 
+const DAY = 24 * 60 * 60 * 1000
+
+/**
+ * Puts a seller on an active Growth plan. Sellers without one can't change
+ * their shop (the plan gate), so any test that writes through /vendor needs it.
+ */
+export async function givePlan(container: any, sellerId: string, over: Record<string, any> = {}) {
+  await pgOf(container)("seller_subscription").insert({
+    id: `vsub_test_${++seq}_${Date.now()}`,
+    seller_id: sellerId,
+    plan_name: "Growth",
+    price: 1499,
+    start_date: new Date(Date.now() - DAY),
+    end_date: new Date(Date.now() + 29 * DAY),
+    status: "active",
+    ...over,
+  })
+}
+
 /** Every request to a non-2xx status resolves instead of throwing. */
 export const noThrow = { validateStatus: () => true }
 

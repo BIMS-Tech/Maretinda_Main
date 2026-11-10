@@ -10,6 +10,7 @@ import { sellerIdOfMember } from '../lib/seller-ownership'
 import { authRateLimit, rateLimit } from '../lib/rate-limit'
 import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
 import { withFreeShippingPrice } from '../lib/free-shipping'
+import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -197,6 +198,47 @@ const enrichSellerVerification = (
 /** Medusa answers these with a 500, but they're the client's mistake. */
 const baseErrorHandler = errorHandler()
 
+/** The panel's subscription gate, held by the API too. See lib/seller-plan. */
+const requirePlanForVendorChanges = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    if (!vendorRequestNeedsPlan(req.method, (req.originalUrl ?? req.url).split('?')[0])) return next()
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+    if (sellerId && (await sellersWithoutPlan(db, [sellerId])).length) {
+      return res.status(403).json({ type: 'not_allowed', code: 'plan_required', message: PLAN_REQUIRED_MESSAGE })
+    }
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+/** A shop without a plan is closed: its products can't go in a cart or be checked out. */
+const refuseClosedShopItems = (productIdsOf: (db: any, req: MedusaRequest) => Promise<string[]>) =>
+  async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+    try {
+      const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const closed = await closedShopsSelling(db, await productIdsOf(db, req))
+      if (closed.length) {
+        return res.status(400).json({ type: 'not_allowed', code: 'shop_closed', message: closedShopMessage(closed) })
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+const productOfAddedVariant = async (db: any, req: MedusaRequest) => {
+  const variantId = (req.body as any)?.variant_id
+  if (!variantId) return []
+  const variant = await db('product_variant').where('id', variantId).whereNull('deleted_at').first('product_id')
+  return variant ? [variant.product_id] : []
+}
+
+const productsInCart = async (db: any, req: MedusaRequest) =>
+  (await db('cart_line_item').where('cart_id', req.params.id).whereNull('deleted_at').whereNotNull('product_id').distinct('product_id'))
+    .map((r: any) => r.product_id)
+
 export default defineMiddlewares({
   errorHandler: (error: any, req: any, res: any, next: any) => {
     if (error?.type === 'entity.parse.failed') {
@@ -269,7 +311,9 @@ export default defineMiddlewares({
     { matcher: '/vendor/shipping-options/:id', method: ['POST'], middlewares: [addFreeShippingTier] },
     { matcher: '/store/carts/:id', method: ['POST'], middlewares: [guardPromoCodes] },
     { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
-    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [guardCartPromotions] },
+    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
+    { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
+    { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
     { matcher: '/store/seller', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/seller/*', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/products', method: ['GET'], middlewares: [enrichSellerVerification] },

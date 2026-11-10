@@ -11,6 +11,7 @@ import {
   createCustomer,
   createPublishableKey,
   createSeller,
+  givePlan,
   multipart,
   noThrow,
   pgOf,
@@ -325,6 +326,7 @@ medusaIntegrationTestRunner({
       const apply = async (body: Record<string, unknown>) => {
         const container = getContainer()
         const seller = await createSeller(container)
+        await givePlan(container, seller.seller.id)
         const [product] = await container.resolve(Modules.PRODUCT).createProducts([{ title: `Own${Date.now()}` }])
         const pg = pgOf(container)
         await pg("seller_seller_product_product").insert({ id: `l_${product.id}`, seller_id: seller.seller.id, product_id: product.id })
