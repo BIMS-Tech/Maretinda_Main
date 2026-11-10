@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import multer from "multer"
-import { createGCSService } from "../../../utils/google-cloud-storage"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { savePrivateDocument } from "../../../lib/private-documents"
 import { fileMatchesDeclaredType } from "../../../lib/file-signature"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -40,25 +41,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       return res.status(400).json({ message: "File contents don't match its type" })
     }
 
-    const gcs = createGCSService()
-    if (!gcs) {
-      return res.status(500).json({ message: "Cloud storage not configured" })
-    }
-
-    const result = await gcs.uploadFile(file.buffer, file.originalname, {
-      folder: "seller-application-docs",
-      contentType: file.mimetype,
-      metadata: { uploadedAt: new Date().toISOString() },
-      makePublic: true,
-      cacheControl: "public, max-age=31536000",
+    // Applicants' IDs and permits: kept private, see lib/private-documents
+    const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const url = await savePrivateDocument(pg, {
+      file_name: file.originalname.slice(0, 200),
+      content_type: file.mimetype,
+      content: file.buffer,
     })
 
-    if (!result.success) {
-      return res.status(500).json({ message: result.error || "Upload failed" })
-    }
-
     res.status(200).json({
-      files: [{ url: result.publicUrl, name: file.originalname, size: file.size }],
+      files: [{ url, name: file.originalname, size: file.size }],
     })
   })
 }

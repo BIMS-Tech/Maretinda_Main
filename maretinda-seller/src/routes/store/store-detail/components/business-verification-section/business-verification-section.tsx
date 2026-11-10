@@ -143,7 +143,8 @@ export const BusinessVerificationSection = ({ seller }: { seller: Storeseller })
                   <Text size="small" className={uploaded ? "text-ui-fg-base" : "text-ui-fg-muted"}>
                     {doc.label}
                   </Text>
-                  {uploaded && (
+                  {/* Documents uploaded now are private to Maretinda's admins */}
+                  {uploaded && !docs[doc.key].startsWith("/admin/documents/") && (
                     <a
                       href={docs[doc.key]}
                       target="_blank"

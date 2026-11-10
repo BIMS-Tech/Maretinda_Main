@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Badge, Button, Drawer, Text, Textarea } from "@medusajs/ui";
+import { Badge, Button, Drawer, Text, Textarea, toast } from "@medusajs/ui";
 import { ArrowDownTray } from "@medusajs/icons";
+import { openDocument } from "../../../../lib/private-document";
 
 import {
   useUpdateSellerVerification,
@@ -89,14 +90,13 @@ export const SellerVerificationDetail = ({ seller, open, close }: Props) => {
                 {docEntries.map(([key, url]) => (
                   <li key={key} className="flex items-center justify-between gap-3">
                     <Text className="text-sm text-ui-fg-base">{humanizeKey(key)}</Text>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => openDocument(url).catch((e) => toast.error(e.message))}
                       className="inline-flex items-center gap-1 text-xs text-ui-fg-interactive hover:underline font-medium"
                     >
                       <ArrowDownTray /> View
-                    </a>
+                    </button>
                   </li>
                 ))}
               </ul>

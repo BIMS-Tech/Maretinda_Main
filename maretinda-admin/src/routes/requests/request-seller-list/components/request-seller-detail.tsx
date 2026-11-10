@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Badge, Button, Drawer, Heading, Text, Textarea } from "@medusajs/ui";
+import { Badge, Button, Drawer, Heading, Text, Textarea, toast } from "@medusajs/ui";
 import { ArrowDownTray } from "@medusajs/icons";
+import { openDocument } from "../../../../lib/private-document";
 
 import {
   useUpdateSellerApplication,
@@ -231,15 +232,14 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
               {Object.entries(docs).map(([key, url]) => (
                 <div key={key} className="flex items-center justify-between gap-2 text-sm">
                   <Text className="text-ui-fg-base capitalize">{key.replace(/_/g, " ")}</Text>
-                  <a
-                    href={url as string}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => openDocument(url as string).catch((e) => toast.error(e.message))}
                     className="text-ui-fg-interactive hover:underline text-xs font-medium flex items-center gap-1"
                   >
                     <ArrowDownTray className="w-3 h-3" />
                     View / Download
-                  </a>
+                  </button>
                 </div>
               ))}
             </div>
