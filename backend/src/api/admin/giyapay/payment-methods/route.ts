@@ -1,9 +1,10 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { z } from "zod"
+import { CHECKOUT_METHODS, offeredMethods } from "../../../../lib/giyapay-methods"
 
 // Validation schema for GiyaPay Gateway Direct payment methods
 const GiyaPayMethodsConfigSchema = z.object({
-  enabledMethods: z.array(z.enum(['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'])),
+  enabledMethods: z.array(z.enum(CHECKOUT_METHODS)),
 })
 
 type AuthenticatedMedusaRequest = MedusaRequest & {
@@ -37,21 +38,15 @@ export async function GET(
 
       const config = await giyaPayService.getConfig()
 
-      const validMethods = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
-      const defaultMethods = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY']
-      // Filter out any deprecated methods that may be stored in DB
-      const rawMethods = config?.enabledMethods || defaultMethods
-      const enabledMethods = rawMethods.filter((m: string) => validMethods.includes(m))
-
       return res.status(200).json({
-        enabledMethods,
-        availableMethods: validMethods,
+        enabledMethods: offeredMethods(config?.enabledMethods),
+        availableMethods: CHECKOUT_METHODS,
       })
     } catch (serviceError) {
       console.log('[GiyaPay Methods] Service not available, returning defaults')
       return res.status(200).json({
-        enabledMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
-        availableMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
+        enabledMethods: CHECKOUT_METHODS,
+        availableMethods: CHECKOUT_METHODS,
       })
     }
   } catch (error) {

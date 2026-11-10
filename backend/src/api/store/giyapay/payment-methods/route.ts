@@ -1,4 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { CHECKOUT_METHODS, offeredMethods } from "../../../../lib/giyapay-methods"
 
 export const GET = async (
   req: MedusaRequest,
@@ -35,20 +36,16 @@ export const GET = async (
         })
       }
       
-      // Default Gateway Direct payment methods
-      const defaultMethods = ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY']
-      const enabledMethods = config?.enabledMethods || defaultMethods
-      
       return res.json({
-        enabledMethods,
-        availableMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
+        enabledMethods: offeredMethods(config?.enabledMethods),
+        availableMethods: CHECKOUT_METHODS,
         isEnabled: true
       })
     } catch (serviceError) {
       console.log('[GiyaPay Store Methods] Service not available, returning defaults')
       return res.json({
-        enabledMethods: ['MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
-        availableMethods: ['INSTAPAY', 'MASTERCARD/VISA', 'GCASH', 'PAYMAYA', 'QRPH', 'WECHATPAY', 'UNIONPAY'],
+        enabledMethods: CHECKOUT_METHODS,
+        availableMethods: CHECKOUT_METHODS,
         isEnabled: true
       })
     }
