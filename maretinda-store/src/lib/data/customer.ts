@@ -173,6 +173,34 @@ export async function signout() {
 	redirect(`/`);
 }
 
+/**
+ * Deletes the signed-in buyer's account. The backend refuses while an order
+ * is still on its way; its message is shown as is. On success the buyer is
+ * signed out here and the caller sends them home.
+ */
+export async function deleteAccount(): Promise<{
+	success: boolean;
+	error?: string;
+}> {
+	try {
+		await sdk.client.fetch('/store/account', {
+			headers: await getAuthHeaders(),
+			method: 'DELETE',
+		});
+	} catch (error: any) {
+		return {
+			error: error?.message || "We couldn't delete your account. Please try again.",
+			success: false,
+		};
+	}
+
+	await removeAuthToken();
+	await removeCartId();
+	revalidateTag(await getCacheTag('customers'));
+	revalidateTag(await getCacheTag('carts'));
+	return { success: true };
+}
+
 export async function transferCart() {
 	const cartId = await getCartId();
 

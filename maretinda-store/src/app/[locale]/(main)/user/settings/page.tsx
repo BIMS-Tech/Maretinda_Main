@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { ProfileDetails } from '@/components/molecules';
+import { ProfileDeleteAccount } from '@/components/molecules/ProfileDetails/ProfileDeleteAccount';
 import { ProfilePassword } from '@/components/molecules/ProfileDetails/ProfilePassword';
 import { Layout } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
@@ -21,6 +22,7 @@ export default async function ReviewsPage() {
 				<div className="flex flex-col gap-12">
 					<ProfileDetails user={user} />
 					<ProfilePassword user={user} />
+					<ProfileDeleteAccount />
 				</div>
 			</div>
 		</Layout>

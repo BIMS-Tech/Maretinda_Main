@@ -178,7 +178,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'How do I delete my account?',
-			a: 'Email maretinda@gmail.com from the address on your account and ask for your account to be deleted. Deletion is permanent, and any outstanding orders must be resolved first.',
+			a: 'Go to My Account → Settings → Delete account, type DELETE and confirm. Deletion is permanent: your profile, saved addresses and sign-in are removed, while past orders stay on record for the shops. You can delete your account once no order is still on its way.',
 		},
 		{
 			q: 'Is my personal data secure?',

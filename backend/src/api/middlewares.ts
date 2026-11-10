@@ -1,4 +1,4 @@
-import { defineMiddlewares, errorHandler } from '@medusajs/framework/http'
+import { authenticate, defineMiddlewares, errorHandler } from '@medusajs/framework/http'
 import type {
   MedusaRequest,
   MedusaResponse,
@@ -314,6 +314,7 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
+    { matcher: '/store/account', middlewares: [authenticate('customer', ['bearer', 'session'])] },
     { matcher: '/store/seller', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/seller/*', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/products', method: ['GET'], middlewares: [enrichSellerVerification] },
