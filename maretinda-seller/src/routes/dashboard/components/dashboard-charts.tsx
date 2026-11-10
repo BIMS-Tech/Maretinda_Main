@@ -264,16 +264,16 @@ export const DashboardCharts = ({
           label="Total Revenue"
           value={formatMoney(totalRevenue)}
           sub={`Avg ${formatMoney(avgOrderValue)}/order`}
-          iconBg="bg-[rgb(var(--brand-yellow-soft))]"
-          iconColor="text-[#9A6B00]"
+          iconBg="bg-ui-tag-orange-bg"
+          iconColor="text-ui-tag-orange-icon"
         />
         <StatCard
           icon={Star}
           label="Reviews"
           value={reviewArray.length}
           sub={`${avgRating.toFixed(1)} avg rating`}
-          iconBg="bg-[rgb(var(--brand-yellow-soft))]"
-          iconColor="text-[#9A6B00]"
+          iconBg="bg-ui-tag-orange-bg"
+          iconColor="text-ui-tag-orange-icon"
           href="/reviews"
         />
         <StatCard
@@ -498,7 +498,7 @@ export const DashboardCharts = ({
             </div>
             <Link
               to="/orders"
-              className="text-xs text-blue-600 hover:underline font-medium"
+              className="text-xs text-ui-fg-interactive hover:underline font-medium"
             >
               View all →
             </Link>
@@ -532,7 +532,7 @@ export const DashboardCharts = ({
                       <td className="px-5 py-3">
                         <Link
                           to={`/orders/${order.id}`}
-                          className="font-mono text-blue-600 hover:underline text-xs"
+                          className="font-mono text-ui-fg-interactive hover:underline text-xs"
                         >
                           #{order.display_id}
                         </Link>
@@ -544,9 +544,9 @@ export const DashboardCharts = ({
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                             order.fulfillment_status === "fulfilled"
-                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                              ? "bg-ui-tag-green-bg text-ui-tag-green-text "
                               : order.fulfillment_status === "not_fulfilled"
-                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                              ? "bg-ui-tag-orange-bg text-ui-tag-orange-text "
                               : "bg-ui-bg-subtle text-ui-fg-subtle"
                           }`}
                         >
@@ -586,20 +586,20 @@ export const DashboardCharts = ({
                 {
                   label: "Fulfilled",
                   value: fulfilledOrders,
-                  color: "bg-green-500",
-                  textColor: "text-green-600",
+                  color: "bg-ui-tag-green-icon",
+                  textColor: "text-ui-tag-green-text",
                 },
                 {
                   label: "Pending",
                   value: notFulfilledOrders,
-                  color: "bg-amber-400",
-                  textColor: "text-amber-600",
+                  color: "bg-brand-yellow",
+                  textColor: "text-ui-tag-orange-text",
                 },
                 {
                   label: "Cancelled",
                   value: cancelledOrders,
-                  color: "bg-red-400",
-                  textColor: "text-red-600",
+                  color: "bg-ui-tag-red-icon",
+                  textColor: "text-ui-tag-red-text",
                 },
               ].map(({ label, value, color, textColor }) => (
                 <div key={label} className="flex items-center gap-3">
@@ -641,20 +641,20 @@ export const DashboardCharts = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-ui-fg-muted">Avg Rating</span>
-                <span className="flex items-center gap-1 text-sm font-semibold text-amber-500">
-                  <Star className="text-amber-500" />
+                <span className="flex items-center gap-1 text-sm font-semibold text-ui-tag-orange-text">
+                  <Star className="text-ui-tag-orange-text" />
                   {avgRating.toFixed(1)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-ui-fg-muted">Needs Reply</span>
-                <span className={`text-sm font-semibold ${typeof reviewsToReply === "number" && reviewsToReply > 0 ? "text-red-500" : "text-green-600"}`}>
+                <span className={`text-sm font-semibold ${typeof reviewsToReply === "number" && reviewsToReply > 0 ? "text-ui-tag-red-text" : "text-ui-tag-green-text"}`}>
                   {typeof reviewsToReply === "number" ? reviewsToReply : reviewsToReply?.length ?? 0}
                 </span>
               </div>
               <Link
                 to="/reviews"
-                className="text-xs text-blue-600 hover:underline font-medium mt-1"
+                className="text-xs text-ui-fg-interactive hover:underline font-medium mt-1"
               >
                 View all reviews →
               </Link>
@@ -664,14 +664,14 @@ export const DashboardCharts = ({
           {/* Products count */}
           <Container className="p-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                <ShoppingBag className="text-emerald-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-ui-tag-green-bg">
+                <ShoppingBag className="text-ui-tag-green-text" />
               </div>
               <div className="flex-1">
                 <p className="text-xl font-bold text-ui-fg-base">{productCount ?? "—"}</p>
                 <p className="text-xs text-ui-fg-muted">Total Products Listed</p>
               </div>
-              <Link to="/products" className="text-xs text-blue-600 hover:underline">
+              <Link to="/products" className="text-xs text-ui-fg-interactive hover:underline">
                 Manage →
               </Link>
             </div>
@@ -691,7 +691,7 @@ export const DashboardCharts = ({
                 Latest payout activity
               </Text>
             </div>
-            <Link to="/payouts" className="text-xs text-blue-600 hover:underline font-medium">
+            <Link to="/payouts" className="text-xs text-ui-fg-interactive hover:underline font-medium">
               View all →
             </Link>
           </div>
@@ -718,9 +718,9 @@ export const DashboardCharts = ({
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
                           payout.status === "completed"
-                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                            ? "bg-ui-tag-green-bg text-ui-tag-green-text "
                             : payout.status === "pending"
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            ? "bg-ui-tag-orange-bg text-ui-tag-orange-text "
                             : "bg-ui-bg-subtle text-ui-fg-subtle"
                         }`}
                       >

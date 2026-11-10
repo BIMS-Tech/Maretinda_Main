@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom"
 import { Reel, ReelStatus, useReels } from "../../../../hooks/api/reels"
 
 const STATUS_STYLE: Record<ReelStatus, string> = {
-  published: "bg-green-100 text-green-700",
+  published: "bg-ui-tag-green-bg text-ui-tag-green-text",
   draft: "bg-gray-100 text-gray-600",
-  archived: "bg-orange-100 text-orange-700",
+  archived: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
 }
 
 function formatDuration(seconds?: number | null) {
@@ -44,7 +44,7 @@ function ReelCard({ reel }: { reel: Reel }) {
         )}
 
         {reel.moderation_status === "hidden" ? (
-          <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-700">
+          <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-medium bg-ui-tag-red-bg text-ui-tag-red-text">
             hidden by Maretinda
           </span>
         ) : (

@@ -1,4 +1,5 @@
 import { Button, Heading, Text } from "@medusajs/ui"
+import { LockClosedSolid } from "@medusajs/icons"
 import { Link } from "react-router-dom"
 
 type SubscriptionGateProps = {
@@ -8,8 +9,8 @@ type SubscriptionGateProps = {
 export const SubscriptionGate = ({ currentPlan }: SubscriptionGateProps) => {
   return (
     <div className="flex flex-col items-center justify-center gap-y-6 py-16 px-8 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-subtle text-4xl">
-        🔒
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-highlight text-ui-fg-interactive">
+        <LockClosedSolid />
       </div>
       <div className="flex flex-col items-center gap-y-2 max-w-sm">
         <Heading level="h2">Premium Feature</Heading>

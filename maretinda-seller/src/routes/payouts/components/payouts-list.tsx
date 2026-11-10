@@ -70,7 +70,7 @@ export const PayoutsList = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="flex flex-col gap-1">
             <Text size="small" className="text-ui-fg-subtle">Total Paid Out</Text>
-            <Text size="large" weight="plus" className="text-green-600">
+            <Text size="large" weight="plus" className="text-ui-tag-green-text">
               ₱{payouts
                 .filter(p => p.status === 'completed' || p.status === 'paid')
                 .reduce((sum, p) => sum + (p.amount / 100), 0)
@@ -79,7 +79,7 @@ export const PayoutsList = () => {
           </div>
           <div className="flex flex-col gap-1">
             <Text size="small" className="text-ui-fg-subtle">Processing</Text>
-            <Text size="large" weight="plus" className="text-blue-600">
+            <Text size="large" weight="plus" className="text-ui-fg-interactive">
               ₱{payouts
                 .filter(p => p.status === 'processing')
                 .reduce((sum, p) => sum + (p.amount / 100), 0)

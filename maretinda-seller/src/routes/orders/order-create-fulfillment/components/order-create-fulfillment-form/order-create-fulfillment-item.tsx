@@ -129,7 +129,7 @@ export function OrderCreateFulfillmentItem({
                 <span className="text-ui-fg-subtle">
                   {inStockQuantity || "N/A"}{" "}
                   {inStockQuantity && (
-                    <span className="font-medium text-red-500">
+                    <span className="font-medium text-ui-tag-red-text">
                       -{form.getValues(`quantity.${item.id}`)}
                     </span>
                   )}

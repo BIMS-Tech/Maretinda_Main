@@ -412,7 +412,7 @@ export const ReturnCreateForm = ({
               <Heading level="h2">{t("orders.returns.inbound")}</Heading>
               <StackedFocusModal id="items">
                 <StackedFocusModal.Trigger asChild>
-                  <a className="focus-visible:shadow-borders-focus transition-fg txt-compact-small-plus cursor-pointer text-blue-500 outline-none hover:text-blue-400">
+                  <a className="focus-visible:shadow-borders-focus transition-fg txt-compact-small-plus cursor-pointer text-ui-fg-interactive outline-none hover:text-ui-tag-purple-text">
                     {t("actions.addItems")}
                   </a>
                 </StackedFocusModal.Trigger>

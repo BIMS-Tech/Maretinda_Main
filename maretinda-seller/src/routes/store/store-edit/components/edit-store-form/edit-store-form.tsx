@@ -343,8 +343,8 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
                   </p>
                 )}
                 {!isMetrobank && selectedBankName && (
-                  <p className="text-orange-600 text-sm mt-1">
-                    ⚠️ Non-Metrobank: Additional fields required (DFT format)
+                  <p className="text-ui-tag-orange-text text-sm mt-1">
+                    Non-Metrobank: Additional fields required (DFT format)
                   </p>
                 )}
               </div>
@@ -429,8 +429,8 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
               
               {/* Conditional Fields for Non-Metrobank */}
               {!isMetrobank && selectedBankName && (
-                <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-md">
-                  <p className="text-sm font-medium text-orange-800 mb-4">
+                <div className="mt-6 p-4 bg-ui-tag-orange-bg border border-ui-tag-orange-border rounded-md">
+                  <p className="text-sm font-medium text-ui-tag-orange-text mb-4">
                     Additional Information Required (Non-Metrobank)
                   </p>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -488,8 +488,8 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
               
               {/* Info box for Metrobank */}
               {isMetrobank && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-                  <p className="text-sm text-green-800">
+                <div className="mt-6 p-4 bg-ui-tag-green-bg border border-ui-tag-green-border rounded-md">
+                  <p className="text-sm text-ui-tag-green-text">
                     ✓ Metrobank detected: Your transactions will be processed via TAMA format. No additional fields required.
                   </p>
                 </div>

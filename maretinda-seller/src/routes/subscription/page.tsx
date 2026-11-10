@@ -13,6 +13,7 @@ import {
   type ActivateResponse,
 } from "../../hooks/api/subscription"
 import { trialLabel } from "./trial-label"
+import { Clock, ExclamationCircle, RocketLaunch, Sparkles, StarSolid, Trophy } from "@medusajs/icons"
 
 // ---------------------------------------------------------------------------
 // Static plan metadata (tier label, tagline, popular, CTA)
@@ -21,11 +22,11 @@ const PLAN_META: Record<string, {
   tier: string
   tagline: string
   popular: boolean
-  icon: string
+  icon: ReactNode
 }> = {
-  Starter: { tier: "STARTER", tagline: "Perfect to get started", popular: false, icon: "✦" },
-  Growth:  { tier: "GROWTH",  tagline: "For scaling businesses", popular: true,  icon: "↗" },
-  Premium: { tier: "PREMIUM", tagline: "For high-volume brands", popular: false, icon: "◎" },
+  Starter: { tier: "STARTER", tagline: "Perfect to get started", popular: false, icon: <Sparkles /> },
+  Growth:  { tier: "GROWTH",  tagline: "For scaling businesses", popular: true,  icon: <RocketLaunch /> },
+  Premium: { tier: "PREMIUM", tagline: "For high-volume brands", popular: false, icon: <Trophy /> },
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +268,7 @@ function MethodModal({ methods, onSelect, onCancel }: {
                 type="button"
                 onClick={() => setSelected(m)}
                 className={`w-full flex items-center gap-x-4 px-6 py-4 transition-colors ${
-                  isSelected ? "bg-ui-bg-interactive/10" : "hover:bg-ui-bg-base-hover"
+                  isSelected ? "bg-ui-bg-highlight" : "hover:bg-ui-bg-base-hover"
                 }`}
               >
                 <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
@@ -314,8 +315,8 @@ function DowngradeModal({ planName, currentPlanName, onConfirm, onCancel }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-ui-tag-orange-bg flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-ui-tag-orange-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
           </div>
@@ -329,7 +330,7 @@ function DowngradeModal({ planName, currentPlanName, onConfirm, onCancel }: {
         </p>
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700">Yes, Downgrade</button>
+          <button onClick={onConfirm} className="flex-1 rounded-xl bg-brand-yellow px-4 py-2 text-sm font-semibold text-white hover:bg-brand-yellow">Yes, Downgrade</button>
         </div>
       </div>
     </div>
@@ -397,7 +398,7 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
 }) {
   if (state === "verifying") {
     return (
-      <div className="rounded-2xl border border-ui-border-interactive/30 bg-ui-bg-interactive/10 p-5 flex items-center gap-4">
+      <div className="rounded-2xl border border-ui-border-interactive bg-ui-bg-highlight p-5 flex items-center gap-4">
         <div className="animate-spin rounded-full h-8 w-8 border-4 border-ui-border-interactive border-t-transparent flex-shrink-0" />
         <div>
           <p className="text-sm font-semibold text-ui-fg-interactive">Verifying your payment…</p>
@@ -411,28 +412,28 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
     const sub = result?.subscription
     const plan = result?.plan
     return (
-      <div className="rounded-2xl border border-green-500/30 bg-green-500/10 p-5">
+      <div className="rounded-2xl border border-ui-tag-green-border bg-ui-tag-green-bg p-5">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-ui-tag-green-bg flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-ui-tag-green-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-green-300">
+            <p className="text-sm font-bold text-ui-tag-green-text">
               {result?.already_activated ? "Subscription Already Active" : "Subscription Activated!"}
             </p>
-            <p className="text-xs text-green-400 mt-1">
+            <p className="text-xs text-ui-tag-green-text mt-1">
               {plan?.name || sub?.plan_name
                 ? <>Welcome to <strong>{plan?.name || sub?.plan_name}</strong>!</>
                 : "Your subscription is now active."}
               {sub?.end_date ? ` Active until ${formatDate(sub.end_date)}.` : ""}
             </p>
             {sub?.payment_reference && (
-              <p className="text-xs text-green-500/70 mt-0.5 font-mono">Ref: {sub.payment_reference}</p>
+              <p className="text-xs text-ui-tag-green-text mt-0.5 font-mono">Ref: {sub.payment_reference}</p>
             )}
           </div>
-          <button onClick={onDismiss} className="text-green-400/60 hover:text-green-400">
+          <button onClick={onDismiss} className="text-ui-tag-green-text hover:text-ui-tag-green-text">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -444,17 +445,17 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
 
   if (state === "error") {
     return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-5 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="rounded-2xl border border-ui-tag-red-border bg-ui-tag-red-bg p-5 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-full bg-ui-tag-red-bg flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-ui-tag-red-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-red-300">Payment Failed</p>
-          <p className="text-xs text-red-400 mt-1">{errorMessage || "We could not process your payment. No charges were made. Please try again."}</p>
+          <p className="text-sm font-bold text-ui-tag-red-text">Payment Failed</p>
+          <p className="text-xs text-ui-tag-red-text mt-1">{errorMessage || "We could not process your payment. No charges were made. Please try again."}</p>
         </div>
-        <button onClick={onDismiss} className="text-red-400/60 hover:text-red-400">
+        <button onClick={onDismiss} className="text-ui-tag-red-text hover:text-ui-tag-red-text">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -503,7 +504,7 @@ function PlanCard({
   isEligibleForTrial: boolean
   loading: boolean
 }) {
-  const meta = PLAN_META[plan.name] || { tier: plan.name.toUpperCase(), tagline: "", popular: false, icon: "◆" }
+  const meta = PLAN_META[plan.name] || { tier: plan.name.toUpperCase(), tagline: "", popular: false, icon: <StarSolid /> }
   const isCurrent = plan.name === currentPlanName
   const changeType = getPlanChangeType(plan, currentPlanName, allPlans)
   const isPopular = meta.popular
@@ -524,13 +525,13 @@ function PlanCard({
 
   // Unified card styling — every tier shares the same theme surface and violet
   // accent so the three cards read as one system. Emphasis is expressed only
-  // through a colored ring + badge: violet for the popular tier, emerald for the
-  // current plan. No per-tier background swaps or white-on-purple text.
+  // through a ring + badge: brand purple for the popular tier, the brand
+  // yellow badge for the current plan. No per-tier background swaps or white-on-purple text.
   const cardBg = "bg-ui-bg-base"
   const cardBorder = isCurrent
-    ? "border-emerald-500/50 ring-1 ring-emerald-500/20"
+    ? "border-ui-border-interactive ring-1 ring-ui-border-interactive"
     : isPopular
-    ? "border-ui-border-interactive/50 ring-1 ring-[rgba(67,44,99,0.15)] shadow-lg shadow-[0_10px_30px_rgba(67,44,99,0.12)]"
+    ? "border-ui-border-interactive ring-1 ring-[rgba(67,44,99,0.15)] shadow-lg shadow-[0_10px_30px_rgba(67,44,99,0.12)]"
     : "border-ui-border-base"
   const tierColor = "text-ui-fg-interactive"
   const nameColor = "text-ui-fg-base"
@@ -543,13 +544,13 @@ function PlanCard({
 
   // Button styling is driven by the *action*, not the tier — so the same action
   // always looks the same across cards (e.g. every "Downgrade" is a neutral
-  // outline, every forward move is a solid violet CTA).
+  // outline, every forward move is a solid brand-purple CTA).
   const getButtonStyle = () => {
-    if (isCurrent) return "bg-emerald-500 text-white cursor-default"
+    if (isCurrent) return "bg-ui-bg-highlight text-ui-fg-interactive cursor-default"
     if (changeType === "downgrade") return "border border-ui-border-strong text-ui-fg-subtle hover:bg-ui-bg-base-hover"
     if (changeType === "upgrade" || changeType === "renew") return "bg-ui-button-inverted text-white hover:bg-ui-button-inverted-hover"
     if (isPopular) return "bg-ui-button-inverted text-white hover:bg-ui-button-inverted-hover"
-    return "border border-ui-border-interactive/50 text-ui-fg-interactive hover:bg-ui-bg-interactive/10"
+    return "border border-ui-border-interactive text-ui-fg-interactive hover:bg-ui-bg-highlight"
   }
 
   const getButtonLabel = () => {
@@ -567,7 +568,7 @@ function PlanCard({
       {/* Emphasis badge — current plan takes priority over the popular badge */}
       {isCurrent ? (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-          <span className="rounded-full bg-emerald-500 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
+          <span className="rounded-full bg-brand-yellow px-4 py-1 text-[11px] font-bold uppercase tracking-wider shadow-lg">
             Current Plan
           </span>
         </div>
@@ -582,7 +583,7 @@ function PlanCard({
       {/* Header section */}
       <div className={`p-6 border-b ${dividerColor}`}>
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-ui-bg-interactive/10 text-ui-fg-interactive">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-ui-bg-highlight text-ui-fg-interactive">
             {meta.icon}
           </div>
           <div>
@@ -606,7 +607,7 @@ function PlanCard({
             </p>
           )}
           {hasTrial && billing === "monthly" && (
-            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-ui-bg-interactive/15 border border-ui-border-interactive/30 px-2.5 py-0.5">
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-ui-bg-highlight border border-ui-border-interactive px-2.5 py-0.5">
               <span className="text-[10px] text-ui-fg-interactive font-semibold">{trialLabel(trialDays).short}</span>
             </div>
           )}
@@ -620,9 +621,9 @@ function PlanCard({
             if (f.value === "coming_soon") {
               return (
                 <li key={i} className={`flex items-center gap-2.5 text-xs ${featureTextColor}`}>
-                  <span className="text-amber-400 text-sm flex-shrink-0">◑</span>
+                  <Clock className="text-ui-tag-orange-icon flex-shrink-0" />
                   <span>{f.label}</span>
-                  <span className="ml-auto rounded-full bg-amber-400/20 border border-amber-400/40 px-1.5 py-0.5 text-[9px] font-bold text-amber-400 uppercase tracking-wider">Soon</span>
+                  <span className="ml-auto rounded-full bg-ui-tag-orange-bg border border-ui-tag-orange-border px-1.5 py-0.5 text-[9px] font-bold text-ui-tag-orange-text uppercase tracking-wider">Soon</span>
                 </li>
               )
             }
@@ -636,7 +637,7 @@ function PlanCard({
             }
             return (
               <li key={i} className={`flex items-center gap-2.5 text-xs ${featureTextColor}`}>
-                <svg className="w-3.5 h-3.5 text-green-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-3.5 h-3.5 text-ui-fg-interactive flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
                 <span>{f.label}</span>
@@ -689,24 +690,24 @@ function TrialBanner({
   return (
     <div className={`rounded-2xl border p-5 ${
       isExpiringSoon
-        ? "border-red-500/30 bg-red-500/10"
-        : "border-[rgba(255,197,51,0.55)] bg-[rgb(var(--brand-yellow-soft))]"
+        ? "border-ui-tag-red-border bg-ui-tag-red-bg"
+        : "border-ui-tag-orange-border bg-ui-tag-orange-bg"
     }`}>
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-            isExpiringSoon ? "bg-red-100" : "bg-[rgba(255,197,51,0.35)]"
+            isExpiringSoon ? "bg-ui-tag-red-bg" : "bg-ui-bg-base"
           }`}>
-            <svg className={`w-4 h-4 ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`w-4 h-4 ${isExpiringSoon ? "text-ui-tag-red-text" : "text-ui-tag-orange-text"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p className={`text-sm font-bold ${isExpiringSoon ? "text-red-700" : "text-[#5C4100]"}`}>
+            <p className={`text-sm font-bold ${isExpiringSoon ? "text-ui-tag-red-text" : "text-ui-tag-orange-text"}`}>
               {isExpiringSoon ? "Your free month ends soon" : `Free month of ${subscription.plan_name}`}
             </p>
             {endDate && (
-              <p className={`text-xs mt-0.5 ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`}>
+              <p className={`text-xs mt-0.5 ${isExpiringSoon ? "text-ui-tag-red-text" : "text-ui-tag-orange-text"}`}>
                 Expires on {formatDate(endDate)}
               </p>
             )}
@@ -723,20 +724,20 @@ function TrialBanner({
             ].map(({ v, l }) => (
               <div key={l} className="flex flex-col items-center">
                 <div className={`rounded-lg px-2.5 py-1.5 min-w-[40px] text-center border ${
-                  isExpiringSoon ? "bg-white border-red-200" : "bg-white border-[rgba(255,197,51,0.7)]"
+                  isExpiringSoon ? "bg-ui-bg-base border-ui-tag-red-border" : "bg-ui-bg-base border-ui-tag-orange-border"
                 }`}>
-                  <span className={`text-lg font-extrabold tabular-nums ${isExpiringSoon ? "text-red-700" : "text-ui-fg-interactive"}`}>
+                  <span className={`text-lg font-extrabold tabular-nums ${isExpiringSoon ? "text-ui-tag-red-text" : "text-ui-fg-interactive"}`}>
                     {String(v).padStart(2, "0")}
                   </span>
                 </div>
-                <span className={`mt-1 text-[9px] uppercase tracking-widest ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`}>{l}</span>
+                <span className={`mt-1 text-[9px] uppercase tracking-widest ${isExpiringSoon ? "text-ui-tag-red-text" : "text-ui-tag-orange-text"}`}>{l}</span>
               </div>
             ))}
           </div>
 
           <button
             onClick={onUpgrade}
-            className="transition-fg rounded-xl bg-[#FFC533] px-4 py-2 text-xs font-bold text-[#2A1B3F] hover:brightness-105 whitespace-nowrap"
+            className="transition-fg rounded-xl bg-brand-yellow px-4 py-2 text-xs font-bold hover:brightness-105 whitespace-nowrap"
           >
             Upgrade Now →
           </button>
@@ -777,7 +778,9 @@ function ActiveSubscriptionCard({ subscription }: {
       {subscription.end_date && countdown && (
         <div className={`rounded-xl p-4 mb-4 border ${isExpiring ? "bg-ui-tag-red-bg border-ui-tag-red-border" : "bg-ui-bg-subtle border-ui-border-base"}`}>
           <p className={`text-xs font-semibold mb-3 ${isExpiring ? "text-ui-tag-red-text" : "text-ui-fg-subtle"}`}>
-            {isExpiring ? "⚠ Expiring soon — renew now!" : "Subscription expires in"}
+            {isExpiring ? (
+              <span className="inline-flex items-center gap-1"><ExclamationCircle /> Expiring soon. Renew to keep selling.</span>
+            ) : "Subscription expires in"}
           </p>
           <div className="flex gap-3 flex-wrap">
             <CountdownBox label="Days" value={countdown.days} />
@@ -1035,7 +1038,7 @@ export const SubscriptionPage = () => {
                 }`}
               >
                 Annual
-                <span className="rounded-full bg-ui-tag-green-bg border border-ui-tag-green-border px-1.5 py-0.5 text-[9px] font-semibold text-ui-tag-green-text uppercase">
+                <span className="rounded-full bg-ui-tag-orange-bg border border-ui-tag-orange-border px-1.5 py-0.5 text-[9px] font-semibold text-ui-tag-orange-text uppercase">
                   Save {displayDiscountPct}%
                 </span>
               </button>
@@ -1046,7 +1049,7 @@ export const SubscriptionPage = () => {
           {has_subscription && !isTrialActive && (
             <div className="flex flex-wrap gap-3 mb-4 text-xs text-ui-fg-subtle">
               <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" /> Current Plan
+                <span className="inline-block w-2 h-2 rounded-full bg-ui-tag-green-icon" /> Current Plan
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-ui-bg-interactive" /> Upgrade (activates immediately)

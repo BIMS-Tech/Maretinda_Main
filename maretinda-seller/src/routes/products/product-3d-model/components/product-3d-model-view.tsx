@@ -1,4 +1,5 @@
 import { Divider, Heading, Text, toast } from "@medusajs/ui"
+import { CubeSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { useSubscriptionStatus } from "../../../../hooks/api/subscription"
 import {
@@ -83,7 +84,7 @@ export const Product3DModelView = ({ product }: Product3DModelViewProps) => {
       <div className="flex flex-col gap-y-1">
         <div className="flex items-center gap-x-2">
           <Heading level="h1">3D Model Generator</Heading>
-          <span className="rounded-md bg-gradient-to-r from-violet-600 to-blue-500 px-2 py-0.5 text-xs font-medium text-white">
+          <span className="rounded-md bg-gradient-to-r from-ui-tag-purple-icon to-ui-tag-purple-icon px-2 py-0.5 text-xs font-medium text-white">
             Premium
           </span>
         </div>
@@ -138,7 +139,7 @@ export const Product3DModelView = ({ product }: Product3DModelViewProps) => {
       {/* Empty state */}
       {!modelsLoading && models.length === 0 && (
         <div className="flex flex-col items-center gap-y-3 py-10 text-center">
-          <div className="text-4xl">🎲</div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ui-bg-highlight text-ui-fg-interactive"><CubeSolid /></div>
           <Text className="text-ui-fg-subtle">
             No 3D models generated yet. Select a product image above and click
             "Generate 3D Model" to get started.

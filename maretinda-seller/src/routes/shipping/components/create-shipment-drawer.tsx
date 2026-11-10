@@ -14,6 +14,7 @@ import {
   MagnifyingGlass,
   XMark,
   CheckCircle,
+  TruckFast,
 } from '@medusajs/icons'
 import { useState, useEffect, useMemo } from 'react'
 import {
@@ -396,11 +397,11 @@ export function CreateShipmentDrawer({
             <SectionHeading step={1} title="Select Order" />
 
             {selectedOrder ? (
-              <div className="flex items-start justify-between p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+              <div className="flex items-start justify-between p-3 rounded-lg bg-ui-tag-green-bg border border-ui-tag-green-border">
                 <div className="flex items-start gap-2">
-                  <CheckCircle className="text-green-500 w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <CheckCircle className="text-ui-tag-green-text w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
-                    <Text size="small" weight="plus" className="text-green-700 dark:text-green-400">
+                    <Text size="small" weight="plus" className="text-ui-tag-green-text ">
                       Order #{selectedOrder.display_id}
                     </Text>
                     <Text size="xsmall" className="text-ui-fg-subtle">
@@ -479,7 +480,7 @@ export function CreateShipmentDrawer({
                             ) : (
                               chosenShipping && (
                                 <Text size="xsmall" className="text-ui-fg-muted">
-                                  🚚 {chosenShipping}
+                                  <span className="inline-flex items-center gap-1"><TruckFast /> {chosenShipping}</span>
                                 </Text>
                               )
                             )}
@@ -553,14 +554,14 @@ export function CreateShipmentDrawer({
               <SectionHeading step={3} title="Sender (your warehouse)" />
               {senderPrefilled && (
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <CheckCircle className="w-3.5 h-3.5 text-ui-tag-green-text" />
                   <Text size="xsmall" className="text-ui-fg-muted">Pre-filled from your location</Text>
                 </div>
               )}
             </div>
             {!hasLocation && !fromAddress && (
-              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <Text size="xsmall" className="text-amber-600 dark:text-amber-400">
+              <div className="p-3 rounded-lg bg-ui-tag-orange-bg border border-ui-tag-orange-border">
+                <Text size="xsmall" className="text-ui-tag-orange-text ">
                   No warehouse location found. Go to Settings → Locations to add one, then it auto-fills here.
                 </Text>
               </div>
@@ -609,7 +610,7 @@ export function CreateShipmentDrawer({
               <SectionHeading step={4} title="Recipient (customer)" />
               {selectedOrder && (
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                  <CheckCircle className="w-3.5 h-3.5 text-ui-tag-green-text" />
                   <Text size="xsmall" className="text-ui-fg-muted">Pre-filled from order</Text>
                 </div>
               )}

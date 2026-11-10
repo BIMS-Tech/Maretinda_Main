@@ -126,7 +126,7 @@ export const PayoutAccount = () => {
         {/* Status indicator */}
         <div className="mb-6 p-4 rounded-lg border">
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-3 h-3 rounded-full ${hasDftInfo ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            <div className={`w-3 h-3 rounded-full ${hasDftInfo ? 'bg-ui-tag-green-icon' : 'bg-brand-yellow'}`}></div>
             <Text weight="plus" size="small">
               {hasDftInfo ? 'DFT Information Complete' : 'DFT Information Required'}
             </Text>

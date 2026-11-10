@@ -49,8 +49,8 @@ export const UserListTable = () => {
   return (
     <Container className="divide-y p-0">
       {atStaffLimit && (
-        <div className="px-6 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
-          <span className="text-xs text-amber-700 font-medium">
+        <div className="px-6 py-3 bg-ui-tag-orange-bg border-b border-ui-tag-orange-border flex items-center gap-2">
+          <span className="text-xs text-ui-tag-orange-text font-medium">
             Staff account limit reached ({totalStaff}/{maxStaff}). Upgrade your plan to invite more team members.
           </span>
         </div>

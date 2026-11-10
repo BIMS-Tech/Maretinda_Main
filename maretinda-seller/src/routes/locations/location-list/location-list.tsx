@@ -32,12 +32,12 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
 
   if (hasLocation && hasShippingSet && hasServiceZone && hasShippingOptions) {
     return (
-      <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 mb-2">
-        <CheckCircle className="text-green-500 w-4 h-4 flex-shrink-0" />
-        <Text size="xsmall" className="text-green-600 dark:text-green-400">
+      <div className="flex items-center gap-2 p-3 rounded-lg bg-ui-tag-green-bg border border-ui-tag-green-border mb-2">
+        <CheckCircle className="text-ui-tag-green-text w-4 h-4 flex-shrink-0" />
+        <Text size="xsmall" className="text-ui-tag-green-text ">
           Checkout shipping is set up. Customers can select shipping options at checkout.
         </Text>
-        <Link to="/shipping?tab=guide" className="ml-auto text-xs text-green-600 dark:text-green-400 hover:underline flex items-center gap-1">
+        <Link to="/shipping?tab=guide" className="ml-auto text-xs text-ui-tag-green-text hover:underline flex items-center gap-1">
           View Guide <ArrowRightMini className="w-3 h-3" />
         </Link>
       </div>
@@ -54,12 +54,12 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
   const doneCount = steps.filter((s) => s.done).length
 
   return (
-    <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 mb-2">
+    <div className="p-4 rounded-lg bg-ui-tag-orange-bg border border-ui-tag-orange-border mb-2">
       <div className="flex items-start gap-3">
-        <ExclamationCircle className="text-amber-500 w-4 h-4 flex-shrink-0 mt-0.5" />
+        <ExclamationCircle className="text-ui-tag-orange-text w-4 h-4 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <Text size="small" weight="plus" className="text-amber-600 dark:text-amber-400">
+            <Text size="small" weight="plus" className="text-ui-tag-orange-text ">
               Checkout shipping setup incomplete
             </Text>
             <Badge color="orange" size="2xsmall">{doneCount}/4 steps done</Badge>
@@ -69,7 +69,7 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
               Next: <strong>{nextStep.label}</strong>
             </Text>
           )}
-          <Link to="/shipping?tab=guide" className="inline-flex items-center gap-1 mt-1.5 text-xs text-amber-600 dark:text-amber-400 hover:underline">
+          <Link to="/shipping?tab=guide" className="inline-flex items-center gap-1 mt-1.5 text-xs text-ui-tag-orange-text hover:underline">
             View Setup Guide <ArrowRightMini className="w-3 h-3" />
           </Link>
         </div>

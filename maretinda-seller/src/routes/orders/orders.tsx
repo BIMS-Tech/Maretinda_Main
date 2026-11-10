@@ -190,25 +190,25 @@ export const Orders: React.FC = () => {
         <div className="mb-4 flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'all' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'all' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
           >
             All Orders
           </button>
           <button
             onClick={() => setFilter('giyapay')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'giyapay' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'giyapay' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
           >
             GiyaPay Orders
           </button>
           <button
             onClick={() => setFilter('paid')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'paid' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'paid' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
           >
             Paid Orders
           </button>
           <button
             onClick={() => setFilter('pending')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'pending' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'pending' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
           >
             Pending Orders
           </button>
@@ -282,11 +282,11 @@ export const Orders: React.FC = () => {
                   </Table.Cell>
                   <Table.Cell>
                     <div className="flex gap-2">
-                      <button className="text-sm text-blue-600 hover:text-blue-800">
+                      <button className="text-sm text-ui-fg-interactive hover:text-ui-fg-interactive">
                         View Details
                       </button>
                       {order.fulfillment_status === 'not_fulfilled' && (
-                        <button className="text-sm text-green-600 hover:text-green-800">
+                        <button className="text-sm text-ui-tag-green-text hover:text-ui-tag-green-text">
                           Fulfill
                         </button>
                       )}

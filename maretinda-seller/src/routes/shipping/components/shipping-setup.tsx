@@ -56,7 +56,7 @@ function CarrierCard({ carrier }: { carrier: PlatformCarrier }) {
             <div className="flex items-center gap-2">
               <Heading level="h3">{carrier.name}</Heading>
               {carrier.is_active ? (
-                <CheckCircle className="text-green-500 w-4 h-4" />
+                <CheckCircle className="text-ui-tag-green-text w-4 h-4" />
               ) : (
                 <XCircle className="text-ui-fg-muted w-4 h-4" />
               )}
@@ -78,8 +78,8 @@ function CarrierCard({ carrier }: { carrier: PlatformCarrier }) {
       </div>
 
       {carrier.supports_cod && carrier.is_active && (
-        <div className="mt-3 p-2 rounded-md bg-amber-500/10 border border-amber-500/20">
-          <Text size="xsmall" className="text-amber-600 dark:text-amber-400">
+        <div className="mt-3 p-2 rounded-md bg-ui-tag-orange-bg border border-ui-tag-orange-border">
+          <Text size="xsmall" className="text-ui-tag-orange-text ">
             Cash on Delivery supported — enable COD when creating a shipment
           </Text>
         </div>
@@ -95,8 +95,8 @@ export function ShippingSetup() {
 
   return (
     <div className="flex flex-col gap-y-4">
-      <Container className="bg-blue-500/10 border border-blue-500/20 p-5">
-        <Heading level="h3" className="text-blue-600 dark:text-blue-400 mb-1">
+      <Container className="bg-ui-tag-purple-bg border border-ui-tag-purple-border p-5">
+        <Heading level="h3" className="text-ui-fg-interactive mb-1">
           Maretinda Managed Shipping
         </Heading>
         <Text size="small" className="text-ui-fg-subtle">
@@ -142,8 +142,8 @@ export function ShippingSetup() {
             { step: "3", title: "Hand off & track", desc: "Print and attach the waybill. The carrier collects and tracking updates automatically." },
           ].map(({ step, title, desc }) => (
             <div key={step} className="flex gap-3">
-              <div className="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Text size="xsmall" weight="plus" className="text-blue-600 dark:text-blue-400">{step}</Text>
+              <div className="w-7 h-7 rounded-full bg-ui-tag-purple-bg flex items-center justify-center flex-shrink-0">
+                <Text size="xsmall" weight="plus" className="text-ui-fg-interactive ">{step}</Text>
               </div>
               <div>
                 <Text size="small" weight="plus">{title}</Text>
@@ -157,7 +157,7 @@ export function ShippingSetup() {
             href="https://help.maretinda.com/shipping"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 text-blue-500 hover:text-blue-400 text-sm"
+            className="flex items-center gap-1 text-ui-fg-interactive hover:text-ui-tag-purple-text text-sm"
           >
             Shipping guide & FAQs <ArrowUpRightOnBox className="w-3.5 h-3.5" />
           </a>

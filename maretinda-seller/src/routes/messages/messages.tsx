@@ -81,7 +81,7 @@ function MsgBubble({ msg, isOwn }: { msg: ChatMessage; isOwn: boolean }) {
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-3`}>
       <div className={`max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col`}>
         {!isOwn && (
-          <span className={`text-xs mb-1 font-medium ${isAdmin ? "text-orange-600" : "text-ui-fg-muted"}`}>
+          <span className={`text-xs mb-1 font-medium ${isAdmin ? "text-ui-tag-orange-text" : "text-ui-fg-muted"}`}>
             {isAdmin ? "Support Team" : msg.sender_name}
           </span>
         )}
@@ -90,7 +90,7 @@ function MsgBubble({ msg, isOwn }: { msg: ChatMessage; isOwn: boolean }) {
             isOwn
               ? "bg-ui-button-inverted text-ui-fg-on-inverted rounded-tr-sm"
               : isAdmin
-              ? "bg-orange-50 text-orange-900 border border-orange-200 rounded-tl-sm"
+              ? "bg-ui-tag-orange-bg text-ui-tag-orange-text border border-ui-tag-orange-border rounded-tl-sm"
               : "bg-ui-bg-subtle text-ui-fg-base border border-ui-border-base rounded-tl-sm"
           }`}
         >

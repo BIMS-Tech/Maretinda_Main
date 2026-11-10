@@ -25,9 +25,9 @@ function SetupStep({ number, done, title, description, action }: SetupStepProps)
     <div className="flex gap-4 items-start">
       <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold
         ${done
-          ? "bg-green-500/10 text-green-600"
+          ? "bg-ui-tag-green-bg text-ui-tag-green-text"
           : "bg-ui-bg-subtle text-ui-fg-muted border border-ui-border-base"}`}>
-        {done ? <CheckCircle className="w-5 h-5 text-green-500" /> : number}
+        {done ? <CheckCircle className="w-5 h-5 text-ui-tag-green-text" /> : number}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -40,7 +40,7 @@ function SetupStep({ number, done, title, description, action }: SetupStepProps)
         {!done && action && (
           <Link
             to={action.to}
-            className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-500 hover:text-blue-400"
+            className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-ui-fg-interactive hover:text-ui-tag-purple-text"
           >
             {action.label} <ArrowRightMini className="w-3 h-3" />
           </Link>
@@ -111,9 +111,9 @@ export function ShippingGuide() {
       {/* Overview */}
       <Container className="p-5">
         <div className="flex items-start gap-3">
-          <InformationCircle className="text-blue-500 w-5 h-5 flex-shrink-0 mt-0.5" />
+          <InformationCircle className="text-ui-fg-interactive w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
-            <Heading level="h3" className="text-blue-600 dark:text-blue-400">
+            <Heading level="h3" className="text-ui-fg-interactive ">
               Two-Track Shipping System
             </Heading>
             <Text size="small" className="text-ui-fg-subtle mt-1">
@@ -193,8 +193,8 @@ export function ShippingGuide() {
         </div>
 
         {checkoutReady && (
-          <div className="mt-5 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-            <Text size="xsmall" className="text-green-600 dark:text-green-400">
+          <div className="mt-5 p-3 rounded-lg bg-ui-tag-green-bg border border-ui-tag-green-border">
+            <Text size="xsmall" className="text-ui-tag-green-text ">
               Your checkout shipping is ready. Customers can now select a shipping method when ordering your products.
             </Text>
           </div>

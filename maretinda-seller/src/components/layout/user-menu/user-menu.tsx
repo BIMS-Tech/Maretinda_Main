@@ -91,12 +91,12 @@ const UserBadge = () => {
     return (
       <button
         onClick={() => window.location.href = '/login'}
-        className="shadow-borders-base flex max-w-[192px] select-none items-center gap-x-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full py-1 pl-1 pr-2.5 bg-red-50 hover:bg-red-100"
+        className="shadow-borders-base flex max-w-[192px] select-none items-center gap-x-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full py-1 pl-1 pr-2.5 bg-ui-tag-red-bg hover:bg-ui-bg-base-hover"
       >
-        <div className="h-5 w-5 rounded-full bg-red-200 flex items-center justify-center text-xs text-red-600">
+        <div className="h-5 w-5 rounded-full bg-ui-tag-red-bg flex items-center justify-center text-xs text-ui-tag-red-text">
           !
         </div>
-        <span className="text-xs text-red-600">Session Error</span>
+        <span className="text-xs text-ui-tag-red-text">Session Error</span>
       </button>
     )
   }
@@ -307,11 +307,11 @@ const UserItem = () => {
     console.warn("User session error in UserItem:", error)
     return (
       <div className="p-3">
-        <div className="shadow-borders-base flex max-w-[192px] select-none items-center gap-x-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full py-1 pl-1 pr-2.5 bg-red-50">
-          <div className="h-5 w-5 rounded-full bg-red-200 flex items-center justify-center text-xs text-red-600">
+        <div className="shadow-borders-base flex max-w-[192px] select-none items-center gap-x-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full py-1 pl-1 pr-2.5 bg-ui-tag-red-bg">
+          <div className="h-5 w-5 rounded-full bg-ui-tag-red-bg flex items-center justify-center text-xs text-ui-tag-red-text">
             !
           </div>
-          <span className="text-xs text-red-600">Session Error</span>
+          <span className="text-xs text-ui-tag-red-text">Session Error</span>
         </div>
       </div>
     )

@@ -75,7 +75,7 @@ function FulfillmentSet(props: FulfillmentSetProps) {
             </StatusBadge>
             {isIncomplete ? (
               <div className="flex items-center gap-1">
-                <ExclamationCircle className="text-amber-500 w-3.5 h-3.5" />
+                <ExclamationCircle className="text-ui-tag-orange-text w-3.5 h-3.5" />
                 <Badge color="orange" size="2xsmall">
                   {zoneCount === 0 ? "No zones" : "No shipping options"}
                 </Badge>

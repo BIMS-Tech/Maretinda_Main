@@ -168,7 +168,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
   return (
     <div>
       <label className="block text-sm font-medium text-ui-fg-base mb-1">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+        {label}{required && <span className="text-ui-tag-red-text ml-0.5">*</span>}
       </label>
       {children}
     </div>
@@ -186,7 +186,7 @@ function RadioGroup({ name, options, value, onChange }: {
           key={opt.value}
           className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
             value === opt.value
-              ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+              ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
               : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
           }`}
         >
@@ -210,7 +210,7 @@ function CheckboxGroup({ options, values, onChange }: {
           key={opt}
           className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm cursor-pointer transition-colors ${
             values.includes(opt)
-              ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+              ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
               : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
           }`}
         >
@@ -258,11 +258,11 @@ function FileUpload({ docKey, label, value, onChange }: {
       <p className="text-xs font-medium text-ui-fg-base mb-2">{label}</p>
       {value ? (
         <div className="flex items-center gap-2">
-          <span className="text-green-500 text-xs font-medium">✓ Uploaded</span>
+          <span className="text-ui-tag-green-text text-xs font-medium">✓ Uploaded</span>
           <button
             type="button"
             onClick={() => { onChange(docKey, ""); if (inputRef.current) inputRef.current.value = "" }}
-            className="text-red-500 text-xs underline"
+            className="text-ui-tag-red-text text-xs underline"
           >
             Remove
           </button>
@@ -273,7 +273,7 @@ function FileUpload({ docKey, label, value, onChange }: {
           {uploading ? "Uploading…" : "+ Choose file"}
         </label>
       )}
-      {err && <p className="text-red-500 text-xs mt-1">{err}</p>}
+      {err && <p className="text-ui-tag-red-text text-xs mt-1">{err}</p>}
     </div>
   )
 }
@@ -356,7 +356,7 @@ function StepBusiness({ data, set }: { data: FormData; set: <K extends keyof For
               key={t}
               className={`flex items-center justify-center rounded-lg border px-2 py-2 text-xs cursor-pointer text-center transition-colors ${
                 data.form_of_organization === t
-                  ? "border-[#432C63] bg-[#432C63]/10 text-[#432C63] font-medium"
+                  ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
                   : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
               }`}
             >
@@ -406,7 +406,7 @@ function StepDocuments({ data, setDoc }: { data: FormData; setDoc: (k: string, u
   const docList = ORG_DOCUMENTS[data.form_of_organization] || []
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-400">
+      <div className="rounded-lg border border-ui-tag-orange-border bg-ui-tag-orange-bg px-3 py-2 text-xs text-ui-tag-orange-text">
         Upload documents for <strong>{data.form_of_organization}</strong>. These are optional at registration.
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -469,13 +469,13 @@ function StepAccount({ data, set }: { data: FormData; set: <K extends keyof Form
         />
       </Field>
       {data.password && data.password.length < 8 && (
-        <p className="text-red-500 text-xs">Password must be at least 8 characters.</p>
+        <p className="text-ui-tag-red-text text-xs">Password must be at least 8 characters.</p>
       )}
       {data.password && data.password.length >= 8 && data.confirm_password && data.password !== data.confirm_password && (
-        <p className="text-red-500 text-xs">Passwords do not match.</p>
+        <p className="text-ui-tag-red-text text-xs">Passwords do not match.</p>
       )}
       {data.password && data.password.length >= 8 && data.confirm_password && data.password === data.confirm_password && (
-        <p className="text-green-500 text-xs">Passwords match ✓</p>
+        <p className="text-ui-tag-green-text text-xs">Passwords match ✓</p>
       )}
 
       <div className="pt-2 border-t border-ui-border-base" />
@@ -746,7 +746,7 @@ export const Register = () => {
           </div>
 
           {error && (
-            <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-500">{error}</div>
+            <div className="mb-4 rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-3 text-sm text-ui-tag-red-text">{error}</div>
           )}
 
           {/* Navigation buttons */}

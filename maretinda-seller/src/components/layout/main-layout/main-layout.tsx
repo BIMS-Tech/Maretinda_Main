@@ -68,9 +68,9 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
           </div>
         </div>
         {!subscriptionActive && (
-          <div className="mx-3 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <div className="mx-3 mt-3 rounded-lg border border-ui-tag-orange-border bg-ui-tag-orange-bg px-3 py-2 text-xs text-ui-tag-orange-text">
             <p className="font-semibold">Your shop is closed</p>
-            <p className="mt-0.5 text-amber-700">Choose a plan to keep selling. You can still finish the orders you have.</p>
+            <p className="mt-0.5 text-ui-tag-orange-text">Choose a plan to keep selling. You can still finish the orders you have.</p>
           </div>
         )}
         <div className="flex flex-1 flex-col justify-between">
@@ -141,7 +141,7 @@ const PlanBadge = () => {
   const { planName } = usePlanLimits()
   if (!planName) return null
   return (
-    <span className="mt-0.5 inline-flex rounded-full bg-[rgb(var(--brand-yellow-soft))] px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#7A5600]">
+    <span className="mt-0.5 inline-flex rounded-full bg-ui-tag-orange-bg px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-ui-tag-orange-text">
       {planName}
     </span>
   )
@@ -444,21 +444,21 @@ const SupportWidget = () => {
 
   if (supportLevel === "priority") {
     return (
-      <div className="mx-3 mb-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
-        <p className="text-xs font-semibold text-blue-800">Priority Support</p>
+      <div className="mx-3 mb-2 rounded-lg border border-ui-tag-purple-border bg-ui-tag-purple-bg px-3 py-2.5">
+        <p className="text-xs font-semibold text-ui-fg-interactive">Priority Support</p>
         <div className="mt-1 flex items-center gap-2">
           <a
             href="mailto:support@maretinda.com?subject=Priority%20Support"
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs text-ui-fg-interactive hover:underline"
           >
             Email →
           </a>
-          <span className="text-blue-300">|</span>
+          <span className="text-ui-tag-purple-text">|</span>
           <a
             href="https://maretinda.com/ph/help-center"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs text-ui-fg-interactive hover:underline"
           >
             Live Chat →
           </a>
@@ -490,15 +490,15 @@ const SetupWidget = () => {
   return (
     <Link
       to="/settings/store"
-      className="mx-3 mb-2 block rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100"
+      className="mx-3 mb-2 block rounded-lg border border-ui-tag-orange-border bg-ui-tag-orange-bg px-3 py-2.5 transition-colors hover:brightness-[0.98]"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-red-800">Finish store setup</p>
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-medium leading-none text-white">
+        <p className="text-xs font-semibold text-ui-tag-orange-text">Finish store setup</p>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1.5 text-[11px] font-semibold leading-none">
           {pendingCount}
         </span>
       </div>
-      <p className="mt-1 text-xs text-red-600">
+      <p className="mt-1 text-xs text-ui-tag-orange-text">
         {progress.percent}% complete — {progress.completedCount} of{" "}
         {progress.totalCount} details added.
       </p>

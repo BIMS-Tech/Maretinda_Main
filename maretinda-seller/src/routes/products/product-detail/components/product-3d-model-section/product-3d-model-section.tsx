@@ -1,4 +1,5 @@
 import { Container, Heading, Text, Button, Badge } from "@medusajs/ui"
+import { LockClosedSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Link } from "react-router-dom"
 import { useSubscriptionStatus } from "../../../../../hooks/api/subscription"
@@ -28,7 +29,7 @@ export const Product3DModelSection = ({ product }: Product3DModelSectionProps) =
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-x-2">
           <Heading level="h2">3D Model</Heading>
-          <span className="rounded-md bg-gradient-to-r from-violet-600 to-blue-500 px-2 py-0.5 text-xs font-medium text-white leading-tight">
+          <span className="rounded-md bg-gradient-to-r from-ui-tag-purple-icon to-ui-tag-purple-icon px-2 py-0.5 text-xs font-medium text-white leading-tight">
             Premium
           </span>
         </div>
@@ -46,7 +47,7 @@ export const Product3DModelSection = ({ product }: Product3DModelSectionProps) =
         ) : !isEligible ? (
           <div className="flex flex-col gap-y-3">
             <div className="flex items-center gap-x-2">
-              <span className="text-lg">🔒</span>
+              <LockClosedSolid className="text-ui-fg-interactive" />
               <Text size="small" className="text-ui-fg-subtle">
                 Available on Growth and Premium plans
               </Text>

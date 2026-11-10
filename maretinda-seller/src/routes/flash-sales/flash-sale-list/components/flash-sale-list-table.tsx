@@ -5,11 +5,11 @@ import { useFlashSales } from "../../../../hooks/api/flash-sales"
 import { FlashSale, getFlashSaleStatus, getTimeRemaining } from "../../../../lib/flash-sales"
 
 const STATUS_COLOR: Record<string, string> = {
-  green: "bg-green-100 text-green-700",
-  orange: "bg-orange-100 text-orange-700",
-  blue: "bg-blue-100 text-blue-700",
+  green: "bg-ui-tag-green-bg text-ui-tag-green-text",
+  orange: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
+  blue: "bg-ui-tag-purple-bg text-ui-fg-interactive",
   grey: "bg-gray-100 text-gray-600",
-  red: "bg-red-100 text-red-700",
+  red: "bg-ui-tag-red-bg text-ui-tag-red-text",
 }
 
 function StatusBadge({ sale }: { sale: FlashSale }) {
@@ -18,8 +18,8 @@ function StatusBadge({ sale }: { sale: FlashSale }) {
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[color] || STATUS_COLOR.grey}`}>
       {sale.status === "active" && (
         <span className="relative flex w-1.5 h-1.5">
-          <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
-          <span className="relative w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="absolute inset-0 rounded-full bg-ui-tag-green-icon animate-ping opacity-75" />
+          <span className="relative w-1.5 h-1.5 rounded-full bg-ui-tag-green-icon" />
         </span>
       )}
       {label}
@@ -75,7 +75,7 @@ export const FlashSaleListTable = () => {
                   <td className="px-6 py-4 text-sm text-gray-600">
                     <div>{new Date(sale.starts_at).toLocaleDateString()} – {new Date(sale.ends_at).toLocaleDateString()}</div>
                     {sale.status === "active" && (
-                      <div className="text-xs text-green-600 font-medium">{getTimeRemaining(sale.ends_at)} left</div>
+                      <div className="text-xs text-ui-tag-green-text font-medium">{getTimeRemaining(sale.ends_at)} left</div>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -83,17 +83,17 @@ export const FlashSaleListTable = () => {
                       <span className="text-xs text-gray-400">None yet</span>
                     ) : (
                       <div className="space-y-0.5">
-                        {myApproved > 0 && <div className="text-xs text-green-600 font-medium">{myApproved} approved</div>}
-                        {myPending > 0 && <div className="text-xs text-orange-500">{myPending} pending review</div>}
+                        {myApproved > 0 && <div className="text-xs text-ui-tag-green-text font-medium">{myApproved} approved</div>}
+                        {myPending > 0 && <div className="text-xs text-ui-tag-orange-text">{myPending} pending review</div>}
                         {myTotal - myApproved - myPending > 0 && (
-                          <div className="text-xs text-red-500">{myTotal - myApproved - myPending} rejected</div>
+                          <div className="text-xs text-ui-tag-red-text">{myTotal - myApproved - myPending} rejected</div>
                         )}
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     <button
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-ui-fg-interactive hover:underline"
                       onClick={(e) => { e.stopPropagation(); navigate(sale.id) }}
                     >
                       {myTotal === 0 ? "Apply →" : "Manage →"}

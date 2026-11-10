@@ -130,7 +130,7 @@ export const OrderActiveEditSection = ({
       <Container className="flex items-center justify-between p-0">
         <div className="flex w-full flex-col divide-y divide-dashed">
           <div className="flex items-center gap-2 px-6 py-4">
-            <ExclamationCircleSolid className="text-blue-500" />
+            <ExclamationCircleSolid className="text-ui-fg-interactive" />
             <Heading level="h2">
               {t(
                 isPending

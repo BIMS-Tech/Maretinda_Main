@@ -7,14 +7,15 @@ import { CompletionBar } from "../completion-bar"
 
 const TaskIcon = ({ task }: { task: SetupTask }) => {
   if (task.awaitingReview) {
-    return <Clock className="text-ui-tag-orange-icon" />
+    return <Clock className="text-ui-tag-purple-icon" />
   }
 
   if (task.complete) {
     return <CheckCircleSolid className="text-ui-tag-green-icon" />
   }
 
-  return <ExclamationCircleSolid className="text-ui-tag-red-icon" />
+  // Still to do: the brand accent, not an error red
+  return <ExclamationCircleSolid className="text-ui-tag-orange-icon" />
 }
 
 /**
@@ -36,7 +37,7 @@ export const SetupChecklist = () => {
           <div>
             <div className="flex items-center gap-3">
               <Heading>Complete your store setup</Heading>
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-[11px] font-medium leading-none text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-yellow px-1.5 text-[11px] font-semibold leading-none">
                 {pendingCount}
               </span>
             </div>

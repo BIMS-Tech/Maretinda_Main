@@ -1,4 +1,5 @@
 import { Container, Heading, Text, Badge } from "@medusajs/ui"
+import { ArchiveBox } from "@medusajs/icons"
 import { Link } from "react-router-dom"
 import { useInventoryItems } from "../../../../hooks/api/inventory"
 import { useOrders } from "../../../../hooks/api"
@@ -113,7 +114,7 @@ const LowStockAlerts = () => {
                     <td className="px-5 py-3">
                       <Link
                         to={`/inventory/${item.id}`}
-                        className="text-xs font-medium text-ui-fg-base hover:text-blue-600 hover:underline"
+                        className="text-xs font-medium text-ui-fg-base hover:text-ui-fg-interactive hover:underline"
                       >
                         {item.title ?? "Unnamed item"}
                       </Link>
@@ -124,7 +125,7 @@ const LowStockAlerts = () => {
                     <td className="px-4 py-3 text-right">
                       <span
                         className={`text-xs font-bold ${
-                          stock === 0 ? "text-red-600" : "text-amber-600"
+                          stock === 0 ? "text-ui-tag-red-text" : "text-ui-tag-orange-text"
                         }`}
                       >
                         {stock}
@@ -134,8 +135,8 @@ const LowStockAlerts = () => {
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                           stock === 0
-                            ? "bg-red-500/10 text-red-600"
-                            : "bg-amber-500/10 text-amber-600"
+                            ? "bg-ui-tag-red-bg text-ui-tag-red-text"
+                            : "bg-ui-tag-orange-bg text-ui-tag-orange-text"
                         }`}
                       >
                         {stock === 0 ? "Out of stock" : "Low stock"}
@@ -210,7 +211,7 @@ const DemandForecast = () => {
         </div>
       ) : forecasted.length === 0 ? (
         <div className="px-6 py-5 flex items-center gap-3">
-          <span className="text-xl">📦</span>
+          <ArchiveBox className="text-ui-fg-interactive" />
           <Text size="small" className="text-ui-fg-subtle">
             No stockouts predicted in the next {FORECAST_DAYS} days.
           </Text>
@@ -240,7 +241,7 @@ const DemandForecast = () => {
                     <td className="px-5 py-3">
                       <Link
                         to={`/inventory/${item.id}`}
-                        className="text-xs font-medium text-ui-fg-base hover:text-blue-600 hover:underline"
+                        className="text-xs font-medium text-ui-fg-base hover:text-ui-fg-interactive hover:underline"
                       >
                         {item.title ?? "Unnamed item"}
                       </Link>
@@ -257,10 +258,10 @@ const DemandForecast = () => {
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
                         daysUntilStockout <= 3
-                          ? "bg-red-500/10 text-red-600"
+                          ? "bg-ui-tag-red-bg text-ui-tag-red-text"
                           : daysUntilStockout <= 7
-                          ? "bg-amber-500/10 text-amber-600"
-                          : "bg-orange-500/10 text-orange-600"
+                          ? "bg-ui-tag-orange-bg text-ui-tag-orange-text"
+                          : "bg-ui-tag-orange-bg text-ui-tag-orange-text"
                       }`}>
                         ~{stockoutDate} ({daysUntilStockout}d)
                       </span>

@@ -78,7 +78,7 @@ export const ProtectedRoute = () => {
       <SidebarProvider>
         <SearchProvider>
           {!hasPlan && !isSubscriptionRoute(location.pathname) && (
-            <div className="w-full bg-amber-500 text-black p-1 text-center text-sm">
+            <div className="w-full bg-brand-yellow text-black p-1 text-center text-sm">
               Your plan has ended, so your shop is closed to new orders. You can still finish the orders you have.{" "}
               <Link to="/subscription" className="font-semibold underline">
                 Renew your plan
@@ -86,7 +86,7 @@ export const ProtectedRoute = () => {
             </div>
           )}
           {isSuspended && (
-            <div className="w-full bg-red-600 text-white p-1 text-center text-sm">
+            <div className="w-full bg-ui-tag-red-icon text-white p-1 text-center text-sm">
               Your store is <b>suspended</b>. Please contact support.
             </div>
           )}

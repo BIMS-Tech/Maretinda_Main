@@ -142,7 +142,7 @@ const ImageOption = ({ url, label, selected, onSelect }: ImageOptionProps) => (
   >
     <img src={url} alt={label} className="h-20 w-20 object-cover" />
     {selected && (
-      <div className="absolute inset-0 flex items-center justify-center bg-ui-fg-interactive/20">
+      <div className="absolute inset-0 flex items-center justify-center bg-ui-bg-highlight">
         <div className="h-5 w-5 rounded-full bg-ui-fg-interactive flex items-center justify-center text-white text-xs">
           ✓
         </div>

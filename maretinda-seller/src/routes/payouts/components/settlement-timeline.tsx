@@ -162,7 +162,7 @@ export const SettlementTimeline = () => {
           <Heading level="h3">Settlement Timeline</Heading>
         </div>
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${settlement_info.is_banking_day ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <div className={`w-3 h-3 rounded-full ${settlement_info.is_banking_day ? 'bg-ui-tag-green-icon' : 'bg-ui-tag-red-icon'}`}></div>
           <Text size="small" className="text-ui-fg-subtle">
             {settlement_info.is_banking_day ? 'Banking Day' : 'Non-Banking Day'}
           </Text>
@@ -175,7 +175,7 @@ export const SettlementTimeline = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="p-4 rounded-lg bg-ui-bg-subtle">
             <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-4 w-4 text-blue-600" />
+              <Clock className="h-4 w-4 text-ui-fg-interactive" />
               <Text className="font-semibold text-sm">T+1 Processing</Text>
             </div>
             <Text className="text-xs text-ui-fg-muted">
@@ -185,7 +185,7 @@ export const SettlementTimeline = () => {
           
           <div className="p-4 rounded-lg bg-ui-bg-subtle">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4 text-ui-tag-green-text" />
               <Text className="font-semibold text-sm">T+2 Crediting</Text>
             </div>
             <Text className="text-xs text-ui-fg-muted">
@@ -194,17 +194,17 @@ export const SettlementTimeline = () => {
           </div>
         </div>
         
-        <div className="mt-4 p-3 rounded border-l-4 border-l-blue-500 bg-blue-50">
-          <Text className="text-sm font-medium text-blue-900 mb-1">Banking Days</Text>
-          <Text className="text-xs text-blue-800">{settlement_info.schedule.banking_days}</Text>
+        <div className="mt-4 p-3 rounded border-l-4 border-l-blue-500 bg-ui-tag-purple-bg">
+          <Text className="text-sm font-medium text-ui-fg-interactive mb-1">Banking Days</Text>
+          <Text className="text-xs text-ui-fg-interactive">{settlement_info.schedule.banking_days}</Text>
         </div>
         
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="p-2 rounded border-l-2 border-l-orange-400 bg-orange-50">
-            <Text className="text-xs text-orange-800">{settlement_info.schedule.weekend_rule}</Text>
+          <div className="p-2 rounded border-l-2 border-l-orange-400 bg-ui-tag-orange-bg">
+            <Text className="text-xs text-ui-tag-orange-text">{settlement_info.schedule.weekend_rule}</Text>
           </div>
-          <div className="p-2 rounded border-l-2 border-l-purple-400 bg-purple-50">
-            <Text className="text-xs text-purple-800">{settlement_info.schedule.holiday_rule}</Text>
+          <div className="p-2 rounded border-l-2 border-l-purple-400 bg-ui-tag-purple-bg">
+            <Text className="text-xs text-ui-fg-interactive">{settlement_info.schedule.holiday_rule}</Text>
           </div>
         </div>
       </div>
@@ -229,24 +229,24 @@ export const SettlementTimeline = () => {
           <Heading level="h4" className="mb-4">Today's Settlement Activity</Heading>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {settlement_info.today_activities.transactions_for_processing > 0 && (
-              <div className="p-4 rounded-lg border bg-blue-50">
-                <Text className="font-semibold text-sm text-blue-900">Processing Today (T+1)</Text>
-                <Text className="text-lg font-bold text-blue-600">
+              <div className="p-4 rounded-lg border bg-ui-tag-purple-bg">
+                <Text className="font-semibold text-sm text-ui-fg-interactive">Processing Today (T+1)</Text>
+                <Text className="text-lg font-bold text-ui-fg-interactive">
                   {formatCurrency(settlement_info.today_activities.processing_amount)}
                 </Text>
-                <Text className="text-xs text-blue-700">
+                <Text className="text-xs text-ui-fg-interactive">
                   {settlement_info.today_activities.transactions_for_processing} transactions
                 </Text>
               </div>
             )}
             
             {settlement_info.today_activities.transactions_for_crediting > 0 && (
-              <div className="p-4 rounded-lg border bg-green-50">
-                <Text className="font-semibold text-sm text-green-900">Crediting Today (T+2)</Text>
-                <Text className="text-lg font-bold text-green-600">
+              <div className="p-4 rounded-lg border bg-ui-tag-green-bg">
+                <Text className="font-semibold text-sm text-ui-tag-green-text">Crediting Today (T+2)</Text>
+                <Text className="text-lg font-bold text-ui-tag-green-text">
                   {formatCurrency(settlement_info.today_activities.crediting_amount)}
                 </Text>
-                <Text className="text-xs text-green-700">
+                <Text className="text-xs text-ui-tag-green-text">
                   {settlement_info.today_activities.transactions_for_crediting} transactions
                 </Text>
               </div>

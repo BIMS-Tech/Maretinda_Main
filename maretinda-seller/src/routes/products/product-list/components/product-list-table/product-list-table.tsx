@@ -97,9 +97,9 @@ export const ProductListTable = () => {
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                 atLimit
-                  ? "bg-red-500/10 text-red-600"
+                  ? "bg-ui-tag-red-bg text-ui-tag-red-text"
                   : nearLimit
-                  ? "bg-amber-500/10 text-amber-600"
+                  ? "bg-ui-tag-orange-bg text-ui-tag-orange-text"
                   : "bg-ui-bg-subtle text-ui-fg-muted"
               }`}
             >

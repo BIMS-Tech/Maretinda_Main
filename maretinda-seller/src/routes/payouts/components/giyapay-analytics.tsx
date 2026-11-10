@@ -216,27 +216,27 @@ export const GiyaPayAnalytics = () => {
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm">Payment Processing ({(analytics.payment_processing_fee_rate * 100).toFixed(1)}%)</Text>
-              <Text className="font-semibold text-red-600">-{formatCurrency(analytics.breakdown.payment_processing_fees)}</Text>
+              <Text className="font-semibold text-ui-tag-red-text">-{formatCurrency(analytics.breakdown.payment_processing_fees)}</Text>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm">Monthly Subscription (Prorated)</Text>
-              <Text className="font-semibold text-red-600">-{formatCurrency(analytics.breakdown.subscription_fee_prorated)}</Text>
+              <Text className="font-semibold text-ui-tag-red-text">-{formatCurrency(analytics.breakdown.subscription_fee_prorated)}</Text>
             </div>
             {analytics.breakdown.transaction_fees > 0 && (
               <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
                 <Text className="text-ui-fg-subtle text-sm">
                   Transaction Fees ({analytics.transaction_count} × {formatCurrency(analytics.subscription_fee_per_transaction || 0)})
                 </Text>
-                <Text className="font-semibold text-red-600">-{formatCurrency(analytics.breakdown.transaction_fees)}</Text>
+                <Text className="font-semibold text-ui-tag-red-text">-{formatCurrency(analytics.breakdown.transaction_fees)}</Text>
               </div>
             )}
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm font-medium">Total Maretinda Fees</Text>
-              <Text className="font-bold text-red-600">-{formatCurrency(analytics.breakdown.total_maretinda_fees)}</Text>
+              <Text className="font-bold text-ui-tag-red-text">-{formatCurrency(analytics.breakdown.total_maretinda_fees)}</Text>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm font-medium">Total All Fees</Text>
-              <Text className="font-bold text-red-600">-{formatCurrency(analytics.breakdown.total_all_fees)}</Text>
+              <Text className="font-bold text-ui-tag-red-text">-{formatCurrency(analytics.breakdown.total_all_fees)}</Text>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm font-medium">Net Revenue</Text>
@@ -244,15 +244,15 @@ export const GiyaPayAnalytics = () => {
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm">Already Paid Out</Text>
-              <Text className="font-semibold text-green-600">{formatCurrency(analytics.breakdown.paid_out)}</Text>
+              <Text className="font-semibold text-ui-tag-green-text">{formatCurrency(analytics.breakdown.paid_out)}</Text>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-ui-border-base">
               <Text className="text-ui-fg-subtle text-sm">Pending Payouts</Text>
-              <Text className="font-semibold text-orange-600">{formatCurrency(analytics.breakdown.pending_payouts)}</Text>
+              <Text className="font-semibold text-ui-tag-orange-text">{formatCurrency(analytics.breakdown.pending_payouts)}</Text>
             </div>
             <div className="flex justify-between items-center py-2 bg-ui-bg-subtle rounded px-3">
               <Text className="text-ui-fg-base text-sm font-bold">Available for Payout</Text>
-              <Text className="font-bold text-lg text-blue-600">{formatCurrency(analytics.breakdown.available_for_payout)}</Text>
+              <Text className="font-bold text-lg text-ui-fg-interactive">{formatCurrency(analytics.breakdown.available_for_payout)}</Text>
             </div>
           </div>
         </div>

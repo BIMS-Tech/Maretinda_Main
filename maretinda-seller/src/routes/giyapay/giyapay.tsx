@@ -120,18 +120,19 @@ export const GiyaPay: React.FC = () => {
             <Text className="font-semibold text-ui-fg-base">{formatAmount(summary.total_amount)}</Text>
             <Text className="text-xs text-ui-fg-muted">{summary.total_count} transactions</Text>
           </div>
-          <div className="rounded-lg border border-ui-tag-green-border bg-ui-tag-green-bg px-4 py-2">
-            <Text className="text-xs text-ui-tag-green-text">Success</Text>
-            <Text className="font-semibold text-ui-fg-base">{summary.success_count}</Text>
-          </div>
-          <div className="rounded-lg border border-ui-tag-orange-border bg-ui-tag-orange-bg px-4 py-2">
-            <Text className="text-xs text-ui-tag-orange-text">Pending</Text>
-            <Text className="font-semibold text-ui-fg-base">{summary.pending_count}</Text>
-          </div>
-          <div className="rounded-lg border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-2">
-            <Text className="text-xs text-ui-tag-red-text">Failed</Text>
-            <Text className="font-semibold text-ui-fg-base">{summary.failed_count}</Text>
-          </div>
+          {[
+            { label: "Success", count: summary.success_count, dot: "bg-ui-tag-green-icon" },
+            { label: "Pending", count: summary.pending_count, dot: "bg-ui-tag-orange-icon" },
+            { label: "Failed", count: summary.failed_count, dot: "bg-ui-tag-red-icon" },
+          ].map(({ label, count, dot }) => (
+            <div key={label} className="rounded-lg border border-ui-border-base bg-ui-bg-subtle px-4 py-2">
+              <Text className="flex items-center gap-1.5 text-xs text-ui-fg-muted">
+                <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+                {label}
+              </Text>
+              <Text className="font-semibold text-ui-fg-base">{count}</Text>
+            </div>
+          ))}
         </div>
       )}
 

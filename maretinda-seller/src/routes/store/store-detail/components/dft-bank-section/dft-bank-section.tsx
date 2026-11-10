@@ -96,7 +96,7 @@ export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
       {/* Conditional Details for Non-Metrobank */}
       {!isMetrobank && bankName && (
         <>
-          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-orange-50">
+          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-ui-tag-orange-bg">
         <Text size="small" leading="compact" weight="plus">
               SWIFT Code
         </Text>
@@ -105,7 +105,7 @@ export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
         </Text>
       </div>
       
-          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-orange-50">
+          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-ui-tag-orange-bg">
         <Text size="small" leading="compact" weight="plus">
               Beneficiary Address
         </Text>
@@ -114,7 +114,7 @@ export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
         </Text>
       </div>
       
-          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-orange-50">
+          <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4 bg-ui-tag-orange-bg">
         <Text size="small" leading="compact" weight="plus">
               Bank Address
         </Text>
@@ -126,8 +126,8 @@ export const DftBankSection = ({ seller }: { seller: Storeseller }) => {
       )}
       
       {isMetrobank && (
-        <div className="px-6 py-4 bg-green-50">
-          <Text size="small" className="text-green-800">
+        <div className="px-6 py-4 bg-ui-tag-green-bg">
+          <Text size="small" className="text-ui-tag-green-text">
             ✓ Metrobank detected: Transactions will be processed via TAMA format
         </Text>
       </div>

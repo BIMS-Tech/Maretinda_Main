@@ -392,14 +392,14 @@ function FileUpload({ docKey, label, value, onChange }: {
       <p className="text-xs font-medium text-ui-fg-base mb-2">{label}</p>
       {value ? (
         <div className="flex items-center gap-2">
-          <span className="text-green-500 text-xs font-medium inline-flex items-center gap-1">
+          <span className="text-ui-tag-green-text text-xs font-medium inline-flex items-center gap-1">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             Uploaded
           </span>
           <button
             type="button"
             onClick={() => { onChange(docKey, ""); if (inputRef.current) inputRef.current.value = "" }}
-            className="text-red-500 text-xs underline"
+            className="text-ui-tag-red-text text-xs underline"
           >
             Remove
           </button>
@@ -410,7 +410,7 @@ function FileUpload({ docKey, label, value, onChange }: {
           {uploading ? "Uploading…" : "+ Choose file"}
         </label>
       )}
-      {err && <p className="text-red-500 text-xs mt-1">{err}</p>}
+      {err && <p className="text-ui-tag-red-text text-xs mt-1">{err}</p>}
     </div>
   )
 }
@@ -665,10 +665,10 @@ function Composer({ q, data, set, setDoc, onSend, disabled }: {
           </div>
           {send}
         </div>
-        {tooShort && <p className="text-red-500 text-xs">Password must be at least 8 characters.</p>}
-        {mismatch && <p className="text-red-500 text-xs">Passwords do not match.</p>}
+        {tooShort && <p className="text-ui-tag-red-text text-xs">Password must be at least 8 characters.</p>}
+        {mismatch && <p className="text-ui-tag-red-text text-xs">Passwords do not match.</p>}
         {match && (
-          <p className="text-green-500 text-xs inline-flex items-center gap-1">
+          <p className="text-ui-tag-green-text text-xs inline-flex items-center gap-1">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             Passwords match
           </p>
@@ -1009,8 +1009,8 @@ export const RegisterChat = () => {
               <p className="text-sm font-semibold text-ui-fg-base leading-tight">{BOT_NAME}</p>
               <p className="text-xs text-ui-fg-subtle inline-flex items-center gap-1.5">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ui-tag-green-icon opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-ui-tag-green-icon" />
                 </span>
                 {botTyping ? "typing…" : "Onboarding assistant · online"}
               </p>
@@ -1077,7 +1077,7 @@ export const RegisterChat = () => {
           {/* Composer / action bar */}
           <div className="border-t border-ui-border-base bg-ui-bg-subtle/60 backdrop-blur px-3 sm:px-6 py-4">
             {error && (
-              <div className="mb-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-500">{error}</div>
+              <div className="mb-3 rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-2.5 text-sm text-ui-tag-red-text">{error}</div>
             )}
 
             {phase === "review" ? (
