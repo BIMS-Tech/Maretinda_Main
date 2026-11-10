@@ -43,11 +43,17 @@ function ReelCard({ reel }: { reel: Reel }) {
           />
         )}
 
-        <span
-          className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-medium ${STATUS_STYLE[reel.status]}`}
-        >
-          {reel.status}
-        </span>
+        {reel.moderation_status === "hidden" ? (
+          <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-medium bg-red-100 text-red-700">
+            hidden by Maretinda
+          </span>
+        ) : (
+          <span
+            className={`absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-medium ${STATUS_STYLE[reel.status]}`}
+          >
+            {reel.status}
+          </span>
+        )}
 
         {duration && (
           <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[11px]">

@@ -100,6 +100,19 @@ export const ReelDetail = () => {
 
   return (
     <div className="flex flex-col gap-y-3">
+      {reel.moderation_status === "hidden" && (
+        <Container className="border-ui-tag-red-border bg-ui-tag-red-bg px-6 py-4">
+          <p className="text-sm font-medium text-ui-tag-red-text">
+            Maretinda has hidden this reel from the storefront
+          </p>
+          {reel.moderation_reason && (
+            <p className="text-sm text-ui-fg-subtle mt-1">Reason: {reel.moderation_reason}</p>
+          )}
+          <p className="text-sm text-ui-fg-subtle mt-1">
+            Publishing it again won't bring it back. If you think this is a mistake, contact support.
+          </p>
+        </Container>
+      )}
       <Container className="p-0 divide-y">
         <div className="flex items-center justify-between px-6 py-4">
           <div>

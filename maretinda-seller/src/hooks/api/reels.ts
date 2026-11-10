@@ -22,6 +22,9 @@ export type Reel = {
   duration: number | null
   product_ids: string[]
   status: ReelStatus
+  /** Set by Maretinda. A hidden reel is off the storefront whatever its status. */
+  moderation_status?: "visible" | "hidden"
+  moderation_reason?: string | null
   view_count: number
   like_count: number
   published_at: string | null
