@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-
 import { Button } from '@/components/atoms';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 
 export const OrderReturn = ({ order }: { order: any }) => {
 	return (
@@ -12,15 +11,15 @@ export const OrderReturn = ({ order }: { order: any }) => {
 					Return Order
 				</h2>
 				<p className="text-secondary label-md max-w-sm">
-					Once you receive your order, you will have [14] days to
+					Once you receive your order, you will have 7 days to
 					return items. Find out more about{' '}
-					<Link className="underline" href="/returns">
+					<LocalizedClientLink className="underline" href="/help-center#returns">
 						returns and refunds
-					</Link>
+					</LocalizedClientLink>
 					.
 				</p>
 			</div>
-			<Link href={`/user/orders/${order.id}/return`}>
+			<LocalizedClientLink href={`/user/orders/${order.id}/return`}>
 				<Button
 					className="uppercase"
 					onClick={() => null}
@@ -28,7 +27,7 @@ export const OrderReturn = ({ order }: { order: any }) => {
 				>
 					Return
 				</Button>
-			</Link>
+			</LocalizedClientLink>
 		</div>
 	);
 };
