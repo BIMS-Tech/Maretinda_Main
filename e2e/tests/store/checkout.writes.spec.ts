@@ -7,6 +7,7 @@ import {
   fillCheckoutAddress,
   peso,
   placeCodOrder,
+  PUBLISHABLE_KEY,
   registerBuyer,
   sellerProducts,
   standardShipping,
@@ -45,11 +46,17 @@ test.describe('cart and checkout (writes)', () => {
     await expect(main.getByRole('heading', { name: /QA Linen Shirt/ })).toHaveCount(0)
   })
 
-  test('CHK-02 signed-out cart asks to log in', async ({ page }) => {
+  test('CHK-02 a signed-out shopper is asked to log in to add to cart', async ({ page }) => {
     const [shirt] = sellerProducts('A')
-    await addToCart(page, shirt.productId)
-    await page.goto('/ph/cart')
-    await expect(page.getByRole('button', { name: 'Login to checkout' })).toBeVisible()
+    const res = await page.request.get(`${API_URL}/store/products/${shirt.productId}?fields=handle`, {
+      headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+    })
+    const { product } = await res.json()
+    await page.goto(`/ph/products/${product.handle}`)
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Add to Cart' }).click()
+      await expect(page).toHaveURL(/\/login\?returnTo=%2Fph%2Fproducts/, { timeout: 5_000 })
+    }).toPass({ timeout: 30_000 })
   })
 
   test('CHK-15 an empty cart shows ₱0.00 and nothing to check out', async ({ page }) => {
