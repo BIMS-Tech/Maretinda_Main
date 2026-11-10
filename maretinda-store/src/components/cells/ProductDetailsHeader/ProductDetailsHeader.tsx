@@ -2,7 +2,7 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button, StarRating, Tag } from '@/components/atoms';
 import { FlashSaleCountdown } from '@/components/sections/FlashSaleSection/FlashSaleCountdown';
@@ -16,6 +16,7 @@ import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import useGetAllSearchParams from '@/hooks/useGetAllSearchParams';
 import { addToCart, addFlashSaleItemToCart } from '@/lib/data/cart';
 import type { ActiveFlashSaleItem } from '@/lib/data/flash-sales';
+import { isSaleLive, msUntilSaleEnds } from '@/lib/helpers/flash-sale-window';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
 import type { SellerProps } from '@/types/seller';
@@ -43,7 +44,7 @@ export const ProductDetailsHeader = ({
 	locale,
 	user,
 	wishlist,
-	flashSaleItem,
+	flashSaleItem: cachedFlashSaleItem,
 	shopClosed = false,
 }: {
 	product: HttpTypes.StoreProduct & { seller?: SellerProps; reviews?: any[] };
@@ -54,6 +55,19 @@ export const ProductDetailsHeader = ({
 	/** The seller's plan has ended, so the shop can't take orders. */
 	shopClosed?: boolean;
 }) => {
+	// The page can outlive the sale; switch back to the regular price when it ends
+	const [saleEnded, setSaleEnded] = useState(
+		() => !!cachedFlashSaleItem && !isSaleLive(cachedFlashSaleItem),
+	);
+	useEffect(() => {
+		if (!cachedFlashSaleItem || saleEnded) return;
+		const ms = msUntilSaleEnds(cachedFlashSaleItem.ends_at);
+		if (ms > 2_147_483_647) return; // beyond setTimeout's range; the page reloads first
+		const timer = setTimeout(() => setSaleEnded(true), ms);
+		return () => clearTimeout(timer);
+	}, [cachedFlashSaleItem, saleEnded]);
+	const flashSaleItem = saleEnded ? null : cachedFlashSaleItem;
+
 	const [isAdding, setIsAdding] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [quantity, setQuantity] = useState(1);

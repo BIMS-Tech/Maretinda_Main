@@ -1,5 +1,7 @@
 'use server'
 
+import { isSaleLive } from '@/lib/helpers/flash-sale-window'
+
 const BACKEND_URL =
   process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000'
 
@@ -37,7 +39,8 @@ export async function getActiveFlashSale(): Promise<FlashSale | null> {
     })
     if (!res.ok) return null
     const data = await res.json()
-    return data.flash_sale || null
+    // The response above is cached, so check the sale hasn't ended since
+    return isSaleLive(data.flash_sale) ? data.flash_sale : null
   } catch {
     return null
   }
