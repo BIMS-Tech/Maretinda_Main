@@ -34,14 +34,17 @@ export const Cart = async () => {
 				<div className="lg:col-span-4">
 					<div className="bg-white rounded-lg p-6 h-fit sticky top-4" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
 						<h2 className="text-xl mb-4" style={{ color: '#111827', fontWeight: 900 }}>Order Summary</h2>
-						{/* Coupon Code Section */}
-						<div className="mb-8">
-							<CartPromotionCode cart={cart} />
-						</div>
+						{/* Coupon Code Section: nothing to discount in an empty cart */}
+						{totalItems > 0 && (
+							<div className="mb-8">
+								<CartPromotionCode cart={cart} />
+							</div>
+						)}
 
 						{/* Cost Breakdown */}
 						<CartSummary
-							currency_code={cart?.currency_code || ''}
+							// The store sells in pesos; an empty cart has no currency yet
+							currency_code={cart?.currency_code || 'php'}
 							discount={cart?.discount_total || 0}
 							item_subtotal={cart?.item_subtotal || 0}
 							shipping_total={cart?.shipping_total || 0}
@@ -52,6 +55,7 @@ export const Cart = async () => {
 						/>
 
 						{/* Checkout Button */}
+						{totalItems > 0 && (
 						<div className="mt-6">
 							{customer ? (
 								<LocalizedClientLink href="/checkout?step=address">
@@ -75,6 +79,7 @@ export const Cart = async () => {
 								</LocalizedClientLink>
 							)}
 						</div>
+						)}
 					</div>
 				</div>
 			</div>

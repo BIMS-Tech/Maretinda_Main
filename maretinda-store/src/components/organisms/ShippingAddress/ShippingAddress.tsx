@@ -30,16 +30,21 @@ const ShippingAddress = ({
 
 	const locale = pathname.split('/')[1];
 	const [formData, setFormData] = useState<Record<string, any>>({
-		email: cart?.email || '',
+		email: cart?.email || customer?.email || '',
 		'shipping_address.address_1': cart?.shipping_address?.address_1 || '',
 		'shipping_address.address_2': cart?.shipping_address?.address_2 || '',
 		'shipping_address.city': cart?.shipping_address?.city || '',
 		'shipping_address.company': cart?.shipping_address?.company || '',
 		'shipping_address.country_code':
 			cart?.shipping_address?.country_code || locale,
-		'shipping_address.first_name': cart?.shipping_address?.first_name || '',
-		'shipping_address.last_name': cart?.shipping_address?.last_name || '',
-		'shipping_address.phone': phMobileLocalPart(cart?.shipping_address?.phone),
+		// A signed-in buyer's own name and phone, until an address is chosen
+		'shipping_address.first_name':
+			cart?.shipping_address?.first_name || customer?.first_name || '',
+		'shipping_address.last_name':
+			cart?.shipping_address?.last_name || customer?.last_name || '',
+		'shipping_address.phone': phMobileLocalPart(
+			cart?.shipping_address?.phone || customer?.phone,
+		),
 		'shipping_address.postal_code':
 			cart?.shipping_address?.postal_code || '',
 		'shipping_address.province': cart?.shipping_address?.province || '',
