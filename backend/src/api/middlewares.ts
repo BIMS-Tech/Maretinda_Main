@@ -337,6 +337,7 @@ export default defineMiddlewares({
     { matcher: '/vendor/stock-locations/:id/fulfillment-sets', method: ['POST'], middlewares: [uniqueZoneNameFor('fulfillment_set')] },
     { matcher: '/vendor/fulfillment-sets/:id/service-zones', method: ['POST'], middlewares: [uniqueZoneNameFor('service_zone')] },
     { matcher: '/store/account', middlewares: [authenticate('customer', ['bearer', 'session'])] },
+    { matcher: '/store/account/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },
     { matcher: '/store/seller', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/seller/*', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/products', method: ['GET'], middlewares: [enrichSellerVerification] },

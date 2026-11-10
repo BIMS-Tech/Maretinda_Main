@@ -16,6 +16,7 @@ import {
 	removeAuthToken,
 	removeCartId,
 	setAuthToken,
+	setCartId,
 } from './cookies';
 
 export const retrieveCustomer =
@@ -201,16 +202,32 @@ export async function deleteAccount(): Promise<{
 	return { success: true };
 }
 
+/**
+ * On sign-in: a cart filled on this device becomes the buyer's. If this
+ * device's cart is empty, the cart they left on another device comes back.
+ */
 export async function transferCart() {
 	const cartId = await getCartId();
-
-	if (!cartId) {
-		return;
-	}
-
 	const headers = await getAuthHeaders();
 
-	await sdk.store.cart.transferCart(cartId, {}, headers);
+	const itemsHere = cartId
+		? await sdk.client
+				.fetch<{ cart: HttpTypes.StoreCart }>(`/store/carts/${cartId}`, {
+					headers,
+					query: { fields: 'id,items.id' },
+				})
+				.then(({ cart }) => cart?.items?.length ?? 0)
+				.catch(() => 0)
+		: 0;
+
+	if (cartId && itemsHere > 0) {
+		await sdk.store.cart.transferCart(cartId, {}, headers);
+	} else {
+		const { cart_id } = await sdk.client
+			.fetch<{ cart_id: string | null }>('/store/account/cart', { headers })
+			.catch(() => ({ cart_id: null }));
+		if (cart_id) await setCartId(cart_id);
+	}
 
 	const cartCacheTag = await getCacheTag('carts');
 	revalidateTag(cartCacheTag);
