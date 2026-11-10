@@ -174,6 +174,16 @@ test.describe('subscription payment (GiyaPay sandbox)', () => {
     await page.reload()
     await page.waitForTimeout(5_000)
     expect(await count()).toBe(1)
-    expect((await request.get(`${API_URL}/vendor/subscription/status`, { headers: { authorization: `Bearer ${token}` } })).status()).toBe(200)
+    const status = await request.get(`${API_URL}/vendor/subscription/status`, { headers: { authorization: `Bearer ${token}` } })
+    expect(status.status()).toBe(200)
+    // What GiyaPay paid for is what got activated: Starter, monthly, about a
+    // month from today, with GiyaPay's reference on record
+    const { has_subscription, subscription } = await status.json()
+    expect(has_subscription).toBe(true)
+    expect(subscription).toMatchObject({ plan_name: 'Starter', status: 'active', billing_period: 'monthly' })
+    expect(subscription.payment_reference).toBeTruthy()
+    const days = (new Date(subscription.end_date).getTime() - Date.now()) / 86_400_000
+    expect(days).toBeGreaterThan(27)
+    expect(days).toBeLessThan(32)
   })
 })
