@@ -2,6 +2,8 @@ import 'server-only';
 
 import { cookies as nextCookies } from 'next/headers';
 
+import { sessionCookieOptions } from '@/lib/helpers/session-cookie';
+
 export const getAuthHeaders = async (): Promise<
 	{ authorization: string } | {}
 > => {
@@ -48,12 +50,7 @@ export const getCacheOptions = async (
 
 export const setAuthToken = async (token: string) => {
 	const cookies = await nextCookies();
-	cookies.set('_medusa_jwt', token, {
-		httpOnly: true,
-		maxAge: 60 * 60 * 24 * 7,
-		sameSite: 'strict',
-		secure: process.env.NODE_ENV === 'production',
-	});
+	cookies.set('_medusa_jwt', token, sessionCookieOptions(7));
 };
 
 export const removeAuthToken = async () => {
@@ -70,12 +67,7 @@ export const getCartId = async () => {
 
 export const setCartId = async (cartId: string) => {
 	const cookies = await nextCookies();
-	cookies.set('_medusa_cart_id', cartId, {
-		httpOnly: true,
-		maxAge: 60 * 60 * 24 * 7,
-		sameSite: 'strict',
-		secure: process.env.NODE_ENV === 'production',
-	});
+	cookies.set('_medusa_cart_id', cartId, sessionCookieOptions(7));
 };
 
 export const removeCartId = async () => {

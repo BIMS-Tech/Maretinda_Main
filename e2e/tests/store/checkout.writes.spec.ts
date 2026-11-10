@@ -194,6 +194,9 @@ test.describe('cart and checkout (writes)', () => {
       await payWithGcash(page, 'Success')
       await expect(page).toHaveURL(/\/order\/[^/]+\/confirmed/, { timeout: 120_000 })
       await expect(page.locator('main').getByText('GCash').first()).toBeVisible()
+      // Coming back from GiyaPay's site must not look signed out (the session
+      // cookie was SameSite=Strict, so the header linked Account to login)
+      await expect(page.locator('header a', { hasText: 'Account' }).first()).toHaveAttribute('href', /\/user$/)
       await expect(page.locator('main').getByText(peso(shirt.price + standardShipping(shirt.price))).first()).toBeVisible()
 
       const token = await adminToken(request)
