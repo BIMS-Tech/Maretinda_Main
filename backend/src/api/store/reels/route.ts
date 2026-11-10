@@ -15,6 +15,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const { reels: rows, count } = await reels.listReels({
       seller_id: query.seller_id || undefined,
       status: "published",
+      visible_only: true,
       limit: clampInt(query.limit, { fallback: 20, min: 1, max: 50 }),
       offset: clampInt(query.offset, { fallback: 0, max: 100000 }),
       viewer_id: getOptionalCustomerId(req) || undefined,

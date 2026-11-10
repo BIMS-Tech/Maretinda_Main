@@ -15,9 +15,14 @@ export interface SellerReel {
   view_count: number
   like_count: number
   published_at: string | null
+  moderation_status: ModerationStatus
+  moderation_reason: string | null
   created_at: string
   updated_at: string
 }
+
+/** Set by admins. A hidden reel is off the storefront whatever its status. */
+export type ModerationStatus = "visible" | "hidden"
 
 export type ReelStatus = "draft" | "published" | "archived"
 
@@ -95,6 +100,8 @@ export class ReelsService {
     offset?: number
     /** When set, each reel gets a `liked` flag for this customer. */
     viewer_id?: string
+    /** Leave out reels an admin has hidden (the storefront). */
+    visible_only?: boolean
   }): Promise<{ reels: any[]; count: number }> {
     const { limit = 20, offset = 0 } = filters
 
@@ -104,6 +111,7 @@ export class ReelsService {
       const statuses = Array.isArray(filters.status) ? filters.status : [filters.status]
       base = base.whereIn("seller_reel.status", statuses)
     }
+    if (filters.visible_only) base = base.where("seller_reel.moderation_status", "visible")
 
     const countRow = await base.clone().count("seller_reel.id as total").first()
     const count = parseInt(countRow?.total || "0", 10)
@@ -114,6 +122,7 @@ export class ReelsService {
       const statuses = Array.isArray(filters.status) ? filters.status : [filters.status]
       query = query.whereIn("seller_reel.status", statuses)
     }
+    if (filters.visible_only) query = query.where("seller_reel.moderation_status", "visible")
 
     const rows = await query
       .orderByRaw(`COALESCE("seller_reel"."published_at", "seller_reel"."created_at") DESC`)
@@ -222,6 +231,60 @@ export class ReelsService {
 
     const [row] = await this.knex("seller_reel").where({ id }).update(patch).returning("*")
     return this.normalize(row)
+  }
+
+  // ─── Moderation (admin) ───────────────────────────────────────────────
+
+  /** Every live reel, newest first, for the admin moderation page. */
+  async listForModeration(filters: {
+    moderation_status?: ModerationStatus
+    q?: string
+    limit?: number
+    offset?: number
+  }): Promise<{ reels: any[]; count: number }> {
+    const { limit = 20, offset = 0 } = filters
+    const narrow = (query: any) => {
+      if (filters.moderation_status) query = query.where("seller_reel.moderation_status", filters.moderation_status)
+      if (filters.q) {
+        const like = `%${filters.q.replace(/[%_\\]/g, "\\$&")}%`
+        query = query.where((w: any) => w.whereILike("seller_reel.title", like).orWhereILike("s.name", like))
+      }
+      return query
+    }
+    const countRow = await narrow(
+      this.knex("seller_reel").whereNull("seller_reel.deleted_at").leftJoin("seller as s", "s.id", "seller_reel.seller_id")
+    )
+      .count("seller_reel.id as total")
+      .first()
+    const rows = await narrow(this.reelSelect()).orderBy("seller_reel.created_at", "desc").limit(limit).offset(offset)
+    return { reels: rows.map((r: any) => this.normalize(r)), count: parseInt(countRow?.total || "0", 10) }
+  }
+
+  async moderateReel(
+    id: string,
+    input: { moderation_status: ModerationStatus; reason: string | null; by: string }
+  ): Promise<any | null> {
+    const [row] = await this.knex("seller_reel")
+      .where({ id })
+      .whereNull("deleted_at")
+      .update({
+        moderation_status: input.moderation_status,
+        moderation_reason: input.reason,
+        moderated_at: this.knex.fn.now(),
+        moderated_by: input.by,
+        updated_at: this.knex.fn.now(),
+      })
+      .returning("*")
+    return row ? this.normalize(row) : null
+  }
+
+  /** Admin removal, whoever the seller is. */
+  async removeReel(id: string): Promise<boolean> {
+    const affected = await this.knex("seller_reel")
+      .where({ id })
+      .whereNull("deleted_at")
+      .update({ deleted_at: this.knex.fn.now(), updated_at: this.knex.fn.now() })
+    return affected > 0
   }
 
   async deleteReel(id: string, sellerId: string): Promise<boolean> {

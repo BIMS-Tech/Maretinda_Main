@@ -11,7 +11,7 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     if (!customerId) return res.status(401).json({ message: "Unauthorized" })
 
     const reel = await reels.getReel(req.params.id)
-    if (!reel || reel.status !== "published") {
+    if (!reel || reel.status !== "published" || reel.moderation_status === "hidden") {
       return res.status(404).json({ message: "Reel not found" })
     }
 

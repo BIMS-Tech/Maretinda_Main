@@ -2,13 +2,13 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { getReelsService } from "../../../../services/reels"
 import { getOptionalCustomerId } from "../../../../utils/optional-customer"
 
-// GET /store/reels/:id — public, published reels only.
+// GET /store/reels/:id — public, published reels an admin hasn't hidden.
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
     const reels = getReelsService(req.scope as any)
     const reel = await reels.getReel(req.params.id, getOptionalCustomerId(req) || undefined)
 
-    if (!reel || reel.status !== "published") {
+    if (!reel || reel.status !== "published" || reel.moderation_status === "hidden") {
       return res.status(404).json({ message: "Reel not found" })
     }
 
