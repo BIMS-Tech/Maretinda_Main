@@ -178,7 +178,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'How do I delete my account?',
-			a: 'Account deletion requests can be submitted via My Account → Settings → Delete Account. Deletion is permanent and takes 30 days to complete. Outstanding orders must be resolved first.',
+			a: 'Email maretinda@gmail.com from the address on your account and ask for your account to be deleted. Deletion is permanent, and any outstanding orders must be resolved first.',
 		},
 		{
 			q: 'Is my personal data secure?',

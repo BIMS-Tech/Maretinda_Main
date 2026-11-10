@@ -19,9 +19,9 @@ sent to the new number.
 
 ## Deleting an account
 
-Submit the request at My Account → Settings → Delete Account. Deletion is
-permanent and completes after 30 days. Any outstanding orders must be resolved
-first — open orders block the request.
+There's no delete button in the account yet. Email maretinda@gmail.com from
+the address on your account and ask for your account to be deleted. Deletion is
+permanent, and any outstanding orders must be resolved first.
 
 ## Data security
 
