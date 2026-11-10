@@ -102,11 +102,11 @@ const Header = () => {
 
   return (
     <div className="flex flex-col gap-y-3 p-3">
-      <div className="flex items-center gap-x-2 px-1">
-        <img src="/logo-m.png" alt="" className="h-5 w-auto" />
-        <span className="text-ui-fg-interactive text-[13px] font-semibold tracking-tight">
-          Maretinda <span className="text-ui-fg-muted font-normal">Seller</span>
-        </span>
+      {/* The Maretinda wordmark: brand colours in light mode, white in dark */}
+      <div className="flex items-end gap-x-2 px-1">
+        <img src="/Logo-maretinda.svg" alt="Maretinda" className="h-6 w-auto dark:hidden" />
+        <img src="/Logo-maretinda-white.svg" alt="Maretinda" className="hidden h-6 w-auto dark:block" />
+        <span className="text-ui-fg-muted pb-0.5 text-[11px] font-medium uppercase tracking-wider">Seller</span>
       </div>
     <div className="bg-ui-bg-base shadow-elevation-card-rest grid w-full grid-cols-[28px_1fr] items-center gap-x-3 rounded-xl p-2">
       {fallback ? (
