@@ -124,7 +124,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'Is free shipping available?',
-			a: 'Many sellers offer free shipping on orders above a minimum spend — look for the "Free Shipping" badge on product pages. Platform-wide free-shipping promos are announced in our Flash Sale section.',
+			a: 'Yes. Orders of ₱499 or more (items, before shipping) ship free on standard delivery. Below that, the delivery fee is shown at checkout before you pay. Courier-quoted express options are charged at their quoted rate.',
 		},
 		{
 			q: 'Can I change my delivery address after ordering?',

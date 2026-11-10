@@ -24,10 +24,10 @@ session arrive as two separate parcels with separate tracking numbers.
 
 ## Shipping fees and free shipping
 
-Shipping is charged per seller and calculated at checkout from the delivery
-address. Many sellers offer free shipping above a minimum spend — product pages
-carry a "Free Shipping" badge when that applies. Platform-wide free-shipping
-promotions are announced in the Flash Sale section.
+Orders of ₱499 or more (the items, before shipping) ship free on standard
+delivery. Below that, shipping is charged per seller and shown at checkout from
+the delivery address before you pay. Courier-quoted express options are charged
+at their quoted rate.
 
 The delivery rate shown at checkout is the rate that gets charged; it does not
 change after the order is placed.

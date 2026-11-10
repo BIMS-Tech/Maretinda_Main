@@ -35,7 +35,7 @@ const RESPONSES: Record<string, BotResponse> = {
 		],
 	},
 	shipping: {
-		text: 'Delivery times: Metro Manila 1–3 days · Luzon 3–5 days · Visayas & Mindanao 5–7 days. Couriers used include LBC, J&T, Ninja Van, and Lalamove. Free shipping promos are shown in the Flash Sale section.',
+		text: 'Delivery times: Metro Manila 1–3 days · Luzon 3–5 days · Visayas & Mindanao 5–7 days. Couriers used include LBC, J&T, Ninja Van, and Lalamove. Orders of ₱499 or more ship free on standard delivery.',
 		links: [{ label: 'Shop now', href: '/categories' }],
 	},
 	payments: {
