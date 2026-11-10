@@ -56,23 +56,32 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
     await expect(page.getByText(/Shipment booked/i)).toBeVisible({ timeout: 60_000 })
 
     // The booking carries Flying Tigers' tracking number
-    const tracking = section.locator('span.font-mono').first()
-    await expect(tracking).toHaveText(/\S{6,}/, { timeout: 30_000 })
-    const trackingNo = (await tracking.textContent())!.trim()
-    const after = await (await request.get(`${API_URL}/vendor/shipping-orders?medusa_order_id=${order.id}`, { headers })).json()
-    const shipment = (after.orders ?? []).find((s: any) => s.tracking_number === trackingNo)
+    const active = async () => {
+      const res = await (await request.get(`${API_URL}/vendor/shipping-orders?medusa_order_id=${order.id}`, { headers })).json()
+      return (res.orders ?? []).find((s: any) => s.status !== 'cancelled')
+    }
+    await expect.poll(async () => (await active())?.tracking_number, { timeout: 30_000 }).toBeTruthy()
+    const shipment = await active()
+    const trackingNo: string = shipment.tracking_number
     expect(shipment).toMatchObject({ provider: 'flyingtigers', medusa_order_id: order.id })
+    // An order can list earlier, cancelled bookings too; work in this one's row
+    const row = page
+      .locator('div')
+      .filter({ hasText: trackingNo })
+      .filter({ has: page.getByRole('button', { name: 'Waybill' }) })
+      .last()
+    await expect(row).toBeVisible({ timeout: 30_000 })
 
     // The waybill downloads as a PDF
     const download = page.waitForEvent('download', { timeout: 60_000 })
-    await section.getByRole('button', { name: 'Waybill' }).click()
+    await row.getByRole('button', { name: 'Waybill' }).click()
     const pdf = await (await download).path()
     const { readFileSync } = await import('fs')
     expect(readFileSync(pdf!).subarray(0, 4).toString()).toBe('%PDF')
 
     // Cancelling frees the order for another booking
     page.once('dialog', (d) => d.accept())
-    await section.getByTitle('Cancel shipment').click()
+    await row.getByTitle('Cancel shipment').click()
     await expect(page.getByText(/cancel/i).filter({ hasText: /shipment|cancelled/i }).first()).toBeVisible({ timeout: 60_000 })
     await expect
       .poll(async () => {

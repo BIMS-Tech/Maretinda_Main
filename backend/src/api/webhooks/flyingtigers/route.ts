@@ -19,7 +19,7 @@
 import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { FT_STATUS_MAP } from '../../../services/flyingtigers'
+import { parseFlyingTigersEvent } from '../../../services/flyingtigers'
 
 /**
  * Verify the HMAC-SHA256 signature on a Flying Tigers webhook delivery.
@@ -82,40 +82,15 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       return res.status(401).json({ message: 'Invalid signature' })
     }
 
-    const payload = req.body as {
-      tracking_no?: string
-      tracking_number?: string
-      trackingNumber?: string
-      waybill_no?: string
-      shipment_id?: string
-      id?: string
-      order_id?: string
-      event?: string
-      event_type?: string
-      type?: string
-      status?: string
-      timestamp?: string
-      remarks?: string
-    }
+    const { trackingNo, event, status: internalStatus, timestamp } = parseFlyingTigersEvent(req.body)
 
-    // Accept the various field spellings the API may use for the tracking number.
-    const trackingNo =
-      payload.tracking_no ??
-      payload.tracking_number ??
-      payload.trackingNumber ??
-      payload.waybill_no
-    const event = payload.event ?? payload.event_type ?? payload.type ?? payload.status ?? ''
-    const timestamp = payload.timestamp ?? new Date().toISOString()
-
-    if (!trackingNo || typeof trackingNo !== 'string') {
+    if (!trackingNo) {
       // Could be a transaction/wallet event or a test ping — acknowledge.
-      console.log('[FlyingTigers Webhook] Event without tracking number:', event || payload)
+      console.log('[FlyingTigers Webhook] Event without a shipment:', event || '(no event type)')
       return res.json({ received: true })
     }
 
-    console.log(`[FlyingTigers Webhook] ${event} for ${trackingNo}`)
-
-    const internalStatus = FT_STATUS_MAP[event] ?? 'unknown'
+    console.log(`[FlyingTigers Webhook] ${event} for ${trackingNo}: ${internalStatus ?? 'unknown status'}`)
 
     // Tracking numbers are matched case-insensitively per FT docs.
     const shippingOrder = await pg('seller_shipping_order')
@@ -130,11 +105,11 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     const existingEvents: any[] = shippingOrder.webhook_events ?? []
-    existingEvents.push({ event, status: internalStatus, timestamp, raw: payload })
+    existingEvents.push({ event, status: internalStatus ?? 'unknown', timestamp, raw: req.body })
 
     // Only move the status forward to a known mapping; keep the existing
     // status if the event isn't one we recognize.
-    const nextStatus = internalStatus === 'unknown' ? shippingOrder.status : internalStatus
+    const nextStatus = internalStatus ?? shippingOrder.status
 
     await pg('seller_shipping_order')
       .where({ id: shippingOrder.id })

@@ -475,14 +475,19 @@ export async function trackFlyingTigersOrder(
 }
 
 /**
- * Map a Flying Tigers status (webhook event name OR tracking status) to a
- * Maretinda internal status. Tracking events sometimes already use the
- * lowercase internal value (e.g. "cancelled"), so accept those directly too.
+ * Map a Flying Tigers status (a deliveryStatus such as "Package picked up", an
+ * overall status such as "cancelled", or our own internal value) to a
+ * Maretinda internal status. Null when it isn't one we know.
  */
 export function mapFlyingTigersStatus(raw?: string): string | null {
   if (!raw) return null
   if (FT_STATUS_MAP[raw]) return FT_STATUS_MAP[raw]
-  const normalized = raw.toLowerCase().replace(/\s+/g, '_')
+  const lower = raw.trim().toLowerCase()
+  const exact = Object.entries(FT_STATUS_MAP).find(([k]) => k.toLowerCase() === lower)
+  if (exact) return exact[1]
+  // Flying Tigers has many failure reasons; they all need the seller's attention
+  if (/^(pick ?up|delivery) failed/.test(lower) || lower.startsWith('on hold')) return 'exception'
+  const normalized = lower.replace(/\s+/g, '_')
   const KNOWN = [
     'pending', 'pending_pickup', 'pickup_dispatched', 'picked_up', 'in_transit',
     'out_for_delivery', 'delivered', 'exception', 'failed', 'returning', 'returned', 'cancelled',
@@ -490,13 +495,73 @@ export function mapFlyingTigersStatus(raw?: string): string | null {
   return KNOWN.includes(normalized) ? normalized : null
 }
 
+/**
+ * Read a webhook delivery. Flying Tigers sends
+ * { eventType, timestamp, data: { shipment: { trackingNumber, deliveryStatus, status } } };
+ * the flat { tracking_no, event } shape is still accepted.
+ */
+export function parseFlyingTigersEvent(body: any): {
+  trackingNo?: string
+  event: string
+  status: string | null
+  timestamp: string
+} {
+  const shipment = body?.data?.shipment ?? {}
+  const trackingNo =
+    shipment.trackingNumber ?? body?.tracking_no ?? body?.tracking_number ?? body?.trackingNumber ?? body?.waybill_no
+  const event = String(body?.eventType ?? body?.event ?? body?.event_type ?? body?.type ?? body?.status ?? '')
+  const status =
+    mapFlyingTigersStatus(shipment.deliveryStatus) ??
+    mapFlyingTigersStatus(SHIPMENT_STATUS_MAP[String(shipment.status ?? '').toLowerCase()] ?? shipment.status) ??
+    mapFlyingTigersStatus(body?.event ?? body?.event_type ?? body?.status)
+  return {
+    trackingNo: typeof trackingNo === 'string' && trackingNo ? trackingNo : undefined,
+    event,
+    status,
+    timestamp: String(body?.timestamp ?? new Date().toISOString()),
+  }
+}
+
+/** Flying Tigers' overall shipment status, used when there's no deliveryStatus. */
+const SHIPMENT_STATUS_MAP: Record<string, string> = {
+  cancelled: 'cancelled',
+  completed: 'delivered',
+  lost: 'failed',
+  'rts delivered': 'returned',
+}
+
 // ─── Webhook Status Map ───────────────────────────────────────────────────────
 
 /**
- * Map Flying Tigers webhook event statuses to Maretinda internal statuses.
- * VERIFY: confirm event strings match what Flying Tigers actually sends.
+ * Map Flying Tigers delivery statuses to Maretinda internal statuses. Checked
+ * against Flying Tigers' API docs (Shipment.deliveryStatus) on 2026-11-11.
  */
 export const FT_STATUS_MAP: Record<string, string> = {
+  // Flying Tigers' documented deliveryStatus values
+  'Order placed': 'pending_pickup',
+  'Scheduled for Pickup': 'pending_pickup',
+  'For pickup orig.': 'pickup_dispatched',
+  'Package picked up': 'picked_up',
+  'Orig. hub': 'in_transit',
+  'At origin hub': 'in_transit',
+  'Orig. port': 'in_transit',
+  'Loaded for shipping': 'in_transit',
+  'In-transit': 'in_transit',
+  'Offloaded at the port': 'in_transit',
+  'Dest. port': 'in_transit',
+  'Arrived at destination port': 'in_transit',
+  'Dest. hub': 'in_transit',
+  'Arrived at destination hub': 'in_transit',
+  'For pickup dest.': 'in_transit',
+  'Scheduled for Delivery': 'out_for_delivery',
+  'Rescheduled for delivery': 'out_for_delivery',
+  'Out for delivery reattempt': 'out_for_delivery',
+  'Order cancelled': 'cancelled',
+  'Return to sender - initiated': 'returning',
+  'Return to sender - in transit': 'returning',
+  'Return to sender - delivered': 'returned',
+  Lost: 'failed',
+  // Earlier names, kept for deliveries already in flight
   'Pending Pickup': 'pending_pickup',
   'Pickup Scheduled': 'pending_pickup',
   'Rider En Route for Pickup': 'pickup_dispatched',

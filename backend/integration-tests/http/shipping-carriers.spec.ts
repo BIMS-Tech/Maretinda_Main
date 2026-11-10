@@ -126,6 +126,41 @@ medusaIntegrationTestRunner({
       })
     })
 
+    it("moves a shipment along with Flying Tigers' own event format", async () => {
+      await saveFlyingTigers({ ...SANDBOX, webhook_secret: "whsec_saved" })
+      const pg = pgOf(getContainer())
+      await pg("seller_shipping_order").insert({
+        id: "vso_wh2",
+        seller_id: "sel_x",
+        provider: "flyingtigers",
+        tracking_number: "TEST-ABC123",
+        status: "pending_pickup",
+      })
+      const send = async (deliveryStatus: string) => {
+        const body = JSON.stringify({
+          businessId: 91,
+          eventType: "shipment.updated",
+          sandbox: true,
+          timestamp: new Date().toISOString(),
+          data: { shipment: { trackingNumber: "TEST-ABC123", deliveryStatus, status: "on going" } },
+        })
+        const ts = String(Date.now())
+        const sig = crypto.createHmac("sha256", "whsec_saved").update(`${ts}.${body}`).digest("hex")
+        return api.post("/webhooks/flyingtigers", body, {
+          headers: { "content-type": "application/json", "x-fte-webhook-timestamp": ts, "x-fte-webhook-signature": `v1=${sig}` },
+          ...noThrow,
+        })
+      }
+      const statusNow = async () => (await pg("seller_shipping_order").where({ id: "vso_wh2" }).first()).status
+
+      expect((await send("Package picked up")).status).toBe(200)
+      expect(await statusNow()).toBe("picked_up")
+      await send("Scheduled for Delivery")
+      expect(await statusNow()).toBe("out_for_delivery")
+      await send("Delivered")
+      expect(await statusNow()).toBe("delivered")
+    })
+
     describe("setup checklist", () => {
       it("checks for a Philippines region", async () => {
         const checklist = async () => (await api.get("/admin/shipping-providers", await admin())).data.checklist
