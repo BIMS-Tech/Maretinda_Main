@@ -44,12 +44,15 @@ export const ProductDetailsHeader = ({
 	user,
 	wishlist,
 	flashSaleItem,
+	shopClosed = false,
 }: {
 	product: HttpTypes.StoreProduct & { seller?: SellerProps; reviews?: any[] };
 	locale: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist?: Wishlist[];
 	flashSaleItem?: ActiveFlashSaleItem | null;
+	/** The seller's plan has ended, so the shop can't take orders. */
+	shopClosed?: boolean;
 }) => {
 	const [isAdding, setIsAdding] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -285,14 +288,18 @@ export const ProductDetailsHeader = ({
 				/>
 				<Button
 					className="flex-1 uppercase py-3 flex justify-center !font-semibold text-[13.5px] tracking-wide"
-					disabled={isAdding || !variantStock || !variantHasPrice}
+					disabled={
+						isAdding || shopClosed || !variantStock || !variantHasPrice
+					}
 					loading={isAdding}
 					onClick={handleAddToCart}
 					size="large"
 				>
-					{variantStock && variantHasPrice
-						? 'Add to Cart'
-						: 'Out of Stock'}
+					{shopClosed
+						? 'Unavailable'
+						: variantStock && variantHasPrice
+							? 'Add to Cart'
+							: 'Out of Stock'}
 				</Button>
 				<WishlistButton
 					productId={product.id}
@@ -310,6 +317,12 @@ export const ProductDetailsHeader = ({
 					variantParams={selectedVariant}
 				/>
 			</div>
+
+			{shopClosed && (
+				<p className="text-sm text-secondary">
+					This shop isn't taking orders right now.
+				</p>
+			)}
 
 			{error && (
 				<ErrorMessage data-testid="add-to-cart-error" error={error} />

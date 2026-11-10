@@ -4,6 +4,7 @@ import NotFound from '@/app/not-found';
 import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { getCollectionByHandle } from '@/lib/data/collections';
 
 const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
@@ -40,6 +41,7 @@ const SingleCollectionsPage = async ({
 					<ProductListing collection_id={collection.id} showSidebar />
 				) : (
 					<AlgoliaProductsListing
+						closedShops={await getClosedShopHandles()}
 						collection_id={collection.id}
 						collection_title={collection.title}
 						locale={locale}

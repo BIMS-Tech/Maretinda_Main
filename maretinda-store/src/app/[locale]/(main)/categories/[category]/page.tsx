@@ -9,6 +9,7 @@ import { ProductListingSkeleton } from '@/components/organisms/ProductListingSke
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
 import { getCategoryByHandle } from '@/lib/data/categories';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -156,6 +157,7 @@ async function Category({
 						/>
 					) : (
 						<AlgoliaProductsListing
+							closedShops={await getClosedShopHandles()}
 							category_id={category.id}
 							currency_code={currency_code}
 							locale={locale}

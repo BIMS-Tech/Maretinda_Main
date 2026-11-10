@@ -5,6 +5,7 @@ import {
 	ProductTabs,
 } from '@/components/organisms';
 import { getProductBrand } from '@/lib/data/brands';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { getFlashSaleForProduct } from '@/lib/data/flash-sales';
 import { listProducts } from '@/lib/data/products';
 import { getSellerByHandle } from '@/lib/data/seller';
@@ -29,10 +30,11 @@ export const ProductDetailsPage = async ({
 
 	if (!prod) return null;
 
-	const [seller, flashSaleItem, brand] = await Promise.all([
+	const [seller, flashSaleItem, brand, closedShops] = await Promise.all([
 		getSellerByHandle(prod.seller?.handle as string) as Promise<SellerProps>,
 		getFlashSaleForProduct(prod.id),
 		getProductBrand(prod.id),
+		getClosedShopHandles(),
 	]);
 
 	if (seller?.store_status === 'SUSPENDED') {
@@ -53,6 +55,7 @@ export const ProductDetailsPage = async ({
 						locale={locale}
 						product={prod}
 						seller={seller}
+						shopClosed={closedShops.includes(seller?.handle)}
 					/>
 				</div>
 			</div>

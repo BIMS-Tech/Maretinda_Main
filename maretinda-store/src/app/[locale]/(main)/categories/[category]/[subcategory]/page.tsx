@@ -7,6 +7,7 @@ import { Breadcrumbs } from '@/components/atoms';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { getCategoryByHandle } from '@/lib/data/categories';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -133,6 +134,7 @@ async function SubCategory({
 						/>
 					) : (
 						<AlgoliaProductsListing
+							closedShops={await getClosedShopHandles()}
 							category_id={subcategory.id}
 							currency_code={currency_code}
 							locale={locale}

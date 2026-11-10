@@ -8,6 +8,7 @@ import { ProductListingSkeleton } from '@/components/organisms/ProductListingSke
 import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
 import { categoryThemes } from '@/data/categories';
 import { listCategories } from '@/lib/data/categories';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -288,6 +289,7 @@ export default async function AllCategories({
 							<ProductListing locale={locale} showSidebar />
 						) : (
 							<AlgoliaProductsListing
+								closedShops={await getClosedShopHandles()}
 								currency_code={currency_code}
 								locale={locale}
 								user={user}

@@ -20,6 +20,7 @@ export const ProductDetails = async ({
 	seller,
 	flashSaleItem,
 	brand,
+	shopClosed = false,
 }: {
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
@@ -28,6 +29,7 @@ export const ProductDetails = async ({
 	seller: SellerProps;
 	flashSaleItem?: ActiveFlashSaleItem | null;
 	brand?: { id: string; name: string; logo_url: string | null } | null;
+	shopClosed?: boolean;
 }) => {
 	const user = await retrieveCustomer();
 
@@ -47,6 +49,7 @@ export const ProductDetails = async ({
 				flashSaleItem={flashSaleItem ?? null}
 				locale={locale}
 				product={product}
+				shopClosed={shopClosed}
 				user={user}
 				wishlist={wishlist}
 			/>

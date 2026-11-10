@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { SearchIcon2 } from '@/icons';
 import { client } from '@/lib/client';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
+import { withoutClosedShops } from '@/lib/helpers/closed-shops';
 
 type Category = {
 	id: string;
@@ -36,6 +38,8 @@ export const NavbarSearch = ({
 	const [loading, setLoading] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const formRef = useRef<HTMLFormElement>(null);
+	// Fetched on the first search, not on every page load
+	const closedShopsRef = useRef<Promise<string[]> | null>(null);
 
 	// The currently selected category object (used to scope both the live
 	// suggestions and the submitted search to that category).
@@ -59,9 +63,13 @@ export const NavbarSearch = ({
 			try {
 				// Scope suggestions to the selected category so searching
 				// "under" a chosen category only returns its products.
-				const filters = selectedCatId
-					? `NOT seller.store_status:SUSPENDED AND categories.id:"${selectedCatId}"`
-					: 'NOT seller.store_status:SUSPENDED';
+				closedShopsRef.current ??= getClosedShopHandles();
+				const filters = withoutClosedShops(
+					selectedCatId
+						? `NOT seller.store_status:SUSPENDED AND categories.id:"${selectedCatId}"`
+						: 'NOT seller.store_status:SUSPENDED',
+					await closedShopsRef.current,
+				);
 				const response = await client.search({
 					requests: [
 						{

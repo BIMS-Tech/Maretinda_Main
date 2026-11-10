@@ -22,6 +22,7 @@ import { PRODUCT_LIMIT, PRODUCT_LIMIT_BIG_CARD } from '@/const';
 import { CardViewIcon, ListViewIcon } from '@/icons';
 import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
+import { withoutClosedShops } from '@/lib/helpers/closed-shops';
 import { getFacedFilters } from '@/lib/helpers/get-faced-filters';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,7 @@ export const AlgoliaProductsListing = ({
 	currency_code,
 	user = null,
 	wishlist = [],
+	closedShops = [],
 }: {
 	category_id?: string;
 	collection_id?: string;
@@ -45,6 +47,7 @@ export const AlgoliaProductsListing = ({
 	currency_code?: string;
 	user?: HttpTypes.StoreCustomer | null;
 	wishlist?: Wishlist[] | [];
+	closedShops?: string[];
 }) => {
 	const searchParamas = useSearchParams();
 
@@ -78,7 +81,10 @@ export const AlgoliaProductsListing = ({
 		: '';
 
 	// facetFilters is already prefixed with " AND …" (or empty) by getFacedFilters.
-	const filters = `${sellerFilter}NOT seller.store_status:SUSPENDED${currencyFilter}${scopeFilter}${facetFilters}`;
+	const filters = withoutClosedShops(
+		`${sellerFilter}NOT seller.store_status:SUSPENDED${currencyFilter}${scopeFilter}${facetFilters}`,
+		closedShops,
+	);
 
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>

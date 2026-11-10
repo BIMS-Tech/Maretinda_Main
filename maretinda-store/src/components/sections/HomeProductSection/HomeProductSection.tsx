@@ -1,6 +1,7 @@
 import Heading from '@/components/atoms/Heading/Heading';
 import { HomeProductsCarousel } from '@/components/organisms';
 import { AlgoliaProductsCarousel } from '@/components/organisms/HomeProductsCarousel/AlgoliaProductsCarousel';
+import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getRegion } from '@/lib/data/regions';
 import { getUserWishlists } from '@/lib/data/wishlist';
@@ -56,6 +57,7 @@ export const HomeProductSection = async ({
 				/>
 			) : (
 				<AlgoliaProductsCarousel
+					closedShops={await getClosedShopHandles()}
 					currency_code={currency_code}
 					locale={locale}
 					seller_handle={seller_handle}

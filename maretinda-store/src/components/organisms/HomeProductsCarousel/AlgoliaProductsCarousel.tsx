@@ -8,6 +8,7 @@ import { InstantSearchNext } from 'react-instantsearch-nextjs';
 import { Carousel } from '@/components/cells';
 import { client } from '@/lib/client';
 import { listProducts } from '@/lib/data/products';
+import { withoutClosedShops } from '@/lib/helpers/closed-shops';
 import { getProductPrice } from '@/lib/helpers/get-product-price';
 import type { Wishlist } from '@/types/wishlist';
 
@@ -19,18 +20,23 @@ export const AlgoliaProductsCarousel = ({
 	currency_code,
 	user,
 	wishlist,
+	closedShops = [],
 }: {
 	locale: string;
 	seller_handle?: string;
 	currency_code: string;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[];
+	closedShops?: string[];
 }) => {
-	const filters = `${
+	const filters = withoutClosedShops(
+		`${
 		seller_handle
 			? `NOT seller:null AND seller.handle:${seller_handle} AND `
 			: 'NOT seller:null AND '
-	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`;
+	}NOT seller.store_status:SUSPENDED AND supported_countries:${locale} AND variants.prices.currency_code:${currency_code}`,
+		closedShops,
+	);
 
 	return (
 		<InstantSearchNext indexName="products" searchClient={client}>
