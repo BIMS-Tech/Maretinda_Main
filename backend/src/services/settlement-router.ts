@@ -2,9 +2,10 @@ import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import TamaFileGeneratorService from "./tama-file-generator"
 import DftFileGeneratorService from "./dft-file-generator"
-import { createGCSService } from "../utils/google-cloud-storage"
-import * as fs from 'fs'
-import * as path from 'path'
+import { saveSettlementFile } from "../lib/settlement-files"
+
+// Kept in the database, never the public media bucket: see lib/settlement-files
+const XLS_CONTENT_TYPE = "application/vnd.ms-excel"
 
 interface SettlementResult {
   success: boolean
@@ -102,7 +103,7 @@ class SettlementRouterService extends MedusaService({}) {
             const fileName = TamaFileGeneratorService.generateFileName(batchId)
             const fundingAccount = "2467246570570" // GiyaPay Metrobank account
 
-            const fileContent = tamaService.generateFileContent(
+            const xlsBuffer = tamaService.generateXlsBuffer(
               validation.validTransactions,
               fundingAccount
             )
@@ -122,41 +123,13 @@ class SettlementRouterService extends MedusaService({}) {
               sharedContext
             )
 
-            // Upload to Google Cloud Storage
-            const gcs = createGCSService()
-            if (gcs) {
-              const buffer = Buffer.from(fileContent, 'utf-8')
-              const gcsResult = await gcs.uploadFile(buffer, fileName, {
-                folder: 'settlement/tama',
-                contentType: 'text/plain',
-                makePublic: false, // Keep settlement files private
-                metadata: {
-                  batchId,
-                  generationId,
-                  generatedBy,
-                  transactionCount: String(validation.validTransactions.length)
-                }
-              })
-              
-              if (gcsResult.success) {
-                console.log('[SettlementRouter] TAMA file uploaded to GCS:', gcsResult.fileName)
-              } else {
-                console.error('[SettlementRouter] Failed to upload TAMA to GCS:', gcsResult.error)
-                // Fallback to local storage
-                const tamaDir = path.join(process.cwd(), 'static', 'settlement', 'tama')
-                await fs.promises.mkdir(tamaDir, { recursive: true })
-                const filePath = path.join(tamaDir, fileName)
-                await fs.promises.writeFile(filePath, fileContent)
-                console.log('[SettlementRouter] TAMA file saved locally as fallback')
-              }
-            } else {
-              // No GCS configured, save locally
-              const tamaDir = path.join(process.cwd(), 'static', 'settlement', 'tama')
-              await fs.promises.mkdir(tamaDir, { recursive: true })
-              const filePath = path.join(tamaDir, fileName)
-              await fs.promises.writeFile(filePath, fileContent)
-              console.log('[SettlementRouter] TAMA file saved locally (GCS not configured)')
-            }
+            await saveSettlementFile(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
+              kind: "tama",
+              generation_id: generationId,
+              file_name: fileName.replace(/\.txt$/, ".xls"),
+              content_type: XLS_CONTENT_TYPE,
+              content: xlsBuffer,
+            })
 
             result.tama_generation_id = generationId
             result.tama_file_name = fileName
@@ -204,9 +177,7 @@ class SettlementRouterService extends MedusaService({}) {
             const batchId = DftFileGeneratorService.generateBatchId()
             const fileName = DftFileGeneratorService.generateFileName(batchId)
 
-            const fileContent = dftService.generateFileContent(
-              validation.validTransactions
-            )
+            const xlsBuffer = dftService.generateXlsBuffer(validation.validTransactions)
 
             const metadata = dftService.generateFileMetadata(
               batchId,
@@ -222,41 +193,13 @@ class SettlementRouterService extends MedusaService({}) {
               sharedContext
             )
 
-            // Upload to Google Cloud Storage
-            const gcs = createGCSService()
-            if (gcs) {
-              const buffer = Buffer.from(fileContent, 'utf-8')
-              const gcsResult = await gcs.uploadFile(buffer, fileName, {
-                folder: 'settlement/dft',
-                contentType: 'text/plain',
-                makePublic: false, // Keep settlement files private
-                metadata: {
-                  batchId,
-                  generationId,
-                  generatedBy,
-                  transactionCount: String(validation.validTransactions.length)
-                }
-              })
-              
-              if (gcsResult.success) {
-                console.log('[SettlementRouter] DFT file uploaded to GCS:', gcsResult.fileName)
-              } else {
-                console.error('[SettlementRouter] Failed to upload DFT to GCS:', gcsResult.error)
-                // Fallback to local storage
-                const dftDir = path.join(process.cwd(), 'static', 'settlement', 'dft')
-                await fs.promises.mkdir(dftDir, { recursive: true })
-                const filePath = path.join(dftDir, fileName)
-                await fs.promises.writeFile(filePath, fileContent)
-                console.log('[SettlementRouter] DFT file saved locally as fallback')
-              }
-            } else {
-              // No GCS configured, save locally
-              const dftDir = path.join(process.cwd(), 'static', 'settlement', 'dft')
-              await fs.promises.mkdir(dftDir, { recursive: true })
-              const filePath = path.join(dftDir, fileName)
-              await fs.promises.writeFile(filePath, fileContent)
-              console.log('[SettlementRouter] DFT file saved locally (GCS not configured)')
-            }
+            await saveSettlementFile(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
+              kind: "dft",
+              generation_id: generationId,
+              file_name: fileName.replace(/\.txt$/, ".xls"),
+              content_type: XLS_CONTENT_TYPE,
+              content: xlsBuffer,
+            })
 
             result.dft_generation_id = generationId
             result.dft_file_name = fileName

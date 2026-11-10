@@ -1,8 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import DftFileGeneratorService from '../../../services/dft-file-generator'
-import * as fs from 'fs'
-import * as path from 'path'
+import { saveSettlementFile } from '../../../lib/settlement-files'
 
 /**
  * @oas [get] /admin/dft
@@ -180,12 +179,14 @@ export async function POST(
     // Create DFT generation record
     const generationId = await dftService.createDftGeneration(metadata, notes)
 
-    // Write file to disk
-    const dftDir = path.join(process.cwd(), 'uploads', 'dft')
-    await fs.promises.mkdir(dftDir, { recursive: true })
-
-    const filePath = path.join(dftDir, fileName)
-    await fs.promises.writeFile(filePath, xlsBuffer)
+    // Kept private: see lib/settlement-files
+    await saveSettlementFile(req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
+      kind: 'dft',
+      generation_id: generationId,
+      file_name: fileName.replace(/\.txt$/, '.xls'),
+      content_type: 'application/vnd.ms-excel',
+      content: xlsBuffer,
+    })
 
     console.log(`DFT generation created: ${generationId} with ${validation.validTransactions.length} transactions, total: ${metadata.total_amount}`)
 
@@ -194,7 +195,6 @@ export async function POST(
         id: generationId,
         batch_id: batchId,
         file_name: fileName,
-        file_path: filePath,
         transaction_count: validTransactions.length,
         total_amount: metadata.total_amount,
         invalid_count: invalidTransactions.length,

@@ -1,9 +1,7 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import * as fs from 'fs'
-import * as path from 'path'
 import DftFileGeneratorService from '../../../../../services/dft-file-generator'
-import { createGCSService } from '../../../../../utils/google-cloud-storage'
+import { readSettlementFile, saveSettlementFile } from '../../../../../lib/settlement-files'
 
 const XLS_CONTENT_TYPE = 'application/vnd.ms-excel'
 
@@ -77,31 +75,11 @@ export async function GET(
     }
 
     const dftGeneration = rows[0]
-    const xlsFileName = dftGeneration.file_name.replace(/\.txt$/, '.xls')
-    const gcsPath = `settlement/dft/${xlsFileName}`
-    const gcs = createGCSService()
+    const stored = await readSettlementFile(pgConnection, 'dft', id)
+    const xlsFileName: string = stored?.file_name ?? dftGeneration.file_name.replace(/\.txt$/, '.xls')
+    let fileBuffer: Buffer | null = stored ? Buffer.from(stored.content) : null
 
-    let fileBuffer: Buffer | null = null
-
-    // 1. Try local disk
-    const dftDir = path.join(process.cwd(), 'static', 'settlement', 'dft')
-    const filePath = path.join(dftDir, xlsFileName)
-
-    if (await fs.promises.access(filePath).then(() => true).catch(() => false)) {
-      console.log(`[Admin DFT Download] File found on disk: ${filePath}`)
-      fileBuffer = await fs.promises.readFile(filePath)
-    }
-
-    // 2. Try GCS
-    if (!fileBuffer && gcs) {
-      console.log(`[Admin DFT Download] Checking GCS: ${gcsPath}`)
-      fileBuffer = await gcs.readBinaryFile(gcsPath)
-      if (fileBuffer) {
-        console.log(`[Admin DFT Download] File found in GCS: ${gcsPath}`)
-      }
-    }
-
-    // 3. Regenerate from transactions as XLS
+    // Generations from before files were kept: rebuild it once and keep it
     if (!fileBuffer) {
       console.log(`[Admin DFT Download] Regenerating XLS for: ${xlsFileName}`)
 
@@ -126,24 +104,13 @@ export async function GET(
       }
 
       fileBuffer = dftService.generateXlsBuffer(transactions)
-
-      // Save to GCS
-      if (gcs) {
-        const saved = await gcs.saveBinaryFile(gcsPath, fileBuffer, XLS_CONTENT_TYPE)
-        if (saved.success) {
-          console.log(`[Admin DFT Download] Saved to GCS: ${gcsPath}`)
-        } else {
-          console.warn(`[Admin DFT Download] GCS save failed:`, saved.error)
-        }
-      }
-
-      // Try local disk (non-fatal)
-      try {
-        await fs.promises.mkdir(dftDir, { recursive: true })
-        await fs.promises.writeFile(filePath, fileBuffer)
-      } catch (writeError) {
-        console.warn('[Admin DFT Download] Could not save to local disk:', (writeError as Error).message)
-      }
+      await saveSettlementFile(pgConnection, {
+        kind: 'dft',
+        generation_id: id,
+        file_name: xlsFileName,
+        content_type: XLS_CONTENT_TYPE,
+        content: fileBuffer,
+      })
     }
 
     // Send file as download

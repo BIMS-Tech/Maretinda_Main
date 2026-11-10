@@ -1,7 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import TamaFileGeneratorService from '../../../services/tama-file-generator'
-import * as fs from 'fs'
-import * as path from 'path'
+import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { saveSettlementFile } from '../../../lib/settlement-files'
 
 /**
  * @oas [get] /admin/tama
@@ -194,12 +194,14 @@ export async function POST(
     // Create TAMA generation record
     const generationId = await tamaService.createTamaGeneration(metadata, notes)
 
-    // Save file to disk
-    const tamaDir = path.join(process.cwd(), 'uploads', 'tama')
-    await fs.promises.mkdir(tamaDir, { recursive: true })
-
-    const filePath = path.join(tamaDir, fileName)
-    await fs.promises.writeFile(filePath, xlsBuffer)
+    // Kept private: see lib/settlement-files
+    await saveSettlementFile(req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
+      kind: 'tama',
+      generation_id: generationId,
+      file_name: fileName.replace(/\.txt$/, '.xls'),
+      content_type: 'application/vnd.ms-excel',
+      content: xlsBuffer,
+    })
     
     console.log(`TAMA generation created: ${generationId} with ${validation.validTransactions.length} transactions, total: ${metadata.total_amount}`)
 
@@ -215,7 +217,6 @@ export async function POST(
         generated_by: req.auth_context?.actor_id || "admin",
         funding_account: funding_account,
         notes: notes || "",
-        file_path: filePath
       },
       validation_summary: {
         valid_transactions: validation.validTransactions.length,

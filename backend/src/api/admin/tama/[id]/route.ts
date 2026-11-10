@@ -1,8 +1,6 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { createGCSService } from '../../../../utils/google-cloud-storage'
-import * as fs from 'fs'
-import * as path from 'path'
+import { deleteSettlementFile, readSettlementFile } from '../../../../lib/settlement-files'
 
 /**
  * @oas [delete] /admin/tama/{id}
@@ -64,18 +62,7 @@ export async function DELETE(
       [id]
     )
 
-    // Delete the physical file if it exists
-    try {
-      const fileName = tamaRecord.file_name
-      const filePath = path.join(process.cwd(), 'static', 'settlement', 'tama', fileName)
-      
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-        console.log(`[Admin TAMA] File deleted: ${filePath}`)
-      }
-    } catch (fileError) {
-      console.warn(`[Admin TAMA] Failed to delete file (non-fatal):`, fileError)
-    }
+    await deleteSettlementFile(pgConnection, 'tama', id)
 
     console.log(`[Admin TAMA] TAMA generation deleted: ${id}`)
 
@@ -148,29 +135,11 @@ export async function GET(
 
     const tamaRecord = rows[0]
     
-    // Try to read file content preview (first 20 lines)
-    let filePreview: string | null = null
-    try {
-      const fileName = tamaRecord.file_name
-      const filePath = path.join(process.cwd(), 'static', 'settlement', 'tama', fileName)
-
-      let fullContent: string | null = null
-
-      if (fs.existsSync(filePath)) {
-        fullContent = fs.readFileSync(filePath, 'utf-8')
-      } else {
-        const gcs = createGCSService()
-        if (gcs) {
-          fullContent = await gcs.readTextFile(`settlement/tama/${fileName}`)
-        }
-      }
-
-      if (fullContent) {
-        filePreview = fullContent.split('\n').slice(0, 20).join('\n')
-      }
-    } catch (fileError) {
-      console.warn(`[Admin TAMA] Failed to read file preview:`, fileError)
-    }
+    // First lines of the stored file, for a quick look before downloading
+    const stored = await readSettlementFile(pgConnection, 'tama', id)
+    const filePreview: string | null = stored
+      ? Buffer.from(stored.content).toString('utf-8').split('\n').slice(0, 20).join('\n')
+      : null
 
     res.status(200).json({
       tama_generation: {
