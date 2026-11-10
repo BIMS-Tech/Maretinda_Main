@@ -1,4 +1,4 @@
-import { expect, expectNoErrorBoundary, test } from '../fixtures'
+import { adminPage, apiCodOrder, expect, expectNoErrorBoundary, sellerProducts, test, writesAllowed } from '../fixtures'
 
 const adminEmail = process.env.E2E_ADMIN_EMAIL
 const adminPassword = process.env.E2E_ADMIN_PASSWORD
@@ -29,14 +29,6 @@ test.describe('admin panel (read-only)', () => {
 test.describe('admin panel (signed in)', () => {
   test.skip(!adminEmail || !adminPassword, 'set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD')
 
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-    await page.locator('input[name="email"]').fill(adminEmail!)
-    await page.locator('input[name="password"]').fill(adminPassword!)
-    await page.getByRole('button', { name: 'Continue with Email' }).click()
-    await expect(page).not.toHaveURL(/\/login/)
-  })
-
   for (const path of [
     '/orders',
     '/products',
@@ -50,12 +42,32 @@ test.describe('admin panel (signed in)', () => {
     '/store-front',
     '/reports',
   ]) {
-    test(`${path} loads`, async ({ page, pageErrors }) => {
+    test(`${path} loads`, async ({ browser }) => {
+      // One cached sign-in for the whole run: admin sign-ins are rate limited
+      const page = await adminPage(browser)
+      const errors: string[] = []
+      page.on('pageerror', (e) => errors.push(e.message))
       await page.goto(path)
       await expect(page).not.toHaveURL(/\/login/)
       await page.waitForLoadState('networkidle')
       await expectNoErrorBoundary(page)
-      expect(pageErrors).toEqual([])
+      expect(errors).toEqual([])
+      await page.context().close()
     })
   }
+
+  test('ADM-02 a new COD order is listed as Authorized', async ({ browser, request }) => {
+    test.skip(!writesAllowed || !sellerProducts('A').length, 'needs E2E_ALLOW_WRITES=1 and seller A')
+    const order = await apiCodOrder(request, sellerProducts('A')[0].variantId)
+    const page = await adminPage(browser)
+    await page.goto('/orders')
+    const row = page.getByRole('row').filter({ hasText: `#${order.displayId}` })
+    // COD stays authorized until the seller collects the cash (about 1s of "captured" right after checkout, F32)
+    await expect(async () => {
+      await page.reload()
+      await expect(row).toContainText(/authorized/i, { timeout: 5_000 })
+    }).toPass({ timeout: 60_000 })
+    await expect(row).toContainText('890.00')
+    await page.context().close()
+  })
 })

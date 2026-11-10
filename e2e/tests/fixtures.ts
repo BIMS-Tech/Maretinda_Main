@@ -255,3 +255,22 @@ export async function sellerToken(request: import('@playwright/test').APIRequest
   const res = await request.post(`${API_URL}/auth/seller/emailpass`, { data: { email, password } })
   return (await res.json()).token as string
 }
+
+/** Registers a seller the way the panel's chat does and approves them through the admin API. */
+export async function apiSeller(request: import('@playwright/test').APIRequestContext, tag: string) {
+  const email = uniqueEmail(`seller-${tag}`)
+  const password = `Qa-${Date.now()}`
+  const reg = await request.post(`${API_URL}/auth/seller/emailpass/register`, { data: { email, password } })
+  const { token } = await reg.json()
+  const app = await request.post(`${API_URL}/store/seller-application`, {
+    headers: { 'x-publishable-api-key': PUBLISHABLE_KEY, authorization: `Bearer ${token}` },
+    data: { first_name: 'QA', last_name: tag, email, business_name: `QA Shop ${tag}`, form_of_organization: 'Sole Proprietorship', mobile_number: '+639171234567' },
+  })
+  if (!app.ok()) throw new Error(`application ${app.status()} ${await app.text()}`)
+  const admin = { authorization: `Bearer ${await adminToken(request)}` }
+  const { applications } = await (await request.get(`${API_URL}/admin/seller-applications?limit=50`, { headers: admin })).json()
+  const mine = applications.find((a: { email: string }) => a.email === email)
+  const approved = await request.patch(`${API_URL}/admin/seller-applications/${mine.id}`, { headers: admin, data: { status: 'approved' } })
+  if (!approved.ok()) throw new Error(`approval ${approved.status()} ${await approved.text()}`)
+  return { email, password, sellerId: (await approved.json()).application.seller_id as string }
+}
