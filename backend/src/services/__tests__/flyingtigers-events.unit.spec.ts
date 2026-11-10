@@ -1,4 +1,4 @@
-import { mapFlyingTigersStatus, parseFlyingTigersEvent } from "../flyingtigers"
+import { mapFlyingTigersStatus, nextShipmentStatus, parseFlyingTigersEvent } from "../flyingtigers"
 
 /** Flying Tigers' documented Shipment.deliveryStatus values and where each leaves a booking. */
 describe("Flying Tigers delivery statuses", () => {
@@ -76,5 +76,32 @@ describe("parseFlyingTigersEvent", () => {
 
   it("has no tracking number for events that aren't about a shipment", () => {
     expect(parseFlyingTigersEvent({ eventType: "wallet.topup", data: {} }).trackingNo).toBeUndefined()
+  })
+})
+
+describe("nextShipmentStatus", () => {
+  it.each([
+    ["pending_pickup", "picked_up", "picked_up"],
+    ["picked_up", "delivered", "delivered"],
+    ["in_transit", "exception", "exception"],
+    ["exception", "out_for_delivery", "out_for_delivery"],
+    ["delivered", "returning", "returning"],
+  ])("%s then %s → %s", (current, incoming, next) => {
+    expect(nextShipmentStatus(current, incoming)).toBe(next)
+  })
+
+  it.each([
+    // A late "Order placed" must not reopen a cancelled or moving booking
+    ["cancelled", "pending_pickup"],
+    ["cancelled", "in_transit"],
+    ["in_transit", "pending_pickup"],
+    ["delivered", "in_transit"],
+    ["returned", "delivered"],
+  ])("keeps %s when %s arrives late", (current, incoming) => {
+    expect(nextShipmentStatus(current, incoming)).toBe(current)
+  })
+
+  it("keeps the current status for an unknown one", () => {
+    expect(nextShipmentStatus("in_transit", null)).toBe("in_transit")
   })
 })

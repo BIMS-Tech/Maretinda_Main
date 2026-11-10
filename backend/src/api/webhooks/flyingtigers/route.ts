@@ -19,7 +19,7 @@
 import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { parseFlyingTigersEvent } from '../../../services/flyingtigers'
+import { nextShipmentStatus, parseFlyingTigersEvent } from '../../../services/flyingtigers'
 
 /**
  * Verify the HMAC-SHA256 signature on a Flying Tigers webhook delivery.
@@ -109,7 +109,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
 
     // Only move the status forward to a known mapping; keep the existing
     // status if the event isn't one we recognize.
-    const nextStatus = internalStatus ?? shippingOrder.status
+    const nextStatus = nextShipmentStatus(shippingOrder.status, internalStatus)
 
     await pg('seller_shipping_order')
       .where({ id: shippingOrder.id })

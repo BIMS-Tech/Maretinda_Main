@@ -522,6 +522,37 @@ export function parseFlyingTigersEvent(body: any): {
   }
 }
 
+// How far along each status is; an update can't move a booking backwards
+const STAGE: Record<string, number> = {
+  pending: 0,
+  pending_pickup: 0,
+  pickup_dispatched: 1,
+  exception: 1.5,
+  picked_up: 2,
+  in_transit: 3,
+  out_for_delivery: 4,
+  delivered: 5,
+  returning: 6,
+}
+const FINAL = ['cancelled', 'returned', 'failed']
+
+/**
+ * The status a booking should take when an update arrives. Webhooks can come
+ * late or out of order, so a cancelled or finished booking stays put and a
+ * moving one never goes back (a late "Order placed" can't reopen it).
+ */
+export function nextShipmentStatus(current: string, incoming: string | null): string {
+  if (!incoming || FINAL.includes(current)) return current
+  if (incoming === 'cancelled' || FINAL.includes(incoming)) {
+    return (STAGE[current] ?? 0) >= STAGE.delivered && incoming === 'cancelled' ? current : incoming
+  }
+  const from = STAGE[current] ?? 0
+  // A failed pickup or delivery can happen at any point before delivery
+  if (incoming === 'exception') return from < STAGE.delivered ? incoming : current
+  const to = STAGE[incoming]
+  return to === undefined || to < from ? current : incoming
+}
+
 /** Flying Tigers' overall shipment status, used when there's no deliveryStatus. */
 const SHIPMENT_STATUS_MAP: Record<string, string> = {
   cancelled: 'cancelled',
