@@ -9,6 +9,7 @@ import { PRODUCT_RULE_ATTRIBUTE, productIdsOfSeller } from '../lib/seller-promot
 import { sellerIdOfMember } from '../lib/seller-ownership'
 import { authRateLimit, rateLimit } from '../lib/rate-limit'
 import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
+import { withFreeShippingPrice } from '../lib/free-shipping'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -74,6 +75,35 @@ const guardPromoCodes = async (req: MedusaRequest, res: MedusaResponse, next: Me
     const cart = await db('cart').where('id', req.params.id).first()
     const refused = await refusedPromoCode(db, stored, cart?.customer_id)
     if (refused) return res.status(400).json({ type: 'invalid_data', message: refused })
+    next()
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Every delivery option ships free on carts of ₱499 or more, as the store
+ * promises: adds the ₱0 tier to the prices a seller sends, whether they
+ * create an option or reprice one. Return options keep their own price.
+ */
+const addFreeShippingTier = async (req: MedusaRequest, _res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const body = req.body as any
+    if (!Array.isArray(body?.prices)) return next()
+
+    let isReturn = Array.isArray(body.rules) && body.rules.some((r: any) => r.attribute === 'is_return' && String(r.value) === 'true')
+    if (!isReturn && req.params?.id) {
+      const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const rule = await db('shipping_option_rule')
+        .where({ shipping_option_id: req.params.id, attribute: 'is_return' })
+        .whereNull('deleted_at')
+        .first('value')
+      isReturn = rule ? JSON.parse(rule.value) === 'true' || rule.value === 'true' : false
+    }
+    if (isReturn) return next()
+
+    body.prices = withFreeShippingPrice(body.prices)
+    if ((req as any).validatedBody?.prices) (req as any).validatedBody.prices = body.prices
     next()
   } catch (error) {
     next(error)
@@ -235,6 +265,8 @@ export default defineMiddlewares({
       method: ['POST'],
       middlewares: [guardSellerPromotionRules],
     },
+    { matcher: '/vendor/shipping-options', method: ['POST'], middlewares: [addFreeShippingTier] },
+    { matcher: '/vendor/shipping-options/:id', method: ['POST'], middlewares: [addFreeShippingTier] },
     { matcher: '/store/carts/:id', method: ['POST'], middlewares: [guardPromoCodes] },
     { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [guardCartPromotions] },

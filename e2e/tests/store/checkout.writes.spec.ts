@@ -9,6 +9,7 @@ import {
   placeCodOrder,
   registerBuyer,
   sellerProducts,
+  standardShipping,
   test,
   writesAllowed,
 } from '../fixtures'
@@ -56,11 +57,23 @@ test.describe('cart and checkout (writes)', () => {
     await expect(page.getByText('Shipping').locator('..').getByText('Free', { exact: true })).toHaveCount(0)
 
     await page.getByRole('button', { name: 'Choose Delivery Option' }).click()
+    // ₱770 is over ₱499, so every option ships free
+    for (const name of ['Regular Delivery', 'Standard Delivery', 'Express Delivery']) {
+      await expect(page.getByRole('option', { name: new RegExp(`${name}.*Free`) })).toBeVisible()
+    }
+    await page.getByRole('option', { name: /Standard Delivery/ }).click()
+    await expect(page.getByText(peso(shirt.price + standardShipping(shirt.price))).first()).toBeVisible()
+  })
+
+  test('CHK-03 a cart under ₱499 pays for delivery', async ({ page }) => {
+    const [, tote] = sellerProducts('A')
+    await registerBuyer(page, 'chk03b')
+    await addToCart(page, tote.productId)
+    await fillCheckoutAddress(page)
+    await page.getByRole('button', { name: 'Choose Delivery Option' }).click()
     for (const [name, fee] of [['Regular Delivery', 85], ['Standard Delivery', 120], ['Express Delivery', 200]] as const) {
       await expect(page.getByRole('option', { name: new RegExp(`${name}.*${peso(fee).replace(/[.]/g, '\\.')}`) })).toBeVisible()
     }
-    await page.getByRole('option', { name: /Standard Delivery/ }).click()
-    await expect(page.getByText(peso(shirt.price + 120)).first()).toBeVisible()
   })
 
   test('CHK-04 product without weight is explained at checkout', async ({ page }) => {
@@ -85,7 +98,7 @@ test.describe('cart and checkout (writes)', () => {
 
       await expect(page.getByText(/cash on delivery/i).first()).toBeVisible()
       await expect(page.getByText(/online payment/i)).toHaveCount(0)
-      await expect(page.getByText(`Total${peso(shirt.price + 120)}`).or(page.getByText(peso(shirt.price + 120))).first()).toBeVisible()
+      await expect(page.getByText(`Total${peso(shirt.price + standardShipping(shirt.price))}`).or(page.getByText(peso(shirt.price + standardShipping(shirt.price)))).first()).toBeVisible()
 
       // CHK-06: COD stays authorized until the seller collects the cash
       const token = await adminToken(request)
@@ -94,13 +107,13 @@ test.describe('cart and checkout (writes)', () => {
       })
       const { order } = await res.json()
       expect(order.payment_status).toBe('authorized')
-      expect(order.total).toBe(shirt.price + 120)
+      expect(order.total).toBe(shirt.price + standardShipping(shirt.price))
 
       // CHK-14: the confirmation's order link opens a page that agrees with it
       await page.locator('main').getByRole('link', { name: /track order/i }).click()
       await expect(page).toHaveURL(/\/user\/orders\/[^/]+$/)
       await expect(page.getByText('Something went wrong')).toHaveCount(0)
-      await expect(page.getByText(peso(shirt.price + 120)).first()).toBeVisible()
+      await expect(page.getByText(peso(shirt.price + standardShipping(shirt.price))).first()).toBeVisible()
     })
 
     test('CHK-09 two sellers in one cart make one order each', async ({ page, request }) => {
@@ -128,7 +141,8 @@ test.describe('cart and checkout (writes)', () => {
       expect(orders).toHaveLength(2)
       // Each seller's order carries only its own item plus its own ₱120 shipping
       const totals = orders.map((o: { total: number }) => o.total).sort((a: number, b: number) => a - b)
-      expect(totals).toEqual([toteB.price + 120, shirtA.price + 120].sort((a, b) => a - b))
+      // The cart reaches ₱499, so both sellers' Standard Delivery is free
+      expect(totals).toEqual([toteB.price, shirtA.price].sort((a, b) => a - b))
     })
   })
 
@@ -160,7 +174,7 @@ test.describe('cart and checkout (writes)', () => {
       await payWithGcash(page, 'Success')
       await expect(page).toHaveURL(/\/order\/[^/]+\/confirmed/, { timeout: 120_000 })
       await expect(page.locator('main').getByText('GCash').first()).toBeVisible()
-      await expect(page.locator('main').getByText(peso(shirt.price + 120)).first()).toBeVisible()
+      await expect(page.locator('main').getByText(peso(shirt.price + standardShipping(shirt.price))).first()).toBeVisible()
 
       const token = await adminToken(request)
       const auth = { headers: { authorization: `Bearer ${token}` } }
@@ -168,7 +182,7 @@ test.describe('cart and checkout (writes)', () => {
       const mine = (tx.transactions ?? []).filter(
         (t: { created_at: string; amount: number }) => new Date(t.created_at).getTime() >= started - 60_000,
       )
-      expect(mine.map((t: { amount: number }) => t.amount)).toContain(shirt.price + 120)
+      expect(mine.map((t: { amount: number }) => t.amount)).toContain(shirt.price + standardShipping(shirt.price))
 
       // SEC-02: going back to GiyaPay's return URL must not create a second order
       await page.goBack()

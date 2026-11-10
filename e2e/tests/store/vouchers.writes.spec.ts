@@ -78,7 +78,7 @@ test.describe('vouchers (writes)', () => {
       await placeCodOrder(page)
       const body = (await page.locator('main').innerText()).replace(/\s+/g, ' ')
       expect(body).toMatch(/Discount ₱200\.00/)
-      expect(body).toContain(`Total ${peso(shirt.price * 2 - 200 + 120)}`)
+      expect(body).toContain(`Total ${peso(shirt.price * 2 - 200)}`)
     })
 
     await test.step('CHK-12 the same buyer is refused it next time', async () => {

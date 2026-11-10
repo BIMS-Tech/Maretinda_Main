@@ -302,10 +302,14 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 																					</span>
 																					<span className="ml-4 font-medium" style={{ color: '#111827', fontSize: '15px' }}>
 																						{option.price_type === 'flat' ? (
-																							convertToLocale({
-																								amount: option.amount!,
-																								currency_code: cart?.currency_code,
-																							})
+																							option.amount === 0 ? (
+																								'Free'
+																							) : (
+																								convertToLocale({
+																									amount: option.amount!,
+																									currency_code: cart?.currency_code,
+																								})
+																							)
 																						) : calculatedPricesMap[option.id] ? (
 																							convertToLocale({
 																								amount: calculatedPricesMap[option.id],
@@ -372,10 +376,13 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 					{cart && (cart.shipping_methods?.length ?? 0) > 0 && (
 						<div className="space-y-2">
 							{cart.shipping_methods?.map((method) => {
-								const shippingCost: string = convertToLocale({
-									amount: method.amount!,
-									currency_code: cart?.currency_code || 'USD',
-								});
+								const shippingCost: string =
+									method.amount === 0
+										? 'Free'
+										: convertToLocale({
+												amount: method.amount!,
+												currency_code: cart?.currency_code || 'USD',
+											});
 								return (
 									<div
 										key={method.id}

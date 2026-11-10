@@ -56,7 +56,7 @@ test.describe('seller orders (writes)', () => {
     await page.goto('/orders')
     const row = page.getByRole('row').filter({ hasText: `#${order.displayId}` })
     await expect(row).toContainText(/awaiting/i)
-    await expect(row).toContainText('890.00')
+    await expect(row).toContainText('770.00')
   })
 
   test('SOP-03 marking COD paid captures it for the seller and the admin', async ({ page, request }) => {

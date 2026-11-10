@@ -274,3 +274,6 @@ export async function apiSeller(request: import('@playwright/test').APIRequestCo
   if (!approved.ok()) throw new Error(`approval ${approved.status()} ${await approved.text()}`)
   return { email, password, sellerId: (await approved.json()).application.seller_id as string }
 }
+
+/** Standard Delivery for a cart whose items total this much: free from ₱499 (FREE_SHIPPING_MIN_ORDER). */
+export const standardShipping = (itemTotal: number) => (itemTotal >= 499 ? 0 : 120)

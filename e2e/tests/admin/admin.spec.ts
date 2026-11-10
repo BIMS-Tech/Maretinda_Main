@@ -67,7 +67,7 @@ test.describe('admin panel (signed in)', () => {
       await page.reload()
       await expect(row).toContainText(/authorized/i, { timeout: 5_000 })
     }).toPass({ timeout: 60_000 })
-    await expect(row).toContainText('890.00')
+    await expect(row).toContainText('770.00')
     await page.context().close()
   })
 })
