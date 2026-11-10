@@ -67,6 +67,19 @@
   --borders-interactive-with-active: 0px 0px 0px 1px rgba(91, 58, 138, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.2);
   --borders-interactive-with-shadow: 0px 1px 2px 0px rgb(var(--brand-purple) / 0.25), 0px 0px 0px 1px rgba(91, 58, 138, 1);
 
+  /* Medusa's remaining focus rings, switch and tag hovers, off blue */
+  --buttons-neutral-focus: 0px 1px 2px 0px rgba(0, 0, 0, 0.12), 0px 0px 0px 1px rgba(0, 0, 0, 0.08),
+    0px 0px 0px 2px rgba(255, 255, 255, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+  --buttons-danger-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.2) inset, 0px 1px 2px 0px rgba(190, 18, 60, 0.4),
+    0px 0px 0px 1px rgba(190, 18, 60, 1), 0px 0px 0px 2px rgba(255, 255, 255, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.45);
+  --details-switch-background-focus: 0px 0px 0px 1px rgba(255, 255, 255, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.45),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.04) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.04) inset,
+    0px 0px 0px 0.75px rgba(0, 0, 0, 0.06) inset, 0px 0px 8px 0px rgba(0, 0, 0, 0.02) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+  --details-contrast-on-bg-interactive: 0px 1px 2px 0px rgb(42 27 63 / 0.6);
+  --tag-purple-bg-hover: rgba(234, 226, 245, 1);
+  --tag-blue-bg-hover: rgba(234, 226, 245, 1);
+  --tag-orange-bg-hover: rgba(255, 238, 190, 1);
+
   /* Softer, slightly purple-tinted card shadows */
   --elevation-card-rest: 0px 0px 0px 1px rgb(67 44 99 / 0.07), 0px 1px 2px -1px rgb(67 44 99 / 0.08),
     0px 2px 6px 0px rgb(67 44 99 / 0.05);
@@ -131,6 +144,21 @@
   --buttons-inverted-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.15) inset, 0px 1px 2px 0px rgba(0, 0, 0, 0.4),
     0px 0px 0px 1px rgba(91, 64, 134, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
   --borders-focus: 0px 0px 0px 1px rgba(19, 15, 26, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.6);
+  --borders-interactive-with-focus: 0px 1px 2px 0px rgba(0, 0, 0, 0.4), 0px 0px 0px 1px rgba(190, 170, 232, 1),
+    0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --borders-interactive-with-active: 0px 0px 0px 1px rgba(190, 170, 232, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.25);
+  --borders-interactive-with-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.4), 0px 0px 0px 1px rgba(190, 170, 232, 1);
+  --buttons-neutral-focus: 0px -1px 0px 0px rgba(255, 255, 255, 0.06), 0px 0px 0px 1px rgba(255, 255, 255, 0.06),
+    0px 0px 0px 1px rgba(43, 36, 56, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --buttons-danger-focus: 0px -1px 0px 0px rgba(255, 255, 255, 0.16), 0px 0px 0px 1px rgba(255, 255, 255, 0.12),
+    0px 0px 0px 1px rgba(159, 18, 57, 1), 0px 0px 0px 2px rgba(19, 15, 26, 1), 0px 0px 0px 4px rgb(var(--brand-purple) / 0.6);
+  --details-switch-background-focus: 0px 0px 0px 1px rgba(19, 15, 26, 1), 0px 0px 0px 3px rgb(var(--brand-purple) / 0.6),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.1) inset, 0px 2px 4px 0px rgba(0, 0, 0, 0.1) inset,
+    0px 0px 0px 0.75px rgba(255, 255, 255, 0.12) inset, 0px 0px 8px 0px rgba(0, 0, 0, 0.1) inset;
+  --details-contrast-on-bg-interactive: 0px 1px 2px 0px rgba(0, 0, 0, 0.5);
+  --tag-purple-bg-hover: rgba(57, 45, 80, 1);
+  --tag-blue-bg-hover: rgba(57, 45, 80, 1);
+  --tag-orange-bg-hover: rgba(74, 60, 26, 1);
 
   --elevation-card-rest: 0px 0px 0px 1px rgba(255, 255, 255, 0.06), 0px 1px 2px 0px rgba(0, 0, 0, 0.4),
     0px 2px 6px 0px rgba(0, 0, 0, 0.25);

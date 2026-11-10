@@ -19,12 +19,12 @@ const LoginSchema = z.object({
 
 function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size} className={color === "brand" ? "text-[#432C63] dark:text-white" : undefined}>
       {[45, 135, 225, 315].map(angle => (
         <path
           key={angle}
           d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
-          fill={color}
+          fill={color === "brand" ? "currentColor" : color}
           transform={`rotate(${angle},16,16)`}
         />
       ))}
@@ -165,9 +165,9 @@ export const Login = () => {
         {/* Mobile logo + theme toggle */}
         <div className="flex items-center justify-between mb-8 lg:justify-end">
           <div className="lg:hidden flex items-center gap-2">
-            <MaretindaFlower color="#432C63" size={28} />
-            <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>
+            <MaretindaFlower color="brand" size={28} />
+            <span className="text-xl font-bold text-[#432C63] dark:text-white">Maretinda</span>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}>
               Seller
             </span>
           </div>
@@ -179,7 +179,7 @@ export const Login = () => {
           <div className="mb-8">
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
-              style={{ background: "#F2ECF8", color: "#432C63" }}
+              style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               Seller Portal
@@ -240,7 +240,7 @@ export const Login = () => {
                   type="submit"
                   disabled={isPending}
                   className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1 hover:opacity-90"
-                  style={{ backgroundColor: "#432C63" }}
+                  style={{ backgroundColor: "var(--button-inverted)" }}
                 >
                   {isPending ? "Signing in…" : "Sign In"}
                 </button>
@@ -261,7 +261,7 @@ export const Login = () => {
                     key="reset-password-link"
                     to="/reset-password"
                     className="font-medium transition-colors hover:opacity-80"
-                    style={{ color: "#432C63" }}
+                    style={{ color: "var(--fg-interactive)" }}
                   />,
                 ]}
               />
@@ -276,7 +276,7 @@ export const Login = () => {
                       key="register-link"
                       to="/register"
                       className="font-medium transition-colors hover:opacity-80"
-                      style={{ color: "#432C63" }}
+                      style={{ color: "var(--fg-interactive)" }}
                     />,
                   ]}
                 />

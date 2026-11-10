@@ -1,5 +1,5 @@
 import { Container, Heading, Text, Button, Badge, StatusBadge, Table } from "@medusajs/ui"
-import { PencilSquare, Plus, CurrencyDollar } from "@medusajs/icons"
+import { CheckCircleSolid, PencilSquare, Plus, CurrencyDollar } from "@medusajs/icons"
 import { useNavigate } from "react-router-dom"
 import { usePayouts, usePayoutAccount } from "../../../hooks/api/payouts"
 
@@ -158,9 +158,10 @@ export const PayoutsList = () => {
         )}
 
         {payout_account && typeof payout_account === 'object' && payout_account.status === "active" && (
-          <div className="mt-4 p-4 bg-ui-bg-subtle rounded-lg">
+          <div className="mt-4 p-4 bg-ui-bg-subtle rounded-lg flex items-start gap-2">
+            <CheckCircleSolid className="text-ui-tag-green-icon shrink-0" />
             <Text size="small" className="text-ui-fg-subtle">
-              ✅ Your payout account is active. Daily payouts are automatically processed by the admin 
+              Your payout account is active. Daily payouts are automatically processed by the admin 
               and credited to your account based on the T+2 settlement schedule.
             </Text>
           </div>

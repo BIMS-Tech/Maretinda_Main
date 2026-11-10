@@ -7,12 +7,12 @@ import { useTheme } from "../../providers/theme-provider"
 
 function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size} className={color === "brand" ? "text-[#432C63] dark:text-white" : undefined}>
       {[45, 135, 225, 315].map(angle => (
         <path
           key={angle}
           d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
-          fill={color}
+          fill={color === "brand" ? "currentColor" : color}
           transform={`rotate(${angle},16,16)`}
         />
       ))}
@@ -187,7 +187,7 @@ function RadioGroup({ name, options, value, onChange }: {
           className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer transition-colors ${
             value === opt.value
               ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
-              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
+              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-ui-border-interactive"
           }`}
         >
           <input type="radio" name={name} value={opt.value} checked={value === opt.value} onChange={() => onChange(opt.value)} className="sr-only" />
@@ -211,7 +211,7 @@ function CheckboxGroup({ options, values, onChange }: {
           className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm cursor-pointer transition-colors ${
             values.includes(opt)
               ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
-              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
+              : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-ui-border-interactive"
           }`}
         >
           <input type="checkbox" checked={values.includes(opt)} onChange={() => toggle(opt)} className="sr-only" />
@@ -357,7 +357,7 @@ function StepBusiness({ data, set }: { data: FormData; set: <K extends keyof For
               className={`flex items-center justify-center rounded-lg border px-2 py-2 text-xs cursor-pointer text-center transition-colors ${
                 data.form_of_organization === t
                   ? "border-ui-border-interactive bg-ui-bg-highlight text-ui-fg-interactive font-medium"
-                  : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
+                  : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-ui-border-interactive"
               }`}
             >
               <input type="radio" name="org_type" checked={data.form_of_organization === t} onChange={() => set("form_of_organization", t)} className="sr-only" />
@@ -373,7 +373,7 @@ function StepBusiness({ data, set }: { data: FormData; set: <K extends keyof For
 function StepSignatory({ data, set }: { data: FormData; set: <K extends keyof FormData>(k: K, v: FormData[K]) => void }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "rgba(67,44,99,0.3)", background: "rgba(67,44,99,0.08)", color: "#432C63" }}>
+      <div className="rounded-lg border px-3 py-2 text-xs" style={{ borderColor: "var(--border-interactive)", background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}>
         Authorized signatory for <strong>{data.form_of_organization}</strong>
       </div>
       <div className="grid grid-cols-3 gap-3">
@@ -505,8 +505,8 @@ function StepNav({ steps, current }: { steps: { id: string; label: string }[]; c
           <div
             className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg whitespace-nowrap transition-colors"
             style={{
-              backgroundColor: i === current ? "#432C63" : "transparent",
-              color: i === current ? "white" : i < current ? "#432C63" : undefined,
+              backgroundColor: i === current ? "var(--button-inverted)" : "transparent",
+              color: i === current ? "white" : i < current ? "var(--fg-interactive)" : undefined,
             }}
           >
             <span
@@ -609,9 +609,9 @@ export const Register = () => {
     return (
       <div className="min-h-dvh w-dvw flex items-center justify-center bg-ui-bg-base px-6">
         <div className="w-full max-w-[400px] text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "#F2ECF8" }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-ui-fg-interactive" style={{ background: "var(--bg-highlight)" }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4L19 7" stroke="#432C63" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-ui-fg-base mb-2">Registration submitted!</h2>
@@ -622,7 +622,7 @@ export const Register = () => {
           <Link
             to="/login"
             className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: "#432C63" }}
+            style={{ backgroundColor: "var(--button-inverted)" }}
           >
             Back to Sign In
           </Link>
@@ -699,9 +699,9 @@ export const Register = () => {
           {/* Mobile logo + theme toggle row */}
           <div className="flex items-center justify-between mb-6">
             <div className="lg:hidden flex items-center gap-2">
-              <MaretindaFlower color="#432C63" size={28} />
-              <span className="text-xl font-bold" style={{ color: "#432C63" }}>Maretinda</span>
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "#F2ECF8", color: "#432C63" }}>Seller</span>
+              <MaretindaFlower color="brand" size={28} />
+              <span className="text-xl font-bold text-[#432C63] dark:text-white">Maretinda</span>
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}>Seller</span>
             </div>
             <div className="ml-auto">
               <ThemeToggleButton />
@@ -710,7 +710,7 @@ export const Register = () => {
 
           {/* Header */}
           <div className="mb-6">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4" style={{ background: "#F2ECF8", color: "#432C63" }}>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4" style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               Seller Registration
             </div>
@@ -725,14 +725,14 @@ export const Register = () => {
           <div className="w-full bg-ui-bg-subtle rounded-full h-1 mb-6">
             <div
               className="h-1 rounded-full transition-all duration-300"
-              style={{ backgroundColor: "#432C63", width: `${Math.round(((stepIdx + 1) / steps.length) * 100)}%` }}
+              style={{ backgroundColor: "var(--button-inverted)", width: `${Math.round(((stepIdx + 1) / steps.length) * 100)}%` }}
             />
           </div>
 
           {/* Step card */}
           <div className="bg-ui-bg-subtle rounded-xl border border-ui-border-base p-6 mb-4">
             <h3 className="text-sm font-semibold text-ui-fg-base mb-5">
-              <span style={{ color: "#432C63" }}>{stepIdx + 1}.</span> {currentStep?.label}
+              <span style={{ color: "var(--fg-interactive)" }}>{stepIdx + 1}.</span> {currentStep?.label}
             </h3>
 
             {currentStep?.id === "merchant" && <StepMerchant data={data} set={set} />}
@@ -766,7 +766,7 @@ export const Register = () => {
                 onClick={() => { if (canNext()) { setStepIdx(i => i + 1); setError("") } }}
                 disabled={!canNext()}
                 className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-40 transition-all hover:opacity-90"
-                style={{ backgroundColor: "#432C63" }}
+                style={{ backgroundColor: "var(--button-inverted)" }}
               >
                 Continue →
               </button>
@@ -776,7 +776,7 @@ export const Register = () => {
                 onClick={handleSubmit}
                 disabled={submitting || !canNext()}
                 className="rounded-lg px-6 py-2 text-sm font-semibold text-white disabled:opacity-60 transition-all hover:opacity-90"
-                style={{ backgroundColor: "#432C63" }}
+                style={{ backgroundColor: "var(--button-inverted)" }}
               >
                 {submitting ? "Submitting…" : "Submit Application"}
               </button>
@@ -786,7 +786,7 @@ export const Register = () => {
           <div className="mt-6 text-center">
             <span className="text-ui-fg-subtle text-sm">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium hover:opacity-80 transition-colors" style={{ color: "#432C63" }}>Sign In</Link>
+              <Link to="/login" className="font-medium hover:opacity-80 transition-colors" style={{ color: "var(--fg-interactive)" }}>Sign In</Link>
             </span>
           </div>
         </div>

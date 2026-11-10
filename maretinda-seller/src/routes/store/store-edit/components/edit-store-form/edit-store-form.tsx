@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { InformationCircleSolid } from "@medusajs/icons"
 import { Button, Input, Textarea, toast, Select } from "@medusajs/ui"
 import { useFieldArray, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -338,8 +339,9 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
                   Required for automated settlement and payout processing
                 </p>
                 {isMetrobank && (
-                  <p className="text-ui-fg-interactive text-sm mt-1">
-                    ℹ️ Metrobank selected: Simplified fields (TAMA format)
+                  <p className="text-ui-fg-interactive text-sm mt-1 flex items-center gap-1.5">
+                    <InformationCircleSolid />
+                    Metrobank selected: Simplified fields (TAMA format)
                   </p>
                 )}
                 {!isMetrobank && selectedBankName && (
@@ -372,6 +374,10 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
                           <option value="" disabled>
                             {banksLoading ? "Loading banks..." : "Select a bank"}
                           </option>
+                          {/* A saved bank spelled differently from the list still shows as itself */}
+                          {selectedBankName && !banks.some((bank) => bank.name === selectedBankName) && (
+                            <option value={selectedBankName}>{selectedBankName}</option>
+                          )}
                           {banks.map((bank) => (
                             <option key={bank.code} value={bank.name}>
                               {bank.name}

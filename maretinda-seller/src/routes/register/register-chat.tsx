@@ -14,12 +14,12 @@ const BRAND = "#432C63"
 
 function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size} className={color === "brand" ? "text-[#432C63] dark:text-white" : undefined}>
       {[45, 135, 225, 315].map(angle => (
         <path
           key={angle}
           d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
-          fill={color}
+          fill={color === "brand" ? "currentColor" : color}
           transform={`rotate(${angle},16,16)`}
         />
       ))}
@@ -903,7 +903,7 @@ export const RegisterChat = () => {
     return (
       <div className="min-h-dvh w-dvw flex items-center justify-center bg-ui-bg-base px-6">
         <div className="w-full max-w-[400px] text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "#F2ECF8" }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "var(--bg-highlight)" }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path d="M5 13l4 4L19 7" stroke={BRAND} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

@@ -59,7 +59,7 @@ export const MainLayout = () => {
 
 const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) => {
   return (
-    <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
+    <aside className="isolate flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="flex flex-1 flex-col">
         <div className="bg-ui-bg-subtle sticky top-0 z-10">
           <Header />

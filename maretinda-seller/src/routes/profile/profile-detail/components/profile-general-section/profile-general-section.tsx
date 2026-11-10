@@ -52,28 +52,28 @@ export const ProfileGeneralSection = ({ user }: ProfileGeneralSectionProps) => {
           {name || "-"}
         </Text>
       </div>
-      <div className="grid grid-cols-2 items-center px-6 py-4">
+      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
         <Text size="small" leading="compact" weight="plus">
           {t("fields.email")}
         </Text>
         <Text size="small" leading="compact">
-          {email}
+          {email || "-"}
         </Text>
       </div>
-      <div className="grid grid-cols-2 items-center px-6 py-4">
+      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
         <Text size="small" leading="compact" weight="plus">
           Phone
         </Text>
         <Text size="small" leading="compact">
-          {phone}
+          {phone || "-"}
         </Text>
       </div>
-      <div className="grid grid-cols-2 items-center px-6 py-4">
+      <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
         <Text size="small" leading="compact" weight="plus">
           Bio
         </Text>
         <Text size="small" leading="compact">
-          {bio}
+          {bio || "-"}
         </Text>
       </div>
     </Container>

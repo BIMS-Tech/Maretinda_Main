@@ -1,5 +1,5 @@
 import { Container, Heading, Text, Badge } from "@medusajs/ui"
-import { ArchiveBox } from "@medusajs/icons"
+import { ArchiveBox, CheckCircleSolid } from "@medusajs/icons"
 import { Link } from "react-router-dom"
 import { useInventoryItems } from "../../../../hooks/api/inventory"
 import { useOrders } from "../../../../hooks/api"
@@ -79,7 +79,7 @@ const LowStockAlerts = () => {
         </div>
       ) : lowStock.length === 0 ? (
         <div className="px-6 py-5 flex items-center gap-3">
-          <span className="text-xl">✅</span>
+          <CheckCircleSolid className="text-ui-tag-green-icon" />
           <Text size="small" className="text-ui-fg-subtle">
             All inventory levels look healthy.
           </Text>
