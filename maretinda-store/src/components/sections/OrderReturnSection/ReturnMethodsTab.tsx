@@ -1,4 +1,5 @@
 import { Card, Checkbox } from '@/components/atoms';
+import { sellerAddressLines } from '@/lib/helpers/seller-address';
 
 export const ReturnMethodsTab = ({
 	shippingMethods,
@@ -52,16 +53,11 @@ export const ReturnMethodsTab = ({
 				</Card>
 				<Card className="p-4">
 					<p className="label-lg">{seller.name}</p>
-					<p className="label-md">{seller.address_line}</p>
-					<p className="label-md">
-						{seller.city}, {seller.state}
-					</p>
-					<p className="label-md">
-						{seller.postal_code}, {seller.country_code}
-					</p>
-					<p className="label-md">
-						{seller.email}, {seller.phone}
-					</p>
+					{sellerAddressLines(seller).map((line) => (
+						<p className="label-md" key={line}>
+							{line}
+						</p>
+					))}
 				</Card>
 			</div>
 		</>

@@ -8,6 +8,19 @@ import { sdk } from '../config';
 import medusaError from '../helpers/medusa-error';
 import { getAuthHeaders, getCacheOptions } from './cookies';
 
+// Every order belongs to one seller. The UI reads order.seller for the shop
+// name, the return address and the seller review, so always hand it an object.
+const withSeller = <T extends object>(order: T) => ({
+	...order,
+	seller: {
+		reviews: [] as any[],
+		...((order as { seller?: SellerProps }).seller ?? {
+			id: '',
+			name: 'Seller',
+		}),
+	},
+});
+
 export const retrieveOrderSet = async (id: string) => {
 	const headers = {
 		...(await getAuthHeaders()),
@@ -43,17 +56,10 @@ export const retrieveOrder = async (id: string) => {
 			method: 'GET',
 			next,
 			query: {
-				fields: '*payment_collections.payments,*items,+items.subtotal,+item_subtotal,+items.thumbnail,*items.metadata,*items.variant,*items.product,+items.product.thumbnail,*order_set',
+				fields: '*payment_collections.payments,*items,+items.subtotal,+item_subtotal,+items.thumbnail,*items.metadata,*items.variant,*items.product,+items.product.thumbnail,*order_set,*seller',
 			},
 		})
-		.then(({ order }) => ({
-			...order,
-			seller: {
-				id: 'default-seller',
-				name: 'Marketplace Seller',
-				reviews: [],
-			},
-		}))
+		.then(({ order }) => withSeller(order))
 		.catch((err) => medusaError(err));
 };
 
@@ -132,7 +138,7 @@ export const listOrders = async (
 			method: 'GET',
 			next,
 			query: {
-				fields: '*items,+items.metadata,*items.variant,*items.product,*reviews,*order_set',
+				fields: '*items,+items.metadata,*items.variant,*items.product,*reviews,*order_set,*seller',
 				limit,
 				offset,
 				order: '-created_at',
@@ -145,18 +151,7 @@ export const listOrders = async (
 		return [];
 	}
 
-	// For now, add a default seller object to each order to prevent the UI error
-	// TODO: Implement proper seller data fetching once the SQL join issue is resolved
-	const ordersWithSellers = ordersResponse.orders.map((order) => ({
-		...order,
-		seller: {
-			id: 'default-seller',
-			name: 'Marketplace Seller',
-			reviews: [],
-		},
-	}));
-
-	return ordersWithSellers;
+	return ordersResponse.orders.map(withSeller);
 };
 
 export const createTransferRequest = async (
