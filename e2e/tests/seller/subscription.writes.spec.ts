@@ -64,7 +64,7 @@ test.describe('subscriptions (writes)', () => {
     const growth = page.getByRole('heading', { name: 'Growth', exact: true }).locator('xpath=ancestor::*[.//button][1]')
     await growth.getByRole('button', { name: /free (trial|month)/i }).click()
     await page.getByRole('button', { name: 'Start Free Trial', exact: true }).click()
-    await expect(page.getByText(/Free trial of Growth/i)).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText(/Free (trial|month) of Growth/i)).toBeVisible({ timeout: 30_000 })
     await expect(page.getByText(/Expires on/i).first()).toBeVisible()
     const status = await subscriptionOf(request)
     expect(JSON.stringify(status)).toMatch(/growth/i)
