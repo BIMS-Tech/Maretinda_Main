@@ -26,7 +26,9 @@ test.describe('storefront (read-only)', () => {
 
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByText(/₱\s?[\d,]+/).first()).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Add to Cart' })).toBeVisible()
+    // A shop that can't sell right now (no plan, or setup not finished)
+    // shows "Unavailable" instead; either way the page offers its control
+    await expect(page.getByRole('button', { name: /^(Add to Cart|Unavailable|Out of Stock)$/ })).toBeVisible()
 
     for (const tab of ['Product Details', 'Ratings & Reviews', 'Shipping & Returns']) {
       await page.getByRole('button', { name: tab }).click()
@@ -59,10 +61,11 @@ test.describe('storefront (read-only)', () => {
     await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
   })
 
-  test('anonymous cart asks the shopper to log in to check out', async ({ page }) => {
+  test('an anonymous shopper sees an empty cart with nothing to check out', async ({ page }) => {
+    // Guests are asked to log in at Add to Cart (CHK-02), so their cart is empty
     await page.goto('/ph/cart')
     await expect(page.getByRole('heading', { name: 'Shopping Cart' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Login to checkout' })).toBeVisible()
+    await expect(page.getByText('Your shopping cart is empty')).toBeVisible()
   })
 
   test('login rejects a wrong password', async ({ page }) => {
