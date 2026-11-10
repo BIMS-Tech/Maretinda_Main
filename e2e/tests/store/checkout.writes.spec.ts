@@ -32,6 +32,8 @@ test.describe('cart and checkout (writes)', () => {
     await page.goto('/ph/cart')
     const main = page.locator('main')
     await expect(main.getByText(peso(shirt.price)).locator('visible=true').first()).toBeVisible()
+    // F18: the item's real shop, not "Maretinda"
+    await expect(main.getByText('QA Shop A').locator('visible=true').first()).toBeVisible()
 
     await main.getByRole('button', { name: 'Increase quantity' }).first().click()
     await expect(main.getByText(peso(shirt.price * 2)).locator('visible=true').first()).toBeVisible()
@@ -44,8 +46,19 @@ test.describe('cart and checkout (writes)', () => {
   })
 
   test('CHK-02 signed-out cart asks to log in', async ({ page }) => {
+    const [shirt] = sellerProducts('A')
+    await addToCart(page, shirt.productId)
     await page.goto('/ph/cart')
     await expect(page.getByRole('button', { name: 'Login to checkout' })).toBeVisible()
+  })
+
+  test('CHK-15 an empty cart shows ₱0.00 and nothing to check out', async ({ page }) => {
+    await page.goto('/ph/cart')
+    const main = page.locator('main')
+    await expect(main.getByText('Your shopping cart is empty')).toBeVisible()
+    await expect(main.getByText('₱0.00').first()).toBeVisible()
+    await expect(main.getByRole('button', { name: /select or enter a voucher/i })).toHaveCount(0)
+    await expect(main.getByRole('button', { name: /checkout/i })).toHaveCount(0)
   })
 
   test('CHK-03 shipping options and fee', async ({ page }) => {

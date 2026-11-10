@@ -62,7 +62,7 @@ test.describe('subscriptions (writes)', () => {
   test('SUB-02 starting a Growth trial activates it with a countdown', async ({ page, request }) => {
     await signInSeller(page, sellerC.email, sellerC.password)
     const growth = page.getByRole('heading', { name: 'Growth', exact: true }).locator('xpath=ancestor::*[.//button][1]')
-    await growth.getByRole('button', { name: /free trial/i }).click()
+    await growth.getByRole('button', { name: /free (trial|month)/i }).click()
     await page.getByRole('button', { name: 'Start Free Trial', exact: true }).click()
     await expect(page.getByText(/Free trial of Growth/i)).toBeVisible({ timeout: 30_000 })
     await expect(page.getByText(/Expires on/i).first()).toBeVisible()

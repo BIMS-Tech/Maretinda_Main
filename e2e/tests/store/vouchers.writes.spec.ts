@@ -93,8 +93,11 @@ test.describe('vouchers (writes)', () => {
   test('CHK-10 collecting a voucher puts it in the wallet once', async ({ page }) => {
     await registerBuyer(page, 'collect')
     await page.goto('/ph/vouchers')
-    const collect = page.getByRole('button', { name: /^collect/i }).first()
+    const collectButtons = page.getByRole('button', { name: /^collect/i })
+    const collect = collectButtons.first()
     test.skip((await collect.count()) === 0, 'no collectable voucher listed')
+    // Other runs leave seller vouchers behind, so count rather than expect none
+    const collectable = await collectButtons.count()
     // A click before the page hydrates does nothing, so retry it
     await expect(async () => {
       if (await collect.count()) await collect.click()
@@ -103,9 +106,9 @@ test.describe('vouchers (writes)', () => {
 
     await page.goto('/ph/user/vouchers')
     await expect(page.getByText('HELLOMRTD').first()).toBeVisible()
-    // Still collected after a reload, with nothing left to collect twice
+    // Still collected after a reload: one fewer to collect, never twice
     await page.goto('/ph/vouchers')
     await expect(page.getByText('Collected').first()).toBeVisible()
-    await expect(page.getByRole('button', { name: /^collect/i })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /^collect/i })).toHaveCount(collectable - 1)
   })
 })

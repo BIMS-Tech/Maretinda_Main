@@ -104,4 +104,31 @@ test.describe('customer account (writes)', () => {
     await page.reload()
     await expect(page.getByText(/Renamed/).first()).toBeVisible()
   })
+
+  test('ACC-10 newsletter sign-up is saved', async ({ page }) => {
+    await page.goto('/ph')
+    const form = page.locator('section', { hasText: 'Stay in the loop' })
+    await form.getByPlaceholder('your@email.com').fill(buyer.email)
+    await form.getByRole('button', { name: 'Subscribe' }).click()
+    await expect(form.getByText('Thanks for signing up!')).toBeVisible()
+  })
+
+  test('ACC-09 delete account', async ({ page }) => {
+    await signInBuyer(page, buyer.email, buyer.password)
+    await page.goto('/ph/user/settings')
+    await page.getByRole('button', { name: 'Delete account' }).click()
+    const confirm = page.getByRole('button', { name: 'Delete my account' })
+    await expect(confirm).toBeDisabled()
+    await page.getByLabel('Type DELETE to confirm').fill('DELETE')
+    await confirm.click()
+    await expect(page).not.toHaveURL(/\/user/, { timeout: 30_000 })
+
+    // The sign-in is gone
+    await page.goto('/ph/login')
+    await page.locator('input[name="email"]').fill(buyer.email)
+    await page.locator('input[name="password"]').fill(buyer.password)
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByText(/invalid|incorrect|wrong|failed/i).first()).toBeVisible()
+  })
 })

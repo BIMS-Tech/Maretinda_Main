@@ -95,7 +95,7 @@ test.describe('seller onboarding (writes)', () => {
     // Nothing but Subscription is reachable without a plan
     await expect(page.getByRole('heading', { name: 'Choose a Plan' })).toBeVisible({ timeout: 60_000 })
     const starter = page.getByRole('heading', { name: 'Starter', exact: true }).locator('xpath=ancestor::*[.//button][1]')
-    await starter.getByRole('button', { name: /free trial/i }).click()
+    await starter.getByRole('button', { name: /free (trial|month)/i }).click()
     await page.getByRole('button', { name: 'Start Free Trial', exact: true }).click()
     await expect(page.getByText(/Expires on/i).first()).toBeVisible({ timeout: 30_000 })
 
