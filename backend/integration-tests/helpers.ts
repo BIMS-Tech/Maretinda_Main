@@ -102,15 +102,16 @@ export async function createAdmin(container: any) {
 }
 
 /**
- * Mirrors the fresh-install seed in 1753000000000_trial_period_and_rename_plans.
+ * Mirrors the fresh-install seed in 1753000000000_trial_period_and_rename_plans,
+ * with the one-month trial from 1756000000000_one_month_free_trial.
  * Upserts because the first test still sees the rows the migration inserted.
  */
 export async function seedPlans(container: any) {
   await pgOf(container)("subscription_plan")
     .insert([
-      { id: "subplan_foundation", name: "Starter", price: 499, yearly_price: 4990, trial_days: 7, status: "active" },
-      { id: "subplan_boost", name: "Growth", price: 1499, yearly_price: 14990, trial_days: 7, status: "active" },
-      { id: "subplan_managed", name: "Premium", price: 3999, yearly_price: 39990, trial_days: 7, status: "active" },
+      { id: "subplan_foundation", name: "Starter", price: 499, yearly_price: 4990, trial_days: 30, status: "active" },
+      { id: "subplan_boost", name: "Growth", price: 1499, yearly_price: 14990, trial_days: 30, status: "active" },
+      { id: "subplan_managed", name: "Premium", price: 3999, yearly_price: 39990, trial_days: 30, status: "active" },
     ])
     .onConflict("id")
     .merge()

@@ -12,6 +12,7 @@ import {
   type CheckoutResponse,
   type ActivateResponse,
 } from "../../hooks/api/subscription"
+import { trialLabel } from "./trial-label"
 
 // ---------------------------------------------------------------------------
 // Static plan metadata (tier label, tagline, popular, CTA)
@@ -352,11 +353,11 @@ function TrialModal({ plan, onConfirm, onCancel, loading }: {
           </div>
           <div>
             <h3 className="text-base font-semibold text-gray-900">Start Free Trial</h3>
-            <p className="text-xs text-gray-500">{plan.trial_days}-day free trial of {plan.name}</p>
+            <p className="text-xs text-gray-500">{trialLabel(plan.trial_days).short} on {plan.name}</p>
           </div>
         </div>
         <p className="text-sm text-gray-600 mb-5">
-          You'll get <strong>{plan.trial_days} days</strong> of full access to the <strong>{plan.name}</strong> plan at no cost.
+          You'll get <strong>{trialLabel(plan.trial_days).length}</strong> of full access to the <strong>{plan.name}</strong> plan at no cost.
           No credit card required to start. At the end of the trial, you can subscribe to continue.
         </p>
         <div className="flex gap-3">
@@ -558,7 +559,7 @@ function PlanCard({
     if (changeType === "downgrade") return `Downgrade to ${plan.name}`
     if (isPopular) return "Start Growing Now →"
     if (plan.name === "Premium") return "Contact Sales →"
-    return "Get Started Free →"
+    return "Get Started →"
   }
 
   return (
@@ -606,7 +607,7 @@ function PlanCard({
           )}
           {hasTrial && billing === "monthly" && (
             <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-violet-500/15 border border-violet-500/30 px-2.5 py-0.5">
-              <span className="text-[10px] text-violet-500 font-semibold">{trialDays}-day free trial</span>
+              <span className="text-[10px] text-violet-500 font-semibold">{trialLabel(trialDays).short}</span>
             </div>
           )}
         </div>
@@ -660,7 +661,7 @@ function PlanCard({
             onClick={() => onTrial(plan)}
             className="w-full rounded-xl px-4 py-2.5 text-xs font-semibold border transition-all disabled:opacity-50 border-ui-border-base text-ui-fg-subtle hover:text-ui-fg-base hover:border-ui-border-strong"
           >
-            Start {trialDays}-day free trial
+            {trialLabel(trialDays).start}
           </button>
         )}
       </div>

@@ -58,7 +58,8 @@ medusaIntegrationTestRunner({
         expect(res.status).toBe(400)
       })
 
-      it("starts a free trial that ends after the plan's trial days", async () => {
+      // The first month is free, as every page and the onboarding chat say
+      it("starts a one-month free trial", async () => {
         const { seller, token } = await createSeller(getContainer())
         const before = Date.now()
 
@@ -75,8 +76,8 @@ medusaIntegrationTestRunner({
         })
         expect(Number(sub.price)).toBe(0)
         const lengthDays = (new Date(sub.end_date).getTime() - before) / DAY
-        expect(lengthDays).toBeGreaterThan(6.9)
-        expect(lengthDays).toBeLessThan(7.1)
+        expect(lengthDays).toBeGreaterThan(29.9)
+        expect(lengthDays).toBeLessThan(30.1)
       })
 
       it("only allows one trial per seller", async () => {

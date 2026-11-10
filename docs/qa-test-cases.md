@@ -108,7 +108,7 @@ Priority: **P1** = blocks release · **P2** = fix soon · **P3** = minor.
 
 ## 6. Subscriptions and plan gating
 
-Plans: Starter ₱499/mo, Growth ₱1,499/mo, Premium ₱3,999/mo, yearly 17% off. Marketing copy says **first month free**; the database currently grants a **7-day** trial (`subscription_plan.trial_days = 7`). Report any page that shows a different trial length.
+Plans: Starter ₱499/mo, Growth ₱1,499/mo, Premium ₱3,999/mo, yearly 17% off. The first month is free: `subscription_plan.trial_days = 30` (migration 1756000000000), shown as "First month free" in the seller panel. Report any page that shows a different trial length.
 
 | ID | P | Case | Steps | Expected |
 | --- | --- | --- | --- | --- |
