@@ -196,7 +196,8 @@ export const useOrderReturnRequests = (
 
   return {
     order_return_request: processedData,
-    count: data?.count || 0,
+    // The endpoint returns every request and no count
+    count: data?.count ?? data?.order_return_request?.length ?? 0,
     ...rest,
   }
 }

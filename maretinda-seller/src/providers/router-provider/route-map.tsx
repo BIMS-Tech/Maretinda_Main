@@ -165,7 +165,7 @@ export const RouteMap: RouteObject[] = [
               {
                 path: "orders",
                 handle: {
-                  breadcrumb: () => "Orders requests",
+                  breadcrumb: () => "Return requests",
                 },
                 lazy: async () => {
                   const { RequestOrdersList } = await import(

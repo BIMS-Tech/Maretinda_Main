@@ -9,6 +9,7 @@ import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ArrowLeftIcon } from '@/icons';
 import { createReturnRequest } from '@/lib/data/orders';
+import { returnNote } from '@/lib/helpers/return-note';
 
 import { ReturnItemsTab } from './ReturnItemsTab';
 import { ReturnMethodsTab } from './ReturnMethodsTab';
@@ -76,7 +77,7 @@ export const OrderReturnSection = ({
 
 	const handleSubmit = async () => {
 		const data = {
-			customer_note: '',
+			customer_note: returnNote(selectedItems, returnReasons, order),
 			line_items: selectedItems,
 			order_id: order.id,
 			shipping_option_id: returnMethod,

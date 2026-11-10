@@ -84,7 +84,7 @@ export const Requests = () => {
             <Button variant="secondary" className="w-full justify-between py-4">
               <div className="flex gap-4 items-center">
                 <Badge>{ordersRequestsCount}</Badge>
-                Orders requests
+                Return requests
               </div>
               <TriangleRightMini color="grey" />
             </Button>
