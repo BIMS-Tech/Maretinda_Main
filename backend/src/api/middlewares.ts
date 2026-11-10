@@ -10,6 +10,7 @@ import { sellerIdOfMember } from '../lib/seller-ownership'
 import { authRateLimit, rateLimit } from '../lib/rate-limit'
 import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
 import { withFreeShippingPrice } from '../lib/free-shipping'
+import { uniqueZoneName } from '../lib/unique-zone-name'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -198,6 +199,25 @@ const enrichSellerVerification = (
 /** Medusa answers these with a 500, but they're the client's mistake. */
 const baseErrorHandler = errorHandler()
 
+/** Zone names are unique marketplace-wide; see lib/unique-zone-name. */
+const uniqueZoneNameFor = (table: 'fulfillment_set' | 'service_zone') =>
+  async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+    try {
+      const body = req.body as any
+      if (typeof body?.name !== 'string' || !body.name.trim()) return next()
+      const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+      const seller = sellerId ? await db('seller').where('id', sellerId).first('handle') : null
+      if (!seller?.handle) return next()
+      const name = await uniqueZoneName(db, table, body.name.trim(), seller.handle)
+      body.name = name
+      if ((req as any).validatedBody) (req as any).validatedBody.name = name
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
 /** The panel's subscription gate, held by the API too. See lib/seller-plan. */
 const requirePlanForVendorChanges = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
   try {
@@ -314,6 +334,8 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
+    { matcher: '/vendor/stock-locations/:id/fulfillment-sets', method: ['POST'], middlewares: [uniqueZoneNameFor('fulfillment_set')] },
+    { matcher: '/vendor/fulfillment-sets/:id/service-zones', method: ['POST'], middlewares: [uniqueZoneNameFor('service_zone')] },
     { matcher: '/store/account', middlewares: [authenticate('customer', ['bearer', 'session'])] },
     { matcher: '/store/seller', method: ['GET'], middlewares: [enrichSellerVerification] },
     { matcher: '/store/seller/*', method: ['GET'], middlewares: [enrichSellerVerification] },
