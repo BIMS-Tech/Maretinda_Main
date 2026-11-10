@@ -7,7 +7,9 @@ export const PromotionsList = () => {
   const { getWidgets } = useDashboardExtension()
 
   return (
+    // The table renders the outlet inside the plan gate, so the page doesn't add its own
     <SingleColumnPage
+      hasOutlet={false}
       widgets={{
         before: getWidgets("promotion.list.before"),
         after: getWidgets("promotion.list.after"),

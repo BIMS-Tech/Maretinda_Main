@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Link,
-  Outlet,
   useLoaderData,
   // useLocation,
 } from "react-router-dom"
@@ -154,7 +153,6 @@ export const ProductListTable = () => {
           message: t("products.list.noRecordsMessage"),
         }}
       />
-      <Outlet />
     </Container>
   )
 }

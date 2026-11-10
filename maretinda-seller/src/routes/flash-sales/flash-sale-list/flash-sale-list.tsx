@@ -8,7 +8,9 @@ export const FlashSaleList = () => {
   const { getWidgets } = useDashboardExtension()
 
   return (
+    // The outlet sits inside the plan gate below, so the page doesn't add its own
     <SingleColumnPage
+      hasOutlet={false}
       widgets={{
         before: getWidgets("flash_sale.list.before"),
         after: getWidgets("flash_sale.list.after"),
