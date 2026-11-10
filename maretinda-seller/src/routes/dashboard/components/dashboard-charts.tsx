@@ -34,6 +34,8 @@ import { useReviews } from "../../../hooks/api/review"
 import { usePayouts } from "../../../hooks/api/payouts"
 import { Calendar } from "../../../components/common/calendar/calendar"
 import { ChartSkeleton } from "./chart-skeleton"
+import { CountUp } from "../../../components/common/motion/motion"
+import { orderStats } from "../dashboard-stats"
 
 const formatMoney = (amount: number) => {
   if (amount >= 1_000_000) return `₱${(amount / 1_000_000).toFixed(1)}M`
@@ -94,7 +96,7 @@ const StatCard = ({
   href?: string
 }) => {
   const inner = (
-    <div className="flex flex-col gap-3 rounded-xl border border-ui-border-base bg-ui-bg-base p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+    <div className="brand-card-hover flex flex-col gap-3 rounded-xl bg-ui-bg-base p-5 shadow-elevation-card-rest h-full">
       <div className="flex items-center justify-between">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg}`}
@@ -104,7 +106,9 @@ const StatCard = ({
         {href && <TriangleRightMini className="text-ui-fg-muted" />}
       </div>
       <div>
-        <p className="text-2xl font-bold text-ui-fg-base">{value}</p>
+        <p className="text-2xl font-bold text-ui-fg-base">
+          {typeof value === "number" ? <CountUp value={value} /> : value}
+        </p>
         <p className="text-sm font-medium text-ui-fg-subtle mt-0.5">{label}</p>
         {sub && <p className="text-xs text-ui-fg-muted mt-1">{sub}</p>}
       </div>
@@ -219,9 +223,9 @@ export const DashboardCharts = ({
   )
 
   const orderList = allOrders ?? []
-  const cancelledOrders = orderList.filter((o) => o.status === "cancelled").length
-  const totalRevenue = orderList.reduce((sum, o) => sum + ((o.total ?? 0) / 100), 0)
-  const avgOrderValue = orderList.length > 0 ? totalRevenue / orderList.length : 0
+  const cancelledOrders = orderList.filter((o) => o.status === "cancelled" || o.status === "canceled").length
+  // Store amounts are already pesos; dividing by 100 showed ₱7.70 for a ₱770 order
+  const { revenue: totalRevenue, averageOrder: avgOrderValue } = orderStats(orderList as any)
 
   const reviewList = (reviews as any) ?? []
   const reviewArray = Array.isArray(reviewList) ? reviewList : reviewList?.reviews ?? []
@@ -238,8 +242,8 @@ export const DashboardCharts = ({
     )
 
   const lineColors: Record<string, string> = {
-    orders: "#3b82f6",
-    customers: "#8b5cf6",
+    orders: "#432C63",
+    customers: "#E0A800",
   }
 
   return (
@@ -251,8 +255,8 @@ export const DashboardCharts = ({
           label="Total Orders"
           value={orderList.length}
           sub={`${notFulfilledOrders} pending fulfillment`}
-          iconBg="bg-blue-500/10"
-          iconColor="text-blue-500"
+          iconBg="bg-ui-bg-highlight"
+          iconColor="text-ui-fg-interactive"
           href="/orders"
         />
         <StatCard
@@ -260,16 +264,16 @@ export const DashboardCharts = ({
           label="Total Revenue"
           value={formatMoney(totalRevenue)}
           sub={`Avg ${formatMoney(avgOrderValue)}/order`}
-          iconBg="bg-emerald-500/10"
-          iconColor="text-emerald-500"
+          iconBg="bg-[rgb(var(--brand-yellow-soft))]"
+          iconColor="text-[#9A6B00]"
         />
         <StatCard
           icon={Star}
           label="Reviews"
           value={reviewArray.length}
           sub={`${avgRating.toFixed(1)} avg rating`}
-          iconBg="bg-amber-500/10"
-          iconColor="text-amber-500"
+          iconBg="bg-[rgb(var(--brand-yellow-soft))]"
+          iconColor="text-[#9A6B00]"
           href="/reviews"
         />
         <StatCard
@@ -277,8 +281,8 @@ export const DashboardCharts = ({
           label="Unread Messages"
           value={unreadMessages?.length ?? 0}
           sub="Customer support"
-          iconBg="bg-violet-500/10"
-          iconColor="text-violet-500"
+          iconBg="bg-ui-bg-highlight"
+          iconColor="text-ui-fg-interactive"
           href="/messages"
         />
       </div>

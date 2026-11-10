@@ -44,9 +44,10 @@ const NavBadge = ({ count }: { count?: number }) => {
 }
 
 const BASE_NAV_LINK_CLASSES =
-  "text-ui-fg-subtle transition-fg hover:bg-ui-bg-subtle-hover flex items-center gap-x-2 rounded-md py-0.5 pl-0.5 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
+  "relative text-ui-fg-subtle transition-fg hover:bg-ui-bg-highlight hover:text-ui-fg-base flex items-center gap-x-2 rounded-lg py-1 pl-1 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
+// Brand purple for the page you're on, with a bar at the left edge
 const ACTIVE_NAV_LINK_CLASSES =
-  "bg-ui-bg-base shadow-elevation-card-rest text-ui-fg-base hover:bg-ui-bg-base"
+  "bg-ui-bg-highlight text-ui-fg-interactive font-medium hover:bg-ui-bg-highlight-hover [&_svg]:text-ui-fg-interactive before:absolute before:-left-3 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-ui-bg-interactive"
 const NESTED_NAV_LINK_CLASSES = "pl-[34px] pr-2 py-1 w-full text-ui-fg-muted"
 const SETTING_NAV_LINK_CLASSES = "pl-2 py-1"
 

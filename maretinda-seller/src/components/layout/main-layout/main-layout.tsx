@@ -17,6 +17,7 @@ import {
   ListCheckbox,
   ChatBubbleLeftRight,
   TruckFast,
+  ArrowUturnLeft,
 } from "@medusajs/icons"
 import { Divider, Text, clx } from "@medusajs/ui"
 import { Collapsible as RadixCollapsible } from "radix-ui"
@@ -40,6 +41,7 @@ import { useSetupTasks } from "../../../hooks/api/setup-tasks"
 import { CompletionBar } from "../../common/completion-bar"
 import { usePlanLimits } from "../../../hooks/api/plan-limits"
 import { useChatConversations } from "../../../hooks/api/chat"
+import { worksWithoutPlan } from "../../../lib/plan-routes"
 
 export const MainLayout = () => {
   /**
@@ -67,13 +69,13 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
         </div>
         {!subscriptionActive && (
           <div className="mx-3 mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <p className="font-semibold">Subscription Required</p>
-            <p className="mt-0.5 text-amber-600">Activate a plan to access all features.</p>
+            <p className="font-semibold">Your shop is closed</p>
+            <p className="mt-0.5 text-amber-700">Choose a plan to keep selling. You can still finish the orders you have.</p>
           </div>
         )}
         <div className="flex flex-1 flex-col justify-between">
           <div className="flex flex-1 flex-col">
-            {subscriptionActive && <CoreRouteSection />}
+            <CoreRouteSection subscriptionActive={subscriptionActive} />
             <ExtensionRouteSection subscriptionActive={subscriptionActive} />
           </div>
           {subscriptionActive && (
@@ -99,7 +101,14 @@ const Header = () => {
   const fallback = seller?.photo || "M"
 
   return (
-    <div className="w-full p-3 p-0.5 pr-2 bg-ui-bg-subtle grid w-full grid-cols-[24px_1fr_15px] items-center gap-x-3">
+    <div className="flex flex-col gap-y-3 p-3">
+      <div className="flex items-center gap-x-2 px-1">
+        <img src="/logo-m.png" alt="" className="h-5 w-auto" />
+        <span className="text-ui-fg-interactive text-[13px] font-semibold tracking-tight">
+          Maretinda <span className="text-ui-fg-muted font-normal">Seller</span>
+        </span>
+      </div>
+    <div className="bg-ui-bg-base shadow-elevation-card-rest grid w-full grid-cols-[28px_1fr] items-center gap-x-3 rounded-xl p-2">
       {fallback ? (
         <div className="w-7 h-7">
           <ImageAvatar src={seller?.photo} fallback={seller?.name} size={7} rounded />
@@ -120,8 +129,21 @@ const Header = () => {
         ) : (
           <Skeleton className="h-[9px] w-[120px]" />
         )}
+        <PlanBadge />
       </div>
     </div>
+    </div>
+  )
+}
+
+/** The seller's plan, in the brand's yellow accent. */
+const PlanBadge = () => {
+  const { planName } = usePlanLimits()
+  if (!planName) return null
+  return (
+    <span className="mt-0.5 inline-flex rounded-full bg-[rgb(var(--brand-yellow-soft))] px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-[#7A5600]">
+      {planName}
+    </span>
   )
 }
 
@@ -259,7 +281,7 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           to: "/requests/reviews",
         },
         {
-          label: "Orders",
+          label: "Returns",
           to: "/requests/orders",
         },
       ],
@@ -335,13 +357,23 @@ const Searchbar = () => {
   )
 }
 
-const CoreRouteSection = () => {
+const CoreRouteSection = ({ subscriptionActive }: { subscriptionActive: boolean }) => {
   const coreRoutes = useCoreRoutes()
+
+  // Without a plan, only what still works: finishing orders and returns
+  const routes = subscriptionActive
+    ? coreRoutes
+    : [
+        ...coreRoutes
+          .filter((route) => worksWithoutPlan(route.to))
+          .map((route) => ({ ...route, items: route.items?.filter((item) => worksWithoutPlan(item.to)) })),
+        { icon: <ArrowUturnLeft />, label: "Return requests", to: "/requests/orders" },
+      ]
 
   return (
     <nav className="flex flex-col gap-y-1 py-3">
-      <Searchbar />
-      {coreRoutes.map((route) => {
+      {subscriptionActive && <Searchbar />}
+      {routes.map((route) => {
         return <NavItem key={route.to} {...route} />
       })}
     </nav>

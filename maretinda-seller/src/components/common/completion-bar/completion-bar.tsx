@@ -34,7 +34,7 @@ export const CompletionBar = ({
       <div
         className={clx(
           "h-full rounded-full transition-[width] duration-500 ease-out",
-          value === 100 ? "bg-ui-tag-green-icon" : "bg-ui-tag-orange-icon"
+          value === 100 ? "bg-ui-tag-green-icon" : "bg-ui-bg-interactive"
         )}
         style={{ width: `${value}%` }}
       />

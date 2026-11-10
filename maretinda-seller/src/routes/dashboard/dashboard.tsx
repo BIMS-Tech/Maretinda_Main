@@ -6,6 +6,8 @@ import { DashboardOnboarding } from "./components/dashboard-onboarding"
 import { ChartSkeleton } from "./components/chart-skeleton"
 import { useReviews } from "../../hooks/api/review"
 import { SetupChecklist } from "../../components/common/setup-checklist"
+import { Stagger, StaggerItem } from "../../components/common/motion/motion"
+import { DashboardHero } from "./components/dashboard-hero"
 
 export const Dashboard = () => {
   const [isClient, setIsClient] = useState(false)
@@ -46,23 +48,30 @@ export const Dashboard = () => {
     !onboarding?.store_information
 
   return (
-    <div className="flex flex-col gap-y-3">
-      <SetupChecklist />
-      {onboardingIncomplete ? (
-        <DashboardOnboarding
-          products={onboarding?.products}
-          locations_shipping={onboarding?.locations_shipping}
-          store_information={onboarding?.store_information}
-        />
-      ) : (
-        <DashboardCharts
-          notFulfilledOrders={notFulfilledOrders}
-          fulfilledOrders={fulfilledOrders}
-          reviewsToReply={reviewsToReply}
-          analyticsLevel={analyticsLevel}
-          canExport={canExport}
-        />
-      )}
-    </div>
+    <Stagger className="flex flex-col gap-y-3">
+      <StaggerItem>
+        <DashboardHero />
+      </StaggerItem>
+      <StaggerItem>
+        <SetupChecklist />
+      </StaggerItem>
+      <StaggerItem>
+        {onboardingIncomplete ? (
+          <DashboardOnboarding
+            products={onboarding?.products}
+            locations_shipping={onboarding?.locations_shipping}
+            store_information={onboarding?.store_information}
+          />
+        ) : (
+          <DashboardCharts
+            notFulfilledOrders={notFulfilledOrders}
+            fulfilledOrders={fulfilledOrders}
+            reviewsToReply={reviewsToReply}
+            analyticsLevel={analyticsLevel}
+            canExport={canExport}
+          />
+        )}
+      </StaggerItem>
+    </Stagger>
   )
 }
