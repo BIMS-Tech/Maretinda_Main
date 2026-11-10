@@ -408,15 +408,17 @@ export const useProducts = (
 
   let products = data?.products || []
 
-  // Apply filters if any exist
-  if (
+  const filtered = !!(
     filter?.q ||
     filter?.categoryId ||
     filter?.tagId ||
     filter?.collectionId ||
     filter?.typeId ||
     filter?.status
-  ) {
+  )
+
+  // Apply filters if any exist
+  if (filtered) {
     products = products.filter((item) => {
       if (filter.q) {
         return item.title.toLowerCase().includes(filter.q.toLowerCase())
@@ -463,7 +465,9 @@ export const useProducts = (
   return {
     ...data,
     products: productsImagesFormatter(products?.slice(0, filter?.limit)) || [],
-    count: products?.length || 0,
+    // Filters run here, in the browser, so their count is what's left; without
+    // them it's the API's total (a limit=1 query reads the shop's product count)
+    count: filtered ? products?.length || 0 : data?.count ?? products?.length ?? 0,
     ...rest,
   }
 }

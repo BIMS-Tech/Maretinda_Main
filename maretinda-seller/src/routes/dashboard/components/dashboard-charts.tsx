@@ -473,7 +473,7 @@ export const DashboardCharts = ({
             {analyticsLevel === "basic" && (
               <div className="p-4 border border-dashed border-ui-border-base rounded-xl flex flex-col items-start opacity-60">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="h-3 w-3 rounded-full bg-violet-500" />
+                  <span className="h-3 w-3 rounded-full bg-ui-bg-interactive" />
                   <span className="text-sm font-semibold text-ui-fg-muted">Customers</span>
                 </div>
                 <p className="text-xs text-ui-fg-muted mt-1">Upgrade to Growth</p>

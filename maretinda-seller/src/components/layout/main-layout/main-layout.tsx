@@ -430,11 +430,11 @@ const SupportWidget = () => {
 
   if (supportLevel === "dedicated") {
     return (
-      <div className="mx-3 mb-2 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5">
-        <p className="text-xs font-semibold text-violet-800">Dedicated Account Manager</p>
+      <div className="mx-3 mb-2 rounded-lg border border-[rgba(67,44,99,0.25)] bg-ui-bg-highlight px-3 py-2.5">
+        <p className="text-xs font-semibold text-ui-fg-interactive">Dedicated Account Manager</p>
         <a
           href="mailto:support@maretinda.com?subject=Account%20Manager%20Request"
-          className="mt-1 block text-xs text-violet-600 hover:underline"
+          className="mt-1 block text-xs text-ui-fg-interactive hover:underline"
         >
           Contact your manager →
         </a>

@@ -91,7 +91,7 @@ function ProductSearchSelect({
           {filtered.map((product: any) => (
             <button
               key={product.id}
-              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-violet-50 text-left transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-ui-bg-highlight text-left transition-colors"
               onClick={() => { onSelect({ id: product.id, title: product.title, thumbnail: product.thumbnail }); setQuery(""); setOpen(false) }}
             >
               <div className="w-9 h-9 rounded-md bg-gray-100 shrink-0 overflow-hidden">
@@ -104,7 +104,7 @@ function ProductSearchSelect({
                 <div className="text-sm font-medium text-gray-800 truncate">{product.title}</div>
                 <div className="text-[10px] text-gray-400 truncate">{product.id}</div>
               </div>
-              <span className="text-[10px] text-violet-500 font-medium shrink-0">Select →</span>
+              <span className="text-[10px] text-ui-fg-interactive font-medium shrink-0">Select →</span>
             </button>
           ))}
         </div>
@@ -149,14 +149,14 @@ function ApplyForm({ flashSaleId, existingIds, onAdded }: {
   }
 
   return (
-    <div className="border border-dashed border-violet-200 rounded-xl p-5 bg-violet-50/40 space-y-4">
+    <div className="border border-dashed border-[rgba(67,44,99,0.25)] rounded-xl p-5 bg-ui-bg-highlight/40 space-y-4">
       <p className="text-sm font-semibold text-gray-700">Apply a Product</p>
       <p className="text-xs text-gray-400">Your application will be reviewed by admin before going live.</p>
 
       {!selected ? (
         <ProductSearchSelect onSelect={setSelected} excludeIds={existingIds} />
       ) : (
-        <div className="flex items-center gap-3 border border-violet-200 rounded-lg px-3 py-2.5 bg-white">
+        <div className="flex items-center gap-3 border border-[rgba(67,44,99,0.25)] rounded-lg px-3 py-2.5 bg-white">
           <div className="w-9 h-9 rounded-md bg-gray-100 shrink-0 overflow-hidden">
             {selected.thumbnail
               ? <img src={selected.thumbnail} alt={selected.title} className="w-full h-full object-cover" />
@@ -395,7 +395,7 @@ export const FlashSaleDetail = () => {
           <div className="text-center py-8 text-sm text-gray-400">
             <Bolt className="w-6 h-6 text-gray-300 mx-auto mb-2" />
             You haven't applied any products yet.{" "}
-            {canApply && <button className="text-violet-500 hover:underline" onClick={() => setShowApply(true)}>Apply now →</button>}
+            {canApply && <button className="text-ui-fg-interactive hover:underline" onClick={() => setShowApply(true)}>Apply now →</button>}
           </div>
         ) : (
           <div className="space-y-3">

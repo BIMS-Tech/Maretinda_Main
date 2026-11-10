@@ -163,7 +163,7 @@ function GiyaPayAutoSubmit({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div className="rounded-2xl bg-white p-8 shadow-2xl text-center max-w-sm w-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-violet-600 border-t-transparent mx-auto mb-4" />
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-ui-border-interactive border-t-transparent mx-auto mb-4" />
         <p className="text-sm font-semibold text-gray-700">Redirecting to GiyaPay…</p>
         <p className="mt-1 text-xs text-gray-400">Do not close this tab.</p>
         <form ref={formRef} method="POST" action={checkoutUrl} className="hidden">
@@ -250,7 +250,7 @@ function MethodModal({ methods, onSelect, onCancel }: {
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-ui-fg-base">Choose Payment Method</h3>
             <span className="text-[11px] font-semibold text-ui-fg-muted">
-              Secured by <span className="text-violet-500 font-bold">GiyaPay</span>
+              Secured by <span className="text-ui-fg-interactive font-bold">GiyaPay</span>
             </span>
           </div>
           <p className="mt-1 text-xs text-ui-fg-subtle">Select a gateway to continue your payment.</p>
@@ -267,11 +267,11 @@ function MethodModal({ methods, onSelect, onCancel }: {
                 type="button"
                 onClick={() => setSelected(m)}
                 className={`w-full flex items-center gap-x-4 px-6 py-4 transition-colors ${
-                  isSelected ? "bg-violet-500/10" : "hover:bg-ui-bg-base-hover"
+                  isSelected ? "bg-ui-bg-interactive/10" : "hover:bg-ui-bg-base-hover"
                 }`}
               >
                 <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                  isSelected ? "border-violet-600 bg-violet-600" : "border-ui-border-strong bg-ui-bg-base"
+                  isSelected ? "border-ui-border-interactive bg-ui-button-inverted" : "border-ui-border-strong bg-ui-bg-base"
                 }`}>
                   {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
                 </span>
@@ -293,7 +293,7 @@ function MethodModal({ methods, onSelect, onCancel }: {
           <button
             onClick={() => selected && onSelect(selected)}
             disabled={!selected}
-            className="w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-bold text-white hover:bg-violet-700 transition-colors disabled:opacity-50"
+            className="w-full rounded-xl bg-ui-button-inverted px-4 py-3 text-sm font-bold text-white hover:bg-ui-button-inverted-hover transition-colors disabled:opacity-50"
           >
             {selected ? `Pay with ${PAYMENT_METHOD_CONFIG[selected].title}` : "Select a method"}
           </button>
@@ -346,8 +346,8 @@ function TrialModal({ plan, onConfirm, onCancel, loading }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-ui-bg-highlight flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-ui-fg-interactive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -362,7 +362,7 @@ function TrialModal({ plan, onConfirm, onCancel, loading }: {
         </p>
         <div className="flex gap-3">
           <button onClick={onCancel} className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button onClick={onConfirm} disabled={loading} className="flex-1 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50">
+          <button onClick={onConfirm} disabled={loading} className="flex-1 rounded-xl bg-ui-button-inverted px-4 py-2 text-sm font-semibold text-white hover:bg-ui-button-inverted-hover disabled:opacity-50">
             {loading ? "Starting…" : "Start Free Trial"}
           </button>
         </div>
@@ -397,11 +397,11 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
 }) {
   if (state === "verifying") {
     return (
-      <div className="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-5 flex items-center gap-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-violet-500 border-t-transparent flex-shrink-0" />
+      <div className="rounded-2xl border border-ui-border-interactive/30 bg-ui-bg-interactive/10 p-5 flex items-center gap-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-ui-border-interactive border-t-transparent flex-shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-violet-300">Verifying your payment…</p>
-          <p className="text-xs text-violet-400 mt-0.5">Please wait while we activate your subscription.</p>
+          <p className="text-sm font-semibold text-ui-fg-interactive">Verifying your payment…</p>
+          <p className="text-xs text-ui-fg-interactive mt-0.5">Please wait while we activate your subscription.</p>
         </div>
       </div>
     )
@@ -530,9 +530,9 @@ function PlanCard({
   const cardBorder = isCurrent
     ? "border-emerald-500/50 ring-1 ring-emerald-500/20"
     : isPopular
-    ? "border-violet-500/50 ring-1 ring-violet-500/20 shadow-lg shadow-violet-500/10"
+    ? "border-ui-border-interactive/50 ring-1 ring-[rgba(67,44,99,0.15)] shadow-lg shadow-[0_10px_30px_rgba(67,44,99,0.12)]"
     : "border-ui-border-base"
-  const tierColor = "text-violet-500"
+  const tierColor = "text-ui-fg-interactive"
   const nameColor = "text-ui-fg-base"
   const taglineColor = "text-ui-fg-subtle"
   const priceColor = "text-ui-fg-base"
@@ -547,9 +547,9 @@ function PlanCard({
   const getButtonStyle = () => {
     if (isCurrent) return "bg-emerald-500 text-white cursor-default"
     if (changeType === "downgrade") return "border border-ui-border-strong text-ui-fg-subtle hover:bg-ui-bg-base-hover"
-    if (changeType === "upgrade" || changeType === "renew") return "bg-violet-600 text-white hover:bg-violet-700"
-    if (isPopular) return "bg-violet-600 text-white hover:bg-violet-700"
-    return "border border-violet-500/50 text-violet-500 hover:bg-violet-500/10"
+    if (changeType === "upgrade" || changeType === "renew") return "bg-ui-button-inverted text-white hover:bg-ui-button-inverted-hover"
+    if (isPopular) return "bg-ui-button-inverted text-white hover:bg-ui-button-inverted-hover"
+    return "border border-ui-border-interactive/50 text-ui-fg-interactive hover:bg-ui-bg-interactive/10"
   }
 
   const getButtonLabel = () => {
@@ -573,7 +573,7 @@ function PlanCard({
         </div>
       ) : isPopular ? (
         <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-          <span className="rounded-full bg-violet-600 px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
+          <span className="rounded-full bg-ui-button-inverted px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-lg">
             Most Popular
           </span>
         </div>
@@ -582,7 +582,7 @@ function PlanCard({
       {/* Header section */}
       <div className={`p-6 border-b ${dividerColor}`}>
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-violet-500/10 text-violet-500">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold bg-ui-bg-interactive/10 text-ui-fg-interactive">
             {meta.icon}
           </div>
           <div>
@@ -594,20 +594,20 @@ function PlanCard({
 
         <div className="mt-2">
           <div className="flex items-end gap-1">
-            <span className="text-[11px] font-bold -mb-1 text-violet-500">₱</span>
+            <span className="text-xl font-bold self-start mt-1 text-ui-fg-interactive">₱</span>
             <span className={`text-4xl font-extrabold tabular-nums ${priceColor}`}>
               {displayPrice.toLocaleString()}
             </span>
             <span className={`text-xs mb-1 ml-1 ${periodColor}`}>/mo</span>
           </div>
           {billing === "yearly" && (
-            <p className="text-xs mt-1 text-violet-500">
+            <p className="text-xs mt-1 text-ui-fg-interactive">
               Billed ₱{yearlyTotal.toLocaleString()}/year · Save {discountPct}%
             </p>
           )}
           {hasTrial && billing === "monthly" && (
-            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-violet-500/15 border border-violet-500/30 px-2.5 py-0.5">
-              <span className="text-[10px] text-violet-500 font-semibold">{trialLabel(trialDays).short}</span>
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-ui-bg-interactive/15 border border-ui-border-interactive/30 px-2.5 py-0.5">
+              <span className="text-[10px] text-ui-fg-interactive font-semibold">{trialLabel(trialDays).short}</span>
             </div>
           )}
         </div>
@@ -690,23 +690,23 @@ function TrialBanner({
     <div className={`rounded-2xl border p-5 ${
       isExpiringSoon
         ? "border-red-500/30 bg-red-500/10"
-        : "border-amber-500/30 bg-amber-500/10"
+        : "border-[rgba(255,197,51,0.55)] bg-[rgb(var(--brand-yellow-soft))]"
     }`}>
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-            isExpiringSoon ? "bg-red-500/20" : "bg-amber-500/20"
+            isExpiringSoon ? "bg-red-100" : "bg-[rgba(255,197,51,0.35)]"
           }`}>
-            <svg className={`w-4 h-4 ${isExpiringSoon ? "text-red-400" : "text-amber-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className={`w-4 h-4 ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <div>
-            <p className={`text-sm font-bold ${isExpiringSoon ? "text-red-300" : "text-amber-300"}`}>
-              {isExpiringSoon ? "⚠ Trial ending soon!" : `🎉 Free trial of ${subscription.plan_name}`}
+            <p className={`text-sm font-bold ${isExpiringSoon ? "text-red-700" : "text-[#5C4100]"}`}>
+              {isExpiringSoon ? "Your free month ends soon" : `Free month of ${subscription.plan_name}`}
             </p>
             {endDate && (
-              <p className={`text-xs mt-0.5 ${isExpiringSoon ? "text-red-400" : "text-amber-400/80"}`}>
+              <p className={`text-xs mt-0.5 ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`}>
                 Expires on {formatDate(endDate)}
               </p>
             )}
@@ -723,20 +723,20 @@ function TrialBanner({
             ].map(({ v, l }) => (
               <div key={l} className="flex flex-col items-center">
                 <div className={`rounded-lg px-2.5 py-1.5 min-w-[40px] text-center border ${
-                  isExpiringSoon ? "bg-red-500/20 border-red-500/30" : "bg-amber-500/20 border-amber-500/30"
+                  isExpiringSoon ? "bg-white border-red-200" : "bg-white border-[rgba(255,197,51,0.7)]"
                 }`}>
-                  <span className={`text-lg font-extrabold tabular-nums ${isExpiringSoon ? "text-red-200" : "text-amber-200"}`}>
+                  <span className={`text-lg font-extrabold tabular-nums ${isExpiringSoon ? "text-red-700" : "text-ui-fg-interactive"}`}>
                     {String(v).padStart(2, "0")}
                   </span>
                 </div>
-                <span className={`mt-1 text-[9px] uppercase tracking-widest ${isExpiringSoon ? "text-red-500" : "text-amber-600"}`}>{l}</span>
+                <span className={`mt-1 text-[9px] uppercase tracking-widest ${isExpiringSoon ? "text-red-600" : "text-[#7A5600]"}`}>{l}</span>
               </div>
             ))}
           </div>
 
           <button
             onClick={onUpgrade}
-            className="rounded-xl bg-amber-400 px-4 py-2 text-xs font-bold text-gray-900 hover:bg-amber-300 transition-colors whitespace-nowrap"
+            className="transition-fg rounded-xl bg-[#FFC533] px-4 py-2 text-xs font-bold text-[#2A1B3F] hover:brightness-105 whitespace-nowrap"
           >
             Upgrade Now →
           </button>
@@ -920,7 +920,7 @@ export const SubscriptionPage = () => {
     return (
       <SingleColumnPage widgets={{ after: [], before: [] }}>
         <div className="flex h-40 items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-violet-500 border-t-transparent" />
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-ui-border-interactive border-t-transparent" />
         </div>
       </SingleColumnPage>
     )
@@ -1049,7 +1049,7 @@ export const SubscriptionPage = () => {
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" /> Current Plan
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-violet-500" /> Upgrade (activates immediately)
+                <span className="inline-block w-2 h-2 rounded-full bg-ui-bg-interactive" /> Upgrade (activates immediately)
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block w-2 h-2 rounded-full bg-ui-fg-muted" /> Downgrade (requires confirmation)
@@ -1081,7 +1081,7 @@ export const SubscriptionPage = () => {
         {/* Footer note */}
         <div className="rounded-xl border border-ui-border-base bg-ui-bg-subtle px-4 py-3 text-xs text-ui-fg-subtle">
           Payments are processed securely by{" "}
-          <span className="text-violet-500 font-semibold">GiyaPay</span>.
+          <span className="text-ui-fg-interactive font-semibold">GiyaPay</span>.
           After payment, your subscription is activated automatically.
         </div>
       </div>

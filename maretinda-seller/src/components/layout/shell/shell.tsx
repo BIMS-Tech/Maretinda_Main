@@ -1,6 +1,6 @@
 import { SidebarLeft, TriangleRightMini, XMark } from "@medusajs/icons"
 import { IconButton, clx } from "@medusajs/ui"
-import { AnimatePresence } from "motion/react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Dialog as RadixDialog } from "radix-ui"
 import { PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -8,6 +8,7 @@ import {
   Link,
   Outlet,
   UIMatch,
+  useLocation,
   useMatches,
   useNavigation,
 } from "react-router-dom"
@@ -44,7 +45,9 @@ export const Shell = ({ children }: PropsWithChildren) => {
             )}
           >
             <Gutter>
-              <Outlet />
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
             </Gutter>
           </main>
         </div>
@@ -80,6 +83,28 @@ const NavigationBar = ({ loading }: { loading: boolean }) => {
     <div className="fixed inset-x-0 top-0 z-50 h-1">
       <AnimatePresence>{showBar ? <ProgressBar /> : null}</AnimatePresence>
     </div>
+  )
+}
+
+/**
+ * Each section fades and rises in. Keyed on the first path segment only, so
+ * a modal route opened over a list (e.g. /products/create) leaves the list
+ * where it is.
+ */
+const PageTransition = ({ children }: PropsWithChildren) => {
+  const { pathname } = useLocation()
+  const reduce = useReducedMotion()
+  const section = pathname.split("/")[1] ?? ""
+  return (
+    <motion.div
+      key={section}
+      className="flex flex-col gap-y-2"
+      initial={reduce ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
