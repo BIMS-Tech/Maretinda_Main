@@ -74,6 +74,17 @@ medusaIntegrationTestRunner({
       expect((await api.post("/auth/customer/emailpass/register", { email: buyer.email, password: buyer.password }, noThrow)).status).toBe(200)
     })
 
+    it("removes the buyer's wishlist", async () => {
+      const buyer = await registeredBuyer()
+      const pg = pgOf(getContainer())
+      await pg("wishlist").insert({ id: `wl_${buyer.customerId}`, reference: "product" })
+      await pg("customer_customer_wishlist_wishlist").insert({ id: `cw_${buyer.customerId}`, customer_id: buyer.customerId, wishlist_id: `wl_${buyer.customerId}` })
+
+      expect((await api.delete("/store/account", store(buyer.token))).status).toBe(200)
+
+      expect(await pg("wishlist").where("id", `wl_${buyer.customerId}`).whereNull("deleted_at")).toHaveLength(0)
+    })
+
     it("keeps the buyer's past orders", async () => {
       const buyer = await registeredBuyer()
       const order: any = await orderFor(buyer.customerId, "completed")

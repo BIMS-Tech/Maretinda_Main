@@ -23,7 +23,7 @@ export async function openOrderIds(pg: any, customerId: string): Promise<string[
 
 /**
  * Deletes a buyer's account: their sign-ins (so the email is free to sign up
- * again), their saved addresses and their personal details. Orders keep their
+ * again), their saved addresses, wishlist and personal details. Orders keep their
  * own copy of the name and address, which the shops and the tax records need.
  */
 export async function deleteCustomerAccount(container: any, pg: any, customerId: string) {
@@ -38,6 +38,16 @@ export async function deleteCustomerAccount(container: any, pg: any, customerId:
 
   const addresses = await customerModule.listCustomerAddresses({ customer_id: customerId })
   if (addresses.length) await customerModule.deleteCustomerAddresses(addresses.map((a: any) => a.id))
+
+  const now = new Date()
+  const wishlistIds = (
+    await pg("customer_customer_wishlist_wishlist").where("customer_id", customerId).whereNull("deleted_at").select("wishlist_id")
+  ).map((r: any) => r.wishlist_id)
+  if (wishlistIds.length) {
+    await pg("wishlist_wishlist_product_product").whereIn("wishlist_id", wishlistIds).update({ deleted_at: now })
+    await pg("wishlist").whereIn("id", wishlistIds).update({ deleted_at: now })
+    await pg("customer_customer_wishlist_wishlist").where("customer_id", customerId).update({ deleted_at: now })
+  }
 
   await customerModule.updateCustomers(customerId, {
     email: `deleted-${customerId.toLowerCase()}@deleted.invalid`,
