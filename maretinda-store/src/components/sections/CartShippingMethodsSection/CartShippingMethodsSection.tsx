@@ -14,6 +14,7 @@ import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { setShippingMethod } from '@/lib/data/cart';
 import { calculatePriceForShippingOption } from '@/lib/data/fulfillment';
 import { convertToLocale } from '@/lib/helpers/money';
+import { chosenMethodFor, sellerNamesById } from '@/lib/helpers/shipping-by-seller';
 
 import { CartShippingMethodRow } from './CartShippingMethodRow';
 
@@ -166,6 +167,11 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 		return acc;
 	}, {});
 
+	// Label each picker and chosen method with the shop it's for
+	const sellerNames = sellerNamesById(cart.items as any);
+	const sellerOfOption = (optionId?: string | null) =>
+		_shippingMethods?.find((o) => o.id === optionId)?.seller_id;
+
 	const handleEdit = () => {
 		router.replace(pathname + '?step=delivery');
 	};
@@ -224,13 +230,13 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 									return (
 										<div className="mb-6" key={key}>
 											<h3 className="text-[11px] font-semibold tracking-[0.12em] uppercase mb-3" style={{ color: '#9ca3af' }}>
-												Shipping from <span style={{ color: '#432C63' }}>{groupedBySellerId[key][0].seller_name || 'Local Clothing'}</span>
+												Shipping from <span style={{ color: '#432C63' }}>{sellerNames[key] || 'this shop'}</span>
 											</h3>
 											<Listbox
 												onChange={(value) => {
 													handleSetShippingMethod(value);
 												}}
-												value={cart.shipping_methods?.[0]?.id || null}
+												value={chosenMethodFor(groupedBySellerId[key], cart.shipping_methods ?? [])?.shipping_option_id || null}
 											>
 												<div className="relative">
 													<Listbox.Button
@@ -239,10 +245,9 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 														)}
 													>
 														{({ open }) => {
-															const selectedMethod = cart.shipping_methods?.[0];
-															const selectedMethodName = selectedMethod ? 
-																groupedBySellerId[key]?.find((m: any) => m.id === selectedMethod.id)?.name || 'Choose Delivery Option'
-																: 'Choose Delivery Option';
+															const selectedMethodName =
+																chosenMethodFor(groupedBySellerId[key], cart.shipping_methods ?? [])?.name ||
+																'Choose Delivery Option';
 															
 															return (
 																<>
@@ -278,7 +283,8 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 																(
 																	option: any,
 																) => {
-																	const isSelected = cart.shipping_methods?.[0]?.id === option.id;
+																	const isSelected =
+																		chosenMethodFor(groupedBySellerId[key], cart.shipping_methods ?? [])?.shipping_option_id === option.id;
 																	return (
 																		<Listbox.Option
 																			className={clsx(
@@ -392,7 +398,14 @@ const CartShippingMethodsSection: React.FC<ShippingProps> = ({
 											<span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
 												<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
 											</span>
-											<span className="text-[14px] font-medium truncate" style={{ color: '#111827' }}>{method.name}</span>
+											<span className="min-w-0">
+												{sellerNames[sellerOfOption(method.shipping_option_id) ?? ''] && (
+													<span className="block text-[12px] truncate" style={{ color: '#6b7280' }}>
+														{sellerNames[sellerOfOption(method.shipping_option_id) ?? '']}
+													</span>
+												)}
+												<span className="block text-[14px] font-medium truncate" style={{ color: '#111827' }}>{method.name}</span>
+											</span>
 										</div>
 										<span className="text-[14px] font-semibold flex-shrink-0" style={{ color: '#432C63' }}>{shippingCost}</span>
 									</div>

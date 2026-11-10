@@ -44,7 +44,9 @@ export async function retrieveCart(cartId?: string) {
 			query: {
 				fields:
 					'*items,*region,*region.countries, *items.product, *items.variant, *items.variant.options, items.variant.options.option.title,' +
-					'*items.thumbnail, *items.metadata, +items.total, +items.subtotal, +item_subtotal, *promotions, +shipping_methods.name',
+					'*items.thumbnail, *items.metadata, +items.total, +items.subtotal, +item_subtotal, *promotions, +shipping_methods.name,' +
+					// Each item's shop, so the cart and checkout name the seller
+					'+items.product.seller.id, +items.product.seller.name, +items.product.seller.handle, +items.product.seller.photo',
 			},
 		})
 		.then(({ cart }) => cart)
