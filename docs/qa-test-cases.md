@@ -53,6 +53,8 @@ Priority: **P1** = blocks release · **P2** = fix soon · **P3** = minor.
 | BRW-11 | P3 | Help center | Open Help Center; play a tutorial video | Sections and FAQs render; videos play (unlisted YouTube). No emoji in the UI. |
 | BRW-13 | P2 | Search on a phone | On a phone (or a browser narrower than 1024px), look for product search | A search box shows under the header and submitting it lists matching products. |
 | BRW-12 | P3 | Support assistant | Open chat support and ask "how much does it cost to sell?" | The answer mentions a flat monthly subscription and **first month free**, never a commission. |
+| BRW-14 | P2 | Hero seller count | Open the home page on desktop | Shows "<N> sellers" from the live count (deleted sellers excluded); there are no slider dots on the single-slide hero. |
+| BRW-15 | P3 | Account deletion help | Help Center → How do I delete my account? | Explains how to request deletion (by email); never points at a button that doesn't exist. |
 
 ## 3. Cart, vouchers and checkout
 
@@ -73,6 +75,7 @@ Priority: **P1** = blocks release · **P2** = fix soon · **P3** = minor.
 | CHK-13 | P2 | Seller voucher | On a seller's page, open their vouchers | Only that seller's vouchers show, and applying one only discounts that seller's items. |
 | CHK-14 | P2 | Order history | Account → Orders → open the order | Status, items, totals and payment method match the confirmation page. |
 | CHK-15 | P3 | Return request | On a delivered order, request a return | Request-success page; the seller sees the request. |
+| CHK-16 | P2 | Voucher messages | Type an unknown code; then HELLOMRTD on a ₱770 cart; then on ₱1,540 | "<code> isn't a valid voucher code for this cart"; "Spend ₱730 more…"; "HELLOMRTD applied" with −₱200.00. |
 
 ## 4. Seller onboarding and verification
 
@@ -99,6 +102,9 @@ Priority: **P1** = blocks release · **P2** = fix soon · **P3** = minor.
 | SOP-08 | P2 | Flash sale | Flash sales → submit an item; admin approves; sale goes live | Item shows the sale price on the storefront during the sale window only. |
 | SOP-09 | P2 | Seller promotion | Promotions → create a voucher | Shows on the seller's storefront page and can be collected. |
 | SOP-10 | P3 | Messages | Buyer messages the seller from a product; seller replies | Both sides see the thread in real time. |
+| SOP-11 | P2 | Return request reaches the seller | After CHK-15, open Requests → Orders in the seller panel | The buyer's return request is listed as Pending with its reason. The seller needs a return shipping option first. |
+| SOP-12 | P3 | Seller earnings | GiyaPay in the seller panel | Lists the seller's GiyaPay transactions with totals. |
+| SOP-13 | P2 | 3D model access by plan | Product → 3D Model as a Starter seller, then a Growth seller | Starter sees an upgrade prompt; Growth can generate (same as SUB-08). |
 
 ## 6. Subscriptions and plan gating
 
@@ -124,6 +130,8 @@ Plans: Starter ₱499/mo, Growth ₱1,499/mo, Premium ₱3,999/mo, yearly 17% of
 | ADM-03 | P2 | Storefront hero | Store front → edit hero copy and featured product | Storefront hero updates; the featured product price matches the product page (no ₱88,000 → ₱880 mismatch). |
 | ADM-04 | P2 | Promotions | Create a platform promotion with a minimum order | Shows on the storefront vouchers page with "Min. order ₱X" matching what you entered. |
 | ADM-05 | P2 | Reports / settlement | Reports → generate a settlement report | File downloads and totals match the period's orders. |
+| ADM-06 | P2 | Reel moderation | Look for a way to hide or remove a seller's reel | Not available yet (owner decision). |
+| ADM-07 | P3 | GiyaPay page | Admin → GiyaPay | Configuration and transactions load; sandbox status is shown. |
 
 ---
 
