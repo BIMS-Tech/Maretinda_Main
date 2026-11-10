@@ -13,6 +13,7 @@ import {
   MagnifyingGlass,
   MinusMini,
   OpenRectArrowOut,
+  PlaySolid,
   ReceiptPercent,
   Shopping,
   ShoppingCart,
@@ -306,6 +307,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <DocumentText />,
       label: "Settlement Reports",
       to: "/reports",
+    },
+    {
+      icon: <PlaySolid />,
+      label: "Seller Reels",
+      to: "/reels",
     },
     {
       icon: <TruckFast />,
