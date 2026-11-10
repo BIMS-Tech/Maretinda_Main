@@ -194,8 +194,8 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
               { origin_postal: '1000', dest_postal: '1600', weight_kg: 1 }
             )
           } catch (e) {
-            const msg = (e as Error).message || ''
-            if (/\((401|403)\)/.test(msg)) {
+            const status = (e as { status?: number }).status
+            if (status === 401 || status === 403) {
               return res.status(400).json({
                 success: false,
                 message: 'Flying Tigers rejected these credentials (invalid API key or secret).',

@@ -9,6 +9,7 @@
 
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { getFlyingTigersCoveredProvinces } from '../../../services/flyingtigers'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -16,6 +17,14 @@ function getPgConnection(req: AuthenticatedMedusaRequest): any {
   } catch {
     return (req.scope as any).__pg_connection__ || (req.scope as any).pgConnection
   }
+}
+
+const flyingTigersCoverage = async (credentials: any): Promise<string[] | undefined> => {
+  const creds = typeof credentials === 'string' ? JSON.parse(credentials) : credentials
+  if (!creds?.api_key || !creds?.api_secret) return undefined
+  return getFlyingTigersCoveredProvinces(creds.api_key, creds.api_secret)
+    .then((provinces) => provinces.map((p) => p.provinceLabel))
+    .catch(() => undefined)
 }
 
 /**
@@ -31,7 +40,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       rows = await pg('platform_shipping_provider')
         .where({ is_active: true })
         .whereNull('deleted_at')
-        .select('provider_id', 'name', 'settings', 'updated_at')
+        .select('provider_id', 'name', 'settings', 'credentials', 'updated_at')
     } catch {
       // Table may not exist yet — return empty list gracefully
     }
@@ -54,12 +63,16 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
       },
     }
 
-    const providers = rows.map((row: any) => ({
-      provider_id: row.provider_id,
-      name: row.name,
-      is_active: true,
-      ...((providerMeta[row.provider_id] as Record<string, any>) ?? {}),
-    }))
+    const providers = await Promise.all(
+      rows.map(async (row: any) => ({
+        provider_id: row.provider_id,
+        name: row.name,
+        is_active: true,
+        ...((providerMeta[row.provider_id] as Record<string, any>) ?? {}),
+        // Where Flying Tigers delivers, so the panel can warn before booking
+        ...(row.provider_id === 'flyingtigers' && { covered_provinces: await flyingTigersCoverage(row.credentials) }),
+      }))
+    )
 
     res.json({
       providers,

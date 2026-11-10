@@ -25,6 +25,7 @@ import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
 import { useMe } from '../../../hooks/api/users'
 import { fetchQuery } from '../../../lib/client'
+import { provinceCovered } from '../../../lib/courier-coverage'
 import {
   SERVICE_LEVELS,
   deriveServiceLevel,
@@ -86,7 +87,15 @@ export function CreateShipmentDrawer({
   const [selectedOrder, setSelectedOrder] = useState<any>(initialOrder ?? null)
 
   // Carrier
-  const [provider, setProvider] = useState(enabledProviders[0]?.providerId ?? '')
+  const [chosenProvider, setProvider] = useState(enabledProviders[0]?.providerId ?? '')
+  // The carriers can load after the drawer opens; until one is chosen, book
+  // with the first, which is the one the dropdown shows
+  const provider = enabledProviders.some((p) => p.providerId === chosenProvider)
+    ? chosenProvider
+    : enabledProviders[0]?.providerId ?? ''
+  const carrier = enabledProviders.find((p) => p.providerId === provider)
+  // Where the carrier delivers, when it says (Flying Tigers serves a short list)
+  const coveredProvinces: string[] | undefined = carrier?.covered_provinces
   const [serviceLevel, setServiceLevel] = useState('Standard')
   const [pickupDate, setPickupDate] = useState(
     new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -296,8 +305,18 @@ export function CreateShipmentDrawer({
     if (!provider) return toast.error('Select a carrier')
     if (!fromName || !fromPhone || !fromAddress || !fromCity)
       return toast.error('Fill in all sender fields')
+    // Couriers route by province; Flying Tigers refuses an address without one
+    if (!fromState) return toast.error("Add the sender's province")
     if (!toName || !toAddress || !toCity)
       return toast.error('Recipient address is incomplete — select an order or fill manually')
+    if (!toState) return toast.error("Add the recipient's province")
+    for (const [where, province] of [['from', fromState], ['to', toState]] as const) {
+      if (!provinceCovered(province, coveredProvinces)) {
+        return toast.error(
+          `${carrier?.name ?? 'This carrier'} doesn't deliver ${where} ${province}. It covers ${coveredProvinces!.join(', ')}.`
+        )
+      }
+    }
     if (!weight) return toast.error('Parcel weight is required')
 
     // Guard against double-booking an order that already has an active shipment.
@@ -523,6 +542,9 @@ export function CreateShipmentDrawer({
                     ))}
                   </select>
                 )}
+                {!!coveredProvinces?.length && (
+                  <p className="text-ui-fg-muted mt-1 text-xs">Delivers within {coveredProvinces.join(', ')}</p>
+                )}
               </FormField>
               <FormField label="Service Level" required>
                 <select
@@ -593,7 +615,7 @@ export function CreateShipmentDrawer({
               <FormField label="City" required>
                 <Input placeholder="City" value={fromCity} onChange={(e) => setFromCity(e.target.value)} />
               </FormField>
-              <FormField label="Province">
+              <FormField label="Province" required>
                 <Input placeholder="Province" value={fromState} onChange={(e) => setFromState(e.target.value)} />
               </FormField>
               <FormField label="Postcode">
@@ -649,7 +671,7 @@ export function CreateShipmentDrawer({
               <FormField label="City" required>
                 <Input placeholder="City" value={toCity} onChange={(e) => setToCity(e.target.value)} />
               </FormField>
-              <FormField label="Province">
+              <FormField label="Province" required>
                 <Input placeholder="Province" value={toState} onChange={(e) => setToState(e.target.value)} />
               </FormField>
               <FormField label="Postcode">

@@ -103,12 +103,69 @@ function getAuthHeaders(apiKey: string, apiSecret: string): Record<string, strin
   }
 }
 
+/** What a seller reads when Flying Tigers refuses a request: its reason, not its JSON. */
+export function flyingTigersErrorMessage(context: string, status: number, body: any): string {
+  const reason = Array.isArray(body?.message) ? body.message.join('; ') : body?.message
+  return typeof reason === 'string' && reason.trim()
+    ? `Flying Tigers couldn't ${context}: ${reason.trim()}`
+    : `Flying Tigers couldn't ${context} (HTTP ${status})`
+}
+
 async function handleResponse<T>(res: Response, context: string): Promise<T> {
   if (!res.ok) {
     const body = await res.json().catch(() => ({ message: res.statusText }))
-    throw new Error(`Flying Tigers ${context} failed (${res.status}): ${JSON.stringify(body)}`)
+    console.error(`[FlyingTigers] ${context} failed (${res.status}):`, JSON.stringify(body))
+    throw Object.assign(new Error(flyingTigersErrorMessage(context, res.status, body)), { status: res.status })
   }
   return res.json() as Promise<T>
+}
+
+// ─── Coverage ─────────────────────────────────────────────────────────────────
+
+/** A province Flying Tigers picks up from and delivers to. */
+export type FlyingTigersProvince = { provinceCode: string; provinceLabel: string }
+
+// Buyers and sellers write Metro Manila several ways
+const PROVINCE_ALIASES: Record<string, string> = {
+  ncr: 'metro manila',
+  'national capital region': 'metro manila',
+  manila: 'metro manila',
+}
+const provinceKey = (name: string) => {
+  const key = name.toLowerCase().replace(/\s+/g, ' ').trim().replace(/^province of /, '')
+  return PROVINCE_ALIASES[key] ?? key
+}
+
+/** The covered province an address's province names, or null when Flying Tigers doesn't serve it. */
+export function coveredProvince(
+  name: string | undefined | null,
+  covered: FlyingTigersProvince[]
+): FlyingTigersProvince | null {
+  if (!name?.trim()) return null
+  const key = provinceKey(name)
+  return covered.find((p) => provinceKey(p.provinceLabel) === key) ?? null
+}
+
+let coverageCache: { key: string; at: number; provinces: FlyingTigersProvince[] } | null = null
+const COVERAGE_TTL_MS = 60 * 60 * 1000
+
+/** The provinces Flying Tigers serves, from its API, kept for an hour. */
+export async function getFlyingTigersCoveredProvinces(
+  apiKey: string,
+  apiSecret: string
+): Promise<FlyingTigersProvince[]> {
+  if (coverageCache && coverageCache.key === apiKey && Date.now() - coverageCache.at < COVERAGE_TTL_MS) {
+    return coverageCache.provinces
+  }
+  const res = await fetch(`${FLYINGTIGERS_BASE_URL}/api/addresses/covered-provinces`, {
+    headers: getAuthHeaders(apiKey, apiSecret),
+  })
+  const rows = await handleResponse<any[]>(res, 'list covered provinces')
+  const provinces = (Array.isArray(rows) ? rows : [])
+    .filter((r) => r?.provinceLabel)
+    .map((r) => ({ provinceCode: String(r.provinceCode ?? ''), provinceLabel: String(r.provinceLabel) }))
+  coverageCache = { key: apiKey, at: Date.now(), provinces }
+  return provinces
 }
 
 // ─── Rate Calculation ─────────────────────────────────────────────────────────

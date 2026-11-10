@@ -25,6 +25,8 @@ import {
   FlyingTigersWaybillUnavailable,
   FlyingTigersOrderPayload,
   FlyingTigersAddress,
+  coveredProvince,
+  getFlyingTigersCoveredProvinces,
 } from '../../../services/flyingtigers'
 import { toPhMobile } from '../../../lib/ph-mobile'
 import { sellerOwnsOrder } from '../../../lib/seller-ownership'
@@ -346,6 +348,27 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           }
         }
 
+        // Flying Tigers serves a short list of provinces; say so plainly instead
+        // of passing on its 400, and send its own province codes
+        const covered = await getFlyingTigersCoveredProvinces(creds.api_key as string, creds.api_secret as string).catch(
+          () => null
+        )
+        const ftRaw: Record<'from' | 'to', any> = { from: { ...orderData.from }, to: { ...orderData.to } }
+        if (covered?.length) {
+          for (const [side, norm] of [['from', ftFrom], ['to', ftTo]] as const) {
+            const hit = coveredProvince(norm.province, covered)
+            if (!hit) {
+              const where = norm.province ? `${side === 'from' ? 'from' : 'to'} ${norm.province}` : `${side === 'from' ? 'from' : 'to'} an address without a province`
+              return res.status(400).json({
+                code: 'courier_area_not_covered',
+                message: `Flying Tigers doesn't deliver ${where}. It covers ${covered.map((p) => p.provinceLabel).join(', ')}.`,
+              })
+            }
+            norm.province = hit.provinceLabel
+            ftRaw[side].provinceCode ??= hit.provinceCode
+          }
+        }
+
         // Map our service level to FT's deliveryType. FT only accepts
         // "intra city" | "next day" | "same day" — it has no "standard"/
         // "express", so those map to the closest supported option (next day).
@@ -388,8 +411,8 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           declaredValueInPesos: ftParcel.declared_value ?? 0,
           isCashOnDelivery: ftParcel.is_cod ?? false,
           remarks: ftParcel.description,
-          sender: toFtAddress({ ...ftFrom, phone: senderMobile }, orderData.from),
-          receiver: toFtAddress({ ...ftTo, phone: receiverMobile }, orderData.to),
+          sender: toFtAddress({ ...ftFrom, phone: senderMobile }, ftRaw.from),
+          receiver: toFtAddress({ ...ftTo, phone: receiverMobile }, ftRaw.to),
           packages: [
             {
               weightInKg: ftParcel.weight_kg,
