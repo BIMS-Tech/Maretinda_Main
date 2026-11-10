@@ -3,6 +3,7 @@ import {
   MedusaResponse
 } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
+import { sellerIdOfMember, sellerOwnsReview } from '../../../../../../lib/seller-ownership'
 // Note: using pgConnection directly since query.graph requires admin actor for 'review' entity
 // Note: using /seller/sellers/me/review/:id (singular) to avoid Mercur's checkResourceOwnershipByResourceId
 // middleware on /seller/sellers/me/reviews/:id which only checks seller_review links (not product_review links)
@@ -37,6 +38,11 @@ export const GET = async (
     const member = await pgConnection('member').where('id', memberId).first()
     if (!member?.seller_id) {
       return res.status(404).json({ message: 'Seller not found' })
+    }
+
+    // Only reviews of this seller's shop or products; same answer as an unknown id
+    if (!(await sellerOwnsReview(pgConnection, member.seller_id, id))) {
+      return res.status(404).json({ message: `Review ${id} not found` })
     }
 
     // Fetch review + customer (via link table) + product (via link table)
@@ -133,6 +139,12 @@ export const POST = async (
       return res.status(500).json({
         message: 'Database connection not available'
       })
+    }
+
+    // Only this seller's reviews can carry their reply
+    const sellerId = await sellerIdOfMember(pgConnection, (req as any).auth_context?.actor_id)
+    if (!sellerId || !(await sellerOwnsReview(pgConnection, sellerId, id))) {
+      return res.status(404).json({ message: 'Review not found' })
     }
 
     const result = await pgConnection('review')

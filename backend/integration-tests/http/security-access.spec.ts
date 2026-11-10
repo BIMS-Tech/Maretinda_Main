@@ -241,6 +241,91 @@ medusaIntegrationTestRunner({
         expect(JSON.stringify(res.data)).not.toContain("REF-A")
       })
 
+      // The review routes took any review id: any seller could read a buyer's
+      // name and email off another shop's review, or rewrite that shop's reply
+      it("read or reply to a review of another seller's product", async () => {
+        const product = await productOfA()
+        const pg = pgOf(getContainer())
+        await pg("review").insert({
+          id: "rev_a",
+          reference: "product",
+          rating: 5,
+          customer_note: "Great barong",
+          seller_note: "Salamat po!",
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        await pg("product_product_review_review").insert({
+          id: "link_rev_a",
+          product_id: product.id,
+          review_id: "rev_a",
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+
+        expect((await api.get(`/vendor/sellers/me/review/rev_a`, asB())).status).toBe(404)
+        expect((await api.post(`/vendor/sellers/me/review/rev_a`, { seller_note: "fake reply" }, asB())).status).toBe(404)
+        expect((await pg("review").where("id", "rev_a").first()).seller_note).toBe("Salamat po!")
+
+        // The owner still can
+        expect((await api.get(`/vendor/sellers/me/review/rev_a`, { headers: bearer(a.token), ...noThrow })).status).toBe(200)
+      })
+
+      it("read, change or delete another seller's 3D model", async () => {
+        const product = await productOfA()
+        const pg = pgOf(getContainer())
+        await pg("product_3d_model").insert({
+          id: "p3d_a",
+          product_id: product.id,
+          seller_id: a.seller.id,
+          status: "succeeded",
+          source_image_url: "https://cdn.example/a.png",
+          provider_task_id: "task_a",
+          is_primary: false,
+        })
+
+        const listed = await api.get(`/vendor/3d-models/products/${product.id}`, asB())
+        expect(JSON.stringify(listed.data)).not.toContain("p3d_a")
+        expect([403, 404]).toContain((await api.get(`/vendor/3d-models/tasks/p3d_a`, asB())).status)
+        expect([403, 404]).toContain((await api.post(`/vendor/3d-models/p3d_a/set-primary`, {}, asB())).status)
+        expect([403, 404]).toContain((await api.patch(`/vendor/3d-models/p3d_a`, { is_primary: true }, asB())).status)
+        expect([403, 404]).toContain((await api.delete(`/vendor/3d-models/p3d_a`, asB())).status)
+        const row = await pg("product_3d_model").where("id", "p3d_a").first()
+        expect(row).toMatchObject({ is_primary: false })
+      })
+
+      it("read or post into another seller's buyer chat", async () => {
+        const { customer } = await createCustomer(getContainer())
+        const chat = new (require("../../src/services/chat").default)(getContainer())
+        const conversation = await chat.getOrCreateConversation(a.seller.id, customer.id, "Barong")
+
+        expect([403, 404]).toContain((await api.get(`/vendor/chat/${conversation.id}`, asB())).status)
+        expect([403, 404]).toContain((await api.post(`/vendor/chat/${conversation.id}/message`, { body: "hi" }, asB())).status)
+        const listed = await api.get(`/vendor/chat`, asB())
+        expect(JSON.stringify(listed.data)).not.toContain(conversation.id)
+      })
+
+      it("change or withdraw another seller's flash sale entry", async () => {
+        const product = await productOfA()
+        const pg = pgOf(getContainer())
+        await pg.raw(
+          `INSERT INTO flash_sale (id, title, status, starts_at, ends_at, created_at, updated_at)
+           VALUES ('fs_2', 'Sale', 'scheduled', now(), now() + interval '1 day', now(), now())`
+        )
+        const entered = await api.post(
+          "/vendor/flash-sales/fs_2/items",
+          { product_id: product.id, discount_type: "percentage", discount_value: 20 },
+          { headers: bearer(a.token), ...noThrow }
+        )
+        const itemId = entered.data.item?.id
+        expect(itemId).toBeTruthy()
+
+        expect([403, 404]).toContain((await api.put(`/vendor/flash-sales/fs_2/items/${itemId}`, { discount_value: 90 }, asB())).status)
+        expect([403, 404]).toContain((await api.delete(`/vendor/flash-sales/fs_2/items/${itemId}`, asB())).status)
+        const row = (await pg.raw(`SELECT discount_value FROM flash_sale_item WHERE id = ?`, [itemId])).rows[0]
+        expect(Number(row.discount_value)).toBe(20)
+      })
+
       it("use another seller's promotion", async () => {
         await productOfA()
         const created = await api.post(
