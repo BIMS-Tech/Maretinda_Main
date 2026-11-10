@@ -684,7 +684,7 @@ export const Register = () => {
           <p className="text-white/50 text-xs mb-2">Step {stepIdx + 1} of {steps.length}</p>
           <div className="flex gap-1 mb-2">
             {steps.map((_, i) => (
-              <div key={i} className={`h-1 rounded-full flex-1 transition-all duration-300 ${i <= stepIdx ? "bg-white" : "bg-white/20"}`} />
+              <div key={i} className={`h-1 rounded-full flex-1 transition-all duration-300 ${i <= stepIdx ? "bg-ui-bg-base" : "bg-white/20"}`} />
             ))}
           </div>
           <p className="text-white text-sm font-semibold">{currentStep?.label}</p>

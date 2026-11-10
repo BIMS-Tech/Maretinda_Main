@@ -63,7 +63,7 @@ export const FlashSaleEdit = () => {
           <Heading level="h2">Edit Flash Sale</Heading>
         </Drawer.Header>
         <Drawer.Body className="p-6">
-          {isLoading ? <div className="text-sm text-gray-400">Loading...</div> : (
+          {isLoading ? <div className="text-sm text-ui-fg-muted">Loading...</div> : (
             <div className="space-y-5">
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-sm font-medium">Title *</Label>

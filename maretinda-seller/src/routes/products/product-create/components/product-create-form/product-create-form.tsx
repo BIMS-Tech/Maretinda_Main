@@ -13,6 +13,7 @@ import {
   useExtendableForm,
 } from "../../../../../extensions"
 import { useCreateProduct } from "../../../../../hooks/api/products"
+import { useSetupTasks } from "../../../../../hooks/api/setup-tasks"
 import { uploadFilesQuery } from "../../../../../lib/client"
 import {
   PRODUCT_CREATE_FORM_DEFAULTS,
@@ -74,6 +75,9 @@ export const ProductCreateForm = ({
   })
 
   const { mutateAsync, isPending } = useCreateProduct()
+  // Until store setup is done a product can only be saved as a draft
+  const { canSell, isPending: isSetupPending } = useSetupTasks()
+  const draftOnly = !isSetupPending && !canSell
 
   /**
    * TODO: Important to revisit this - use variants watch so high in the tree can cause needless rerenders of the entire page
@@ -352,27 +356,37 @@ export const ProductCreateForm = ({
           </RouteFocusModal.Body>
         </ProgressTabs>
         <RouteFocusModal.Footer>
-          <div className="flex items-center justify-end gap-x-2">
+          <div className="flex w-full flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
+            {draftOnly && (
+              <p className="text-ui-fg-subtle mr-auto text-xs">
+                Products are saved as drafts until your store setup is finished and approved.
+              </p>
+            )}
+            <div className="flex items-center justify-end gap-x-2">
             <RouteFocusModal.Close asChild>
               <Button variant="secondary" size="small">
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button
-              data-name={SAVE_DRAFT_BUTTON}
-              size="small"
-              type="submit"
-              isLoading={isPending}
-              className="whitespace-nowrap"
-            >
-              Draft
-            </Button>
+            {!draftOnly && (
+              <Button
+                data-name={SAVE_DRAFT_BUTTON}
+                size="small"
+                type="submit"
+                isLoading={isPending}
+                className="whitespace-nowrap"
+              >
+                Draft
+              </Button>
+            )}
             <PrimaryButton
               tab={tab}
               next={onNext}
               isLoading={isPending}
               showInventoryTab={showInventoryTab}
+              draftOnly={draftOnly}
             />
+            </div>
           </div>
         </RouteFocusModal.Footer>
       </KeyboundForm>
@@ -385,6 +399,8 @@ type PrimaryButtonProps = {
   next: (tab: Tab) => void
   isLoading?: boolean
   showInventoryTab: boolean
+  /** Store setup isn't finished: the last step saves a draft instead */
+  draftOnly?: boolean
 }
 
 const PrimaryButton = ({
@@ -392,6 +408,7 @@ const PrimaryButton = ({
   next,
   isLoading,
   showInventoryTab,
+  draftOnly = false,
 }: PrimaryButtonProps) => {
   const { t } = useTranslation()
 
@@ -401,14 +418,14 @@ const PrimaryButton = ({
   ) {
     return (
       <Button
-        data-name="publish-button"
+        data-name={draftOnly ? SAVE_DRAFT_BUTTON : "publish-button"}
         key="submit-button"
         type="submit"
         variant="primary"
         size="small"
         isLoading={isLoading}
       >
-        Create Product
+        {draftOnly ? "Save as draft" : "Create Product"}
       </Button>
     )
   }

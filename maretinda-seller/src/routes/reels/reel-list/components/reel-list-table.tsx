@@ -6,7 +6,7 @@ import { Reel, ReelStatus, useReels } from "../../../../hooks/api/reels"
 
 const STATUS_STYLE: Record<ReelStatus, string> = {
   published: "bg-ui-tag-green-bg text-ui-tag-green-text",
-  draft: "bg-gray-100 text-gray-600",
+  draft: "bg-ui-bg-subtle text-ui-fg-subtle",
   archived: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
 }
 
@@ -63,10 +63,10 @@ function ReelCard({ reel }: { reel: Reel }) {
       </div>
 
       <div className="p-3">
-        <div className="text-sm font-medium text-gray-900 truncate">
+        <div className="text-sm font-medium text-ui-fg-base truncate">
           {reel.title || "Untitled reel"}
         </div>
-        <div className="mt-1 flex items-center gap-3 text-xs text-gray-500">
+        <div className="mt-1 flex items-center gap-3 text-xs text-ui-fg-subtle">
           <span>{reel.view_count} views</span>
           <span>{reel.like_count} likes</span>
         </div>
@@ -84,7 +84,7 @@ export const ReelListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading level="h2">Reels</Heading>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-ui-fg-subtle mt-0.5">
             Short videos shown on your shop page and the storefront reels feed
             {count > 0 ? ` — ${count} total` : ""}
           </p>
@@ -99,14 +99,14 @@ export const ReelListTable = () => {
       </div>
 
       {isLoading ? (
-        <div className="px-6 py-8 text-center text-sm text-gray-400">
+        <div className="px-6 py-8 text-center text-sm text-ui-fg-muted">
           Loading...
         </div>
       ) : reels.length === 0 ? (
         <div className="px-6 py-12 text-center">
-          <MediaPlay className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-600">No reels yet</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <MediaPlay className="w-8 h-8 text-ui-fg-muted mx-auto mb-3" />
+          <p className="text-sm font-medium text-ui-fg-subtle">No reels yet</p>
+          <p className="text-xs text-ui-fg-muted mt-1">
             Post a short vertical video to show your products in action
           </p>
           <Button

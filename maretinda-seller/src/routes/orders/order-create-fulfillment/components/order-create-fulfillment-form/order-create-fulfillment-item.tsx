@@ -108,7 +108,7 @@ export function OrderCreateFulfillmentItem({
           </div>
 
           <div className="flex flex-1 items-center gap-x-1">
-            <div className="mr-2 block h-[16px] w-[2px] bg-gray-200" />
+            <div className="mr-2 block h-[16px] w-[2px] bg-ui-bg-component" />
 
             <div className="text-small flex flex-1 flex-col">
               <span className="text-ui-fg-subtle font-medium">
@@ -120,7 +120,7 @@ export function OrderCreateFulfillmentItem({
             </div>
 
             <div className="flex flex-1 items-center gap-x-1">
-              <div className="mr-2 block h-[16px] w-[2px] bg-gray-200" />
+              <div className="mr-2 block h-[16px] w-[2px] bg-ui-bg-component" />
 
               <div className="flex flex-col">
                 <span className="text-ui-fg-subtle font-medium">

@@ -61,7 +61,7 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
   return (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="flex flex-1 flex-col">
-        <div className="bg-ui-bg-subtle sticky top-0">
+        <div className="bg-ui-bg-subtle sticky top-0 z-10">
           <Header />
           <div className="px-3">
             <Divider variant="dashed" />
@@ -86,7 +86,7 @@ const MainSidebar = ({ subscriptionActive }: { subscriptionActive: boolean }) =>
           </>
         )}
         </div>
-        <div className="bg-ui-bg-subtle sticky bottom-0">
+        <div className="bg-ui-bg-subtle sticky bottom-0 z-10">
           <UserSection />
         </div>
       </div>

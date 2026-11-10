@@ -85,7 +85,8 @@ function buildFeatureRows(features: Record<string, unknown>): FeatureRow[] {
   rows.push({ label: "Flash sales & vouchers", value: Boolean(features.flash_sales) })
   rows.push({ label: "Subscription products",  value: Boolean(features.subscription_products) })
 
-  if (features.dedicated_manager === true) {
+  // Dedicated support already reads "Dedicated account manager" above
+  if (features.dedicated_manager === true && support !== "dedicated") {
     rows.push({ label: "Dedicated account manager", value: true })
   }
 
@@ -163,17 +164,17 @@ function GiyaPayAutoSubmit({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="rounded-2xl bg-white p-8 shadow-2xl text-center max-w-sm w-full">
+      <div className="rounded-2xl bg-ui-bg-base p-8 shadow-2xl text-center max-w-sm w-full">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-ui-border-interactive border-t-transparent mx-auto mb-4" />
-        <p className="text-sm font-semibold text-gray-700">Redirecting to GiyaPay…</p>
-        <p className="mt-1 text-xs text-gray-400">Do not close this tab.</p>
+        <p className="text-sm font-semibold text-ui-fg-subtle">Redirecting to GiyaPay…</p>
+        <p className="mt-1 text-xs text-ui-fg-muted">Do not close this tab.</p>
         <form ref={formRef} method="POST" action={checkoutUrl} className="hidden">
           {Object.entries(formData).map(([k, v]) => (
             <input key={k} type="hidden" name={k} value={v} />
           ))}
           <input type="hidden" name="payment_method" value={selectedMethod} />
         </form>
-        <button onClick={onCancel} className="mt-4 text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+        <button onClick={onCancel} className="mt-4 text-xs text-ui-fg-muted hover:text-ui-fg-base">Cancel</button>
       </div>
     </div>
   )
@@ -213,7 +214,7 @@ const PAYMENT_METHOD_CONFIG: Record<string, { title: string; image?: string; fal
   QRPH: {
     title: "QR Ph",
     fallback: (
-      <div className="flex items-center justify-center w-14 h-9 rounded-md border border-ui-border-base bg-white">
+      <div className="flex items-center justify-center w-14 h-9 rounded-md border border-ui-border-base bg-ui-bg-base">
         <span className="text-[#EF4444] font-bold text-xs">QR</span>
         <span className="text-[#F59E0B] font-bold text-xs ml-0.5">Ph</span>
       </div>
@@ -274,7 +275,7 @@ function MethodModal({ methods, onSelect, onCancel }: {
                 <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                   isSelected ? "border-ui-border-interactive bg-ui-button-inverted" : "border-ui-border-strong bg-ui-bg-base"
                 }`}>
-                  {isSelected && <span className="w-2 h-2 rounded-full bg-white" />}
+                  {isSelected && <span className="w-2 h-2 rounded-full bg-ui-bg-base" />}
                 </span>
                 <span className="flex-shrink-0 flex items-center justify-center h-9">
                   {config.image ? (
@@ -313,7 +314,7 @@ function DowngradeModal({ planName, currentPlanName, onConfirm, onCancel }: {
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
+      <div className="rounded-2xl bg-ui-bg-base shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-ui-tag-orange-bg flex items-center justify-center flex-shrink-0">
             <svg className="w-5 h-5 text-ui-tag-orange-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -321,16 +322,16 @@ function DowngradeModal({ planName, currentPlanName, onConfirm, onCancel }: {
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">Confirm Downgrade</h3>
-            <p className="text-xs text-gray-500">{currentPlanName} → {planName}</p>
+            <h3 className="text-base font-semibold text-ui-fg-base">Confirm Downgrade</h3>
+            <p className="text-xs text-ui-fg-subtle">{currentPlanName} → {planName}</p>
           </div>
         </div>
-        <p className="text-sm text-gray-600 mb-5">
+        <p className="text-sm text-ui-fg-subtle mb-5">
           Downgrading from <strong>{currentPlanName}</strong> to <strong>{planName}</strong> will take effect immediately. Some features may no longer be available.
         </p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 rounded-xl bg-brand-yellow px-4 py-2 text-sm font-semibold text-white hover:bg-brand-yellow">Yes, Downgrade</button>
+          <button onClick={onCancel} className="flex-1 rounded-xl border border-ui-border-base px-4 py-2 text-sm font-medium text-ui-fg-subtle hover:bg-ui-bg-base-hover">Cancel</button>
+          <button onClick={onConfirm} className="flex-1 rounded-xl bg-brand-yellow px-4 py-2 text-sm font-semibold hover:brightness-105">Yes, Downgrade</button>
         </div>
       </div>
     </div>
@@ -345,7 +346,7 @@ function TrialModal({ plan, onConfirm, onCancel, loading }: {
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="rounded-2xl bg-white shadow-2xl w-full max-w-sm p-6">
+      <div className="rounded-2xl bg-ui-bg-base shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-ui-bg-highlight flex items-center justify-center flex-shrink-0">
             <svg className="w-5 h-5 text-ui-fg-interactive" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -353,16 +354,16 @@ function TrialModal({ plan, onConfirm, onCancel, loading }: {
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-semibold text-gray-900">Start Free Trial</h3>
-            <p className="text-xs text-gray-500">{trialLabel(plan.trial_days).short} on {plan.name}</p>
+            <h3 className="text-base font-semibold text-ui-fg-base">Start Free Trial</h3>
+            <p className="text-xs text-ui-fg-subtle">{trialLabel(plan.trial_days).short} on {plan.name}</p>
           </div>
         </div>
-        <p className="text-sm text-gray-600 mb-5">
+        <p className="text-sm text-ui-fg-subtle mb-5">
           You'll get <strong>{trialLabel(plan.trial_days).length}</strong> of full access to the <strong>{plan.name}</strong> plan at no cost.
           No credit card required to start. At the end of the trial, you can subscribe to continue.
         </p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+          <button onClick={onCancel} className="flex-1 rounded-xl border border-ui-border-base px-4 py-2 text-sm font-medium text-ui-fg-subtle hover:bg-ui-bg-base-hover">Cancel</button>
           <button onClick={onConfirm} disabled={loading} className="flex-1 rounded-xl bg-ui-button-inverted px-4 py-2 text-sm font-semibold text-white hover:bg-ui-button-inverted-hover disabled:opacity-50">
             {loading ? "Starting…" : "Start Free Trial"}
           </button>
@@ -466,17 +467,17 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
 
   if (state === "cancelled") {
     return (
-      <div className="rounded-2xl border border-gray-500/30 bg-gray-500/10 p-5 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-gray-500/20 flex items-center justify-center flex-shrink-0">
-          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="rounded-2xl border border-ui-border-base bg-ui-bg-subtle p-5 flex items-start gap-4">
+        <div className="w-10 h-10 rounded-full bg-ui-bg-component flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-ui-fg-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-gray-300">Payment Cancelled</p>
-          <p className="text-xs text-gray-400 mt-1">No charges were made. Select a plan below to try again.</p>
+          <p className="text-sm font-bold text-ui-fg-muted">Payment Cancelled</p>
+          <p className="text-xs text-ui-fg-muted mt-1">No charges were made. Select a plan below to try again.</p>
         </div>
-        <button onClick={onDismiss} className="text-gray-400/60 hover:text-gray-400">
+        <button onClick={onDismiss} className="text-ui-fg-muted hover:text-ui-fg-subtle">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -486,6 +487,59 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
   }
 
   return null
+}
+
+// ---------------------------------------------------------------------------
+// Enterprise: custom terms, and where the upcoming AI seller agent will live
+// ---------------------------------------------------------------------------
+const ENTERPRISE_FEATURES = [
+  "Everything in Premium",
+  "AI seller agent",
+  "Custom integrations and API access",
+  "Dedicated account team",
+]
+
+function EnterpriseCard() {
+  return (
+    <div className="mt-5 grid gap-6 rounded-2xl border border-ui-border-base bg-ui-bg-base p-6 md:grid-cols-[1fr_auto] md:items-center">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-ui-fg-interactive">Enterprise</p>
+          <span className="rounded-full border border-ui-tag-orange-border bg-ui-tag-orange-bg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-tag-orange-text">
+            AI agent coming soon
+          </span>
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-ui-bg-highlight text-ui-fg-interactive">
+            <Sparkles />
+          </div>
+          <div>
+            <h3 className="text-xl font-extrabold leading-tight text-ui-fg-base">An AI agent that runs your shop with you</h3>
+            <p className="mt-1 max-w-2xl text-sm text-ui-fg-subtle">
+              Tell it what you need, like "set up my store location" or "post this product", and it asks for the details
+              it needs and does it for you. For high-volume brands, with custom pricing.
+            </p>
+          </div>
+        </div>
+        <ul className="grid gap-x-6 gap-y-2 text-xs text-ui-fg-subtle sm:grid-cols-2">
+          {ENTERPRISE_FEATURES.map((label) => (
+            <li key={label} className="flex items-center gap-2.5">
+              <svg className="h-3.5 w-3.5 flex-shrink-0 text-ui-fg-interactive" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              {label}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <a
+        href="mailto:info@maretinda.com?subject=Enterprise%20plan"
+        className="transition-fg inline-flex items-center justify-center rounded-xl border border-ui-border-interactive px-6 py-3 text-sm font-bold text-ui-fg-interactive hover:bg-ui-bg-highlight"
+      >
+        Contact sales
+      </a>
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -558,9 +612,8 @@ function PlanCard({
     if (changeType === "renew") return "Renew Plan"
     if (changeType === "upgrade") return `Upgrade to ${plan.name}`
     if (changeType === "downgrade") return `Downgrade to ${plan.name}`
-    if (isPopular) return "Start Growing Now →"
-    if (plan.name === "Premium") return "Contact Sales →"
-    return "Get Started →"
+    // Every published plan is self-serve; Contact sales belongs to Enterprise
+    return `Choose ${plan.name}`
   }
 
   return (
@@ -647,8 +700,8 @@ function PlanCard({
         </ul>
       </div>
 
-      {/* CTA buttons */}
-      <div className={`p-6 pt-0 flex flex-col gap-2`}>
+      {/* CTA buttons: the same footer on every card, so buttons line up */}
+      <div className={`mt-auto flex flex-col gap-2 border-t ${dividerColor} p-6`}>
         <button
           disabled={loading}
           onClick={() => onSelect(plan)}
@@ -1079,6 +1132,8 @@ export const SubscriptionPage = () => {
           ) : (
             <p className="text-sm text-ui-fg-subtle">No plans available.</p>
           )}
+
+          <EnterpriseCard />
         </div>
 
         {/* Footer note */}

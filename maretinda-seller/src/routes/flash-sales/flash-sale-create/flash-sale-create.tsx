@@ -46,7 +46,7 @@ export const FlashSaleCreate = () => {
       <Drawer.Content>
         <Drawer.Header>
           <Heading level="h2">Create Flash Sale</Heading>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-ui-fg-subtle mt-1">
             Your flash sale will be submitted for admin review before going live.
           </p>
         </Drawer.Header>
@@ -101,7 +101,7 @@ export const FlashSaleCreate = () => {
                 value={form.max_order_quantity}
                 onChange={(e) => setForm((f) => ({ ...f, max_order_quantity: e.target.value }))}
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ui-fg-muted">
                 Limits how many sale items a single customer can purchase at the discounted price.
               </p>
             </div>

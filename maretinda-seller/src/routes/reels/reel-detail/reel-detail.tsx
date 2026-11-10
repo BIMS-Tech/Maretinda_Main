@@ -17,8 +17,8 @@ import { useDeleteReel, useReel, useUpdateReel } from "../../../hooks/api/reels"
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex-1 px-4 py-3 text-center">
-      <div className="text-lg font-semibold text-gray-900">{value}</div>
-      <div className="text-xs text-gray-500">{label}</div>
+      <div className="text-lg font-semibold text-ui-fg-base">{value}</div>
+      <div className="text-xs text-ui-fg-subtle">{label}</div>
     </div>
   )
 }
@@ -56,7 +56,7 @@ export const ReelDetail = () => {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-y-3">
-        <Container className="px-6 py-8 text-sm text-gray-400">
+        <Container className="px-6 py-8 text-sm text-ui-fg-muted">
           Loading...
         </Container>
       </div>
@@ -67,7 +67,7 @@ export const ReelDetail = () => {
     return (
       <div className="flex flex-col gap-y-3">
         <Container className="px-6 py-12 text-center">
-          <p className="text-sm font-medium text-gray-600">Reel not found</p>
+          <p className="text-sm font-medium text-ui-fg-subtle">Reel not found</p>
           <Button
             className="mt-4"
             onClick={() => navigate("/reels")}
@@ -117,7 +117,7 @@ export const ReelDetail = () => {
         <div className="flex items-center justify-between px-6 py-4">
           <div>
             <Heading level="h2">{reel.title || "Untitled reel"}</Heading>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-ui-fg-subtle mt-0.5">
               {reel.status === "published"
                 ? `Published ${reel.published_at ? new Date(reel.published_at).toLocaleDateString() : ""}`
                 : `Saved as ${reel.status}`}
@@ -216,14 +216,14 @@ export const ReelDetail = () => {
               </div>
             ) : (
               <>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                <p className="text-sm text-ui-fg-subtle whitespace-pre-wrap">
                   {reel.description || "No caption"}
                 </p>
                 <div className="mt-6 flex divide-x border rounded-lg">
                   <Stat label="Views" value={reel.view_count} />
                   <Stat label="Likes" value={reel.like_count} />
                 </div>
-                <p className="mt-4 text-xs text-gray-400">
+                <p className="mt-4 text-xs text-ui-fg-muted">
                   Shoppers message you directly from this reel — replies land in
                   your Messages inbox.
                 </p>

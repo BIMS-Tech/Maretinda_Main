@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 
 import { requiredDocsFor } from "../../lib/business-documents"
+import { storeReadiness } from "../../lib/store-readiness"
 import { getSettlementInfo } from "../../lib/settlement"
 import { Storeseller } from "../../types/user"
 import { useMe } from "./users"
@@ -216,10 +217,15 @@ export const useSetupTasks = () => {
   const pending = tasks.filter((task) => !task.complete)
   const progress = useMemo(() => getSetupProgress(tasks), [tasks])
 
+  const { canSell, awaitingApproval } = storeReadiness(tasks, seller?.verification_status)
+
   return {
     tasks,
     pending,
     progress,
+    /** Setup done and documents approved: may publish, promote and sell. */
+    canSell: !isPending && canSell,
+    awaitingApproval,
     /** Drives the red count badges. 0 once every task is done or under review. */
     pendingCount: isPending || isError ? 0 : pending.length,
     isPending,

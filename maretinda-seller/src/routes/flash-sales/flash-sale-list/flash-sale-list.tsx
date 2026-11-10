@@ -3,6 +3,7 @@ import { SingleColumnPage } from "../../../components/layout/pages"
 import { useDashboardExtension } from "../../../extensions"
 import { FlashSaleListTable } from "./components/flash-sale-list-table"
 import { FeatureGate } from "../../../components/common/feature-gate"
+import { SetupGate } from "../../../components/common/setup-gate"
 
 export const FlashSaleList = () => {
   const { getWidgets } = useDashboardExtension()
@@ -21,8 +22,10 @@ export const FlashSaleList = () => {
         featureName="Flash Sales"
         description="Flash Sales lets you create time-limited discounts to drive traffic and boost conversions."
       >
-        <FlashSaleListTable />
-        <Outlet />
+        <SetupGate feature="join flash sales">
+          <FlashSaleListTable />
+          <Outlet />
+        </SetupGate>
       </FeatureGate>
     </SingleColumnPage>
   )

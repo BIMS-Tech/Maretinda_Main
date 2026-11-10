@@ -37,7 +37,7 @@ const NavBadge = ({ count }: { count?: number }) => {
   }
 
   return (
-    <span className="bg-ui-tag-red-bg text-ui-tag-red-text border-ui-tag-red-border ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-[11px] font-medium leading-none">
+    <span className="bg-ui-tag-orange-bg text-ui-tag-orange-text border-ui-tag-orange-border ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-[11px] font-medium leading-none">
       {count > 99 ? "99+" : count}
     </span>
   )

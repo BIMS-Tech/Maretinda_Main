@@ -199,7 +199,7 @@ export const CategorySelect = forwardRef<
       </Select.Trigger>
 
       <Select.Portal>
-        <Select.Content className="bg-white border shadow-lg rounded-md">
+        <Select.Content className="bg-ui-bg-base border shadow-lg rounded-md">
           <Select.Viewport className="p-2">
             {options.length > 0 &&
               !showLoading &&

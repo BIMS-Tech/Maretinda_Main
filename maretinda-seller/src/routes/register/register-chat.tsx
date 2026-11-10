@@ -942,8 +942,8 @@ export const RegisterChat = () => {
       {/* Left brand panel */}
       <div className="hidden lg:flex flex-col justify-between w-[42%] p-12 relative overflow-hidden flex-shrink-0" style={{ backgroundColor: BRAND }}>
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10 bg-white" style={{ animation: "mtd-blob 9s ease-in-out infinite" }} />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10 bg-white" style={{ animation: "mtd-blob 11s ease-in-out infinite reverse" }} />
+          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10 bg-ui-bg-base" style={{ animation: "mtd-blob 9s ease-in-out infinite" }} />
+          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10 bg-ui-bg-base" style={{ animation: "mtd-blob 11s ease-in-out infinite reverse" }} />
         </div>
 
         <div className="relative z-10 flex items-center gap-3">
@@ -981,7 +981,7 @@ export const RegisterChat = () => {
         <div className="relative z-10">
           <p className="text-white/50 text-xs mb-2">{progress}% complete</p>
           <div className="w-full h-1 rounded-full bg-white/20 overflow-hidden">
-            <div className="h-1 rounded-full bg-white transition-all duration-500" style={{ width: `${progress}%` }} />
+            <div className="h-1 rounded-full bg-ui-bg-base transition-all duration-500" style={{ width: `${progress}%` }} />
           </div>
           <p className="text-white/40 text-xs mt-3">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
         </div>

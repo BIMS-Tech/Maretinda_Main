@@ -1,7 +1,8 @@
-import { MediaPlay, Plus, ReceiptPercent } from "@medusajs/icons"
+import { ListCheckbox, MediaPlay, Plus, ReceiptPercent } from "@medusajs/icons"
 import { Link } from "react-router-dom"
 import { useMe } from "../../../hooks/api"
 import { usePlanLimits } from "../../../hooks/api/plan-limits"
+import { useSetupTasks } from "../../../hooks/api/setup-tasks"
 import { useSubscriptionStatus } from "../../../hooks/api/subscription"
 import { daysLeft } from "../dashboard-stats"
 
@@ -17,12 +18,19 @@ export const DashboardHero = () => {
   const { data: subscription } = useSubscriptionStatus()
   const left = daysLeft(subscription?.subscription?.end_date)
   const marketing = planName === "Growth" || planName === "Premium"
+  const { canSell, pending } = useSetupTasks()
 
-  const actions = [
-    { label: "Add product", to: "/products/create", icon: Plus },
-    ...(marketing ? [{ label: "Create voucher", to: "/promotions/create", icon: ReceiptPercent }] : []),
-    { label: "Post a reel", to: "/reels/create", icon: MediaPlay },
-  ]
+  // Until the shop can sell, products are drafts and setup comes first
+  const actions = canSell
+    ? [
+        { label: "Add product", to: "/products/create", icon: Plus },
+        ...(marketing ? [{ label: "Create voucher", to: "/promotions/create", icon: ReceiptPercent }] : []),
+        { label: "Post a reel", to: "/reels/create", icon: MediaPlay },
+      ]
+    : [
+        { label: "Finish store setup", to: pending[0]?.to ?? "/settings/store", icon: ListCheckbox },
+        { label: "Add a draft product", to: "/products/create", icon: Plus },
+      ]
 
   return (
     <div

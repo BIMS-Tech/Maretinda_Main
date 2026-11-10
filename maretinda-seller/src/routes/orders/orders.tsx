@@ -190,25 +190,25 @@ export const Orders: React.FC = () => {
         <div className="mb-4 flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'all' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'all' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-ui-bg-subtle text-ui-fg-subtle'}`}
           >
             All Orders
           </button>
           <button
             onClick={() => setFilter('giyapay')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'giyapay' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'giyapay' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-ui-bg-subtle text-ui-fg-subtle'}`}
           >
             GiyaPay Orders
           </button>
           <button
             onClick={() => setFilter('paid')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'paid' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'paid' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-ui-bg-subtle text-ui-fg-subtle'}`}
           >
             Paid Orders
           </button>
           <button
             onClick={() => setFilter('pending')}
-            className={`px-3 py-1 rounded text-sm ${filter === 'pending' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-gray-100 text-gray-600'}`}
+            className={`px-3 py-1 rounded text-sm ${filter === 'pending' ? 'bg-ui-tag-purple-bg text-ui-fg-interactive' : 'bg-ui-bg-subtle text-ui-fg-subtle'}`}
           >
             Pending Orders
           </button>

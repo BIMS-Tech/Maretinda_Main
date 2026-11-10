@@ -15,7 +15,7 @@ const STATUS_COLOR: Record<string, string> = {
   green: "bg-ui-tag-green-bg text-ui-tag-green-text",
   orange: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
   blue: "bg-ui-tag-purple-bg text-ui-fg-interactive",
-  grey: "bg-gray-100 text-gray-600",
+  grey: "bg-ui-bg-subtle text-ui-fg-subtle",
   red: "bg-ui-tag-red-bg text-ui-tag-red-text",
 }
 
@@ -63,8 +63,8 @@ function ProductSearchSelect({
 
   return (
     <div ref={wrapperRef} className="relative">
-      <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-white focus-within:ring-2 focus-within:ring-ui-border-interactive">
-        <MagnifyingGlass className="w-4 h-4 text-gray-400 shrink-0" />
+      <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-ui-bg-base focus-within:ring-2 focus-within:ring-ui-border-interactive">
+        <MagnifyingGlass className="w-4 h-4 text-ui-fg-muted shrink-0" />
         <input
           className="flex-1 text-sm outline-none placeholder:text-gray-400"
           placeholder="Search your products..."
@@ -75,16 +75,16 @@ function ProductSearchSelect({
         />
         {query && (
           <button onClick={() => { setQuery(""); setOpen(false) }}>
-            <XMark className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+            <XMark className="w-3.5 h-3.5 text-ui-fg-muted hover:text-ui-fg-base" />
           </button>
         )}
       </div>
 
       {open && (
-        <div className="absolute z-50 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-          {isLoading && <div className="px-4 py-3 text-sm text-gray-400">Searching...</div>}
+        <div className="absolute z-50 top-full mt-1 w-full bg-ui-bg-base border border-ui-border-base rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          {isLoading && <div className="px-4 py-3 text-sm text-ui-fg-muted">Searching...</div>}
           {!isLoading && filtered.length === 0 && (
-            <div className="px-4 py-3 text-sm text-gray-400">
+            <div className="px-4 py-3 text-sm text-ui-fg-muted">
               {debouncedQuery ? "No products found" : "Start typing to search"}
             </div>
           )}
@@ -94,15 +94,15 @@ function ProductSearchSelect({
               className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-ui-bg-highlight text-left transition-colors"
               onClick={() => { onSelect({ id: product.id, title: product.title, thumbnail: product.thumbnail }); setQuery(""); setOpen(false) }}
             >
-              <div className="w-9 h-9 rounded-md bg-gray-100 shrink-0 overflow-hidden">
+              <div className="w-9 h-9 rounded-md bg-ui-bg-subtle shrink-0 overflow-hidden">
                 {product.thumbnail
                   ? <img src={product.thumbnail} alt={product.title} className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">IMG</div>
+                  : <div className="w-full h-full flex items-center justify-center text-ui-fg-muted text-[10px]">IMG</div>
                 }
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-800 truncate">{product.title}</div>
-                <div className="text-[10px] text-gray-400 truncate">{product.id}</div>
+                <div className="text-sm font-medium text-ui-fg-base truncate">{product.title}</div>
+                <div className="text-[10px] text-ui-fg-muted truncate">{product.id}</div>
               </div>
               <span className="text-[10px] text-ui-fg-interactive font-medium shrink-0">Select →</span>
             </button>
@@ -150,24 +150,24 @@ function ApplyForm({ flashSaleId, existingIds, onAdded }: {
 
   return (
     <div className="border border-dashed border-[rgba(67,44,99,0.25)] rounded-xl p-5 bg-ui-bg-highlight space-y-4">
-      <p className="text-sm font-semibold text-gray-700">Apply a Product</p>
-      <p className="text-xs text-gray-400">Your application will be reviewed by admin before going live.</p>
+      <p className="text-sm font-semibold text-ui-fg-subtle">Apply a Product</p>
+      <p className="text-xs text-ui-fg-muted">Your application will be reviewed by admin before going live.</p>
 
       {!selected ? (
         <ProductSearchSelect onSelect={setSelected} excludeIds={existingIds} />
       ) : (
-        <div className="flex items-center gap-3 border border-[rgba(67,44,99,0.25)] rounded-lg px-3 py-2.5 bg-white">
-          <div className="w-9 h-9 rounded-md bg-gray-100 shrink-0 overflow-hidden">
+        <div className="flex items-center gap-3 border border-[rgba(67,44,99,0.25)] rounded-lg px-3 py-2.5 bg-ui-bg-base">
+          <div className="w-9 h-9 rounded-md bg-ui-bg-subtle shrink-0 overflow-hidden">
             {selected.thumbnail
               ? <img src={selected.thumbnail} alt={selected.title} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center text-gray-300 text-[10px]">IMG</div>
+              : <div className="w-full h-full flex items-center justify-center text-ui-fg-muted text-[10px]">IMG</div>
             }
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-800 truncate">{selected.title}</div>
-            <div className="text-[10px] text-gray-400 truncate">{selected.id}</div>
+            <div className="text-sm font-medium text-ui-fg-base truncate">{selected.title}</div>
+            <div className="text-[10px] text-ui-fg-muted truncate">{selected.id}</div>
           </div>
-          <button className="text-gray-400 hover:text-gray-600 shrink-0" onClick={() => setSelected(null)}>
+          <button className="text-ui-fg-muted hover:text-ui-fg-base shrink-0" onClick={() => setSelected(null)}>
             <XMark className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -179,7 +179,7 @@ function ApplyForm({ flashSaleId, existingIds, onAdded }: {
             <div className="space-y-1">
               <Label className="text-xs">Discount Type</Label>
               <select
-                className="w-full border rounded-md px-2 py-1.5 text-sm bg-white"
+                className="w-full border rounded-md px-2 py-1.5 text-sm bg-ui-bg-base"
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as any)}
               >
@@ -239,22 +239,22 @@ function ApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { item_st
   })
 
   return (
-    <div className="border border-gray-100 rounded-lg p-4">
+    <div className="border border-ui-border-base rounded-lg p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           {item.product?.thumbnail && (
-            <img src={item.product.thumbnail} alt={item.product?.title} className="w-10 h-10 rounded-md object-cover shrink-0 bg-gray-100" />
+            <img src={item.product.thumbnail} alt={item.product?.title} className="w-10 h-10 rounded-md object-cover shrink-0 bg-ui-bg-subtle" />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-gray-800 truncate">
+              <div className="text-sm font-medium text-ui-fg-base truncate">
                 {item.product?.title || item.product_id}
               </div>
               <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${ITEM_STATUS_STYLE[status] || ITEM_STATUS_STYLE.pending}`}>
                 {status}
               </span>
             </div>
-            <div className="text-xs text-gray-400 mt-0.5">{item.product_id}</div>
+            <div className="text-xs text-ui-fg-muted mt-0.5">{item.product_id}</div>
 
             {editing ? (
               <div className="mt-3 grid grid-cols-3 gap-2">
@@ -277,7 +277,7 @@ function ApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { item_st
                   -{item.discount_value}{item.discount_type === "percentage" ? "%" : "₱"}
                 </span>
                 {item.stock_limit && (
-                  <span className="text-xs text-gray-400">{item.sold_count}/{item.stock_limit} sold</span>
+                  <span className="text-xs text-ui-fg-muted">{item.sold_count}/{item.stock_limit} sold</span>
                 )}
                 {status === "rejected" && (
                   <span className="text-xs text-ui-tag-red-text">Rejected by admin</span>
@@ -289,8 +289,8 @@ function ApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { item_st
 
         {canEdit && !editing && (
           <div className="flex items-center gap-1 shrink-0">
-            <button className="p-1 hover:bg-gray-100 rounded" onClick={() => setEditing(true)}>
-              <PencilSquare className="w-3.5 h-3.5 text-gray-400" />
+            <button className="p-1 hover:bg-ui-bg-base-hover rounded" onClick={() => setEditing(true)}>
+              <PencilSquare className="w-3.5 h-3.5 text-ui-fg-muted" />
             </button>
             <button
               className="p-1 hover:bg-ui-bg-base-hover rounded"
@@ -316,7 +316,7 @@ export const FlashSaleDetail = () => {
   const [showApply, setShowApply] = useState(false)
   const { flash_sale: sale, isLoading, refetch } = useFlashSale(id!)
 
-  if (isLoading || !sale) return <div className="p-8 text-center text-sm text-gray-400">Loading...</div>
+  if (isLoading || !sale) return <div className="p-8 text-center text-sm text-ui-fg-muted">Loading...</div>
 
   const [statusColor, statusLabel] = getFlashSaleStatus(sale)
   const canApply = !["ended", "cancelled"].includes(sale.status)
@@ -329,12 +329,12 @@ export const FlashSaleDetail = () => {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <button className="text-xs text-gray-400 hover:text-gray-600 mb-1" onClick={() => navigate("..")}>
+          <button className="text-xs text-ui-fg-muted hover:text-ui-fg-base mb-1" onClick={() => navigate("..")}>
             ← Flash Sales
           </button>
           <Heading level="h1">{sale.title}</Heading>
-          {sale.description && <p className="text-sm text-gray-500 mt-1">{sale.description}</p>}
-          <p className="text-xs text-gray-400 mt-1">Platform event — apply your products to participate</p>
+          {sale.description && <p className="text-sm text-ui-fg-subtle mt-1">{sale.description}</p>}
+          <p className="text-xs text-ui-fg-muted mt-1">Platform event — apply your products to participate</p>
         </div>
         <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLOR[statusColor] || STATUS_COLOR.grey}`}>
           {sale.status === "active" && (
@@ -350,18 +350,18 @@ export const FlashSaleDetail = () => {
       {/* Event info */}
       <Container className="p-5 grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Starts</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Starts</p>
           <p className="font-medium">{new Date(sale.starts_at).toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Ends</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Ends</p>
           <p className="font-medium">{new Date(sale.ends_at).toLocaleString()}</p>
           {sale.status === "active" && (
             <p className="text-xs text-ui-tag-green-text font-medium">{getTimeRemaining(sale.ends_at)} remaining</p>
           )}
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Per-customer limit</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Per-customer limit</p>
           <p className="font-medium">{sale.max_order_quantity ?? "No limit"}</p>
         </div>
       </Container>
@@ -371,7 +371,7 @@ export const FlashSaleDetail = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <Heading level="h2">My Applications ({sale.items?.length ?? 0})</Heading>
-            <p className="text-xs text-gray-400 mt-0.5">Products you've applied to this flash sale</p>
+            <p className="text-xs text-ui-fg-muted mt-0.5">Products you've applied to this flash sale</p>
           </div>
           {canApply && (
             <Button size="small" variant="secondary" onClick={() => setShowApply((v) => !v)}>
@@ -392,8 +392,8 @@ export const FlashSaleDetail = () => {
         )}
 
         {!sale.items?.length ? (
-          <div className="text-center py-8 text-sm text-gray-400">
-            <Bolt className="w-6 h-6 text-gray-300 mx-auto mb-2" />
+          <div className="text-center py-8 text-sm text-ui-fg-muted">
+            <Bolt className="w-6 h-6 text-ui-fg-muted mx-auto mb-2" />
             You haven't applied any products yet.{" "}
             {canApply && <button className="text-ui-fg-interactive hover:underline" onClick={() => setShowApply(true)}>Apply now →</button>}
           </div>

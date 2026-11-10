@@ -169,7 +169,7 @@ export const ReelCreate = () => {
       <Drawer.Content>
         <Drawer.Header>
           <Heading level="h2">Post a Reel</Heading>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-ui-fg-subtle mt-1">
             Vertical videos work best (9:16), up to 3 minutes and 150MB.
           </p>
         </Drawer.Header>
@@ -186,8 +186,8 @@ export const ReelCreate = () => {
                     controls
                     src={video.previewUrl}
                   />
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <div className="font-medium text-gray-700 break-all">
+                  <div className="text-xs text-ui-fg-subtle space-y-1">
+                    <div className="font-medium text-ui-fg-subtle break-all">
                       {video.file.name}
                     </div>
                     <div>{(video.file.size / 1024 / 1024).toFixed(1)} MB</div>
@@ -211,7 +211,7 @@ export const ReelCreate = () => {
                 </div>
               ) : (
                 <button
-                  className="w-full border border-dashed rounded-lg py-10 text-sm text-gray-500 hover:bg-gray-50"
+                  className="w-full border border-dashed rounded-lg py-10 text-sm text-ui-fg-subtle hover:bg-ui-bg-base-hover"
                   onClick={() => inputRef.current?.click()}
                   type="button"
                 >

@@ -2,6 +2,7 @@ import { SingleColumnPage } from "../../../components/layout/pages"
 import { useDashboardExtension } from "../../../extensions"
 import { PromotionListTable } from "./components/promotion-list-table"
 import { FeatureGate } from "../../../components/common/feature-gate"
+import { SetupGate } from "../../../components/common/setup-gate"
 
 export const PromotionsList = () => {
   const { getWidgets } = useDashboardExtension()
@@ -20,7 +21,9 @@ export const PromotionsList = () => {
         featureName="Promotions & Vouchers"
         description="Promotions & Vouchers lets you create discount codes and campaigns to reward customers."
       >
-        <PromotionListTable />
+        <SetupGate feature="run promotions and vouchers">
+          <PromotionListTable />
+        </SetupGate>
       </FeatureGate>
     </SingleColumnPage>
   )
