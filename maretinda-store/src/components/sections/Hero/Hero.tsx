@@ -224,13 +224,6 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 						</div>
 					</div>
 
-					{/* Slider dots */}
-					<div className="absolute bottom-5 left-8 lg:left-12 hidden lg:flex items-center gap-1.5 z-10">
-						<span className="w-7 h-1.5 rounded-full" style={{ backgroundColor: '#432C63' }} />
-						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
-						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
-						<span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: 'rgba(67,44,99,0.25)' }} />
-					</div>
 				</div>
 
 				{/* Promo sidebar */}

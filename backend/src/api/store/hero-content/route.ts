@@ -229,7 +229,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     let sellers_count: string | null = null
     try {
       const countRow = await knex.raw(
-        `SELECT COUNT(*) AS cnt FROM seller WHERE store_status = 'ACTIVE'`
+        `SELECT COUNT(*) AS cnt FROM seller WHERE store_status = 'ACTIVE' AND deleted_at IS NULL`
       )
       const cnt = parseInt(countRow.rows?.[0]?.cnt || "0", 10)
       if (cnt > 0) sellers_count = cnt.toLocaleString("en-PH")
