@@ -31,7 +31,8 @@ test.describe('browsing (read-only)', () => {
     await page.goto('/ph')
     // HELLOMRTD is ₱200 off a first order over ₱1,500, as the hero card says
     await expect(page.getByRole('heading', { name: /₱200 off your first order over ₱1,500/ })).toBeVisible()
-    await expect(page.getByText(/₱100/)).toHaveCount(0)
+    // Only the newsletter block: products elsewhere can be legitimately ₱100 off
+    await expect(page.locator('section', { hasText: 'Stay in the loop' }).getByText(/₱100/)).toHaveCount(0)
   })
 
   test('BRW-02 search lists matching products', async ({ page }) => {
