@@ -2,22 +2,19 @@
  * Flying Tigers Express PH — API Service
  * Full order lifecycle: create, cancel, waybill, rate calculation.
  *
- * IMPORTANT — Before going live, verify these with Flying Tigers API docs:
- *   1. FLYINGTIGERS_BASE_URL  — confirm the production base URL
- *   2. Auth header names      — X-API-Key + X-Merchant-Code (common pattern; confirm)
- *   3. Request/response shapes — compare with their docs and adjust field names
- *   4. Rate endpoint path     — /rates or /quotation (confirm)
- *
- * The user has credentials (api_key + api_secret). These map to the
- * configTemplate already defined in the vendor shipping-providers route.
+ * Follows the Business API docs at
+ * https://backend-dot-flying-tigers-express-v2-prod.as.r.appspot.com/business-api-docs
+ * (x-api-key + x-api-secret headers; /api/rates/quote, /api/shipments,
+ * /api/shipments/{id}/cancel, /api/tracking/...). Each seller enters their own
+ * key and secret. Sandbox keys from FT's Partner Portal use the same host and
+ * create isolated test shipments with a "TEST-" tracking number.
  */
 
 // Host root of the Flying Tigers Business API (no trailing slash, no path).
-// All endpoints live under `${FLYINGTIGERS_BASE_URL}/api/...`.
-// Set FLYINGTIGERS_BASE_URL to the exact host from the Business API portal
-// (e.g. the "servers" URL in their OpenAPI spec) — the default is a best guess.
+// All endpoints live under `${FLYINGTIGERS_BASE_URL}/api/...`. The default is
+// the host the docs are served from, which answers the API.
 export const FLYINGTIGERS_BASE_URL = (
-  process.env.FLYINGTIGERS_BASE_URL || 'https://api.flyingtigers.express'
+  process.env.FLYINGTIGERS_BASE_URL || 'https://backend-dot-flying-tigers-express-v2-prod.as.r.appspot.com'
 ).replace(/\/+$/, '')
 
 // ─── Types ────────────────────────────────────────────────────────────────────
