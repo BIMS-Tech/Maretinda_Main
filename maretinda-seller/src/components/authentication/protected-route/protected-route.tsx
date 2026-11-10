@@ -1,11 +1,12 @@
 import { Spinner } from "@medusajs/icons"
-import { Navigate, Outlet, useLocation } from "react-router-dom"
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom"
 import { useMe } from "../../../hooks/api/users"
 import {
   isSubscriptionActive,
   isSubscriptionRoute,
   useSubscriptionStatus,
 } from "../../../hooks/api/subscription"
+import { worksWithoutPlan } from "../../../lib/plan-routes"
 import { SearchProvider } from "../../../providers/search-provider"
 import { SidebarProvider } from "../../../providers/sidebar-provider"
 import { TalkjsProvider } from "../../../providers/talkjs-provider"
@@ -64,13 +65,11 @@ export const ProtectedRoute = () => {
   }
 
   /**
-   * Nothing in the panel — settings and profile included — is reachable until a
-   * plan is active. `/subscription` itself stays open so they can pay.
+   * Without an active plan the shop is closed: only renewing and finishing the
+   * orders buyers already placed stay open, as in the API.
    */
-  if (
-    !isSubscriptionActive(subscription) &&
-    !isSubscriptionRoute(location.pathname)
-  ) {
+  const hasPlan = isSubscriptionActive(subscription)
+  if (!hasPlan && !worksWithoutPlan(location.pathname)) {
     return <Navigate to="/subscription" replace />
   }
 
@@ -78,6 +77,14 @@ export const ProtectedRoute = () => {
     <TalkjsProvider>
       <SidebarProvider>
         <SearchProvider>
+          {!hasPlan && !isSubscriptionRoute(location.pathname) && (
+            <div className="w-full bg-amber-500 text-black p-1 text-center text-sm">
+              Your plan has ended, so your shop is closed to new orders. You can still finish the orders you have.{" "}
+              <Link to="/subscription" className="font-semibold underline">
+                Renew your plan
+              </Link>
+            </div>
+          )}
           {isSuspended && (
             <div className="w-full bg-red-600 text-white p-1 text-center text-sm">
               Your store is <b>suspended</b>. Please contact support.
