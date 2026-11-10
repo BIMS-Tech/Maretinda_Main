@@ -65,6 +65,30 @@ describe("clientIp", () => {
     expect(clientIp({ headers: { "cf-connecting-ip": "203.0.113.5", "x-forwarded-for": "1.2.3.4" } })).toBe("203.0.113.5")
     expect(clientIp({ headers: { "x-forwarded-for": "1.2.3.4" }, socket: { remoteAddress: "10.0.0.1" } })).toBe("10.0.0.1")
   })
+
+  // The storefront signs buyers in from its own server, so without this every
+  // buyer shared the store's address and its sign-up and sign-in limits
+  describe("forwarded by the storefront server", () => {
+    const store = (secret: string, ip = "198.51.100.7") => ({
+      headers: { "cf-connecting-ip": "203.0.113.5", "x-maretinda-client-ip": ip, "x-maretinda-store-secret": secret },
+    })
+
+    afterEach(() => {
+      delete process.env.STORE_SERVER_SECRET
+    })
+
+    it("uses the buyer's address the store passes on with the shared secret", () => {
+      process.env.STORE_SERVER_SECRET = "s3cret-value-1234"
+      expect(clientIp(store("s3cret-value-1234"))).toBe("198.51.100.7")
+    })
+
+    it("ignores it with a wrong secret, or when no secret is configured", () => {
+      process.env.STORE_SERVER_SECRET = "s3cret-value-1234"
+      expect(clientIp(store("guess"))).toBe("203.0.113.5")
+      delete process.env.STORE_SERVER_SECRET
+      expect(clientIp(store(""))).toBe("203.0.113.5")
+    })
+  })
 })
 
 describe("giyapaySignaturesMatch", () => {

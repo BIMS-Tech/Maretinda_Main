@@ -2,7 +2,10 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { revalidateTag } from 'next/cache';
+import { headers as requestHeaders } from 'next/headers';
 import { redirect } from 'next/navigation';
+
+import { forwardedAuthHeaders } from '@/lib/helpers/forwarded-auth';
 
 import { sdk } from '../config';
 import {
@@ -64,6 +67,30 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 	return updateRes;
 };
 
+/**
+ * Calls a customer auth route with the buyer's address passed on (see
+ * forwardedAuthHeaders), so rate limits apply per buyer, not to the whole store.
+ * Errors start with "Error" like the SDK's, which the forms look for.
+ */
+async function customerAuth(path: string, body: Record<string, string>): Promise<string | undefined> {
+	const res = await fetch(`${process.env.MEDUSA_BACKEND_URL}/auth/customer/emailpass${path}`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+			...forwardedAuthHeaders(await requestHeaders(), process.env.STORE_SERVER_SECRET),
+		},
+		body: JSON.stringify(body),
+	});
+	if (res.status === 429) throw new Error('Error: Too many attempts. Please wait a few minutes and try again.');
+	if (!res.ok) {
+		const err = await res.json().catch(() => ({}));
+		throw new Error(`Error: ${err.message ?? res.statusText}`);
+	}
+	const data = await res.json().catch(() => ({}));
+	return data.token;
+}
+
 export async function signup(formData: FormData) {
 	const password = formData.get('password') as string;
 	const customerForm = {
@@ -74,7 +101,7 @@ export async function signup(formData: FormData) {
 	};
 
 	try {
-		const token = await sdk.auth.register('customer', 'emailpass', {
+		const token = await customerAuth('/register', {
 			email: customerForm.email,
 			password: password,
 		});
@@ -91,7 +118,7 @@ export async function signup(formData: FormData) {
 			headers,
 		);
 
-		const loginToken = await sdk.auth.login('customer', 'emailpass', {
+		const loginToken = await customerAuth('', {
 			email: customerForm.email,
 			password,
 		});
@@ -114,8 +141,7 @@ export async function login(formData: FormData) {
 	const password = formData.get('password') as string;
 
 	try {
-		await sdk.auth
-			.login('customer', 'emailpass', { email, password })
+		await customerAuth('', { email, password })
 			.then(async (token) => {
 				await setAuthToken(token as string);
 				const customerCacheTag = await getCacheTag('customers');
@@ -287,10 +313,7 @@ export const updateCustomerPassword = async (
 };
 
 export const sendResetPasswordEmail = async (email: string) => {
-	const res = await sdk.auth
-		.resetPassword('customer', 'emailpass', {
-			identifier: email,
-		})
+	const res = await customerAuth('/reset-password', { identifier: email })
 		.then(() => {
 			return { error: null, success: true };
 		})

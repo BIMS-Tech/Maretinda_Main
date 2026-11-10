@@ -125,7 +125,11 @@ const Form = () => {
 		const res = await signup(formData);
 
 		if (typeof res === 'string' && res.includes('Error')) {
-			setServerError('Registration failed. This email may already be in use.');
+			setServerError(
+				/too many/i.test(res)
+					? 'Too many attempts. Please wait a few minutes and try again.'
+					: 'Registration failed. This email may already be in use.',
+			);
 		}
 	};
 

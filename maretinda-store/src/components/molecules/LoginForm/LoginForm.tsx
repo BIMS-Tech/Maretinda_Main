@@ -110,7 +110,11 @@ const Form = () => {
 
 		if (typeof res === 'string' && res.includes('Error')) {
 			setLoadingState(null);
-			setServerError('Invalid email or password. Please try again.');
+			setServerError(
+				/too many/i.test(res)
+					? 'Too many attempts. Please wait a few minutes and try again.'
+					: 'Invalid email or password. Please try again.',
+			);
 			return;
 		}
 
