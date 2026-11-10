@@ -136,6 +136,27 @@ export async function givePlan(container: any, sellerId: string, over: Record<st
   })
 }
 
+/**
+ * Fills in a seller's store setup (profile, address, Metrobank settlement
+ * details) and approves their documents, so the shop may publish and sell.
+ */
+export async function makeReady(container: any, sellerId: string) {
+  await pgOf(container)("seller").where("id", sellerId).update({
+    email: "shop@example.test",
+    phone: "+639171234567",
+    description: "Handmade goods",
+    address_line: "1 Rizal St",
+    city: "Angeles City",
+    postal_code: "2009",
+    country_code: "ph",
+    bank_name: "Metrobank",
+    account_number: "1234567890",
+    account_name: "Test Shop Inc",
+    branch_name: "Angeles",
+    verification_status: "verified",
+  })
+}
+
 /** Every request to a non-2xx status resolves instead of throwing. */
 export const noThrow = { validateStatus: () => true }
 

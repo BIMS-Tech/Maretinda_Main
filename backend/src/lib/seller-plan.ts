@@ -1,3 +1,5 @@
+import { sellerReadiness } from "./seller-readiness"
+
 /**
  * A seller sells only while on a plan: paid, or the free first month. Without
  * one they can still look around their panel, pay for a plan, keep their
@@ -27,25 +29,27 @@ export async function sellersWithoutPlan(pg: any, sellerIds: string[]): Promise<
 }
 
 /**
- * Handles of the live shops with products on the shelf but no plan running.
- * The storefront leaves them out of listings and search.
+ * A shop is closed to buyers when it has no plan running or its store setup
+ * isn't finished (see lib/seller-readiness). Of the given sellers, the closed
+ * ones.
+ */
+export async function closedSellers(pg: any, sellerIds: string[]): Promise<{ id: string; name: string; handle: string }[]> {
+  const ids = [...new Set(sellerIds.filter(Boolean))]
+  if (!ids.length) return []
+  const noPlan = new Set(await sellersWithoutPlan(pg, ids))
+  const sellers = await pg("seller").whereIn("id", ids).whereNull("deleted_at").select("*")
+  return sellers
+    .filter((s: any) => noPlan.has(s.id) || !sellerReadiness(s).ready)
+    .map((s: any) => ({ id: s.id, name: s.name, handle: s.handle }))
+}
+
+/**
+ * Handles of the closed shops that have products on the shelf. The
+ * storefront leaves them out of listings and search.
  */
 export async function closedShopHandles(pg: any): Promise<string[]> {
-  const rows = await pg("seller")
-    .whereNull("seller.deleted_at")
-    .whereExists(
-      pg("seller_seller_product_product")
-        .whereRaw("seller_seller_product_product.seller_id = seller.id")
-        .whereNull("seller_seller_product_product.deleted_at")
-    )
-    .whereNotExists(
-      pg("seller_subscription")
-        .whereRaw("seller_subscription.seller_id = seller.id")
-        .where("seller_subscription.status", "active")
-        .where("seller_subscription.end_date", ">", new Date())
-    )
-    .select("handle")
-  return rows.map((r: any) => r.handle)
+  const withProducts = await pg("seller_seller_product_product").whereNull("deleted_at").distinct("seller_id")
+  return (await closedSellers(pg, withProducts.map((r: any) => r.seller_id))).map((s) => s.handle)
 }
 
 export const closedShopMessage = (names: string[]) =>
@@ -53,15 +57,12 @@ export const closedShopMessage = (names: string[]) =>
     ? `${names[0]} isn't taking orders right now. Remove its items to check out.`
     : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]} aren't taking orders right now. Remove their items to check out.`
 
-/** Names of the shops selling these products that have no plan running. */
+/** Names of the closed shops selling these products. */
 export async function closedShopsSelling(pg: any, productIds: string[]): Promise<string[]> {
   if (!productIds.length) return []
   const links = await pg("seller_seller_product_product")
     .whereIn("product_id", productIds)
     .whereNull("deleted_at")
     .select("seller_id")
-  const closed = await sellersWithoutPlan(pg, links.map((l: any) => l.seller_id))
-  if (!closed.length) return []
-  const sellers = await pg("seller").whereIn("id", closed).select("name")
-  return sellers.map((s: any) => s.name)
+  return (await closedSellers(pg, links.map((l: any) => l.seller_id))).map((s) => s.name)
 }

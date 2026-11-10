@@ -7,6 +7,7 @@ import {
   createPublishableKey,
   createSeller,
   givePlan,
+  makeReady,
   noThrow,
   seedPlans,
 } from "../helpers"
@@ -147,6 +148,7 @@ medusaIntegrationTestRunner({
         const open = await createSeller(getContainer(), { handle: `open-${Date.now()}` })
         const empty = await createSeller(getContainer(), { handle: `empty-${Date.now()}` })
         await givePlan(getContainer(), open.seller.id)
+        await makeReady(getContainer(), open.seller.id)
         await productOf(closed.seller.id)
         await productOf(open.seller.id)
 
@@ -161,6 +163,7 @@ medusaIntegrationTestRunner({
       it("lets a shop on a plan through the check", async () => {
         const { seller } = await createSeller(getContainer(), { name: "Open Shop" })
         await givePlan(getContainer(), seller.id)
+        await makeReady(getContainer(), seller.id)
         const cart = await cartWith(await productOf(seller.id))
 
         const res = await api.post(`/store/carts/${cart.id}/complete`, {}, store())

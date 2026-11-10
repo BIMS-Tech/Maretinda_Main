@@ -12,6 +12,7 @@ import { refusedPromoCode, storedPromoCodes } from '../lib/promotion-metadata'
 import { withFreeShippingPrice } from '../lib/free-shipping'
 import { uniqueZoneName } from '../lib/unique-zone-name'
 import { activePlanOf, hasMarketing, maxProducts, maxStaff, productCount, staffCount } from '../lib/plan-features'
+import { SETUP_REQUIRED_CODE, sellerReadiness, setupRequiredMessage } from '../lib/seller-readiness'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -244,6 +245,31 @@ const marketingFeature = (feature: string) =>
       : { code: 'plan_feature', message: `${feature} come with the Growth and Premium plans. Upgrade under Subscription to use them.` }
   )
 
+/**
+ * Store setup must be finished before a shop goes public; see
+ * lib/seller-readiness. `when` narrows it to the requests that would.
+ */
+const requireReadyShop = (action: string, when: (req: MedusaRequest) => boolean = () => true) =>
+  async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+    try {
+      if (req.method === 'GET' || !when(req)) return next()
+      const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+      const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+      const seller = sellerId ? await db('seller').where('id', sellerId).first() : null
+      if (!seller) return next()
+      const { ready, missing } = sellerReadiness(seller)
+      if (!ready) {
+        return res.status(403).json({ type: 'not_allowed', code: SETUP_REQUIRED_CODE, message: setupRequiredMessage(action, missing), missing })
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+// Sellers put a product up for sale by proposing it (Mercur then publishes it)
+const publishing = (req: MedusaRequest) => ['proposed', 'published'].includes((req.body as any)?.status)
+
 /** Zone names are unique marketplace-wide; see lib/unique-zone-name. */
 const uniqueZoneNameFor = (table: 'fulfillment_set' | 'service_zone') =>
   async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
@@ -384,14 +410,16 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
-    { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap] },
-    { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap] },
+    { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap, requireReadyShop('publish products', publishing)] },
+    { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [requireReadyShop('publish products', publishing)] },
+    { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
-    { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales')] },
-    { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers')] },
-    { matcher: '/vendor/promotions/*', middlewares: [marketingFeature('Promotions and vouchers')] },
-    { matcher: '/vendor/campaigns', middlewares: [marketingFeature('Campaigns')] },
-    { matcher: '/vendor/campaigns/*', middlewares: [marketingFeature('Campaigns')] },
+    { matcher: '/vendor/reels', method: ['POST'], middlewares: [requireReadyShop('post reels')] },
+    { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales'), requireReadyShop('join flash sales')] },
+    { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers'), requireReadyShop('run promotions and vouchers')] },
+    { matcher: '/vendor/promotions/*', middlewares: [marketingFeature('Promotions and vouchers'), requireReadyShop('run promotions and vouchers')] },
+    { matcher: '/vendor/campaigns', middlewares: [marketingFeature('Campaigns'), requireReadyShop('run campaigns')] },
+    { matcher: '/vendor/campaigns/*', middlewares: [marketingFeature('Campaigns'), requireReadyShop('run campaigns')] },
     { matcher: '/vendor/stock-locations/:id/fulfillment-sets', method: ['POST'], middlewares: [uniqueZoneNameFor('fulfillment_set')] },
     { matcher: '/vendor/fulfillment-sets/:id/service-zones', method: ['POST'], middlewares: [uniqueZoneNameFor('service_zone')] },
     { matcher: '/store/account', middlewares: [authenticate('customer', ['bearer', 'session'])] },

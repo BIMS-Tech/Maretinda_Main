@@ -13,6 +13,7 @@ import {
   createPublishableKey,
   createSeller,
   givePlan,
+  makeReady,
   noThrow,
   pgOf,
   tokenFor,
@@ -142,6 +143,8 @@ medusaIntegrationTestRunner({
         // On plans, so B's attempts reach the ownership checks under test
         await givePlan(getContainer(), a.seller.id)
         await givePlan(getContainer(), b.seller.id)
+        await makeReady(getContainer(), a.seller.id)
+        await makeReady(getContainer(), b.seller.id)
       })
 
       async function productOfA() {
@@ -356,6 +359,7 @@ medusaIntegrationTestRunner({
       beforeEach(async () => {
         seller = await createSeller(getContainer())
         await givePlan(getContainer(), seller.seller.id)
+        await makeReady(getContainer(), seller.seller.id)
         const container = getContainer()
         const [product] = await container.resolve(Modules.PRODUCT).createProducts([{ title: `Mine${Date.now()}` }])
         await pgOf(container)("seller_seller_product_product").insert({
@@ -439,6 +443,7 @@ medusaIntegrationTestRunner({
       it("a seller with no products can't create one", async () => {
         const empty = await createSeller(getContainer())
         await givePlan(getContainer(), empty.seller.id)
+        await makeReady(getContainer(), empty.seller.id)
         const res = await api.post(
           "/vendor/promotions",
           {
