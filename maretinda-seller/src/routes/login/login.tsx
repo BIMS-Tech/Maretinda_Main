@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert, Hint, Input } from "@medusajs/ui"
-import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
+import { CheckCircleSolid, Spinner } from "@medusajs/icons"
 import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import * as z from "zod"
 
@@ -10,46 +10,12 @@ import { Form } from "../../components/common/form"
 import { useDashboardExtension } from "../../extensions"
 import { useSignInWithEmailPass } from "../../hooks/api"
 import { isFetchError } from "../../lib/is-fetch-error"
-import { useTheme } from "../../providers/theme-provider"
+import { AuthShell, Butterfly, GlassCard } from "../../components/auth/auth-shell"
 
 const LoginSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 })
-
-function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size} className={color === "brand" ? "text-[#432C63] dark:text-white" : undefined}>
-      {[45, 135, 225, 315].map(angle => (
-        <path
-          key={angle}
-          d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
-          fill={color === "brand" ? "currentColor" : color}
-          transform={`rotate(${angle},16,16)`}
-        />
-      ))}
-    </svg>
-  )
-}
-
-function ThemeToggleButton() {
-  const { theme, setTheme } = useTheme()
-  const cycle = () => {
-    if (theme === "light") setTheme("dark")
-    else if (theme === "dark") setTheme("system")
-    else setTheme("light")
-  }
-  return (
-    <button
-      type="button"
-      onClick={cycle}
-      title={`Theme: ${theme}`}
-      className="flex items-center justify-center w-8 h-8 rounded-lg border border-ui-border-base bg-ui-bg-subtle text-ui-fg-subtle hover:bg-ui-bg-subtle-hover hover:text-ui-fg-base transition-colors"
-    >
-      {theme === "dark" ? <Moon className="w-4 h-4" /> : theme === "light" ? <Sun className="w-4 h-4" /> : <CircleHalfSolid className="w-4 h-4" />}
-    </button>
-  )
-}
 
 export const Login = () => {
   const { t } = useTranslation()
@@ -94,197 +60,130 @@ export const Login = () => {
     form.formState.errors.password?.message
 
   return (
-    <div className="min-h-dvh w-dvw flex">
+    <AuthShell
+      portal="Seller Centre"
+      headline={
+        <>
+          Your shop, open to
+          <br />
+          <span className="italic text-[#FFC533]">the whole Philippines.</span>
+        </>
+      }
+      lede="List your products, take orders and get paid, with buyers from Luzon to Mindanao finding you on Maretinda."
+      preview={<SellerPreview />}
+    >
+      <h2 className="font-display text-ui-fg-base text-[34px] leading-tight">Welcome back</h2>
+      <p className="text-ui-fg-subtle mt-1 text-[15px]">Sign in to run your shop.</p>
 
-      {/* Left panel — seller brand */}
-      <div
-        className="hidden lg:flex flex-col justify-between w-[45%] p-12 relative overflow-hidden"
-        style={{ backgroundColor: "#432C63" }}
-      >
-        {/* Subtle background texture */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10" style={{ backgroundColor: "#ffffff" }} />
-        </div>
+      <div className="mt-8 flex flex-col gap-y-3">
+        {getWidgets("login.before").map((Component, i) => (
+          <Component key={i} />
+        ))}
 
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-3">
-          <MaretindaFlower color="white" size={40} />
-          <div>
-            <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
-            <span
-              className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}
-            >
-              Seller
-            </span>
-          </div>
-        </div>
-
-        {/* Center content */}
-        <div className="relative z-10">
-          <h1 className="text-white text-4xl font-bold leading-tight mb-4">
-            Grow your<br />
-            business with<br />
-            Maretinda
-          </h1>
-          <p className="text-white/70 text-base leading-relaxed max-w-xs">
-            Manage your store, track orders, handle payments, and connect with customers — all from one dashboard.
-          </p>
-
-          <div className="mt-10 flex flex-col gap-4">
-            {[
-              "List & manage your products",
-              "Track sales & analytics",
-              "Receive payouts & settlements",
-              "Chat directly with customers",
-            ].map(label => (
-              <div key={label} className="flex items-center gap-3">
-                <span
-                  className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 text-white/90"
-                  style={{ background: "rgba(255,255,255,0.18)" }}
-                >
-                  <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </span>
-                <span className="text-white/80 text-sm">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom */}
-        <div className="relative z-10">
-          <p className="text-white/40 text-xs">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
-        </div>
-      </div>
-
-      {/* Right panel — login form */}
-      <div className="flex-1 flex flex-col bg-ui-bg-base px-6 py-12">
-        {/* Mobile logo + theme toggle */}
-        <div className="flex items-center justify-between mb-8 lg:justify-end">
-          <div className="lg:hidden flex items-center gap-2">
-            <MaretindaFlower color="brand" size={28} />
-            <span className="text-xl font-bold text-[#432C63] dark:text-white">Maretinda</span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}>
-              Seller
-            </span>
-          </div>
-          <ThemeToggleButton />
-        </div>
-
-        <div className="w-full max-w-[360px] mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium mb-4"
-              style={{ background: "var(--bg-highlight)", color: "var(--fg-interactive)" }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Seller Portal
-            </div>
-            <h2 className="text-2xl font-bold text-ui-fg-base mb-1">Welcome back</h2>
-            <p className="text-ui-fg-subtle text-sm">Sign in to your seller account to manage your store</p>
-          </div>
-
-          {/* Form */}
-          <div className="flex flex-col gap-y-3">
-            {getWidgets("login.before").map((Component, i) => (
-              <Component key={i} />
-            ))}
-
-            <Form {...form}>
-              <form onSubmit={handleSubmit} className="flex flex-col gap-y-4">
-                <div className="flex flex-col gap-y-3">
-                  <Form.Field
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <Form.Item>
-                        <Form.Label className="text-sm font-medium text-ui-fg-base">
-                          {t("fields.email")}
-                        </Form.Label>
-                        <Form.Control>
-                          <Input autoComplete="email" {...field} className="mt-1" placeholder="seller@example.com" />
-                        </Form.Control>
-                      </Form.Item>
-                    )}
-                  />
-                  <Form.Field
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <Form.Item>
-                        <Form.Label className="text-sm font-medium text-ui-fg-base">
-                          {t("fields.password")}
-                        </Form.Label>
-                        <Form.Control>
-                          <Input type="password" autoComplete="current-password" {...field} className="mt-1" placeholder="••••••••" />
-                        </Form.Control>
-                      </Form.Item>
-                    )}
-                  />
-                </div>
-
-                {validationError && (
-                  <div className="text-center">
-                    <Hint className="inline-flex" variant="error">{validationError}</Hint>
+        <Form {...form}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-y-5" noValidate>
+            <Form.Field
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <Form.Item>
+                  <Form.Label className="text-ui-fg-base text-sm font-medium">{t("fields.email")}</Form.Label>
+                  <Form.Control>
+                    <Input autoComplete="email" {...field} className="mt-1.5 h-11 text-[15px]" placeholder="you@yourshop.ph" />
+                  </Form.Control>
+                </Form.Item>
+              )}
+            />
+            <Form.Field
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <Form.Item>
+                  <div className="flex items-center justify-between">
+                    <Form.Label className="text-ui-fg-base text-sm font-medium">{t("fields.password")}</Form.Label>
+                    <Link to="/reset-password" className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover text-sm font-medium">
+                      Forgot password?
+                    </Link>
                   </div>
-                )}
-                {serverError && (
-                  <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">{serverError}</Alert>
-                )}
+                  <Form.Control>
+                    <Input type="password" autoComplete="current-password" {...field} className="mt-1.5 h-11 text-[15px]" placeholder="Your password" />
+                  </Form.Control>
+                </Form.Item>
+              )}
+            />
 
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed mt-1 hover:opacity-90"
-                  style={{ backgroundColor: "var(--button-inverted)" }}
-                >
-                  {isPending ? "Signing in…" : "Sign In"}
-                </button>
-              </form>
-            </Form>
-
-            {getWidgets("login.after").map((Component, i) => (
-              <Component key={i} />
-            ))}
-          </div>
-
-          <div className="mt-5 flex flex-col items-center gap-2">
-            <span className="text-ui-fg-subtle text-sm">
-              <Trans
-                i18nKey="login.forgotPassword"
-                components={[
-                  <Link
-                    key="reset-password-link"
-                    to="/reset-password"
-                    className="font-medium transition-colors hover:opacity-80"
-                    style={{ color: "var(--fg-interactive)" }}
-                  />,
-                ]}
-              />
-            </span>
-
-            {__DISABLE_SELLERS_REGISTRATION__ === "false" && (
-              <span className="text-ui-fg-subtle text-sm">
-                <Trans
-                  i18nKey="login.notSellerYet"
-                  components={[
-                    <Link
-                      key="register-link"
-                      to="/register"
-                      className="font-medium transition-colors hover:opacity-80"
-                      style={{ color: "var(--fg-interactive)" }}
-                    />,
-                  ]}
-                />
-              </span>
+            {validationError && <Hint variant="error">{validationError}</Hint>}
+            {serverError && (
+              <Alert className="bg-ui-bg-base items-center p-2" dismissible variant="error">
+                {serverError}
+              </Alert>
             )}
-          </div>
-        </div>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="bg-ui-button-inverted hover:bg-ui-button-inverted-hover active:bg-ui-button-inverted-pressed shadow-buttons-inverted focus-visible:shadow-buttons-inverted-focus transition-fg mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-[15px] font-semibold text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending && <Spinner className="animate-spin" />}
+              {isPending ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </Form>
+
+        {getWidgets("login.after").map((Component, i) => (
+          <Component key={i} />
+        ))}
       </div>
-    </div>
+
+      {__DISABLE_SELLERS_REGISTRATION__ === "false" && (
+        <>
+          <div className="text-ui-fg-muted my-7 flex items-center gap-3 text-xs">
+            <span className="bg-ui-border-base h-px flex-1" />
+            New to Maretinda?
+            <span className="bg-ui-border-base h-px flex-1" />
+          </div>
+          <Link
+            to="/register"
+            className="border-ui-border-base text-ui-fg-base hover:bg-ui-bg-base-hover hover:border-ui-border-interactive flex h-11 w-full items-center justify-center rounded-lg border text-[15px] font-medium transition-colors"
+          >
+            Open a shop
+          </Link>
+        </>
+      )}
+    </AuthShell>
+  )
+}
+
+/** A glimpse of the panel: the day's sales, a new order, a payout. */
+function SellerPreview() {
+  return (
+    <>
+      <GlassCard className="absolute left-0 top-0 w-[260px]" tilt={-2}>
+        <p className="text-xs text-white/60">Today's sales</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight">₱12,480</p>
+        <div className="mt-1 flex items-end justify-between">
+          <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-200">+18% vs yesterday</span>
+          <svg width="96" height="32" viewBox="0 0 96 32" fill="none" aria-hidden>
+            <polyline points="0,26 14,22 28,24 42,15 56,17 70,9 84,11 96,3" stroke="#FFC533" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </GlassCard>
+      <GlassCard className="absolute right-0 top-[96px] w-[280px]" tilt={2} delay={1400}>
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFC533] text-[#432C63]">
+            <Butterfly size={18} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="whitespace-nowrap text-sm font-medium">New order #1042</p>
+            <p className="truncate text-xs text-white/60">Barong · Cebu City</p>
+          </div>
+          <span className="text-sm font-semibold">₱2,450</span>
+        </div>
+      </GlassCard>
+      <GlassCard className="absolute bottom-0 left-8 flex items-center gap-2 !px-3 !py-2" tilt={-1} delay={2800}>
+        <CheckCircleSolid className="text-emerald-300" />
+        <span className="text-xs">Payout sent · ₱8,215</span>
+      </GlassCard>
+    </>
   )
 }

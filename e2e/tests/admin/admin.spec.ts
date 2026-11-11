@@ -8,14 +8,14 @@ test.describe('admin panel (read-only)', () => {
     await page.goto('/login')
     await expect(page.locator('input[name="email"]')).toBeVisible()
     await expect(page.locator('input[name="password"]')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Continue with Email' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible()
   })
 
   test('login rejects wrong credentials', async ({ page }) => {
     await page.goto('/login')
     await page.locator('input[name="email"]').fill(`nobody-${Date.now()}@example.invalid`)
     await page.locator('input[name="password"]').fill('definitely-wrong-password')
-    await page.getByRole('button', { name: 'Continue with Email' }).click()
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await expect(page).toHaveURL(/\/login/)
     await expect(page.getByText(/invalid|incorrect|wrong|unauthorized/i).first()).toBeVisible()
   })
