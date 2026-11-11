@@ -1,7 +1,7 @@
 import type { HttpTypes } from "@medusajs/types";
 
 import { t } from "i18next";
-import { Outlet, type RouteObject, type UIMatch } from "react-router-dom";
+import { Navigate, Outlet, type RouteObject, type UIMatch } from "react-router-dom";
 
 import { ProtectedRoute } from "@components/authentication/protected-route";
 import { MainLayout } from "@components/layout/main-layout";
@@ -742,6 +742,8 @@ export function getRouteMap({
                 breadcrumb: () => t("requests.domain"),
               },
               children: [
+                // Requests has no page of its own; start at seller applications
+                { index: true, element: <Navigate to="/requests/seller" replace /> },
                 {
                   path: "seller",
                   handle: {
@@ -1604,20 +1606,7 @@ export function getRouteMap({
                 },
               ],
             },
-            {
-              path: "commission",
-              lazy: () => import("../../routes/commission"),
-              handle: {
-                breadcrumb: () => t("commission.domain"),
-              },
-            },
-            {
-              path: "commission-lines",
-              lazy: () => import("../../routes/commission-lines"),
-              handle: {
-                breadcrumb: () => t("commissionLines.domain"),
-              },
-            },
+            // No commission pages: Maretinda earns from seller plans, not a cut of sales
             {
               path: "product-tags",
               errorElement: <ErrorBoundary />,

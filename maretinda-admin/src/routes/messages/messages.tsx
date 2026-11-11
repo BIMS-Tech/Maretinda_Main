@@ -89,7 +89,7 @@ function MsgBubble({ msg }: { msg: ChatMessage }) {
     <div className={`flex ${isAdmin ? "justify-end" : "justify-start"} mb-3`}>
       <div className={`max-w-[72%] flex flex-col ${isAdmin ? "items-end" : "items-start"}`}>
         <span className={`text-xs mb-1 font-medium ${
-          isAdmin ? "text-ui-fg-interactive" : isseller ? "text-orange-600" : "text-ui-fg-muted"
+          isAdmin ? "text-ui-fg-interactive" : isseller ? "text-ui-tag-orange-text" : "text-ui-fg-muted"
         }`}>
           {isAdmin ? "You (Support)" : isseller ? `seller — ${msg.sender_name}` : `Customer — ${msg.sender_name}`}
         </span>
@@ -98,7 +98,7 @@ function MsgBubble({ msg }: { msg: ChatMessage }) {
             isAdmin
               ? "bg-ui-button-inverted text-ui-fg-on-inverted rounded-tr-sm"
               : isseller
-              ? "bg-orange-50 text-orange-900 border border-orange-200 rounded-tl-sm"
+              ? "bg-ui-tag-orange-bg text-ui-tag-orange-text border border-ui-tag-orange-border rounded-tl-sm"
               : "bg-ui-bg-subtle text-ui-fg-base border border-ui-border-base rounded-tl-sm"
           }`}
         >

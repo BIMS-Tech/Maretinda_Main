@@ -133,7 +133,7 @@ export const AttributeForm = ({
             {...form.register("name")}
           />
           {form.formState.errors.name && (
-            <Text className="text-red-500 text-sm mt-1">
+            <Text className="text-ui-tag-red-text text-sm mt-1">
               {form.formState.errors.name.message}
             </Text>
           )}
@@ -153,7 +153,7 @@ export const AttributeForm = ({
               /
             </div>
             {form.formState.errors.handle && (
-              <Text className="text-red-500 text-sm mt-1">
+              <Text className="text-ui-tag-red-text text-sm mt-1">
                 {form.formState.errors.handle.message}
               </Text>
             )}
@@ -172,7 +172,7 @@ export const AttributeForm = ({
             {...form.register("description")}
           />
           {form.formState.errors.description && (
-            <Text className="text-red-500 text-sm mt-1">
+            <Text className="text-ui-tag-red-text text-sm mt-1">
               {form.formState.errors.description.message}
             </Text>
           )}
@@ -266,7 +266,7 @@ export const AttributeForm = ({
                 }
               />
               {form.formState.errors.product_category_ids && (
-                <Text className="text-red-500 text-sm mt-1">
+                <Text className="text-ui-tag-red-text text-sm mt-1">
                   {form.formState.errors.product_category_ids.message}
                 </Text>
               )}
@@ -319,7 +319,7 @@ export const AttributeForm = ({
           </Select.Content>
         </Select>
         {form.formState.errors.ui_component && (
-          <Text className="text-red-500 text-sm mt-1">
+          <Text className="text-ui-tag-red-text text-sm mt-1">
             {form.formState.errors.ui_component.message}
           </Text>
         )}

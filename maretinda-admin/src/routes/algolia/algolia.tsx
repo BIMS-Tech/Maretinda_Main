@@ -11,17 +11,30 @@ import {
 import { useAlgolia, useSyncAlgolia } from "@hooks/api/algolia";
 
 export const Algolia = () => {
-  const { data: algolia } = useAlgolia();
-  const { mutateAsync: triggerSynchronization } = useSyncAlgolia();
+  const { data: algolia, isError, isPending } = useAlgolia();
+  const { mutateAsync: triggerSynchronization, isPending: syncing } = useSyncAlgolia();
 
   const handleTriggerSynchronization = async () => {
     try {
       await triggerSynchronization();
-      toast.success("Synchronization triggered!");
+      toast.success("Synchronization started. Search results update within a few minutes.");
     } catch {
-      toast.error("Error!");
+      toast.error("Synchronization couldn't start. Try again in a moment.");
     }
   };
+
+  // The search plugin only loads when the server has Algolia keys
+  if (isError) {
+    return (
+      <Container className="px-6 py-4">
+        <Heading>Algolia Search Engine</Heading>
+        <Text className="text-ui-fg-subtle mt-1" size="small">
+          Search isn't set up on this server: it has no Algolia keys (ALGOLIA_APP_ID and ALGOLIA_API_KEY), so the
+          storefront's search and category listings can't use it. Add the keys to the server's settings to turn it on.
+        </Text>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -32,7 +45,7 @@ export const Algolia = () => {
             Check Algolia Search Engine status
           </Text>
         </div>
-        <Button onClick={handleTriggerSynchronization}>
+        <Button onClick={handleTriggerSynchronization} isLoading={syncing} disabled={isPending}>
           Trigger Synchronization
         </Button>
       </div>

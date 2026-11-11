@@ -88,7 +88,7 @@ export const FlashSaleEdit = () => {
         </Drawer.Header>
         <Drawer.Body className="p-6">
           {isLoading ? (
-            <div className="text-sm text-gray-400">Loading...</div>
+            <div className="text-sm text-ui-fg-muted">Loading...</div>
           ) : (
             <div className="space-y-5">
               <div className="space-y-1.5">
@@ -131,7 +131,7 @@ export const FlashSaleEdit = () => {
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium">Banner Image</Label>
                 {form.banner_image && (
-                  <div className="relative w-full rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                  <div className="relative w-full rounded-lg overflow-hidden border border-ui-border-base bg-ui-bg-subtle">
                     <img
                       src={form.banner_image}
                       alt="Banner preview"
@@ -140,7 +140,7 @@ export const FlashSaleEdit = () => {
                     />
                     <button
                       type="button"
-                      className="absolute top-1.5 right-1.5 bg-white/80 hover:bg-white rounded px-1.5 py-0.5 text-xs text-red-500"
+                      className="absolute top-1.5 right-1.5 bg-white/80 hover:bg-ui-bg-base rounded px-1.5 py-0.5 text-xs text-ui-tag-red-text"
                       onClick={() => setForm((f) => ({ ...f, banner_image: "" }))}
                     >
                       Remove
@@ -172,7 +172,7 @@ export const FlashSaleEdit = () => {
                     Upload
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-ui-fg-muted">
                   Hero background on the storefront flash sale page.
                 </p>
               </div>

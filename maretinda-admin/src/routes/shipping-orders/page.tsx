@@ -11,6 +11,7 @@ import {
 } from "@medusajs/ui"
 import { ArrowDownTray, ArrowPath, XMark } from "@medusajs/icons"
 import { useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import {
   AdminShippingOrderFilters,
   downloadAdminWaybill,
@@ -41,6 +42,8 @@ const statusColor = (s: string): "green" | "orange" | "red" | "blue" | "grey" =>
   if (["in_transit", "returned"].includes(s)) return "blue"
   return "grey"
 }
+
+const CARRIERS: Record<string, string> = { flyingtigers: "Flying Tigers", ninjavan: "Ninja Van" }
 
 const peso = (n: number) =>
   new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n || 0)
@@ -219,27 +222,37 @@ export const ShippingOrders = () => {
                     <Table.Row key={o.id}>
                       <Table.Cell>{o.seller_name || o.seller_id}</Table.Cell>
                       <Table.Cell>
-                        <Text className="font-mono text-xs">{o.medusa_order_id || "-"}</Text>
+                        {o.medusa_order_id ? (
+                          <Link
+                            to={`/orders/${o.medusa_order_id}`}
+                            className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover whitespace-nowrap font-mono text-xs"
+                            title={o.medusa_order_id}
+                          >
+                            …{o.medusa_order_id.slice(-6)}
+                          </Link>
+                        ) : (
+                          "-"
+                        )}
                       </Table.Cell>
-                      <Table.Cell className="capitalize">{o.provider}</Table.Cell>
+                      <Table.Cell className="whitespace-nowrap">{CARRIERS[o.provider] ?? o.provider}</Table.Cell>
                       <Table.Cell>
                         {o.tracking_url ? (
                           <a
                             href={o.tracking_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="font-mono text-xs text-ui-fg-interactive"
+                            className="whitespace-nowrap font-mono text-xs text-ui-fg-interactive"
                           >
                             {o.tracking_number || "-"}
                           </a>
                         ) : (
-                          <Text className="font-mono text-xs">{o.tracking_number || "-"}</Text>
+                          <Text className="whitespace-nowrap font-mono text-xs">{o.tracking_number || "-"}</Text>
                         )}
                       </Table.Cell>
                       <Table.Cell>{o.service_level || "-"}</Table.Cell>
                       <Table.Cell>{peso(parseFloat(String(o.amount)) || 0)}</Table.Cell>
                       <Table.Cell>
-                        <StatusBadge color={statusColor(o.status)}>
+                        <StatusBadge color={statusColor(o.status)} className="whitespace-nowrap">
                           {o.status.replace(/_/g, " ")}
                         </StatusBadge>
                       </Table.Cell>

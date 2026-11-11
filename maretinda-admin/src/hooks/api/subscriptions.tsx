@@ -46,12 +46,15 @@ export const subscriptionConfigQueryKeys = queryKeysFactory('subscription-giyapa
 export const useAdminSubscriptions = (filters?: {
   status?: string
   seller_id?: string
+  /** Shop name, email or seller id */
+  q?: string
   limit?: number
   offset?: number
 }) => {
   const query = new URLSearchParams()
   if (filters?.status) query.set('status', filters.status)
   if (filters?.seller_id) query.set('seller_id', filters.seller_id)
+  if (filters?.q) query.set('q', filters.q)
   if (filters?.limit) query.set('limit', String(filters.limit))
   if (filters?.offset) query.set('offset', String(filters.offset))
   const qs = query.toString()

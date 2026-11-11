@@ -266,7 +266,7 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
         )}
 
         {actionError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-3 text-sm text-ui-tag-red-text">
             {actionError}
           </div>
         )}
@@ -343,7 +343,7 @@ function LegacyDrawer({ row, close }: { row: LegacyRow; close: () => void }) {
       </Drawer.Header>
 
       <Drawer.Body className="p-4 flex flex-col gap-4 overflow-y-auto">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-xl border border-ui-tag-orange-border bg-ui-tag-orange-bg px-4 py-3 text-sm text-ui-tag-orange-text">
           This is a legacy seller request submitted via the old registration system. Only basic information is available.
         </div>
 
@@ -385,7 +385,7 @@ function LegacyDrawer({ row, close }: { row: LegacyRow; close: () => void }) {
         )}
 
         {actionError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-3 text-sm text-ui-tag-red-text">
             {actionError}
           </div>
         )}

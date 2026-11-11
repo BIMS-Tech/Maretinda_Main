@@ -113,7 +113,7 @@ export const FlashSaleCreate = () => {
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">Banner Image</Label>
               {form.banner_image && (
-                <div className="relative w-full rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                <div className="relative w-full rounded-lg overflow-hidden border border-ui-border-base bg-ui-bg-subtle">
                   <img
                     src={form.banner_image}
                     alt="Banner preview"
@@ -122,7 +122,7 @@ export const FlashSaleCreate = () => {
                   />
                   <button
                     type="button"
-                    className="absolute top-1.5 right-1.5 bg-white/80 hover:bg-white rounded px-1.5 py-0.5 text-xs text-red-500"
+                    className="absolute top-1.5 right-1.5 bg-white/80 hover:bg-ui-bg-base rounded px-1.5 py-0.5 text-xs text-ui-tag-red-text"
                     onClick={() => setForm((f) => ({ ...f, banner_image: "" }))}
                   >
                     Remove
@@ -154,7 +154,7 @@ export const FlashSaleCreate = () => {
                   Upload
                 </Button>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ui-fg-muted">
                 Hero background on the storefront flash sale page.
               </p>
             </div>
@@ -168,7 +168,7 @@ export const FlashSaleCreate = () => {
                 value={form.max_order_quantity}
                 onChange={(e) => setForm((f) => ({ ...f, max_order_quantity: e.target.value }))}
               />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ui-fg-muted">
                 Limits how many sale items a single customer can purchase at the discounted price.
               </p>
             </div>

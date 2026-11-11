@@ -54,12 +54,12 @@ function ProductPickerCard({
       onClick={onSelect}
       className={`relative flex flex-col rounded-xl border p-3 text-left transition-all hover:shadow-sm ${
         isSelected
-          ? "border-[#432C63] bg-[#F5F0FF] shadow-sm"
+          ? "border-ui-border-interactive bg-ui-bg-highlight shadow-sm"
           : "border-ui-border-base bg-ui-bg-base hover:border-ui-border-strong"
       }`}
     >
       {isSelected && (
-        <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-[#432C63]">
+        <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-ui-bg-interactive">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
             <path d="M5 12l5 5L20 7" />
           </svg>

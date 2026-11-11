@@ -19,5 +19,7 @@ export const useAlgolia = () => {
   return useQuery<AlgoliaStatus>({
     queryKey: ["algolia"],
     queryFn: () => sdk.client.fetch("/admin/algolia", { method: "GET" }),
+    // A server without Algolia keys has no such route; asking again won't help
+    retry: false,
   });
 };

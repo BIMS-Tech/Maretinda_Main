@@ -27,11 +27,11 @@ import {
 import { FlashSaleItem, getFlashSaleStatus, getTimeRemaining } from "../../../lib/flash-sales"
 
 const STATUS_COLOR: Record<string, string> = {
-  green: "bg-green-100 text-green-700",
-  orange: "bg-orange-100 text-orange-700",
-  blue: "bg-blue-100 text-blue-700",
-  grey: "bg-gray-100 text-gray-600",
-  red: "bg-red-100 text-red-700",
+  green: "bg-ui-tag-green-bg text-ui-tag-green-text",
+  orange: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
+  blue: "bg-ui-tag-purple-bg text-ui-fg-interactive",
+  grey: "bg-ui-bg-subtle text-ui-fg-subtle",
+  red: "bg-ui-tag-red-bg text-ui-tag-red-text",
 }
 
 function AddItemForm({
@@ -58,8 +58,8 @@ function AddItemForm({
   })
 
   return (
-    <div className="border border-dashed border-gray-200 rounded-lg p-4 space-y-3">
-      <p className="text-sm font-medium text-gray-700">Add Product</p>
+    <div className="border border-dashed border-ui-border-base rounded-lg p-4 space-y-3">
+      <p className="text-sm font-medium text-ui-fg-subtle">Add Product</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-xs">Product ID</Label>
@@ -169,13 +169,13 @@ function ItemRow({
     : 0
 
   return (
-    <div className="border border-gray-100 rounded-lg p-4">
+    <div className="border border-ui-border-base rounded-lg p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-gray-800 truncate">
+          <div className="text-sm font-medium text-ui-fg-base truncate">
             {item.product?.title || item.product_id}
           </div>
-          <div className="text-xs text-gray-400 mt-0.5">
+          <div className="text-xs text-ui-fg-muted mt-0.5">
             {item.product_id}
             {item.variant_id && ` · variant: ${item.variant_id}`}
           </div>
@@ -210,18 +210,18 @@ function ItemRow({
             </div>
           ) : (
             <div className="mt-2 flex items-center gap-3">
-              <span className="text-xs font-semibold text-red-600">
+              <span className="text-xs font-semibold text-ui-tag-red-text">
                 -{item.discount_value}{item.discount_type === "percentage" ? "%" : "₱"}
               </span>
               {item.stock_limit && (
                 <div className="flex-1 max-w-[120px]">
-                  <div className="h-1.5 bg-yellow-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-ui-tag-orange-bg rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-yellow-400 rounded-full"
+                      className="h-full bg-brand-yellow rounded-full"
                       style={{ width: `${soldPct}%` }}
                     />
                   </div>
-                  <div className="text-[10px] text-gray-400 mt-0.5">
+                  <div className="text-[10px] text-ui-fg-muted mt-0.5">
                     {item.sold_count}/{item.stock_limit} sold
                   </div>
                 </div>
@@ -233,16 +233,16 @@ function ItemRow({
         {editable && !editing && (
           <div className="flex items-center gap-1 shrink-0">
             <button
-              className="p-1 hover:bg-gray-100 rounded"
+              className="p-1 hover:bg-ui-bg-base-hover rounded"
               onClick={() => setEditing(true)}
             >
-              <PencilSquare className="w-3.5 h-3.5 text-gray-400" />
+              <PencilSquare className="w-3.5 h-3.5 text-ui-fg-muted" />
             </button>
             <button
-              className="p-1 hover:bg-red-50 rounded"
+              className="p-1 hover:bg-ui-bg-base-hover rounded"
               onClick={handleDelete}
             >
-              <Trash className="w-3.5 h-3.5 text-red-400" />
+              <Trash className="w-3.5 h-3.5 text-ui-tag-red-text" />
             </button>
           </div>
         )}
@@ -252,9 +252,9 @@ function ItemRow({
 }
 
 const ITEM_STATUS_STYLE: Record<string, string> = {
-  pending: "bg-orange-100 text-orange-700",
-  approved: "bg-green-100 text-green-700",
-  rejected: "bg-red-100 text-red-700",
+  pending: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
+  approved: "bg-ui-tag-green-bg text-ui-tag-green-text",
+  rejected: "bg-ui-tag-red-bg text-ui-tag-red-text",
 }
 
 function SellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { seller_id?: string; item_status?: string }; flashSaleId: string }) {
@@ -274,24 +274,24 @@ function SellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { s
   const status = item.item_status || "pending"
 
   return (
-    <div className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg">
+    <div className="flex items-center gap-3 p-3 border border-ui-border-base rounded-lg">
       {item.product?.thumbnail && (
         <img src={item.product.thumbnail} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
       )}
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-900 truncate">
+        <div className="text-sm font-medium text-ui-fg-base truncate">
           {item.product?.title || item.product_id}
         </div>
-        <div className="text-xs text-gray-400 truncate">
+        <div className="text-xs text-ui-fg-muted truncate">
           {item.product_id}
-          {item.seller_id && <span className="ml-2 text-blue-500">seller: {item.seller_id.slice(-8)}</span>}
+          {item.seller_id && <span className="ml-2 text-ui-fg-interactive">seller: {item.seller_id.slice(-8)}</span>}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs font-semibold text-red-600">
+          <span className="text-xs font-semibold text-ui-tag-red-text">
             -{item.discount_value}{item.discount_type === "percentage" ? "%" : "₱"}
           </span>
           {item.stock_limit && (
-            <span className="text-xs text-gray-400">{item.sold_count}/{item.stock_limit} sold</span>
+            <span className="text-xs text-ui-fg-muted">{item.sold_count}/{item.stock_limit} sold</span>
           )}
           <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${ITEM_STATUS_STYLE[status] || ITEM_STATUS_STYLE.pending}`}>
             {status}
@@ -316,13 +316,13 @@ function SellerApplicationRow({ item, flashSaleId }: { item: FlashSaleItem & { s
           </Button>
         )}
         <button
-          className="p-1 hover:bg-red-50 rounded ml-1"
+          className="p-1 hover:bg-ui-bg-base-hover rounded ml-1"
           onClick={async () => {
             const ok = await prompt({ title: "Remove", description: "Remove this product application?", confirmText: "Remove", cancelText: "Cancel" })
             if (ok) remove(item.id)
           }}
         >
-          <Trash className="w-3.5 h-3.5 text-red-400" />
+          <Trash className="w-3.5 h-3.5 text-ui-tag-red-text" />
         </button>
       </div>
     </div>
@@ -348,11 +348,11 @@ function ReviveModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+      <div className="bg-ui-bg-base rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
         <Heading level="h2">Revive Flash Sale</Heading>
         {isPast ? (
           <>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-ui-fg-subtle">
               This sale's end date has already passed. Set a new end date to revive it.
             </p>
             <div className="space-y-1.5">
@@ -365,7 +365,7 @@ function ReviveModal({
             </div>
           </>
         ) : (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ui-fg-subtle">
             The end date is still in the future. The sale will be restored to its original schedule.
           </p>
         )}
@@ -389,11 +389,11 @@ function BannerImage({ url }: { url: string }) {
   const [failed, setFailed] = useState(false)
   return (
     <Container className="p-4">
-      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">Banner Image</p>
+      <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-2">Banner Image</p>
       {failed ? (
-        <div className="flex items-center gap-2 text-xs text-red-400 bg-red-50 rounded-lg p-3">
+        <div className="flex items-center gap-2 text-xs text-ui-tag-red-text bg-ui-tag-red-bg rounded-lg p-3">
           <span>Image failed to load.</span>
-          <span className="truncate text-gray-400">{url}</span>
+          <span className="truncate text-ui-fg-muted">{url}</span>
         </div>
       ) : (
         <img
@@ -432,7 +432,7 @@ export const FlashSaleDetail = () => {
   })
 
   if (isLoading || !sale) {
-    return <div className="p-8 text-center text-sm text-gray-400">Loading...</div>
+    return <div className="p-8 text-center text-sm text-ui-fg-muted">Loading...</div>
   }
 
   const [statusColor, statusLabel] = getFlashSaleStatus(sale)
@@ -450,14 +450,14 @@ export const FlashSaleDetail = () => {
       <div className="flex items-start justify-between gap-4">
         <div>
           <button
-            className="text-xs text-gray-400 hover:text-gray-600 mb-1"
+            className="text-xs text-ui-fg-muted hover:text-ui-fg-base mb-1"
             onClick={() => navigate("..")}
           >
             ← Flash Sales
           </button>
           <Heading level="h1">{sale.title}</Heading>
           {sale.description && (
-            <p className="text-sm text-gray-500 mt-1">{sale.description}</p>
+            <p className="text-sm text-ui-fg-subtle mt-1">{sale.description}</p>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -466,8 +466,8 @@ export const FlashSaleDetail = () => {
           >
             {sale.status === "active" && (
               <span className="relative flex w-1.5 h-1.5">
-                <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
-                <span className="relative w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="absolute inset-0 rounded-full bg-ui-tag-green-icon animate-ping opacity-75" />
+                <span className="relative w-1.5 h-1.5 rounded-full bg-ui-tag-green-icon" />
               </span>
             )}
             {statusLabel}
@@ -514,22 +514,22 @@ export const FlashSaleDetail = () => {
       {/* Info grid */}
       <Container className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Starts</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Starts</p>
           <p className="font-medium">{new Date(sale.starts_at).toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Ends</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Ends</p>
           <p className="font-medium">{new Date(sale.ends_at).toLocaleString()}</p>
           {sale.status === "active" && (
-            <p className="text-xs text-green-600 font-medium">{getTimeRemaining(sale.ends_at)} remaining</p>
+            <p className="text-xs text-ui-tag-green-text font-medium">{getTimeRemaining(sale.ends_at)} remaining</p>
           )}
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Products</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Products</p>
           <p className="font-medium">{sale.items?.length ?? 0}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Per-customer limit</p>
+          <p className="text-xs text-ui-fg-muted uppercase tracking-wide mb-1">Per-customer limit</p>
           <p className="font-medium">{sale.max_order_quantity ?? "No limit"}</p>
         </div>
       </Container>
@@ -544,7 +544,7 @@ export const FlashSaleDetail = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <Heading level="h2">Product Applications</Heading>
-            <p className="text-xs text-gray-400 mt-0.5">seller-submitted products — approve to include in this flash sale</p>
+            <p className="text-xs text-ui-fg-muted mt-0.5">seller-submitted products — approve to include in this flash sale</p>
           </div>
           {editable && (
             <Button size="small" variant="secondary" onClick={() => setShowAddItem((v) => !v)}>
@@ -561,7 +561,7 @@ export const FlashSaleDetail = () => {
         )}
 
         {!sale.items?.length ? (
-          <div className="text-center py-8 text-sm text-gray-400">
+          <div className="text-center py-8 text-sm text-ui-fg-muted">
             No product applications yet.
           </div>
         ) : (

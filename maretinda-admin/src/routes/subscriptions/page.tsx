@@ -234,7 +234,7 @@ function PlanRow({ plan }: { plan: SubscriptionPlan }) {
           <span>
             {plan.yearly_price ? `₱${Number(plan.yearly_price).toLocaleString()}` : "—"}
             {plan.yearly_discount_percent ? (
-              <span className="ml-1 text-xs text-green-600">({plan.yearly_discount_percent}% off)</span>
+              <span className="ml-1 text-xs text-ui-tag-green-text">({plan.yearly_discount_percent}% off)</span>
             ) : null}
           </span>
         )}
@@ -348,15 +348,15 @@ function TrialModal({ sub, onClose }: { sub: sellersubscription; onClose: () => 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <div className="bg-ui-bg-base rounded-xl shadow-2xl w-full max-w-md p-6">
         <Heading level="h2" className="mb-1">Manage Trial</Heading>
         <Text className="text-ui-fg-subtle mb-4" size="small">
           {sub.seller_name || sub.seller_id} — {sub.plan_name} plan
         </Text>
 
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-4 text-sm">
-          <p className="font-semibold text-amber-800">Trial Status</p>
-          <p className="text-amber-700 mt-0.5">
+        <div className="rounded-lg bg-ui-tag-orange-bg border border-ui-tag-orange-border p-3 mb-4 text-sm">
+          <p className="font-semibold text-ui-tag-orange-text">Trial Status</p>
+          <p className="text-ui-tag-orange-text mt-0.5">
             Ends: {trialEnd.toLocaleDateString()} ({daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining)
           </p>
         </div>
@@ -418,7 +418,7 @@ function AssignModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <div className="bg-ui-bg-base rounded-xl shadow-2xl w-full max-w-md p-6">
         <Heading level="h2" className="mb-4">Manually Assign Subscription</Heading>
         <div className="flex flex-col gap-3">
           <div>
@@ -451,7 +451,7 @@ function AssignModal({ onClose }: { onClose: () => void }) {
             <Label htmlFor="assign-trial">Assign as Free Trial</Label>
           </div>
           {isTrial && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+            <div className="rounded-lg bg-ui-tag-orange-bg border border-ui-tag-orange-border p-3 text-xs text-ui-tag-orange-text">
               Trial subscriptions have ₱0 price and are marked as trial for tracking. The seller will see a trial banner.
             </div>
           )}
@@ -485,7 +485,7 @@ export const SubscriptionsPage = () => {
 
   const { data, isLoading, refetch } = useAdminSubscriptions({
     status: statusFilter || undefined,
-    seller_id: appliedSellerId || undefined,
+    q: appliedSellerId || undefined,
     limit,
     offset: page * limit,
   })
@@ -562,15 +562,15 @@ export const SubscriptionsPage = () => {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label htmlFor="seller-search">Seller ID</Label>
+              <Label htmlFor="seller-search">Shop</Label>
               <div className="flex gap-2">
                 <Input
                   id="seller-search"
-                  placeholder="seller_..."
+                  placeholder="Name, email or seller ID"
                   value={sellerSearch}
                   onChange={(e) => setSellerSearch(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { setAppliedSellerId(sellerSearch); setPage(0) } }}
-                  className="w-52"
+                  className="w-64"
                 />
                 <Button size="small" variant="secondary" onClick={() => { setAppliedSellerId(sellerSearch); setPage(0) }}>Search</Button>
                 {appliedSellerId && (
@@ -619,14 +619,14 @@ export const SubscriptionsPage = () => {
                       <Table.Cell className="capitalize">{sub.billing_period || "monthly"}</Table.Cell>
                       <Table.Cell>
                         {sub.is_trial ? (
-                          <span className="text-amber-600 font-medium">Free Trial</span>
+                          <span className="text-ui-tag-orange-text font-medium">Free Trial</span>
                         ) : (
                           `₱${Number(sub.price).toLocaleString()}`
                         )}
                       </Table.Cell>
                       <Table.Cell>{formatDate(sub.start_date)}</Table.Cell>
                       <Table.Cell>
-                        <span className={new Date(sub.end_date).getTime() < Date.now() + 7 * 86400000 ? "text-red-600 font-semibold" : ""}>
+                        <span className={new Date(sub.end_date).getTime() < Date.now() + 7 * 86400000 ? "text-ui-tag-red-text font-semibold" : ""}>
                           {formatDate(sub.end_date)}
                           <span className="ml-1 text-xs text-ui-fg-muted">({daysUntil(sub.end_date)})</span>
                         </span>
@@ -650,7 +650,8 @@ export const SubscriptionsPage = () => {
                           )}
                           <Button
                             size="small"
-                            variant={sub.status === "active" ? "danger" : "secondary"}
+                            variant="secondary"
+                            className={sub.status === "active" ? "text-ui-fg-error" : undefined}
                             isLoading={updateStatus.isPending}
                             onClick={() => handleToggle(sub.id, sub.status)}
                           >

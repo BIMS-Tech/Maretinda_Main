@@ -49,7 +49,12 @@ export const SellerGeneralSection = ({ seller }: { seller: sellerseller }) => {
       <div>
         <Container className="mb-2">
           <div className="flex items-center justify-between">
-            <Heading>{seller.email || seller.name}</Heading>
+            <div>
+              <Heading>{seller.name || seller.email}</Heading>
+              {seller.name && seller.email && (
+                <Text size="small" className="text-ui-fg-subtle">{seller.email}</Text>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <SellerStatusBadge status={seller.store_status || "pending"} />
               <ActionsButton

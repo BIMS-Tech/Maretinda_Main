@@ -160,7 +160,7 @@ export const EditPossibleValue = () => {
                     <Label htmlFor="value">Value</Label>
                     <Input id="value" {...form.register("value")} />
                     {form.formState.errors.value && (
-                      <Text className="text-red-500 text-sm mt-1">
+                      <Text className="text-ui-tag-red-text text-sm mt-1">
                         {form.formState.errors.value.message}
                       </Text>
                     )}
@@ -173,7 +173,7 @@ export const EditPossibleValue = () => {
                       {...form.register("rank", { valueAsNumber: true })}
                     />
                     {form.formState.errors.rank && (
-                      <Text className="text-red-500 text-sm mt-1">
+                      <Text className="text-ui-tag-red-text text-sm mt-1">
                         {form.formState.errors.rank.message}
                       </Text>
                     )}

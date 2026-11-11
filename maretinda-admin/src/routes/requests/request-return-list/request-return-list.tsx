@@ -15,7 +15,7 @@ import {
 } from "@routes/requests/common/components/filter-return-requests";
 import { ReturnRequestMenu } from "@routes/requests/common/components/return-request-menu";
 import { getRequestStatusBadge } from "@routes/requests/common/utils/get-status-badge";
-import { ReturnRequestDetail } from "@routes/requests/request-return-list/components/request-return-list";
+import { ReturnRequestDetail, customerName } from "@routes/requests/request-return-list/components/request-return-list";
 
 const PAGE_SIZE = 20;
 
@@ -71,7 +71,7 @@ export const OrderReturnRequestsPage = () => {
         <Table>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Order ID</Table.HeaderCell>
+              <Table.HeaderCell>Order</Table.HeaderCell>
               <Table.HeaderCell>Customer</Table.HeaderCell>
               <Table.HeaderCell>Seller</Table.HeaderCell>
               <Table.HeaderCell>Reason</Table.HeaderCell>
@@ -84,8 +84,8 @@ export const OrderReturnRequestsPage = () => {
             {requests?.map((request) => {
               return (
                 <Table.Row key={request.id}>
-                  <Table.Cell>{request.order?.id}</Table.Cell>
-                  <Table.Cell>{`${request.order?.customer?.first_name} ${request.order?.customer?.last_name}`}</Table.Cell>
+                  <Table.Cell>#{(request.order as any)?.display_id ?? request.order?.id}</Table.Cell>
+                  <Table.Cell>{customerName(request)}</Table.Cell>
                   <Table.Cell>{request.seller?.name}</Table.Cell>
                   <Table.Cell>{request.customer_note}</Table.Cell>
                   <Table.Cell>
@@ -108,8 +108,15 @@ export const OrderReturnRequestsPage = () => {
             })}
           </Table.Body>
         </Table>
+        {!isLoading && !requests?.length && (
+          <Text size="small" className="text-ui-fg-muted px-6 py-8 text-center">
+            {currentFilter === "escalated"
+              ? "No returns waiting. Sellers escalate a return here when they want Maretinda to decide it."
+              : "No return requests"}
+          </Text>
+        )}
         <Table.Pagination
-          canNextPage={PAGE_SIZE * (currentPage + 1) < count!}
+          canNextPage={PAGE_SIZE * (currentPage + 1) < (count ?? 0)}
           canPreviousPage={currentPage > 0}
           previousPage={() => {
             setCurrentPage(currentPage - 1);
@@ -117,8 +124,8 @@ export const OrderReturnRequestsPage = () => {
           nextPage={() => {
             setCurrentPage(currentPage + 1);
           }}
-          count={count!}
-          pageCount={Math.ceil(count! / PAGE_SIZE)}
+          count={count ?? 0}
+          pageCount={Math.max(Math.ceil((count ?? 0) / PAGE_SIZE), 1)}
           pageIndex={currentPage}
           pageSize={PAGE_SIZE}
         />

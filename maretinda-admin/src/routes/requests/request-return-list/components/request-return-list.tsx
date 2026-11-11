@@ -18,15 +18,23 @@ type Props = {
   close: () => void;
 };
 
-export function ReturnRequestDetail({ request, open, close }: Props) {
-  if (!request || !request.order?.id) {
-    return null;
-  }
+/** The buyer's name, or their email when their account has no name. */
+export const customerName = (request: AdminOrderReturnRequest) => {
+  const c: any = request.order?.customer
+  const name = [c?.first_name, c?.last_name].filter(Boolean).join(" ")
+  return name || c?.email || (request.order as any)?.email || "-"
+}
 
-  const { order } = useOrder(request.order?.id);
+export function ReturnRequestDetail({ request, open, close }: Props) {
+  // Hooks first: the drawer is mounted before any request is picked
+  const { order } = useOrder(request?.order?.id ?? "", undefined, { enabled: !!request?.order?.id });
 
   const [promptOpen, setPromptOpen] = useState(false);
   const [requestAccept, setRequestAccept] = useState(false);
+
+  if (!request || !request.order?.id) {
+    return null;
+  }
 
   const handlePrompt = (_: string, accept: boolean) => {
     setRequestAccept(accept);
@@ -54,13 +62,13 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
           <fieldset>
             <legend className="mb-2">Order ID</legend>
             <Container>
-              <Text>{request.order?.id}</Text>
+              <Text>#{(request.order as any)?.display_id ?? request.order?.id}</Text>
             </Container>
           </fieldset>
           <fieldset className="mt-2">
             <legend className="mb-2">Customer</legend>
             <Container>
-              <Text>{`${request.order?.customer?.first_name} ${request.order?.customer?.last_name}`}</Text>
+              <Text>{customerName(request)}</Text>
             </Container>
           </fieldset>
           <fieldset className="mt-2">
@@ -76,7 +84,7 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
             </Container>
           </fieldset>
           <fieldset className="mt-2">
-            <legend className="mb-2">seller response</legend>
+            <legend className="mb-2">Seller's response</legend>
             <Container>
               <Text>{request.seller_reviewer_note || "-"}</Text>
             </Container>
@@ -112,8 +120,7 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
           </Container>
         </Drawer.Body>
         <Drawer.Footer>
-          {request.status === "pending" ||
-            (request.status === "escalated" && (
+          {request.status === "escalated" && (
               <>
                 <Button
                   onClick={() => {
@@ -134,7 +141,7 @@ export function ReturnRequestDetail({ request, open, close }: Props) {
                   Cancel
                 </Button>
               </>
-            ))}
+          )}
         </Drawer.Footer>
       </Drawer.Content>
     </Drawer>

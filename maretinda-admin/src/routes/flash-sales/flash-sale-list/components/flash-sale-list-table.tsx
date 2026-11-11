@@ -16,11 +16,11 @@ import { FlashSale, getFlashSaleStatus, getTimeRemaining } from "../../../../lib
 const columnHelper = createColumnHelper<FlashSale & { item_count?: number }>()
 
 const STATUS_COLOR: Record<string, string> = {
-  green: "bg-green-100 text-green-700",
-  orange: "bg-orange-100 text-orange-700",
-  blue: "bg-blue-100 text-blue-700",
-  grey: "bg-gray-100 text-gray-600",
-  red: "bg-red-100 text-red-700",
+  green: "bg-ui-tag-green-bg text-ui-tag-green-text",
+  orange: "bg-ui-tag-orange-bg text-ui-tag-orange-text",
+  blue: "bg-ui-tag-purple-bg text-ui-fg-interactive",
+  grey: "bg-ui-bg-subtle text-ui-fg-subtle",
+  red: "bg-ui-tag-red-bg text-ui-tag-red-text",
 }
 
 function StatusBadge({ sale }: { sale: FlashSale }) {
@@ -29,8 +29,8 @@ function StatusBadge({ sale }: { sale: FlashSale }) {
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLOR[color] || STATUS_COLOR.grey}`}>
       {sale.status === "active" && (
         <span className="relative flex w-1.5 h-1.5">
-          <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
-          <span className="relative w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="absolute inset-0 rounded-full bg-ui-tag-green-icon animate-ping opacity-75" />
+          <span className="relative w-1.5 h-1.5 rounded-full bg-ui-tag-green-icon" />
         </span>
       )}
       {label}
@@ -82,17 +82,17 @@ function ActionCell({ sale }: { sale: FlashSale }) {
     <div className="relative">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
-        className="p-1.5 rounded hover:bg-gray-100"
+        className="p-1.5 rounded hover:bg-ui-bg-base-hover"
       >
-        <EllipsisHorizontal className="w-4 h-4 text-gray-500" />
+        <EllipsisHorizontal className="w-4 h-4 text-ui-fg-subtle" />
       </button>
       {open && (
         <div
-          className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] py-1"
+          className="absolute right-0 top-8 z-50 bg-ui-bg-base border border-ui-border-base rounded-lg shadow-lg min-w-[180px] py-1"
           onMouseLeave={() => setOpen(false)}
         >
           <button
-            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+            className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-base-hover flex items-center gap-2"
             onClick={(e) => { e.stopPropagation(); navigate(sale.id); setOpen(false) }}
           >
             <PencilSquare className="w-3.5 h-3.5" /> View / Edit
@@ -100,7 +100,7 @@ function ActionCell({ sale }: { sale: FlashSale }) {
 
           {["draft", "scheduled"].includes(sale.status) && (
             <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-green-700"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-base-hover flex items-center gap-2 text-ui-tag-green-text"
               onClick={(e) => { e.stopPropagation(); publish(); setOpen(false) }}
             >
               <Bolt className="w-3.5 h-3.5" /> Publish
@@ -109,7 +109,7 @@ function ActionCell({ sale }: { sale: FlashSale }) {
 
           {["active", "scheduled"].includes(sale.status) && (
             <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-orange-700"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-base-hover flex items-center gap-2 text-ui-tag-orange-text"
               onClick={(e) => { e.stopPropagation(); end(); setOpen(false) }}
             >
               End Sale
@@ -118,7 +118,7 @@ function ActionCell({ sale }: { sale: FlashSale }) {
 
           {["ended", "cancelled"].includes(sale.status) && (
             <button
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-green-700"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-base-hover flex items-center gap-2 text-ui-tag-green-text"
               onClick={(e) => { e.stopPropagation(); revive(); setOpen(false) }}
             >
               <Bolt className="w-3.5 h-3.5" /> Revive
@@ -126,7 +126,7 @@ function ActionCell({ sale }: { sale: FlashSale }) {
           )}
 
           <button
-            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+            className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-base-hover flex items-center gap-2 text-ui-tag-red-text"
             onClick={(e) => { e.stopPropagation(); handleDelete(); setOpen(false) }}
           >
             <Trash className="w-3.5 h-3.5" /> Delete
@@ -146,7 +146,7 @@ export const FlashSaleListTable = () => {
       columnHelper.accessor("title", {
         header: "Flash Sale",
         cell: ({ row }) => (
-          <div className="font-medium text-sm text-gray-900">{row.original.title}</div>
+          <div className="font-medium text-sm text-ui-fg-base">{row.original.title}</div>
         ),
       }),
       columnHelper.accessor("status", {
@@ -156,7 +156,7 @@ export const FlashSaleListTable = () => {
       columnHelper.accessor("starts_at", {
         header: "Starts",
         cell: ({ getValue }) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-ui-fg-subtle">
             {new Date(getValue()).toLocaleString()}
           </span>
         ),
@@ -168,9 +168,9 @@ export const FlashSaleListTable = () => {
           const isActive = row.original.status === "active"
           return (
             <div>
-              <div className="text-sm text-gray-600">{new Date(v).toLocaleString()}</div>
+              <div className="text-sm text-ui-fg-subtle">{new Date(v).toLocaleString()}</div>
               {isActive && (
-                <div className="text-xs text-green-600 font-medium">
+                <div className="text-xs text-ui-tag-green-text font-medium">
                   {getTimeRemaining(v)} left
                 </div>
               )}
@@ -182,7 +182,7 @@ export const FlashSaleListTable = () => {
         id: "item_count",
         header: "Products",
         cell: ({ row }) => (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-ui-fg-subtle">
             {(row.original as any).item_count ?? 0}
           </span>
         ),
@@ -200,7 +200,7 @@ export const FlashSaleListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading level="h2">Flash Sales</Heading>
-          <p className="text-sm text-gray-500 mt-0.5">{count} total</p>
+          <p className="text-sm text-ui-fg-subtle mt-0.5">{count} total</p>
         </div>
         <Button size="small" variant="secondary" asChild>
           <Link to="create">Create Flash Sale</Link>
@@ -208,12 +208,12 @@ export const FlashSaleListTable = () => {
       </div>
 
       {isLoading ? (
-        <div className="px-6 py-8 text-center text-sm text-gray-400">Loading...</div>
+        <div className="px-6 py-8 text-center text-sm text-ui-fg-muted">Loading...</div>
       ) : flash_sales.length === 0 ? (
         <div className="px-6 py-12 text-center">
-          <Bolt className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-600">No flash sales yet</p>
-          <p className="text-xs text-gray-400 mt-1">Create your first flash sale to get started</p>
+          <Bolt className="w-8 h-8 text-ui-fg-muted mx-auto mb-3" />
+          <p className="text-sm font-medium text-ui-fg-subtle">No flash sales yet</p>
+          <p className="text-xs text-ui-fg-muted mt-1">Create your first flash sale to get started</p>
         </div>
       ) : (
         <table className="w-full text-left">
@@ -222,7 +222,7 @@ export const FlashSaleListTable = () => {
               {columns.map((col) => (
                 <th
                   key={(col as any).id || (col as any).accessorKey}
-                  className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide"
+                  className="px-6 py-3 text-xs font-medium text-ui-fg-subtle uppercase tracking-wide"
                 >
                   {typeof (col as any).header === "string" ? (col as any).header : ""}
                 </th>
@@ -233,23 +233,23 @@ export const FlashSaleListTable = () => {
             {flash_sales.map((sale) => (
               <tr
                 key={sale.id}
-                className="border-b hover:bg-gray-50 cursor-pointer"
+                className="border-b hover:bg-ui-bg-base-hover cursor-pointer"
                 onClick={() => navigate(sale.id)}
               >
                 <td className="px-6 py-4">
-                  <div className="font-medium text-sm text-gray-900">{sale.title}</div>
+                  <div className="font-medium text-sm text-ui-fg-base">{sale.title}</div>
                 </td>
                 <td className="px-6 py-4"><StatusBadge sale={sale} /></td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-6 py-4 text-sm text-ui-fg-subtle">
                   {new Date(sale.starts_at).toLocaleString()}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-600">{new Date(sale.ends_at).toLocaleString()}</div>
+                  <div className="text-sm text-ui-fg-subtle">{new Date(sale.ends_at).toLocaleString()}</div>
                   {sale.status === "active" && (
-                    <div className="text-xs text-green-600 font-medium">{getTimeRemaining(sale.ends_at)} left</div>
+                    <div className="text-xs text-ui-tag-green-text font-medium">{getTimeRemaining(sale.ends_at)} left</div>
                   )}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
+                <td className="px-6 py-4 text-sm text-ui-fg-subtle">
                   {(sale as any).item_count ?? 0}
                 </td>
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
