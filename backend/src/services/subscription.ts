@@ -98,7 +98,7 @@ class SubscriptionService {
   }
 
   // Admin: list all subscriptions with optional filters
-  async listAll(filters?: { status?: string; seller_id?: string; limit?: number; offset?: number }): Promise<{
+  async listAll(filters?: { status?: string; seller_id?: string; q?: string; limit?: number; offset?: number }): Promise<{
     subscriptions: any[]
     count: number
   }> {
@@ -109,6 +109,17 @@ class SubscriptionService {
     let baseQuery = db("seller_subscription")
     if (filters?.status) baseQuery = baseQuery.where("status", filters.status)
     if (filters?.seller_id) baseQuery = baseQuery.where("seller_id", filters.seller_id)
+    // Admins search by what they know: the shop's name, its email, or its id
+    if (filters?.q?.trim()) {
+      const like = `%${filters.q.trim().replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+      baseQuery = baseQuery.whereIn(
+        "seller_id",
+        db("seller")
+          .whereNull("deleted_at")
+          .where((w: any) => w.whereILike("name", like).orWhereILike("email", like).orWhere("id", filters.q!.trim()))
+          .select("id")
+      )
+    }
 
     const [subscriptions, countResult] = await Promise.all([
       baseQuery.clone().orderBy("created_at", "desc").limit(limit).offset(offset),

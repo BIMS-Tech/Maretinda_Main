@@ -7,7 +7,7 @@ import { sellerReadiness } from "./seller-readiness"
  * that changes what the shop sells or where it ships needs a plan.
  */
 const WORKS_WITHOUT_PLAN =
-  /^\/vendor\/(subscription|sellers|orders|returns|shipping-orders|chat|talkjs|payouts|payout-account|invites\/accept|me|notifications)(\/|$)/
+  /^\/vendor\/(subscription|sellers|orders|returns|return-request|shipping-orders|chat|talkjs|payouts|payout-account|invites\/accept|me|notifications)(\/|$)/
 
 export const vendorRequestNeedsPlan = (method: string, path: string) =>
   method.toUpperCase() !== "GET" && !WORKS_WITHOUT_PLAN.test(path)
@@ -28,10 +28,14 @@ export async function sellersWithoutPlan(pg: any, sellerIds: string[]): Promise<
   return ids.filter((id) => !active.has(id))
 }
 
+/** An admin's suspension closes a shop whatever its plan or setup. */
+export const isSuspended = (seller: { store_status?: string | null }) =>
+  String(seller.store_status ?? "").toUpperCase() === "SUSPENDED"
+
 /**
- * A shop is closed to buyers when it has no plan running or its store setup
- * isn't finished (see lib/seller-readiness). Of the given sellers, the closed
- * ones.
+ * A shop is closed to buyers when an admin suspended it, it has no plan
+ * running, or its store setup isn't finished (see lib/seller-readiness). Of
+ * the given sellers, the closed ones.
  */
 export async function closedSellers(pg: any, sellerIds: string[]): Promise<{ id: string; name: string; handle: string }[]> {
   const ids = [...new Set(sellerIds.filter(Boolean))]
@@ -39,7 +43,7 @@ export async function closedSellers(pg: any, sellerIds: string[]): Promise<{ id:
   const noPlan = new Set(await sellersWithoutPlan(pg, ids))
   const sellers = await pg("seller").whereIn("id", ids).whereNull("deleted_at").select("*")
   return sellers
-    .filter((s: any) => noPlan.has(s.id) || !sellerReadiness(s).ready)
+    .filter((s: any) => isSuspended(s) || noPlan.has(s.id) || !sellerReadiness(s).ready)
     .map((s: any) => ({ id: s.id, name: s.name, handle: s.handle }))
 }
 

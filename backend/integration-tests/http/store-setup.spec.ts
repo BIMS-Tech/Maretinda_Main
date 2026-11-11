@@ -97,5 +97,35 @@ medusaIntegrationTestRunner({
       expect(res.status).toBe(400)
       expect(res.data.message).toMatch(/isn't taking orders/)
     })
+
+    describe("a shop an admin suspended", () => {
+      const suspend = async (sellerId: string) =>
+        getContainer().resolve(ContainerRegistrationKeys.PG_CONNECTION)("seller").where("id", sellerId).update({ store_status: "SUSPENDED" })
+
+      it("is closed to buyers even with a plan and a finished setup", async () => {
+        const shop = await sellerOnPlan(true)
+        const product = await publishedProductOf(shop.seller.id)
+        await suspend(shop.seller.id)
+
+        const closed = await api.get("/store/closed-shops", { headers: { "x-publishable-api-key": pk } })
+        expect(closed.data.handles).toContain(shop.seller.handle)
+        const cart = await getContainer().resolve(Modules.CART).createCarts({ currency_code: "php", items: [] })
+        const res = await api.post(
+          `/store/carts/${cart.id}/line-items`,
+          { variant_id: product.variants[0].id, quantity: 1 },
+          { headers: { "x-publishable-api-key": pk }, ...noThrow }
+        )
+        expect(res.status).toBe(400)
+      })
+
+      // Mercur itself refuses a suspended shop's changes
+      it("can't change the shop, but can still look at it", async () => {
+        const shop = await sellerOnPlan(true)
+        await suspend(shop.seller.id)
+        const create = await api.post("/vendor/products", { title: "New", status: "draft" }, shop.as)
+        expect(create.status).toBe(403)
+        expect((await api.get("/vendor/products", shop.as)).status).toBe(200)
+      })
+    })
   },
 })

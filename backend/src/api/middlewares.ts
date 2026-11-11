@@ -359,6 +359,50 @@ const claimFlashSaleStock = async (req: MedusaRequest, res: MedusaResponse, next
   }
 }
 
+/**
+ * A seller declining ("withdrawn") or escalating a buyer's return. Mercur's
+ * route runs a workflow that links the order's returns to the seller and
+ * crashes when there are none, which is every time before a refund, so those
+ * two answers are saved here. Refunds still go through Mercur: they open the
+ * return that its linking needs.
+ */
+const answerReturnWithoutRefund = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+  try {
+    const { status, vendor_reviewer_note } = (req.body ?? {}) as { status?: string; vendor_reviewer_note?: unknown }
+    if (status !== 'withdrawn' && status !== 'escalated') return next()
+    if (typeof vendor_reviewer_note !== 'string') {
+      return res.status(400).json({ type: 'invalid_data', message: 'Add a note for the buyer' })
+    }
+    const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
+    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+    const { data } = await query.graph({
+      entity: 'order_return_request',
+      fields: ['id', 'status', 'seller.id'],
+      filters: { id: req.params.id },
+    })
+    const request: any = data[0]
+    if (!request || !sellerId || request.seller?.id !== sellerId) {
+      return res.status(404).json({ type: 'not_found', message: 'Return request not found' })
+    }
+    if (request.status !== 'pending') {
+      return res.status(400).json({ type: 'invalid_data', message: 'This return has already been answered' })
+    }
+    const [order_return_request] = await (req.scope.resolve('order_return') as any).updateOrderReturnRequests([
+      {
+        id: request.id,
+        status,
+        vendor_reviewer_note,
+        vendor_reviewer_id: (req as any).auth_context?.actor_id,
+        vendor_review_date: new Date(),
+      },
+    ])
+    res.json({ order_return_request })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const productOfAddedVariant = async (db: any, req: MedusaRequest) => {
   const variantId = (req.body as any)?.variant_id
   if (!variantId) return []
@@ -454,6 +498,7 @@ export default defineMiddlewares({
     { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [requireReadyShop('publish products', publishing)] },
     { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
+    { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [answerReturnWithoutRefund] },
     { matcher: '/vendor/reels', method: ['POST'], middlewares: [requireReadyShop('post reels')] },
     { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales'), requireReadyShop('join flash sales')] },
     { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers'), requireReadyShop('run promotions and vouchers')] },

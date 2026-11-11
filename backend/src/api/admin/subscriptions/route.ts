@@ -4,12 +4,13 @@ import SubscriptionService from "../../../services/subscription"
 
 export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse): Promise<void> {
   try {
-    const { status, seller_id, limit, offset } = req.query as any
+    const { status, seller_id, q, limit, offset } = req.query as any
 
     const service = new SubscriptionService(req.scope)
     const result = await service.listAll({
       status: status || undefined,
       seller_id: seller_id || undefined,
+      q: typeof q === "string" ? q.slice(0, 100) : undefined,
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0,
     })

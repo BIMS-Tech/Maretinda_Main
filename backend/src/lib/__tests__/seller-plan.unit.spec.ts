@@ -24,6 +24,8 @@ describe("vendorRequestNeedsPlan", () => {
     ["POST", "/vendor/orders/order_1/capture"],
     ["POST", "/vendor/orders/order_1/fulfillments"],
     ["POST", "/vendor/returns/ret_1/receive"],
+    // Answering a buyer's return request is finishing an existing order
+    ["POST", "/vendor/return-request/oretreq_1"],
     ["POST", "/vendor/shipping-orders"],
     ["POST", "/vendor/chat/conv_1/message"],
     ["POST", "/vendor/payout-account"],
