@@ -10,7 +10,7 @@ import { Form } from "../../components/common/form"
 import { useDashboardExtension } from "../../extensions"
 import { useSignInWithEmailPass } from "../../hooks/api"
 import { isFetchError } from "../../lib/is-fetch-error"
-import { AuthShell, Butterfly, GlassCard } from "../../components/auth/auth-shell"
+import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -66,7 +66,7 @@ export const Login = () => {
         <>
           Your shop, open to
           <br />
-          <span className="italic text-[#FFC533]">the whole Philippines.</span>
+          <Accent>the whole Philippines.</Accent>
         </>
       }
       lede="List your products, take orders and get paid, with buyers from Luzon to Mindanao finding you on Maretinda."
@@ -122,7 +122,7 @@ export const Login = () => {
             <button
               type="submit"
               disabled={isPending}
-              className="bg-ui-button-inverted hover:bg-ui-button-inverted-hover active:bg-ui-button-inverted-pressed shadow-buttons-inverted focus-visible:shadow-buttons-inverted-focus transition-fg mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-[15px] font-semibold text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${PRIMARY_BUTTON} mt-1`}
             >
               {isPending && <Spinner className="animate-spin" />}
               {isPending ? "Signing in…" : "Sign in"}
@@ -144,7 +144,7 @@ export const Login = () => {
           </div>
           <Link
             to="/register"
-            className="border-ui-border-base text-ui-fg-base hover:bg-ui-bg-base-hover hover:border-ui-border-interactive flex h-11 w-full items-center justify-center rounded-lg border text-[15px] font-medium transition-colors"
+            className={SECONDARY_BUTTON}
           >
             Open a shop
           </Link>
@@ -159,10 +159,10 @@ function SellerPreview() {
   return (
     <>
       <GlassCard className="absolute left-0 top-0 w-[260px]" tilt={-2}>
-        <p className="text-xs text-white/60">Today's sales</p>
+        <p className="text-xs opacity-60">Today's sales</p>
         <p className="mt-1 text-[26px] font-semibold tracking-tight">₱12,480</p>
         <div className="mt-1 flex items-end justify-between">
-          <span className="rounded-full bg-emerald-400/20 px-2 py-0.5 text-[11px] font-medium text-emerald-200">+18% vs yesterday</span>
+          <span className="rounded-full bg-ui-tag-green-bg px-2 py-0.5 text-[11px] font-medium text-ui-tag-green-text">+18% vs yesterday</span>
           <svg width="96" height="32" viewBox="0 0 96 32" fill="none" aria-hidden>
             <polyline points="0,26 14,22 28,24 42,15 56,17 70,9 84,11 96,3" stroke="#FFC533" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -175,13 +175,13 @@ function SellerPreview() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="whitespace-nowrap text-sm font-medium">New order #1042</p>
-            <p className="truncate text-xs text-white/60">Barong · Cebu City</p>
+            <p className="truncate text-xs opacity-60">Barong · Cebu City</p>
           </div>
           <span className="text-sm font-semibold">₱2,450</span>
         </div>
       </GlassCard>
       <GlassCard className="absolute bottom-0 left-8 flex items-center gap-2 !px-3 !py-2" tilt={-1} delay={2800}>
-        <CheckCircleSolid className="text-emerald-300" />
+        <CheckCircleSolid className="text-ui-tag-green-icon" />
         <span className="text-xs">Payout sent · ₱8,215</span>
       </GlassCard>
     </>

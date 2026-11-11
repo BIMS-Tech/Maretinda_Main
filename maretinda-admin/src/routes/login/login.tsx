@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import * as z from "zod"
 
-import { AuthShell, Butterfly, GlassCard } from "../../components/auth/auth-shell"
+import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON } from "../../components/auth/auth-shell"
 import { Form } from "../../components/common/form"
 import { useSignInWithEmailPass } from "../../hooks/api"
 import { isFetchError } from "../../lib/is-fetch-error"
@@ -59,12 +59,13 @@ export const Login = () => {
 
   return (
     <AuthShell
+      admin
       portal="Admin"
       headline={
         <>
           The whole marketplace,
           <br />
-          <span className="italic text-[#FFC533]">at a glance.</span>
+          <Accent>at a glance.</Accent>
         </>
       }
       lede="Approve sellers, keep orders and couriers moving, settle payouts, and step in when a buyer or seller needs Maretinda."
@@ -120,7 +121,7 @@ export const Login = () => {
             <button
               type="submit"
               disabled={isPending}
-              className="bg-ui-button-inverted hover:bg-ui-button-inverted-hover active:bg-ui-button-inverted-pressed shadow-buttons-inverted focus-visible:shadow-buttons-inverted-focus transition-fg mt-1 flex h-11 w-full items-center justify-center gap-2 rounded-lg text-[15px] font-semibold text-white outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${PRIMARY_BUTTON} mt-1`}
             >
               {isPending && <Spinner className="animate-spin" />}
               {isPending ? "Signing in…" : "Sign in"}
@@ -146,16 +147,16 @@ function AdminPreview() {
   return (
     <>
       <GlassCard className="absolute left-0 top-0 w-[260px]" tilt={-2}>
-        <p className="text-xs text-white/60">Shops that can sell</p>
+        <p className="text-xs opacity-60">Shops that can sell</p>
         <p className="mt-1 text-[26px] font-semibold tracking-tight">
-          128 <span className="text-sm font-normal text-white/55">of 164</span>
+          128 <span className="text-sm font-normal opacity-55">of 164</span>
         </p>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#432C63]/10 dark:bg-white/10">
           <div className="h-full w-[78%] rounded-full bg-[#FFC533]" />
         </div>
       </GlassCard>
       <GlassCard className="absolute right-0 top-[92px] w-[270px]" tilt={2} delay={1400}>
-        <p className="text-xs text-white/60">Waiting for you</p>
+        <p className="text-xs opacity-60">Waiting for you</p>
         <ul className="mt-2 flex flex-col gap-1.5 text-sm">
           {[
             ["Seller applications", 3],
@@ -163,14 +164,14 @@ function AdminPreview() {
             ["Escalated returns", 1],
           ].map(([label, n]) => (
             <li key={label as string} className="flex items-center justify-between">
-              <span className="text-white/85">{label}</span>
-              <span className="rounded-full bg-[#FFC533]/20 px-2 text-xs font-medium text-[#FFD66E]">{n}</span>
+              <span className="opacity-90">{label}</span>
+              <span className="rounded-full bg-[#FFC533]/20 px-2 text-xs font-medium text-[#7A5600] dark:text-[#FFD66E]">{n}</span>
             </li>
           ))}
         </ul>
       </GlassCard>
       <GlassCard className="absolute -top-5 right-4 flex items-center gap-2 !px-3 !py-2" tilt={1} delay={2800}>
-        <Butterfly size={14} className="text-[#FFC533]" />
+        <Butterfly size={14} className="text-[#6B4C9A] dark:text-[#FFC533]" />
         <span className="text-xs">Sales, last 30 days · ₱1.24M</span>
       </GlassCard>
     </>

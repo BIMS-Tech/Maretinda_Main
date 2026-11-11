@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, ChangeEvent, ReactNode } from "react"
 import { Link } from "react-router-dom"
-import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import { backendUrl, publishableApiKey, sdk } from "../../lib/client/client"
-import { useTheme } from "../../providers/theme-provider"
+import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON } from "../../components/auth/auth-shell"
 import { submitSellerApplication } from "./submit-application"
 
 // ---------------------------------------------------------------------------
@@ -12,20 +11,6 @@ import { submitSellerApplication } from "./submit-application"
 const BOT_NAME = "Tala"
 const BRAND = "#432C63"
 
-function MaretindaFlower({ color = "white", size = 44 }: { color?: string; size?: number }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width={size} height={size} className={color === "brand" ? "text-[#432C63] dark:text-white" : undefined}>
-      {[45, 135, 225, 315].map(angle => (
-        <path
-          key={angle}
-          d="M16,17 C12.5,14 11,7.5 16,5 C21,7.5 19.5,14 16,17Z"
-          fill={color === "brand" ? "currentColor" : color}
-          transform={`rotate(${angle},16,16)`}
-        />
-      ))}
-    </svg>
-  )
-}
 
 // ---------------------------------------------------------------------------
 // Constants (mirror of the classic registration form)
@@ -317,24 +302,6 @@ function bubbleFor(q: Question, d: FormData): string {
 // Small UI pieces
 // ---------------------------------------------------------------------------
 
-function ThemeToggleButton() {
-  const { theme, setTheme } = useTheme()
-  const cycle = () => {
-    if (theme === "light") setTheme("dark")
-    else if (theme === "dark") setTheme("system")
-    else setTheme("light")
-  }
-  return (
-    <button
-      type="button"
-      onClick={cycle}
-      title={`Theme: ${theme}`}
-      className="flex items-center justify-center w-8 h-8 rounded-lg border border-ui-border-base bg-ui-bg-subtle text-ui-fg-subtle hover:bg-ui-bg-subtle-hover hover:text-ui-fg-base transition-colors"
-    >
-      {theme === "dark" ? <Moon className="w-4 h-4" /> : theme === "light" ? <Sun className="w-4 h-4" /> : <CircleHalfSolid className="w-4 h-4" />}
-    </button>
-  )
-}
 
 function Sparkle({ size = 18, color = "white" }: { size?: number; color?: string }) {
   return (
@@ -746,6 +713,31 @@ function ReviewCard({ data, onEdit }: { data: FormData; onEdit: (qid: string) =>
 // Main component
 // ---------------------------------------------------------------------------
 
+/** How far along the sign-up is, beside the conversation. */
+function SignupProgress({ progress }: { progress: number }) {
+  return (
+    <>
+      <GlassCard className="absolute left-0 top-0 w-[300px]" tilt={-2}>
+        <p className="text-xs opacity-60">Your application</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight">{progress}% done</p>
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#432C63]/10 dark:bg-white/10">
+          <div className="h-full rounded-full bg-[#FFC533] transition-all duration-500" style={{ width: `${progress}%` }} />
+        </div>
+      </GlassCard>
+      <GlassCard className="absolute right-0 top-[118px] w-[260px]" tilt={2} delay={1400}>
+        <ul className="flex flex-col gap-2 text-sm">
+          {["Free to sign up", "A first month free on any plan", "Paid out to your own bank"].map((label) => (
+            <li key={label} className="flex items-center gap-2">
+              <Butterfly size={14} className="shrink-0 text-[#6B4C9A] dark:text-[#FFC533]" />
+              <span className="opacity-90">{label}</span>
+            </li>
+          ))}
+        </ul>
+      </GlassCard>
+    </>
+  )
+}
+
 export const RegisterChat = () => {
   const [data, setData] = useState<FormData>(INITIAL)
   const [messages, setMessages] = useState<Message[]>([])
@@ -901,32 +893,41 @@ export const RegisterChat = () => {
   // ---- Success screen ----
   if (phase === "success") {
     return (
-      <div className="min-h-dvh w-dvw flex items-center justify-center bg-ui-bg-base px-6">
-        <div className="w-full max-w-[400px] text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: "var(--bg-highlight)" }}>
+      <AuthShell portal="Seller Centre">
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-ui-bg-highlight text-ui-fg-interactive">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M5 13l4 4L19 7" stroke={BRAND} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-ui-fg-base mb-2">Application submitted!</h2>
-          <p className="text-ui-fg-subtle text-sm leading-relaxed mb-8">
-            Thanks for chatting with me, {data.first_name || "friend"}. Your application to sell on Maretinda is now under review —
-            you'll get an email once your account is activated.
+          <h2 className="font-display text-ui-fg-base mb-2 text-[34px] leading-tight">Application sent</h2>
+          <p className="text-ui-fg-subtle mb-8 text-sm leading-relaxed">
+            Thanks for chatting with me, {data.first_name || "friend"}. Your application to sell on Maretinda is now under review,
+            and you'll get an email once your account is activated.
           </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: BRAND }}
-          >
-            Back to Sign In
+          <Link to="/login" className={PRIMARY_BUTTON}>
+            Back to sign in
           </Link>
         </div>
-      </div>
+      </AuthShell>
     )
   }
 
   return (
-    <div className="h-dvh w-dvw flex bg-ui-bg-base overflow-hidden">
+    <AuthShell
+      portal="Seller Centre"
+      wide
+      flush
+      headline={
+        <>
+          Let&apos;s get you
+          <br />
+          <Accent>selling on Maretinda.</Accent>
+        </>
+      }
+      lede={`No long forms: a quick chat with ${BOT_NAME}, and you're on your way to buyers across the Philippines.`}
+      preview={<SignupProgress progress={progress} />}
+    >
       <style>{`
         @keyframes mtd-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes mtd-blob { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(12px,-16px) scale(1.08);} }
@@ -939,71 +940,9 @@ export const RegisterChat = () => {
         .mtd-scroll::-webkit-scrollbar-track { background: transparent; }
       `}</style>
 
-      {/* Left brand panel */}
-      <div className="hidden lg:flex flex-col justify-between w-[42%] p-12 relative overflow-hidden flex-shrink-0" style={{ backgroundColor: BRAND }}>
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10 bg-ui-bg-base" style={{ animation: "mtd-blob 9s ease-in-out infinite" }} />
-          <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full opacity-10 bg-ui-bg-base" style={{ animation: "mtd-blob 11s ease-in-out infinite reverse" }} />
-        </div>
-
-        <div className="relative z-10 flex items-center gap-3">
-          <MaretindaFlower color="white" size={40} />
-          <div>
-            <span className="text-white text-2xl font-bold tracking-wide">Maretinda</span>
-            <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.9)" }}>Seller</span>
-          </div>
-        </div>
-
-        <div className="relative z-10">
-          <h1 className="text-white text-4xl font-bold leading-tight mb-4">
-            Let's get you<br />selling on<br />Maretinda
-          </h1>
-          <p className="text-white/70 text-base leading-relaxed max-w-xs">
-            No long forms — just a quick chat with {BOT_NAME}, and you're on your way to reaching thousands of customers nationwide.
-          </p>
-          <div className="mt-10 flex flex-col gap-4">
-            {[
-              "Free to register & get started",
-              "Guided, conversational onboarding",
-              "Reach customers nationwide",
-              "Fast & secure payouts",
-            ].map(label => (
-              <div key={label} className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 text-white/90" style={{ background: "rgba(255,255,255,0.18)" }}>
-                  <svg viewBox="0 0 12 12" width="10" height="10" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                </span>
-                <span className="text-white/80 text-sm">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative z-10">
-          <p className="text-white/50 text-xs mb-2">{progress}% complete</p>
-          <div className="w-full h-1 rounded-full bg-white/20 overflow-hidden">
-            <div className="h-1 rounded-full bg-ui-bg-base transition-all duration-500" style={{ width: `${progress}%` }} />
-          </div>
-          <p className="text-white/40 text-xs mt-3">© {new Date().getFullYear()} Maretinda. All rights reserved.</p>
-        </div>
-      </div>
-
-      {/* Right — chat stage */}
-      <div className="flex-1 flex flex-col min-w-0 relative p-3 sm:p-6">
-        {/* soft brand glow behind the card */}
-        <div
-          className="pointer-events-none absolute -top-10 right-10 w-80 h-80 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(67,44,99,0.18), transparent 70%)", animation: "mtd-glow 6s ease-in-out infinite" }}
-        />
-        <div
-          className="pointer-events-none absolute bottom-0 left-6 w-72 h-72 rounded-full blur-3xl"
-          style={{ background: "radial-gradient(circle, rgba(125,90,168,0.14), transparent 70%)", animation: "mtd-glow 8s ease-in-out infinite reverse" }}
-        />
-
-        {/* Chat card */}
-        <div className="relative z-10 flex-1 min-h-0 w-full max-w-[760px] mx-auto flex flex-col rounded-3xl border border-ui-border-base bg-ui-bg-base shadow-2xl overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 sm:px-6 py-3.5 border-b border-ui-border-base bg-ui-bg-base/95 backdrop-blur">
+          <div className="flex items-center gap-3 px-4 sm:px-6 py-3.5 border-b border-white/50 dark:border-white/10">
             <BotAvatar size={38} />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-ui-fg-base leading-tight">{BOT_NAME}</p>
@@ -1022,7 +961,6 @@ export const RegisterChat = () => {
                   <div className="h-full rounded-full transition-all duration-500" style={{ width: `${progress}%`, backgroundColor: BRAND }} />
                 </div>
               </div>
-              <ThemeToggleButton />
             </div>
           </div>
 
@@ -1030,7 +968,6 @@ export const RegisterChat = () => {
           <div
             ref={scrollRef}
             className="mtd-scroll flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-6"
-            style={{ background: "radial-gradient(120% 60% at 50% 0%, rgba(67,44,99,0.06), transparent 60%)" }}
           >
             <div className="space-y-3">
               {messages.map(m => (
@@ -1040,7 +977,7 @@ export const RegisterChat = () => {
                     className={`max-w-[82%] px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
                       m.role === "user"
                         ? "text-white rounded-2xl rounded-br-md"
-                        : "bg-ui-bg-component text-ui-fg-base rounded-2xl rounded-bl-md border border-ui-border-base"
+                        : "bg-white/70 dark:bg-white/[0.07] backdrop-blur text-ui-fg-base rounded-2xl rounded-bl-md border border-white/80 dark:border-white/10"
                     }`}
                     style={m.role === "user" ? { background: `linear-gradient(135deg, ${BRAND}, #5a3d80)` } : undefined}
                   >
@@ -1052,7 +989,7 @@ export const RegisterChat = () => {
               {botTyping && (
                 <div className="mtd-msg flex items-end gap-2 justify-start">
                   <BotAvatar size={28} />
-                  <div className="bg-ui-bg-component border border-ui-border-base rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                  <div className="bg-white/70 dark:bg-white/[0.07] backdrop-blur border border-white/80 dark:border-white/10 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-1">
                       {[0, 1, 2].map(i => (
                         <span key={i} className="mtd-dot w-1.5 h-1.5 rounded-full bg-ui-fg-muted" style={{ animationDelay: `${i * 0.18}s` }} />
@@ -1075,7 +1012,7 @@ export const RegisterChat = () => {
           </div>
 
           {/* Composer / action bar */}
-          <div className="border-t border-ui-border-base bg-ui-bg-subtle/60 backdrop-blur px-3 sm:px-6 py-4">
+          <div className="border-t border-white/50 dark:border-white/10 bg-white/30 dark:bg-black/10 px-3 sm:px-6 py-4">
             {error && (
               <div className="mb-3 rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-2.5 text-sm text-ui-tag-red-text">{error}</div>
             )}
@@ -1114,12 +1051,10 @@ export const RegisterChat = () => {
             <div className="mt-3 text-center">
               <span className="text-ui-fg-subtle text-xs">
                 Already have an account?{" "}
-                <Link to="/login" className="font-medium hover:opacity-80 transition-colors" style={{ color: BRAND }}>Sign In</Link>
+                <Link to="/login" className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover font-medium">Sign in</Link>
               </span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   )
 }

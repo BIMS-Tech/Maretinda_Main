@@ -227,6 +227,95 @@
   letter-spacing: -0.01em;
 }
 
+/* ─── Sign-in pages: one background, a frosted glass card ─────────────────
+ * Light: a lavender and cream wash. Dark: deep aubergine. The admin's is a
+ * darker twin of the seller's, so the two panels are told apart at a glance.
+ */
+.auth-bg {
+  background:
+    radial-gradient(900px 560px at -5% -10%, rgba(155, 127, 208, 0.5), transparent 60%),
+    radial-gradient(700px 520px at 105% 110%, rgba(255, 197, 51, 0.38), transparent 60%),
+    radial-gradient(600px 420px at 95% 5%, rgba(123, 88, 178, 0.22), transparent 60%),
+    linear-gradient(160deg, #f8f3fd 0%, #efe6f8 55%, #fbf3e2 100%);
+}
+.dark .auth-bg {
+  background:
+    radial-gradient(900px 560px at -5% -10%, rgba(123, 88, 178, 0.7), transparent 60%),
+    radial-gradient(700px 520px at 105% 110%, rgba(255, 197, 51, 0.26), transparent 60%),
+    linear-gradient(160deg, #1f1529 0%, #36234f 55%, #2a1c3d 100%);
+}
+.auth-bg.auth-admin {
+  background:
+    radial-gradient(900px 560px at -5% -10%, rgba(123, 88, 178, 0.38), transparent 60%),
+    radial-gradient(700px 520px at 105% 110%, rgba(255, 197, 51, 0.28), transparent 60%),
+    linear-gradient(160deg, #f3eff8 0%, #e8e1f1 55%, #f6efe0 100%);
+}
+.dark .auth-bg.auth-admin {
+  background:
+    radial-gradient(900px 560px at -5% -10%, rgba(107, 76, 154, 0.5), transparent 60%),
+    radial-gradient(640px 460px at 105% 110%, rgba(255, 197, 51, 0.16), transparent 60%),
+    linear-gradient(160deg, #0f0b15 0%, #1b1426 55%, #241a33 100%);
+}
+.auth-dots {
+  background-image: radial-gradient(rgb(67 44 99 / 0.1) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse at 30% 30%, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 30% 30%, black 20%, transparent 75%);
+}
+.dark .auth-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+}
+
+/* Frosted glass: the form card, and the floating preview cards */
+.auth-glass {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 30px 80px -24px rgba(67, 44, 99, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+}
+.dark .auth-glass {
+  background: rgba(26, 19, 36, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 80px -24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Fields inside the card are glass too: translucent, a hairline edge, a soft brand glow on focus */
+.auth-glass input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.auth-glass textarea,
+.auth-glass select {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+  box-shadow: inset 0 0 0 1px rgba(67, 44, 99, 0.14) !important;
+  border-color: transparent !important;
+  border-radius: 10px;
+  transition: box-shadow 150ms ease, background-color 150ms ease;
+}
+/* One comfortable height for every text field on these pages */
+.auth-glass input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  min-height: 2.75rem;
+}
+.dark .auth-glass input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.dark .auth-glass textarea,
+.dark .auth-glass select {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12) !important;
+}
+.auth-glass input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.auth-glass textarea:focus,
+.auth-glass select:focus {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--brand-purple) / 0.7), 0 0 0 4px rgb(var(--brand-purple) / 0.16) !important;
+  outline: none;
+}
+.dark .auth-glass input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus,
+.dark .auth-glass textarea:focus,
+.dark .auth-glass select:focus {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.auth-glass input[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px rgb(var(--brand-purple) / 0), inset 0 0 0 1px rgba(225, 29, 72, 0.7) !important;
+}
+
 /* Sign-in: the form rises in, the brand side's preview cards drift */
 @keyframes brand-rise {
   from {

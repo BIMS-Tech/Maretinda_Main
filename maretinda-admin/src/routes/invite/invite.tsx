@@ -9,7 +9,7 @@ import { decodeToken } from "react-jwt"
 import { Link, useSearchParams } from "react-router-dom"
 import * as z from "zod"
 import { Form } from "../../components/common/form"
-import AvatarBox from "../../components/common/logo-box/avatar-box"
+import { Accent, AuthShell, Butterfly } from "../../components/auth/auth-shell"
 import { useSignUpWithEmailPass } from "../../hooks/api/auth"
 import { useAcceptInvite } from "../../hooks/api/invites"
 import { isFetchError } from "../../lib/is-fetch-error"
@@ -50,9 +50,21 @@ export const Invite = () => {
   const isValidInvite = invite && validateDecodedInvite(invite)
 
   return (
-    <div className="bg-ui-bg-subtle relative flex min-h-dvh w-dvw items-center justify-center p-4">
-      <div className="flex w-full max-w-[360px] flex-col items-center">
-        <AvatarBox checked={success} />
+    <AuthShell admin
+      portal="Admin"
+      headline={
+        <>
+          You&apos;re invited.
+          <br />
+          <Accent>Welcome to the team.</Accent>
+        </>
+      }
+      lede="You've been asked to help run Maretinda. Create your account to get started."
+    >
+      <div className="flex w-full flex-col items-center">
+        <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#432C63] text-white shadow-lg dark:bg-[#6B4C9A]">
+          <Butterfly size={24} />
+        </span>
         <div className="max-h-[557px] w-full will-change-contents">
           {isValidInvite ? (
             <AnimatePresence>
@@ -126,7 +138,7 @@ export const Invite = () => {
           )}
         </div>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 
