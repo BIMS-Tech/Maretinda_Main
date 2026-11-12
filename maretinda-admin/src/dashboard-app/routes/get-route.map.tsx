@@ -58,6 +58,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/newsletter"),
             },
             {
+              path: "/invoices",
+              errorElement: <ErrorBoundary />,
+              lazy: () => import("../../routes/invoices"),
+            },
+            {
               path: "/audit-log",
               errorElement: <ErrorBoundary />,
               lazy: () => import("../../routes/audit-log"),

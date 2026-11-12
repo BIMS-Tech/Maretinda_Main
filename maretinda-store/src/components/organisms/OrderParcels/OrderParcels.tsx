@@ -47,6 +47,15 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 								items={order.items}
 							/>
 						</div>
+						<div className="pb-2">
+							<a
+								className="text-[13px] font-medium underline text-primary"
+								download
+								href={`/api/orders/${order.id}/invoice`}
+							>
+								Download invoice (PDF)
+							</a>
+						</div>
 						<div className="pt-4 pb-0">
 							<OrderParcelActions order={order} />
 						</div>

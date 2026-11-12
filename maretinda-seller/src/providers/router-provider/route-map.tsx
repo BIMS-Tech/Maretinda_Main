@@ -34,6 +34,14 @@ export const RouteMap: RouteObject[] = [
             lazy: () => import("../../routes/giyapay"),
           },
           {
+            path: "invoices",
+            handle: {
+              breadcrumb: () => "Invoices & COD",
+            },
+            errorElement: <ErrorBoundary />,
+            lazy: () => import("../../routes/invoices"),
+          },
+          {
             path: "subscription",
             handle: {
               breadcrumb: () => "Subscription",
