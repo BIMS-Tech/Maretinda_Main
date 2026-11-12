@@ -15,6 +15,7 @@ import { activePlanOf, hasMarketing, maxProducts, maxStaff, productCount, staffC
 import { SETUP_REQUIRED_CODE, sellerReadiness, setupRequiredMessage } from '../lib/seller-readiness'
 import FlashSaleService from '../services/flash-sale'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
+import { auditAdminWrites } from '../lib/audit-log'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -436,6 +437,7 @@ export default defineMiddlewares({
       bodyParser: { preserveRawBody: true },
     },
     { matcher: '/auth/*', middlewares: [authRateLimit] },
+    { matcher: '/admin/*', middlewares: [auditAdminWrites] },
     {
       matcher: '/store/seller-application',
       method: ['POST'],

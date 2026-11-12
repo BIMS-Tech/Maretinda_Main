@@ -5,6 +5,8 @@ import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
 
+import { CookieConsent } from '@/components/organisms/CookieConsent/CookieConsent';
+
 const funnelDisplay = Inter({
 	subsets: ['latin'],
 	variable: '--font-funnel-sans',
@@ -68,6 +70,7 @@ export default function RootLayout({
 			>
 				{children}
 				<Toaster position="top-right" />
+				<CookieConsent />
 			</body>
 		</html>
 	);

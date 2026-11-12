@@ -8,6 +8,17 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 //   - worker  (MEDUSA_WORKER_MODE=worker) handles subscribers, scheduled
 //     jobs and the event bus. Both share Redis so cache/events/workflows are
 //     consistent across all autoscaled instances.
+// The fallbacks below are public knowledge: anyone could sign a seller or admin
+// token with them. This only warns, because refusing to start would take down
+// a live server that turns out to rely on them; treat the warning as urgent.
+if (process.env.NODE_ENV === 'production') {
+  for (const name of ['JWT_SECRET', 'COOKIE_SECRET']) {
+    if (!process.env[name] || process.env[name] === 'supersecret') {
+      console.error(`[SECURITY] ${name} is not set: this server is signing sessions with a publicly known default. Set a private value in backend.env.`)
+    }
+  }
+}
+
 const REDIS_URL = process.env.REDIS_URL
 const workerMode = (process.env.MEDUSA_WORKER_MODE as 'shared' | 'worker' | 'server') || 'shared'
 
