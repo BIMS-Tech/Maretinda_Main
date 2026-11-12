@@ -1,4 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
+import { sellerPanelUrl, sendNotice } from "../../../../lib/notify"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 function getDb(req: any) {
@@ -58,6 +59,26 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
     }
 
     const [updated] = await db("seller").where("id", id).update(update).returning("*")
+
+    if (status !== seller.verification_status && status !== "pending_review") {
+      const verified = status === "verified"
+      await sendNotice(req.scope, {
+        to: seller.email,
+        subject: verified ? "Your Maretinda shop is verified" : "Your Maretinda verification needs another look",
+        eyebrow: "Business verification",
+        heading: verified ? "Your shop is verified" : "Verification not approved",
+        user_name: seller.name,
+        paragraphs: verified
+          ? ["Your business documents have been approved and your shop now shows the Verified badge.", "Once your store setup is complete, your products can go live."]
+          : [
+              "We could not approve your business documents yet.",
+              ...(typeof notes === "string" && notes.trim() ? [`Note from our team: ${notes.trim()}`] : []),
+              "Please upload corrected documents in Store settings and submit them again.",
+            ],
+        button: { label: "Open store settings", url: `${sellerPanelUrl()}/settings/store` },
+      })
+    }
+
     res.status(200).json({ seller: updated })
   } catch (error) {
     console.error("[SellerVerification] PATCH error:", error)

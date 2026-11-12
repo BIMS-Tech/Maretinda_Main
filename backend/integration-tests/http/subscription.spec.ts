@@ -225,10 +225,46 @@ medusaIntegrationTestRunner({
         const pg = pgOf(getContainer())
         expect((await pg("seller_subscription").where({ id: trial.id }).first()).status).toBe("cancelled")
         expect(renewed).toMatchObject({ plan_name: "Premium", billing_period: "yearly", is_trial: false })
+        // A year, plus the free month the seller hadn't used up yet
         const days = (new Date(renewed.end_date).getTime() - new Date(renewed.start_date).getTime()) / DAY
-        expect(days).toBeGreaterThanOrEqual(365)
-        expect(days).toBeLessThanOrEqual(366)
+        expect(Math.round(days)).toBeGreaterThanOrEqual(365 + 29)
+        expect(Math.round(days)).toBeLessThanOrEqual(366 + 30)
         expect((await service.getActiveSubscription(seller.id)).id).toBe(renewed.id)
+      })
+
+      it("renewing the same plan early keeps the days left; changing plan starts fresh", async () => {
+        const { seller } = await createSeller(getContainer())
+        const service = new SubscriptionService(getContainer())
+        const pay = (planName: string, ref: string) =>
+          service.renewSubscription({ sellerId: seller.id, planName, billingPeriod: "monthly", price: 499, paymentReference: ref })
+        const length = (s: any) => Math.round((new Date(s.end_date).getTime() - new Date(s.start_date).getTime()) / DAY)
+
+        const first = await pay("Starter", "R1")
+        const early = await pay("Starter", "R2")
+        expect(length(early)).toBeGreaterThanOrEqual(length(first) + 27)
+
+        const changed = await pay("Growth", "R3")
+        expect(length(changed)).toBeLessThanOrEqual(31)
+      })
+
+      it("sends each expiry notice once: 7 days before, 1 day before, and when ended", async () => {
+        const { seller } = await createSeller(getContainer())
+        const other = await createSeller(getContainer())
+        const pg = pgOf(getContainer())
+        const base = { plan_name: "Growth", price: 1499, start_date: new Date(Date.now() - 20 * DAY) }
+        await pg("seller_subscription").insert([
+          { ...base, id: "vsub_week", seller_id: seller.id, end_date: new Date(Date.now() + 5 * DAY), status: "active" },
+          { ...base, id: "vsub_gone", seller_id: other.seller.id, end_date: new Date(Date.now() - 60 * 1000), status: "expired" },
+        ])
+        const service = new SubscriptionService(getContainer())
+
+        const firstRun = await service.claimDueReminders()
+        expect(firstRun.map((r) => `${r.subscription.id}:${r.stage}`).sort()).toEqual(["vsub_gone:ended", "vsub_week:7d"])
+        expect(await service.claimDueReminders()).toEqual([])
+
+        // Five days on, the same subscription is a day from ending
+        const later = await service.claimDueReminders(new Date(Date.now() + 4.5 * DAY))
+        expect(later.map((r) => `${r.subscription.id}:${r.stage}`)).toEqual(["vsub_week:1d"])
       })
 
       it("adminExtendTrial pushes the end date out and adminEndTrial expires it", async () => {

@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys, toHandle } from "@medusajs/framework/utils"
 import { createSellerWorkflow } from "@mercurjs/b2c-core/workflows"
 import { isVerificationComplete } from "../../../../lib/seller-verification"
+import { sellerPanelUrl, sendNotice } from "../../../../lib/notify"
 
 function getDb(req: any) {
   return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
@@ -129,6 +130,38 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
         reviewed_at: new Date(),
       })
       .returning("*")
+
+    // Tell the applicant, once per decision
+    if (status !== app.status && app.email) {
+      const name = `${app.first_name ?? ""} ${app.last_name ?? ""}`.trim()
+      if (status === "approved") {
+        await sendNotice(req.scope, {
+          to: app.email,
+          subject: "Your Maretinda seller application is approved",
+          eyebrow: "Seller application",
+          heading: "You're approved",
+          user_name: name,
+          paragraphs: [
+            `Welcome to Maretinda. ${app.business_name || "Your shop"} has been approved.`,
+            "Sign in with the email and password you registered with, choose a plan (your first month is free) and finish your store setup to start selling.",
+          ],
+          button: { label: "Sign in to the seller panel", url: `${sellerPanelUrl()}/login` },
+        })
+      } else if (status === "rejected") {
+        await sendNotice(req.scope, {
+          to: app.email,
+          subject: "An update on your Maretinda seller application",
+          eyebrow: "Seller application",
+          heading: "Application not approved",
+          user_name: name,
+          paragraphs: [
+            "Thank you for your interest in selling on Maretinda. We are unable to approve your application at this time.",
+            ...(typeof admin_notes === "string" && admin_notes.trim() ? [`Note from our team: ${admin_notes.trim()}`] : []),
+            "If you believe this is a mistake or you have more information to share, reply to support@maretinda.com.",
+          ],
+        })
+      }
+    }
 
     res.status(200).json({ application: updated })
   } catch (error) {

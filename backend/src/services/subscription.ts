@@ -54,6 +54,54 @@ class SubscriptionService {
     return Number(updated || 0)
   }
 
+  /**
+   * Subscriptions that are owed an expiry notice, each claimed as it is
+   * returned so an hourly run never sends the same notice twice:
+   * 7 days before the end, 1 day before, and once it has ended.
+   */
+  async claimDueReminders(now: Date = new Date()): Promise<{ stage: "7d" | "1d" | "ended"; subscription: any }[]> {
+    const db = this.getDb()
+    const DAY = 24 * 60 * 60 * 1000
+    const due: { stage: "7d" | "1d" | "ended"; subscription: any }[] = []
+
+    const claim = async (stage: "7d" | "1d" | "ended", query: any, skip: string[]) => {
+      const rows = await query
+        .where((w: any) => w.whereNull("last_reminder").orWhereNotIn("last_reminder", skip))
+        .update({ last_reminder: stage, updated_at: now })
+        .returning("*")
+      for (const subscription of rows) due.push({ stage, subscription })
+    }
+
+    // Ended first, so a subscription that lapsed between runs gets one notice, not three
+    await claim(
+      "ended",
+      db("seller_subscription").where("status", "expired").where("end_date", ">", new Date(now.getTime() - 3 * DAY)).where("end_date", "<=", now),
+      ["ended"]
+    )
+    await claim(
+      "1d",
+      db("seller_subscription").where("status", "active").where("end_date", ">", now).where("end_date", "<=", new Date(now.getTime() + DAY)),
+      ["1d", "ended"]
+    )
+    await claim(
+      "7d",
+      db("seller_subscription").where("status", "active").where("end_date", ">", new Date(now.getTime() + DAY)).where("end_date", "<=", new Date(now.getTime() + 7 * DAY)),
+      ["7d", "1d", "ended"]
+    )
+
+    // A seller who already renewed has a newer active plan: nothing to remind them of
+    const live: typeof due = []
+    for (const item of due) {
+      const newer = await db("seller_subscription")
+        .where("seller_id", item.subscription.seller_id)
+        .where("status", "active")
+        .where("end_date", ">", item.subscription.end_date)
+        .first("id")
+      if (!newer) live.push(item)
+    }
+    return live
+  }
+
   // Idempotent DB guards. Safe to call repeatedly (CREATE ... IF NOT EXISTS).
   async initConstraints(): Promise<void> {
     const db = this.getDb()
@@ -333,18 +381,26 @@ class SubscriptionService {
   }): Promise<any> {
     const db = this.getDb()
 
+    // Paying early must not cost the seller time they already have: what is
+    // left of a free trial, or of the same plan, is added to the new period.
+    // A change of plan starts fresh (crediting the old plan is a pricing decision).
+    const current = await this.getActiveSubscription(params.sellerId)
+    const carriesOver = current && (current.is_trial || current.plan_name === params.planName)
+    const carriedMs = carriesOver ? Math.max(0, new Date(current.end_date).getTime() - Date.now()) : 0
+
     await db("seller_subscription")
       .where("seller_id", params.sellerId)
       .where("status", "active")
       .update({ status: "cancelled", updated_at: new Date() })
 
     const startDate = new Date()
-    const endDate = new Date(startDate)
+    let endDate = new Date(startDate)
     if (params.billingPeriod === "yearly") {
       endDate.setFullYear(endDate.getFullYear() + 1)
     } else {
       endDate.setMonth(endDate.getMonth() + 1)
     }
+    endDate = new Date(endDate.getTime() + carriedMs)
 
     const [subscription] = await db("seller_subscription")
       .insert({

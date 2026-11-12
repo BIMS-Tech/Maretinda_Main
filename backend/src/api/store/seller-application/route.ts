@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
+import { sendNotice } from "../../../lib/notify"
 import { verify } from "jsonwebtoken"
 
 function getDb(req: any) {
@@ -8,18 +9,6 @@ function getDb(req: any) {
     return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
   } catch {
     return (req.scope as any).__pg_connection__
-  }
-}
-
-async function sendConfirmationEmail(notifService: any, email: string, name: string, appId: string) {
-  try {
-    await notifService.send("seller.application.submitted", {
-      from: "Maretinda <no-reply@maretinda.com>",
-      to: email,
-      data: { name, app_id: appId, email },
-    })
-  } catch {
-    // email is best-effort
   }
 }
 
@@ -119,35 +108,31 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       status: "pending",
     })
 
-    // Send confirmation email (best-effort)
-    try {
-      const notifService = req.scope.resolve("notification") as any
-      await sendConfirmationEmail(
-        notifService,
-        body.email,
-        `${body.first_name} ${body.last_name}`,
-        id
-      )
-    } catch {
-      // ignore
-    }
-
-    // Notify sales@bims.tech (admin notification)
-    try {
-      const notifService = req.scope.resolve("notification") as any
-      await notifService.send("seller.application.admin_notify", {
-        to: "sales@bims.tech",
-        data: {
-          app_id: id,
-          name: `${body.first_name} ${body.last_name}`,
-          business_name: body.business_name,
-          email: body.email,
-          submitted_at: new Date().toISOString(),
-        },
-      })
-    } catch {
-      // ignore
-    }
+    const applicant = `${body.first_name || ""} ${body.last_name || ""}`.trim()
+    await sendNotice(req.scope, {
+      to: body.email,
+      subject: "We received your Maretinda seller application",
+      eyebrow: "Seller application",
+      heading: "Application received",
+      user_name: applicant,
+      paragraphs: [
+        `Thank you for applying to sell on Maretinda${body.business_name ? ` as ${body.business_name}` : ""}.`,
+        "Our team is reviewing your application. We will email you as soon as there is a decision, usually within a few business days.",
+      ],
+      note: `Reference: ${id}`,
+    })
+    await sendNotice(req.scope, {
+      to: process.env.SELLER_APPLICATION_NOTIFY_EMAIL || "sales@bims.tech",
+      subject: `New seller application: ${body.business_name || applicant || body.email}`,
+      eyebrow: "Seller application",
+      heading: "New application to review",
+      user_name: "team",
+      paragraphs: [
+        `${applicant || "An applicant"} (${body.email || "no email"}) applied to sell as ${body.business_name || "an unnamed business"}.`,
+        "Open Requests in the admin panel to approve or reject it.",
+      ],
+      note: `Reference: ${id}`,
+    })
 
     res.status(201).json({
       success: true,
