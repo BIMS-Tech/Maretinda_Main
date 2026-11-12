@@ -113,6 +113,5 @@ export const useGiyaPayAnalytics = (options?: any) => {
     ...options,
   })
   
-  const safeData = data && typeof data === 'object' ? data : { analytics: null }
-  return { analytics: safeData.analytics, ...rest }
+  return { analytics: (data as any)?.analytics ?? null, ...rest }
 }
