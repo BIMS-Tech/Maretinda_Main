@@ -108,6 +108,21 @@ const GiyaPayButton = ({
 				}
 			});
 
+			// Leave a trace before leaving: if the buyer pays and never comes
+			// back, this is how the payment gets found. Waits two seconds at most.
+			await Promise.race([
+				fetch('/api/giyapay/attempt', {
+					body: JSON.stringify({
+						cart_id: cart.id,
+						method: selectedMethod,
+					}),
+					headers: { 'Content-Type': 'application/json' },
+					keepalive: true,
+					method: 'POST',
+				}).catch(() => null),
+				new Promise((resolve) => setTimeout(resolve, 2000)),
+			]);
+
 			document.body.appendChild(form);
 			form.submit();
 			// Page navigates away — no cleanup needed.

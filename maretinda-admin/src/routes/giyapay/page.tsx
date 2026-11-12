@@ -38,6 +38,7 @@ const GatewayLogo = ({ gateway }: { gateway: string }) => {
   return <span className="text-sm text-ui-fg-base">{gateway || '-'}</span>;
 };
 import { useGiyaPayConfig, useUpdateGiyaPayConfig, useGiyaPayTransactions, useGiyaPayMethods, useUpdateGiyaPayMethods } from "../../hooks/api/giyapay";
+import { UnconfirmedPayments } from "./unconfirmed"
 
 export const GiyaPay = () => {
   const [merchantId, setMerchantId] = useState("");
@@ -429,6 +430,8 @@ export const GiyaPay = () => {
           )}
         </Container>
       </div>
+
+      <UnconfirmedPayments />
 
       {/* Transactions Section */}
       <div>

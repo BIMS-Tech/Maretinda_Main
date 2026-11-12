@@ -1,12 +1,13 @@
 'use server';
 
 import type { HttpTypes } from '@medusajs/types';
+import { revalidateTag } from 'next/cache';
 
 import { SellerProps } from '@/types/seller';
 
 import { sdk } from '../config';
 import medusaError from '../helpers/medusa-error';
-import { getAuthHeaders, getCacheOptions } from './cookies';
+import { getAuthHeaders, getCacheOptions, getCacheTag } from './cookies';
 
 // Every order belongs to one seller. The UI reads order.seller for the shop
 // name, the return address and the seller review, so always hand it an object.
@@ -61,6 +62,40 @@ export const retrieveOrder = async (id: string) => {
 		})
 		.then(({ order }) => withSeller(order))
 		.catch((err) => medusaError(err));
+};
+
+/** Cancels the signed-in buyer's own order; the message says why when it can't be. */
+export const cancelOrder = async (
+	id: string,
+): Promise<{ ok: true } | { ok: false; message: string }> => {
+	const headers = {
+		...(await getAuthHeaders()),
+		'Content-Type': 'application/json',
+		'x-publishable-api-key': process.env
+			.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+	};
+	try {
+		const res = await fetch(
+			`${process.env.MEDUSA_BACKEND_URL}/store/account/orders/${id}/cancel`,
+			{ headers, method: 'POST' },
+		);
+		if (res.ok) {
+			revalidateTag(await getCacheTag('orders'));
+			return { ok: true };
+		}
+		const body = await res.json().catch(() => null);
+		return {
+			message:
+				body?.message ||
+				'We could not cancel this order. Please try again.',
+			ok: false,
+		};
+	} catch {
+		return {
+			message: 'We could not reach the server. Please try again.',
+			ok: false,
+		};
+	}
 };
 
 export const createReturnRequest = async (data: any) => {

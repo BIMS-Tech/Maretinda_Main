@@ -1,35 +1,29 @@
 'use client';
 
-import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { Button, Checkbox, Divider } from '@/components/atoms';
+import { Button } from '@/components/atoms';
 import { Modal } from '@/components/molecules';
-import { convertToLocale } from '@/lib/helpers/money';
-import { cn } from '@/lib/utils';
+import { cancelOrder } from '@/lib/data/orders';
 
 export const OrderCancel = ({ order }: { order: any }) => {
+	const router = useRouter();
 	const [open, setOpen] = useState(false);
-	const [selectedItems, setSelectedItems] = useState<any[]>([]);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
-	const handleCancel = () => {
-		console.log('cancel');
-	};
-
-	const handleSelectItem = (item: any) => {
-		if (selectedItems.includes(item)) {
-			setSelectedItems(selectedItems.filter((i) => i.id !== item.id));
-		} else {
-			setSelectedItems([...selectedItems, item]);
+	const handleCancel = async () => {
+		setBusy(true);
+		setError(null);
+		const result = await cancelOrder(order.id);
+		setBusy(false);
+		if (!result.ok) {
+			setError(result.message);
+			return;
 		}
-	};
-
-	const handleChangeQuantity = (item: any, quantity: number) => {
-		const itemline = selectedItems.find((i) => i.id === item.id);
-		if (itemline) {
-			itemline.quantity += quantity;
-			setSelectedItems([...selectedItems]);
-		}
+		setOpen(false);
+		router.refresh();
 	};
 
 	return (
@@ -40,8 +34,8 @@ export const OrderCancel = ({ order }: { order: any }) => {
 						Cancel Order
 					</h2>
 					<p className="text-secondary label-md max-w-sm">
-						Once you place your order, you can cancel it until the
-						seller begins preparation for shipment.
+						You can cancel this order until the seller begins
+						preparing it for shipment.
 					</p>
 				</div>
 				<Button
@@ -49,130 +43,37 @@ export const OrderCancel = ({ order }: { order: any }) => {
 					onClick={() => setOpen(true)}
 					variant="tonal"
 				>
-					Cancel
+					Cancel order
 				</Button>
 			</div>
 			{open && (
 				<Modal
-					heading="Select items you want to cancel"
+					heading="Cancel this order?"
 					onClose={() => setOpen(false)}
 				>
-					<div>
-						<ul className="px-4">
-							{order.items.map((item: any) => {
-								const isSelected = selectedItems.includes(item);
-								const itemline = selectedItems.find(
-									(i) => i.id === item.id,
-								);
-								return (
-									<li
-										className={cn(
-											'flex items-center gap-4 p-4 mb-2 rounded-sm',
-											isSelected && 'bg-secondary/70',
-										)}
-										key={item.id}
-									>
-										<Checkbox
-											checked={isSelected}
-											onChange={() =>
-												handleSelectItem(item)
-											}
-										/>
-										<div className="flex gap-4 w-full">
-											<div className="w-16 rounded-sm border">
-												{item.thumbnail ? (
-													<Image
-														alt={item.subtitle}
-														className="rounded-sm"
-														height={60}
-														src={item.thumbnail}
-														width={60}
-													/>
-												) : (
-													<Image
-														alt={item.subtitle}
-														className="opacity-25 scale-75"
-														height={60}
-														src={
-															'/images/placeholder.svg'
-														}
-														width={60}
-													/>
-												)}
-											</div>
-											<div className="grid grid-cols-4 gap-2 w-full">
-												<div className="col-span-2">
-													<p className="text-primary label-md truncate w-full">
-														{item.subtitle}
-													</p>
-													<p className="text-secondary label-sm truncate w-full">
-														{item.title}
-													</p>
-												</div>
-												<div className="flex items-center justify-center">
-													{isSelected && (
-														<div className="flex items-center mt-2">
-															<Button
-																className="w-8 h-8 flex items-center justify-center !bg-transparent !hover:bg-secondary"
-																disabled={
-																	item.quantity ===
-																	1
-																}
-																onClick={() =>
-																	handleChangeQuantity(
-																		item,
-																		-1,
-																	)
-																}
-																variant="text"
-															>
-																-
-															</Button>
-															<div className="text-primary font-medium border rounded-sm w-8 h-8 text-center flex items-center justify-center bg-primary">
-																{item.quantity}
-															</div>
-															<Button
-																className="w-8 h-8 flex items-center justify-center !bg-transparent !hover:bg-secondary"
-																disabled={
-																	item.quantity ===
-																	itemline.quantity
-																}
-																onClick={() =>
-																	handleChangeQuantity(
-																		item,
-																		1,
-																	)
-																}
-																variant="text"
-															>
-																+
-															</Button>
-														</div>
-													)}
-												</div>
-												<div className="flex items-center justify-end">
-													<p className="text-primary label-lg">
-														{convertToLocale({
-															amount: item.total,
-															currency_code:
-																order.currency_code,
-														})}
-													</p>
-												</div>
-											</div>
-										</div>
-									</li>
-								);
-							})}
-						</ul>
-
-						<Divider className="my-4" />
-						<div className="px-4">
-							<Button
-								className="uppercase w-full"
-								onClick={handleCancel}
+					<div className="px-4 pb-4">
+						<p className="text-secondary label-md mb-4">
+							The whole order will be cancelled and the seller
+							will be told. This can&apos;t be undone.
+						</p>
+						{error && (
+							<p
+								className="text-negative label-md mb-4"
+								role="alert"
 							>
-								Request cancelation
+								{error}
+							</p>
+						)}
+						<div className="flex gap-3 justify-end">
+							<Button
+								disabled={busy}
+								onClick={() => setOpen(false)}
+								variant="tonal"
+							>
+								Keep order
+							</Button>
+							<Button disabled={busy} onClick={handleCancel}>
+								{busy ? 'Cancelling…' : 'Yes, cancel order'}
 							</Button>
 						</div>
 					</div>
