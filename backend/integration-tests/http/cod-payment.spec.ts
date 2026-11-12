@@ -52,7 +52,7 @@ medusaIntegrationTestRunner({
         await link.create({ seller: { seller_id: sellerId }, [Modules.ORDER]: { order_id: order.id } })
       }
 
-      await container.resolve("split_order_payment").createSplitOrderPayments({
+      await (container.resolve("split_order_payment") as any).createSplitOrderPayments({
         status: "captured",
         currency_code: "php",
         authorized_amount: 1499,

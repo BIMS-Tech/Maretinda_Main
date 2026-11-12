@@ -67,7 +67,7 @@ medusaIntegrationTestRunner({
         await admin()
       )
       expect(res.status).toBe(200)
-      const saved = await getContainer().resolve("order_return").retrieveOrderReturnRequest(escalated.id)
+      const saved = await (getContainer().resolve("order_return") as any).retrieveOrderReturnRequest(escalated.id)
       expect(saved).toMatchObject({ status: "canceled", admin_reviewer_note: "Photos show the item was used" })
       expect(saved.admin_reviewer_id).toBeTruthy()
     })
