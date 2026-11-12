@@ -2,12 +2,14 @@ import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
 import * as XLSX from "xlsx"
+import { isMetrobank, unsettledLines } from "../lib/settlement-lines"
 
 interface DftTransaction {
   id: string
   reference_number: string
   seller_id?: string
   seller_name?: string
+  order_id?: string | null
   beneficiary_name: string
   beneficiary_account: string
   swift_code: string
@@ -207,65 +209,19 @@ class DftFileGeneratorService extends MedusaService({}) {
       await this.initializeTables(sharedContext)
       const manager = await this.getManager(sharedContext)
       
-      // Build date filter
-      let dateFilter = ''
-      const params: any[] = []
-      
-      if (dateFrom || dateTo) {
-        const conditions: string[] = []
-        if (dateFrom) {
-          conditions.push('gt.created_at >= ?')
-          params.push(dateFrom)
-        }
-        if (dateTo) {
-          conditions.push('gt.created_at <= ?')
-          params.push(dateTo)
-        }
-        dateFilter = conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : ''
-      }
+      // Per-seller lines, never a payment already in a bank file: see lib/settlement-lines
+      const rows = (await unsettledLines(manager, dateFrom, dateTo)).filter(
+        (line) =>
+          !isMetrobank(line) &&
+          line.swift_code &&
+          line.beneficiary_account &&
+          line.beneficiary_name &&
+          line.beneficiary_address &&
+          line.beneficiary_bank_address
+      )
 
-      // Query for successful GiyaPay transactions with Non-Metrobank merchants
-      const query = `
-        SELECT 
-          gt.id,
-          gt.reference_number,
-          gt.order_id,
-          gt.amount,
-          gt.created_at as transaction_date,
-          gt.description as remarks,
-          COALESCE(s.bank_name, s.dft_bank_name) as bank_name,
-          COALESCE(s.swift_code, s.dft_swift_code) as swift_code,
-          COALESCE(s.account_name, s.dft_beneficiary_name) as beneficiary_name,
-          COALESCE(s.account_number, s.dft_account_number) as beneficiary_account,
-          COALESCE(s.beneficiary_address, s.dft_beneficiary_address) as beneficiary_address,
-          COALESCE(s.beneficiary_bank_address, s.dft_bank_address) as beneficiary_bank_address,
-          s.id as seller_id,
-          s.name as seller_name
-        FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.seller_id
-        WHERE gt.status = 'SUCCESS'
-          AND (
-            (COALESCE(s.bank_name, s.dft_bank_name) NOT ILIKE '%metrobank%')
-            OR COALESCE(s.bank_name, s.dft_bank_name) IS NULL
-          )
-          AND COALESCE(s.swift_code, s.dft_swift_code) IS NOT NULL
-          AND COALESCE(s.account_number, s.dft_account_number) IS NOT NULL
-          AND COALESCE(s.account_name, s.dft_beneficiary_name) IS NOT NULL
-          AND COALESCE(s.beneficiary_address, s.dft_beneficiary_address) IS NOT NULL
-          AND COALESCE(s.beneficiary_bank_address, s.dft_bank_address) IS NOT NULL
-          ${dateFilter}
-        ORDER BY gt.created_at DESC
-      `
-
-      const results = await manager.raw(query, params)
-      const rows = results?.rows || results || []
-      
-      if (rows.length > 0) {
-        console.log(`[DftFileGenerator] Found ${rows.length} Non-Metrobank transactions for DFT`)
-      }
-      
       return rows.map((row: any) => {
-        const grossAmount = parseFloat(row.amount)
+        const grossAmount = Number(row.amount)
         const netAmount = this.calculateNetAmount(grossAmount)
         
         return {
@@ -273,6 +229,7 @@ class DftFileGeneratorService extends MedusaService({}) {
           reference_number: row.reference_number,
           seller_id: row.seller_id,
           seller_name: row.seller_name,
+          order_id: row.order_id,
           beneficiary_name: row.beneficiary_name,
           beneficiary_account: row.beneficiary_account,
           swift_code: row.swift_code,

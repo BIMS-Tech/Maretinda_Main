@@ -1,6 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import { deleteSettlementFile, readSettlementFile } from '../../../../lib/settlement-files'
+import { releaseSettled } from '../../../../lib/settlement-lines'
 
 /**
  * @oas [delete] /admin/tama/{id}
@@ -63,6 +64,7 @@ export async function DELETE(
     )
 
     await deleteSettlementFile(pgConnection, 'tama', id)
+    await releaseSettled(pgConnection, 'tama', id)
 
     console.log(`[Admin TAMA] TAMA generation deleted: ${id}`)
 

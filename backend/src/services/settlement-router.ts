@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import TamaFileGeneratorService from "./tama-file-generator"
 import DftFileGeneratorService from "./dft-file-generator"
 import { saveSettlementFile } from "../lib/settlement-files"
+import { markSettled } from "../lib/settlement-lines"
 
 // Kept in the database, never the public media bucket: see lib/settlement-files
 const XLS_CONTENT_TYPE = "application/vnd.ms-excel"
@@ -123,6 +124,8 @@ class SettlementRouterService extends MedusaService({}) {
               sharedContext
             )
 
+            await markSettled(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), validation.validTransactions, "tama", generationId)
+
             await saveSettlementFile(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
               kind: "tama",
               generation_id: generationId,
@@ -192,6 +195,8 @@ class SettlementRouterService extends MedusaService({}) {
               `Automated settlement routing - ${new Date().toISOString()}`,
               sharedContext
             )
+
+            await markSettled(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), validation.validTransactions, "dft", generationId)
 
             await saveSettlementFile(this.container.resolve(ContainerRegistrationKeys.PG_CONNECTION), {
               kind: "dft",

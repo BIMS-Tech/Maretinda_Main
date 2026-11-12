@@ -53,8 +53,11 @@ export default async function dailySettlementGenerator(
     const settlementRouter = new SettlementRouterService(container)
 
     // Route settlements
+    // No lower bound: every payment not yet in a bank file is picked up, so a
+    // night the job didn't run is caught up by the next one. settlement_line
+    // keeps anything already paid out of the new file.
     const result = await settlementRouter.routeSettlements(
-      dateFromStr,
+      undefined,
       dateToStr,
       'scheduled-job'
     )

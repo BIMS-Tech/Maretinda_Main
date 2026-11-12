@@ -2,12 +2,14 @@ import { MedusaService } from "@medusajs/framework/utils"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { createHash } from "crypto"
 import * as XLSX from "xlsx"
+import { isMetrobank, unsettledLines } from "../lib/settlement-lines"
 
 interface TamaTransaction {
   id: string
   reference_number: string
   seller_id?: string
   seller_name?: string
+  order_id?: string | null
   beneficiary_name: string
   beneficiary_account: string
   amount: number // Gross amount
@@ -212,56 +214,13 @@ class TamaFileGeneratorService extends MedusaService({}) {
       await this.initializeTables(sharedContext)
       const manager = await this.getManager(sharedContext)
       
-      // Build date filter
-      let dateFilter = ''
-      const params: any[] = []
-      
-      if (dateFrom || dateTo) {
-        const conditions: string[] = []
-        if (dateFrom) {
-          conditions.push('gt.created_at >= ?')
-          params.push(dateFrom)
-        }
-        if (dateTo) {
-          conditions.push('gt.created_at <= ?')
-          params.push(dateTo)
-        }
-        dateFilter = conditions.length > 0 ? `AND ${conditions.join(' AND ')}` : ''
-      }
+      // Per-seller lines, never a payment already in a bank file: see lib/settlement-lines
+      const rows = (await unsettledLines(manager, dateFrom, dateTo)).filter(
+        (line) => isMetrobank(line) && line.beneficiary_account && line.beneficiary_name
+      )
 
-      // Query for successful GiyaPay transactions with Metrobank merchants
-      const query = `
-        SELECT 
-          gt.id,
-          gt.reference_number,
-          gt.order_id,
-          gt.amount,
-          gt.created_at as transaction_date,
-          gt.description as remarks,
-          s.dft_beneficiary_name as beneficiary_name,
-          s.dft_account_number as beneficiary_account,
-          s.dft_bank_name,
-          s.id as seller_id,
-          s.name as seller_name
-        FROM giyapay_transaction gt
-        LEFT JOIN seller s ON s.id = gt.seller_id
-        WHERE gt.status = 'SUCCESS'
-          AND s.dft_bank_name ILIKE '%metrobank%'
-          AND s.dft_account_number IS NOT NULL
-          AND s.dft_beneficiary_name IS NOT NULL
-          ${dateFilter}
-        ORDER BY gt.created_at DESC
-      `
-
-      const results = await manager.raw(query, params)
-      const rows = results?.rows || results || []
-      
-      if (rows.length > 0) {
-        console.log(`[TamaFileGenerator] Found ${rows.length} Metrobank transactions for TAMA`)
-      }
-      
       return rows.map((row: any) => {
-        const grossAmount = parseFloat(row.amount)
+        const grossAmount = Number(row.amount)
         const netAmount = this.calculateNetAmount(grossAmount)
         
         return {
@@ -269,6 +228,7 @@ class TamaFileGeneratorService extends MedusaService({}) {
           reference_number: row.reference_number,
           seller_id: row.seller_id,
           seller_name: row.seller_name,
+          order_id: row.order_id,
           beneficiary_name: row.beneficiary_name,
           beneficiary_account: row.beneficiary_account,
           amount: grossAmount,

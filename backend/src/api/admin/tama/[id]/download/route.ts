@@ -83,40 +83,14 @@ export async function GET(
     let fileBuffer: Buffer | null = stored ? Buffer.from(stored.content) : null
 
     // Generations from before files were kept: rebuild it once and keep it
+    // The file is stored when it is generated. Rebuilding one from "whatever
+    // is unpaid now" would list different payments than the batch that was sent.
     if (!fileBuffer) {
-      console.log(`[Admin TAMA Download] Regenerating XLS for: ${xlsFileName}`)
-
-      let tamaService: TamaFileGeneratorService
-      try {
-        tamaService = req.scope.resolve("tamaFileGeneratorService") as any
-      } catch (serviceError) {
-        tamaService = new TamaFileGeneratorService(req.scope)
-        req.scope.register({
-          tamaFileGeneratorService: { resolve: () => tamaService, lifetime: "SINGLETON" }
-        })
-      }
-
-      const transactions = await tamaService.getMetrobankTransactions()
-
-      if (transactions.length === 0) {
-        res.status(404).json({
-          message: 'Unable to regenerate TAMA file',
-          error: 'No transactions found for regeneration'
-        })
-        return
-      }
-
-      fileBuffer = tamaService.generateXlsBuffer(
-        transactions,
-        tamaGeneration.funding_account || "2467246570570"
-      )
-      await saveSettlementFile(pgConnection, {
-        kind: 'tama',
-        generation_id: id,
-        file_name: xlsFileName,
-        content_type: XLS_CONTENT_TYPE,
-        content: fileBuffer,
+      res.status(404).json({
+        message: 'This TAMA file is no longer stored',
+        error: 'Generate a new batch instead: it will include everything not yet paid.'
       })
+      return
     }
 
     // Update downloaded_at timestamp

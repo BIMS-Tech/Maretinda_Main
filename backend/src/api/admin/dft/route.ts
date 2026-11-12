@@ -2,6 +2,7 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import DftFileGeneratorService from '../../../services/dft-file-generator'
 import { saveSettlementFile } from '../../../lib/settlement-files'
+import { markSettled } from '../../../lib/settlement-lines'
 
 /**
  * @oas [get] /admin/dft
@@ -178,6 +179,7 @@ export async function POST(
 
     // Create DFT generation record
     const generationId = await dftService.createDftGeneration(metadata, notes)
+    await markSettled(req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION), validation.validTransactions, "dft", generationId)
 
     // Kept private: see lib/settlement-files
     await saveSettlementFile(req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION), {

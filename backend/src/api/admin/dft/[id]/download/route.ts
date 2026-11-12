@@ -80,37 +80,14 @@ export async function GET(
     let fileBuffer: Buffer | null = stored ? Buffer.from(stored.content) : null
 
     // Generations from before files were kept: rebuild it once and keep it
+    // The file is stored when it is generated. Rebuilding one from "whatever
+    // is unpaid now" would list different payments than the batch that was sent.
     if (!fileBuffer) {
-      console.log(`[Admin DFT Download] Regenerating XLS for: ${xlsFileName}`)
-
-      let dftService: DftFileGeneratorService
-      try {
-        dftService = req.scope.resolve("dftFileGeneratorService") as any
-      } catch (serviceError) {
-        dftService = new DftFileGeneratorService(req.scope)
-        req.scope.register({
-          dftFileGeneratorService: { resolve: () => dftService, lifetime: "SINGLETON" }
-        })
-      }
-
-      const transactions = await dftService.getNonMetrobankTransactions()
-
-      if (!transactions || transactions.length === 0) {
-        res.status(404).json({
-          message: 'Unable to regenerate DFT file',
-          error: 'No transactions available'
-        })
-        return
-      }
-
-      fileBuffer = dftService.generateXlsBuffer(transactions)
-      await saveSettlementFile(pgConnection, {
-        kind: 'dft',
-        generation_id: id,
-        file_name: xlsFileName,
-        content_type: XLS_CONTENT_TYPE,
-        content: fileBuffer,
+      res.status(404).json({
+        message: 'This DFT file is no longer stored',
+        error: 'Generate a new batch instead: it will include everything not yet paid.'
       })
+      return
     }
 
     // Send file as download
