@@ -2,9 +2,10 @@ import {
   type SubscriberArgs,
   type SubscriberConfig,
 } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { BRAND_NAME } from "../lib/brand"
+import { invoiceAttachment, issueOrderInvoice } from "../lib/invoice"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
 const BUYER_NEW_ORDER_TEMPLATE = "buyerNewOrderEmailTemplate"
@@ -90,8 +91,15 @@ async function sendBuyerConfirmation(
       },
     }
 
+    // The order still gets confirmed if the invoice can't be produced
+    const invoice = await issueOrderInvoice(container.resolve(ContainerRegistrationKeys.PG_CONNECTION), orderId).catch((e) => {
+      console.error("❌ invoice for order failed:", orderId, e instanceof Error ? e.message : e)
+      return null
+    })
+
     const notificationService = container.resolve(Modules.NOTIFICATION)
     await notificationService.createNotifications({
+      ...(invoice ? { attachments: [invoiceAttachment(invoice)] } : {}),
       to: emailTo,
       channel: "email",
       template: BUYER_NEW_ORDER_TEMPLATE,

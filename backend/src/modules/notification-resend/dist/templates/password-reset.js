@@ -1,63 +1,129 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.passwordResetTemplate = passwordResetTemplate;
+const logo_1 = require("./logo");
 function passwordResetTemplate(data) {
-    const userName = data.user_name || 'Customer';
-    const storeName = data.store_name || 'Maretinda';
-    const resetUrl = data.reset_url || '#';
+    const userName = data.user_name || "Customer";
+    const storeName = data.store_name || "Maretinda";
+    const resetUrl = data.reset_url || "#";
+    const year = new Date().getFullYear();
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reset Your Password</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Reset Your Password &mdash; ${storeName}</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#111827;padding:32px 40px;text-align:center;">
-            <h1 style="margin:0;color:#facc15;font-size:28px;font-weight:bold;">${storeName}</h1>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:40px;">
-            <h2 style="margin:0 0 16px;color:#111827;font-size:22px;">Reset Your Password</h2>
-            <p style="margin:0 0 16px;color:#374151;font-size:15px;line-height:1.6;">
-              Hi ${userName}, we received a request to reset your password.
-            </p>
-            <p style="margin:0 0 32px;color:#374151;font-size:15px;line-height:1.6;">
-              Click the button below to set a new password. This link expires in <strong>15 minutes</strong>.
-              If you did not request this, you can safely ignore this email.
-            </p>
-            <table cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="background:#facc15;border-radius:6px;">
-                  <a href="${resetUrl}" style="display:inline-block;padding:14px 32px;color:#111827;font-weight:bold;font-size:15px;text-decoration:none;">
-                    Reset Password
-                  </a>
-                </td>
-              </tr>
-            </table>
-            <p style="margin:24px 0 0;color:#9ca3af;font-size:13px;">
-              Or copy this link: <a href="${resetUrl}" style="color:#2563eb;">${resetUrl}</a>
-            </p>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="background:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb;">
-            <p style="margin:0;color:#9ca3af;font-size:13px;">&copy; ${new Date().getFullYear()} ${storeName}. All rights reserved.</p>
-            <p style="margin:8px 0 0;color:#9ca3af;font-size:12px;">Powered by BIMS Technologies</p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
+<body style="margin:0;padding:0;background:#F1F5F9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#F1F5F9;padding:40px 0;">
+    <tr>
+      <td align="center" style="padding:0 16px;">
+        <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:600px;">
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+              <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+
+                <!-- Header banner -->
+                <tr>
+                  <td style="background:#432C63;padding:36px 40px 30px;text-align:center;">
+                    ${(0, logo_1.emailLogo)(storeName, 22)}
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#FFC533;text-transform:uppercase;letter-spacing:2px;">Account Security</p>
+                    <p style="margin:0;font-size:26px;font-weight:800;color:#FFFFFF;letter-spacing:-0.5px;">Password Reset</p>
+                    <div style="width:40px;height:3px;background:#FFC533;margin:14px auto 0;border-radius:2px;"></div>
+                  </td>
+                </tr>
+
+                <!-- Lock icon row -->
+                <tr>
+                  <td style="padding:36px 40px 0;text-align:center;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
+                      <tr>
+                        <td style="width:64px;height:64px;background:#FEF9C3;border-radius:16px;text-align:center;vertical-align:middle;font-size:32px;line-height:64px;">&#128274;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                  <td style="padding:24px 40px 32px;text-align:center;">
+                    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#111827;line-height:1.3;">Hi ${userName},</h1>
+                    <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.75;">
+                      We received a request to reset the password for your Maretinda account. Click the button below to choose a new password.
+                    </p>
+                    <p style="margin:0;font-size:13px;color:#9CA3AF;line-height:1.6;">
+                      This link expires in <strong style="color:#111827;">15 minutes</strong>. If you didn&rsquo;t request a reset, no action is needed &mdash; your account remains secure.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- CTA -->
+                <tr>
+                  <td style="padding:0 40px 36px;text-align:center;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
+                      <tr>
+                        <td style="background:#FFC533;border-radius:10px;">
+                          <a href="${resetUrl}" style="display:inline-block;padding:16px 40px;font-size:16px;font-weight:700;color:#111827;text-decoration:none;letter-spacing:-0.2px;">Reset My Password</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Divider -->
+                <tr>
+                  <td style="padding:0 40px;">
+                    <div style="height:1px;background:#F3F4F6;"></div>
+                  </td>
+                </tr>
+
+                <!-- Fallback link -->
+                <tr>
+                  <td style="padding:24px 40px;">
+                    <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#374151;">Button not working?</p>
+                    <p style="margin:0;font-size:12px;color:#9CA3AF;line-height:1.7;">Copy and paste this link into your browser:</p>
+                    <p style="margin:8px 0 0;font-size:12px;line-height:1.6;">
+                      <a href="${resetUrl}" style="color:#6B7280;word-break:break-all;text-decoration:underline;">${resetUrl}</a>
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Security note -->
+                <tr>
+                  <td style="padding:0 40px 40px;">
+                    <table cellpadding="0" cellspacing="0" role="presentation" style="width:100%;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;">
+                      <tr>
+                        <td style="padding:14px 18px;">
+                          <p style="margin:0;font-size:13px;color:#92400E;line-height:1.6;">
+                            <strong>Security tip:</strong> Maretinda will never ask for your password via email or phone. If you did not request this reset, please contact us immediately at
+                            <a href="mailto:support@maretinda.com" style="color:#92400E;font-weight:600;">support@maretinda.com</a>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 0;text-align:center;">
+              <p style="margin:0 0 4px;font-size:12px;color:#9CA3AF;">&copy; ${year} Maretinda. All rights reserved.</p>
+              <p style="margin:0;font-size:11px;color:#CBD5E1;">Powered by BIMS Technologies &middot; Philippines</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
   </table>
 </body>
 </html>`;
 }
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicGFzc3dvcmQtcmVzZXQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvdGVtcGxhdGVzL3Bhc3N3b3JkLXJlc2V0LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBQUEsc0RBK0RDO0FBL0RELFNBQWdCLHFCQUFxQixDQUFDLElBSXJDO0lBQ0MsTUFBTSxRQUFRLEdBQUcsSUFBSSxDQUFDLFNBQVMsSUFBSSxVQUFVLENBQUE7SUFDN0MsTUFBTSxTQUFTLEdBQUcsSUFBSSxDQUFDLFVBQVUsSUFBSSxXQUFXLENBQUE7SUFDaEQsTUFBTSxRQUFRLEdBQUcsSUFBSSxDQUFDLFNBQVMsSUFBSSxHQUFHLENBQUE7SUFFdEMsT0FBTzs7Ozs7Ozs7Ozs7Ozs7a0ZBY3lFLFNBQVM7Ozs7Ozs7O21CQVF4RSxRQUFROzs7Ozs7Ozs7NkJBU0UsUUFBUTs7Ozs7Ozs0Q0FPTyxRQUFRLDRCQUE0QixRQUFROzs7Ozs7O3VFQU9qQixJQUFJLElBQUksRUFBRSxDQUFDLFdBQVcsRUFBRSxJQUFJLFNBQVM7Ozs7Ozs7O1FBUXBHLENBQUE7QUFDUixDQUFDIn0=
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicGFzc3dvcmQtcmVzZXQuanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvdGVtcGxhdGVzL3Bhc3N3b3JkLXJlc2V0LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBRUEsc0RBZ0lDO0FBbElELGlDQUFrQztBQUVsQyxTQUFnQixxQkFBcUIsQ0FBQyxJQUlyQztJQUNDLE1BQU0sUUFBUSxHQUFHLElBQUksQ0FBQyxTQUFTLElBQUksVUFBVSxDQUFBO0lBQzdDLE1BQU0sU0FBUyxHQUFHLElBQUksQ0FBQyxVQUFVLElBQUksV0FBVyxDQUFBO0lBQ2hELE1BQU0sUUFBUSxHQUFHLElBQUksQ0FBQyxTQUFTLElBQUksR0FBRyxDQUFBO0lBQ3RDLE1BQU0sSUFBSSxHQUFHLElBQUksSUFBSSxFQUFFLENBQUMsV0FBVyxFQUFFLENBQUE7SUFFckMsT0FBTzs7Ozs7O3VDQU04QixTQUFTOzs7Ozs7Ozs7Ozs7Ozs7O3NCQWdCMUIsSUFBQSxnQkFBUyxFQUFDLFNBQVMsRUFBRSxFQUFFLENBQUM7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzttSEFxQnFFLFFBQVE7Ozs7Ozs7Ozs7Ozs7Ozs7cUNBZ0J0RixRQUFROzs7Ozs7Ozs7Ozs7Ozs7Ozs7OztpQ0FvQlosUUFBUSwyRUFBMkUsUUFBUTs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OzsrRUE0QjdDLElBQUk7Ozs7Ozs7Ozs7UUFVM0UsQ0FBQTtBQUNSLENBQUMifQ==

@@ -7,6 +7,7 @@ import { placedOrderIds, type OrderPlacedData } from "../lib/order-placed"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { BRAND_NAME } from "../lib/brand"
 import { getSellerPaymentState } from "../lib/seller-order-payment"
+import { invoiceAttachment, issueOrderInvoice } from "../lib/invoice"
 
 /** Resend provider template - must match @mercurjs/resend emailTemplates key */
 const SELLER_NEW_ORDER_TEMPLATE = "sellerNewOrderEmailTemplate"
@@ -144,6 +145,12 @@ async function notifySellers(
 
     const notificationService = container.resolve(Modules.NOTIFICATION)
 
+    // The seller's own copy of the invoice issued in their name
+    const invoice = await issueOrderInvoice(container.resolve(ContainerRegistrationKeys.PG_CONNECTION), orderId).catch((e) => {
+      console.error("❌ invoice for order failed:", orderId, e instanceof Error ? e.message : e)
+      return null
+    })
+
     for (const seller of sellers) {
       if (!seller.email) {
         console.warn(`⚠️ Seller ${seller.name} has no email`)
@@ -153,6 +160,7 @@ async function notifySellers(
 
       try {
         await notificationService.createNotifications({
+          ...(invoice ? { attachments: [invoiceAttachment(invoice)] } : {}),
           to: seller.email,
           channel: "email",
           template: SELLER_NEW_ORDER_TEMPLATE,

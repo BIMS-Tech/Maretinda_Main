@@ -3,7 +3,7 @@ import {
 } from "@medusajs/framework/utils"
 import { NotificationTypes } from "@medusajs/types"
 import { Resend } from "resend"
-import { buyerNewOrderTemplate, buyerAccountCreatedTemplate, passwordResetTemplate, sellerNewOrderTemplate } from "../templates"
+import { buyerNewOrderTemplate, buyerAccountCreatedTemplate, passwordResetTemplate, sellerNewOrderTemplate, messageTemplate } from "../templates"
 
 interface MaretindaResendOptions {
   api_key?: string
@@ -44,6 +44,11 @@ export class MaretindaResendProvider extends AbstractNotificationProviderService
     notification: NotificationTypes.ProviderSendNotificationDTO
   ): Promise<NotificationTypes.ProviderSendNotificationResultsDTO> {
     const { to, channel, template, data, content } = notification
+    const attachments = ((notification as any).attachments || []).map((a: any) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.content_type,
+    }))
 
     if (channel !== "email") {
       throw new Error(`Channel ${channel} is not supported`)
@@ -67,6 +72,9 @@ export class MaretindaResendProvider extends AbstractNotificationProviderService
     } else if (template === "sellerNewOrderEmailTemplate") {
       html = sellerNewOrderTemplate(templateData)
       subject = content?.subject || `New Order #${(templateData as any)?.order?.display_id || ""} Received`
+    } else if (template === "messageEmailTemplate") {
+      html = messageTemplate(templateData)
+      subject = content?.subject || templateData.heading || "A message from Maretinda"
     } else {
       console.warn(`[notification-resend] Unknown template: ${template}, using fallback`)
       html = this.fallbackTemplate(templateData)
@@ -85,6 +93,7 @@ export class MaretindaResendProvider extends AbstractNotificationProviderService
           to: [to],
           subject,
           html,
+          ...(attachments.length ? { attachments } : {}),
         })
 
         console.log(`[notification-resend] Raw result: ${JSON.stringify(result)}`)

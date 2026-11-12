@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import SubscriptionService from "../../../../services/subscription"
+import { sendSubscriptionReceipt } from "../../../../lib/subscription-emails"
 import { giyapayCallbackSignature, giyapaySignaturesMatch } from "../../../../lib/giyapay-signature"
 
 function getsellerPanelUrl(): string {
@@ -184,6 +185,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     try {
       await pgConnection("subscription_payment_intent").where("seller_id", sellerId).del()
     } catch { /* non-fatal */ }
+
+    await sendSubscriptionReceipt(req.scope, subscription)
 
     console.log(`[Subscription Activate] Activated ${plan.name} (${billingPeriod}) for seller ${sellerId}, ref: ${refno}`)
 

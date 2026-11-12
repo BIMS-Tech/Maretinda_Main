@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import SubscriptionService from "../../../../services/subscription"
+import { sendSubscriptionReceipt } from "../../../../lib/subscription-emails"
 
 /**
  * POST /store/subscription/activate-renewal
@@ -129,6 +130,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     await pgConnection("giyapay_transaction")
       .where("reference_number", reference_number)
       .update({ seller_id: sellerId, updated_at: new Date() })
+
+    await sendSubscriptionReceipt(req.scope, subscription)
 
     res.status(200).json({
       success: true,
