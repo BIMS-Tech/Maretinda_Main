@@ -4,6 +4,10 @@ const BASE = (process.env.NEXT_PUBLIC_BASE_URL || 'https://maretinda.com').repla
 const LOCALE = process.env.NEXT_PUBLIC_DEFAULT_REGION || 'ph';
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL || 'http://localhost:9000';
 
+// Rebuilt hourly. Stated here as well as on the fetch: when the backend could
+// not be reached during the build, the page was otherwise kept as built.
+export const revalidate = 3600;
+
 type Entry = { handle: string; updated_at?: string };
 
 /** Products, shops and categories that can be bought from now; empty if the backend can't be reached. */
