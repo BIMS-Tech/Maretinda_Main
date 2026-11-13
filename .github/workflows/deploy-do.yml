@@ -122,11 +122,24 @@ jobs:
           # backend/store are switched by release.sh, not here. Caddy waits
           # for the Cloudflare origin cert so a missing cert doesn't block
           # backend/store deploys.
+          #
+          # The Caddyfile is mounted as a single file, and rsync replaces it
+          # with a new one, so the running container keeps seeing the old
+          # copy and a reload changes nothing. When the two differ, the new
+          # file is validated in a throwaway container and Caddy is recreated
+          # (a second or two of downtime); an invalid file leaves the running
+          # Caddy alone and fails the job.
           ssh "deploy@$HOST" 'cd /opt/maretinda && chmod +x scripts/*.sh \
             && docker compose up -d --wait postgres redis \
             && if [ -f certs/origin.pem ] && [ -f certs/origin.key ]; then \
                  docker compose up -d caddy \
-                 && docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile; \
+                 && if docker compose exec -T caddy cat /etc/caddy/Caddyfile | cmp -s - Caddyfile; then \
+                      docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile; \
+                    else \
+                      docker compose run --rm --no-deps -T caddy caddy validate --config /etc/caddy/Caddyfile \
+                      && docker compose up -d --force-recreate caddy \
+                      && echo "Caddy recreated with the new Caddyfile"; \
+                    fi; \
                else \
                  echo "::warning::certs/origin.pem or origin.key missing on the server, Caddy not started"; \
                fi'
