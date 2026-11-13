@@ -17,6 +17,7 @@ const SELLER_FIELDS = [
   "phone",
   "tax_id",
   "form_of_organization",
+  "vat_registered",
   "business_documents",
   "verification_status",
   "verified_at",

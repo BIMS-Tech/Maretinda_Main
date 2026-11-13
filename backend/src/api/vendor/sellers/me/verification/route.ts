@@ -42,6 +42,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     const update: any = { updated_at: new Date() }
     if (body.tax_id !== undefined) update.tax_id = body.tax_id
     if (body.form_of_organization !== undefined) update.form_of_organization = body.form_of_organization
+    // The seller's own declaration; it decides how their invoices show VAT
+    if (typeof body.vat_registered === "boolean") update.vat_registered = body.vat_registered
     if (body.business_documents !== undefined) {
       update.business_documents =
         body.business_documents && typeof body.business_documents === "object"

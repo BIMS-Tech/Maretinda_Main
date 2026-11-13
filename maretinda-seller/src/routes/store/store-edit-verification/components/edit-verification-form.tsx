@@ -18,6 +18,7 @@ import { CompletionBar } from "../../../../components/common/completion-bar"
 const Schema = z.object({
   tax_id: z.string().optional(),
   form_of_organization: z.string().optional(),
+  vat_status: z.enum(["non_vat", "vat"]),
 })
 
 function DocUpload({
@@ -107,6 +108,7 @@ export const EditVerificationForm = ({ seller }: { seller: Storeseller }) => {
     defaultValues: {
       tax_id: seller.tax_id || "",
       form_of_organization: seller.form_of_organization || "",
+      vat_status: seller.vat_registered ? "vat" : "non_vat",
     },
     resolver: zodResolver(Schema),
   })
@@ -143,6 +145,7 @@ export const EditVerificationForm = ({ seller }: { seller: Storeseller }) => {
       {
         tax_id: values.tax_id,
         form_of_organization: values.form_of_organization,
+        vat_registered: values.vat_status === "vat",
         business_documents: docs,
       } as Storeseller,
       {
@@ -219,6 +222,31 @@ export const EditVerificationForm = ({ seller }: { seller: Storeseller }) => {
                       </Select.Content>
                     </Select>
                   </Form.Control>
+                  <Form.ErrorMessage />
+                </Form.Item>
+              )}
+            />
+
+            <Form.Field
+              name="vat_status"
+              control={form.control}
+              render={({ field }) => (
+                <Form.Item>
+                  <Form.Label>VAT status</Form.Label>
+                  <Form.Control>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <Select.Trigger>
+                        <Select.Value />
+                      </Select.Trigger>
+                      <Select.Content>
+                        <Select.Item value="non_vat">Non-VAT (not registered for VAT with the BIR)</Select.Item>
+                        <Select.Item value="vat">VAT-registered</Select.Item>
+                      </Select.Content>
+                    </Select>
+                  </Form.Control>
+                  <Form.Hint>
+                    As shown on your BIR Certificate of Registration (Form 2303). Invoices issued to your buyers show a 12% VAT breakdown only if you are VAT-registered.
+                  </Form.Hint>
                   <Form.ErrorMessage />
                 </Form.Item>
               )}

@@ -16,6 +16,8 @@ import { SETUP_REQUIRED_CODE, sellerReadiness, setupRequiredMessage } from '../l
 import FlashSaleService from '../services/flash-sale'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 import { auditAdminWrites } from '../lib/audit-log'
+import { emailReturnUpdates } from '../lib/return-emails'
+import { requireCaptcha } from '../lib/captcha'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -437,11 +439,12 @@ export default defineMiddlewares({
       bodyParser: { preserveRawBody: true },
     },
     { matcher: '/auth/*', middlewares: [authRateLimit] },
+    { matcher: '/auth/customer/emailpass/register', method: ['POST'], middlewares: [requireCaptcha] },
     { matcher: '/admin/*', middlewares: [auditAdminWrites] },
     {
       matcher: '/store/seller-application',
       method: ['POST'],
-      middlewares: [rateLimit({ name: 'seller-application', max: 5, windowMs: HOUR })],
+      middlewares: [rateLimit({ name: 'seller-application', max: 5, windowMs: HOUR }), requireCaptcha],
     },
     {
       matcher: '/store/uploads',
@@ -457,6 +460,11 @@ export default defineMiddlewares({
       matcher: '/store/newsletter',
       method: ['POST'],
       middlewares: [rateLimit({ name: 'newsletter', max: 10, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/reports',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'listing-report', max: 10, windowMs: HOUR })],
     },
     {
       matcher: '/store/chat',
@@ -500,7 +508,9 @@ export default defineMiddlewares({
     { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [requireReadyShop('publish products', publishing)] },
     { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
-    { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [answerReturnWithoutRefund] },
+    { matcher: '/store/return-request', method: ['POST'], middlewares: [emailReturnUpdates] },
+    { matcher: '/admin/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates] },
+    { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates, answerReturnWithoutRefund] },
     { matcher: '/vendor/reels', method: ['POST'], middlewares: [requireReadyShop('post reels')] },
     { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales'), requireReadyShop('join flash sales')] },
     { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers'), requireReadyShop('run promotions and vouchers')] },

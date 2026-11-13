@@ -336,6 +336,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
     },
     {
       icon: <DocumentText />,
+      label: "Listing Reports",
+      to: "/listing-reports",
+    },
+    {
+      icon: <DocumentText />,
       label: "Audit Log",
       to: "/audit-log",
     },

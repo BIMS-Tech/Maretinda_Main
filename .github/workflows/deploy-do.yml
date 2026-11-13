@@ -186,6 +186,10 @@ jobs:
             NEXT_PUBLIC_ALGOLIA_ID=${{ env.ALGOLIA_ID }}
             NEXT_PUBLIC_ALGOLIA_SEARCH_KEY=${{ env.ALGOLIA_SEARCH_KEY }}
             NEXT_PUBLIC_TALKJS_APP_ID=${{ env.TALKJS_APP_ID }}
+            NEXT_PUBLIC_GA_MEASUREMENT_ID=${{ vars.GA_MEASUREMENT_ID }}
+            NEXT_PUBLIC_META_PIXEL_ID=${{ vars.META_PIXEL_ID }}
+            NEXT_PUBLIC_FACEBOOK_APP_ID=${{ vars.FACEBOOK_APP_ID }}
+            NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ vars.TURNSTILE_SITE_KEY }}
       - name: SSH access
         env:
           SSH_KEY: ${{ secrets.DO_SSH_KEY }}
@@ -259,6 +263,7 @@ jobs:
           VITE_MEDUSA_BASE: /
           VITE_MEDUSA_B2B_PANEL: "false"
           VITE_PUBLISHABLE_API_KEY: ${{ env.PUBLISHABLE_KEY }}
+          VITE_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
       # Creates the Pages project on the first deploy; fails harmlessly once it exists
       - uses: cloudflare/wrangler-action@v3
         continue-on-error: true

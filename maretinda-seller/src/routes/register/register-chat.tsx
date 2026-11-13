@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { backendUrl, publishableApiKey, sdk } from "../../lib/client/client"
 import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON } from "../../components/auth/auth-shell"
 import { submitSellerApplication } from "./submit-application"
+import { CAPTCHA_SITE_KEY, CaptchaWidget } from "../../components/common/captcha-widget/captcha-widget"
 
 // ---------------------------------------------------------------------------
 // The assistant's persona
@@ -745,6 +746,8 @@ export const RegisterChat = () => {
   const [botTyping, setBotTyping] = useState(false)
   const [phase, setPhase] = useState<"intro" | "chat" | "review" | "success">("intro")
   const [submitting, setSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState("")
+  const [captchaRound, setCaptchaRound] = useState(0)
   const [error, setError] = useState("")
   const [editingQid, setEditingQid] = useState<string | null>(null)
 
@@ -852,6 +855,10 @@ export const RegisterChat = () => {
       setError("Passwords do not match.")
       return
     }
+    if (CAPTCHA_SITE_KEY && !captchaToken) {
+      setError("Please complete the verification check first.")
+      return
+    }
     setSubmitting(true)
     setError("")
     try {
@@ -868,11 +875,15 @@ export const RegisterChat = () => {
               "x-publishable-api-key": publishableApiKey,
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify(captchaToken ? { ...data, captcha_token: captchaToken } : data),
           }),
       })
       if (result.ok) setPhase("success")
-      else setError(result.message)
+      else {
+        setError(result.message)
+        // A captcha token works once, so a failed attempt needs a new one
+        setCaptchaRound((round) => round + 1)
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : ""
       setError(msg || "Registration failed. Please try again.")
@@ -1015,6 +1026,12 @@ export const RegisterChat = () => {
           <div className="border-t border-white/50 dark:border-white/10 bg-white/30 dark:bg-black/10 px-3 sm:px-6 py-4">
             {error && (
               <div className="mb-3 rounded-xl border border-ui-tag-red-border bg-ui-tag-red-bg px-4 py-2.5 text-sm text-ui-tag-red-text">{error}</div>
+            )}
+
+            {phase === "review" && (
+              <div className="mb-3 flex justify-end empty:hidden">
+                <CaptchaWidget onToken={setCaptchaToken} resetKey={captchaRound} />
+              </div>
             )}
 
             {phase === "review" ? (

@@ -77,6 +77,7 @@ export const SellerVerificationDetail = ({ seller, open, close }: Props) => {
             <Field label="Email" value={seller.email} />
             <Field label="Business TIN" value={seller.tax_id} />
             <Field label="Form of Organization" value={seller.form_of_organization} />
+            <Field label="VAT status" value={seller.vat_registered ? "VAT-registered" : "Non-VAT"} />
           </div>
 
           <div className="border border-ui-border-base rounded-xl p-4 flex flex-col gap-3">

@@ -10,6 +10,8 @@
 		-X-Powered-By
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
+		# Browsers that have visited once only ever come back over HTTPS
+		Strict-Transport-Security "max-age=31536000"
 	}
 }
 

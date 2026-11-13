@@ -73,13 +73,18 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
  * forwardedAuthHeaders), so rate limits apply per buyer, not to the whole store.
  * Errors start with "Error" like the SDK's, which the forms look for.
  */
-async function customerAuth(path: string, body: Record<string, string>): Promise<string | undefined> {
+async function customerAuth(
+	path: string,
+	body: Record<string, string>,
+	extraHeaders: Record<string, string> = {},
+): Promise<string | undefined> {
 	const res = await fetch(`${process.env.MEDUSA_BACKEND_URL}/auth/customer/emailpass${path}`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
 			...forwardedAuthHeaders(await requestHeaders(), process.env.STORE_SERVER_SECRET),
+			...extraHeaders,
 		},
 		body: JSON.stringify(body),
 	});
@@ -102,10 +107,12 @@ export async function signup(formData: FormData) {
 	};
 
 	try {
-		const token = await customerAuth('/register', {
-			email: customerForm.email,
-			password: password,
-		});
+		const captcha = formData.get('captcha_token') as string | null;
+		const token = await customerAuth(
+			'/register',
+			{ email: customerForm.email, password: password },
+			captcha ? { 'x-captcha-token': captcha } : {},
+		);
 
 		await setAuthToken(token as string);
 

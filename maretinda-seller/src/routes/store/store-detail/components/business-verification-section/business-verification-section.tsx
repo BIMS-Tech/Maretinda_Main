@@ -120,6 +120,16 @@ export const BusinessVerificationSection = ({ seller }: { seller: Storeseller })
         </Text>
       </div>
 
+      {/* VAT status */}
+      <div className="text-ui-fg-subtle grid grid-cols-2 px-6 py-4">
+        <Text size="small" leading="compact" weight="plus">
+          VAT status
+        </Text>
+        <Text size="small" leading="compact">
+          {seller.vat_registered ? "VAT-registered" : "Non-VAT"}
+        </Text>
+      </div>
+
       {/* Documents checklist */}
       <div className="px-6 py-4">
         <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle mb-3">

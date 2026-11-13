@@ -16,6 +16,7 @@ import { LabeledInput } from '@/components/cells';
 import { validatePassword } from '@/components/cells/PasswordValidator/PasswordValidator';
 import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
 import Spinner from '@/icons/spinner';
+import { CAPTCHA_SITE_KEY, CaptchaWidget } from '@/components/atoms/CaptchaWidget/CaptchaWidget';
 import { signup } from '@/lib/data/customer';
 import { useLanguage } from '@/providers/LanguageProvider';
 
@@ -98,6 +99,9 @@ const Form = () => {
 
 	const isLoading = isSubmitting || isGoogleLoading;
 
+	const [captchaToken, setCaptchaToken] = useState('');
+	const [captchaRound, setCaptchaRound] = useState(0);
+
 	const handleGoogleSignup = async () => {
 		setIsGoogleLoading(true);
 		try {
@@ -115,7 +119,12 @@ const Form = () => {
 
 	const submit = async (data: FieldValues) => {
 		setServerError(null);
+		if (CAPTCHA_SITE_KEY && !captchaToken) {
+			setServerError('Please complete the verification check below.');
+			return;
+		}
 		const formData = new FormData();
+		if (captchaToken) formData.append('captcha_token', captchaToken);
 		formData.append('email', data.email);
 		formData.append('password', data.password);
 		formData.append('first_name', data.firstName);
@@ -125,10 +134,14 @@ const Form = () => {
 		const res = await signup(formData);
 
 		if (typeof res === 'string' && res.includes('Error')) {
+			// A captcha token works once, so a failed attempt needs a new one
+			setCaptchaRound((round) => round + 1);
 			setServerError(
 				/too many/i.test(res)
 					? 'Too many attempts. Please wait a few minutes and try again.'
-					: 'Registration failed. This email may already be in use.',
+					: /verification check/i.test(res)
+						? 'The verification check did not pass. Please try again.'
+						: 'Registration failed. This email may already be in use.',
 			);
 		}
 	};
@@ -303,6 +316,8 @@ const Form = () => {
 									<p className="text-[11.5px] text-red-500 ml-7">{errors.terms.message as string}</p>
 								)}
 							</div>
+
+							<CaptchaWidget onToken={setCaptchaToken} resetKey={captchaRound} />
 
 							{/* Submit */}
 							<button

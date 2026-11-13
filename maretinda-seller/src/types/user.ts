@@ -28,6 +28,8 @@ export interface Storeseller {
   store_status?: "ACTIVE" | "SUSPENDED" | "INACTIVE"
   // Business verification (documents completed here in Store settings)
   form_of_organization?: string
+  /** The seller's own declaration; decides how their invoices show VAT */
+  vat_registered?: boolean
   business_documents?: Record<string, string>
   verification_status?: "unverified" | "pending_review" | "verified" | "rejected"
   verified_at?: string | null

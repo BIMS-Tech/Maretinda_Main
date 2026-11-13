@@ -1,3 +1,4 @@
+import { ReportButton } from '@/components/molecules/ReportButton/ReportButton';
 import { SellerTabs } from '@/components/organisms';
 import { SellerPageHeader } from '@/components/sections';
 import SellerVouchers from '@/components/sections/SellerVouchers/SellerVouchers';
@@ -59,6 +60,10 @@ export default async function SellerPage({
 				seller={seller}
 				tab={tab}
 			/>
+
+			<div className="mt-8 flex justify-end">
+				<ReportButton email={user?.email} kind="seller" target={seller.id} />
+			</div>
 		</main>
 	);
 }

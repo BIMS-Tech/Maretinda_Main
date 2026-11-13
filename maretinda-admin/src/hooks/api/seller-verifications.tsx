@@ -17,6 +17,7 @@ export interface SellerVerification {
   phone: string | null;
   tax_id: string | null;
   form_of_organization: string | null;
+  vat_registered?: boolean | null;
   business_documents: Record<string, string> | string | null;
   verification_status: VerificationStatus;
   verified_at: string | null;
