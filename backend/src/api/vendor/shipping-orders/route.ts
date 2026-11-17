@@ -323,7 +323,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         })
 
         // Booked: the order is packed; it reads shipped once the courier picks it up
-        await markOrderPacked(req.scope, orderData.medusa_order_id as string)
+        const orderUpdateError = await markOrderPacked(req.scope, orderData.medusa_order_id as string)
 
         return res.json({
           success: true,
@@ -331,6 +331,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           trackingNumber,
           trackingUrl: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
           provider: 'ninjavan',
+          order_update_error: orderUpdateError,
         })
       }
 
@@ -456,7 +457,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           provider_response: JSON.stringify(ftResponse),
         })
 
-        await markOrderPacked(req.scope, orderData.medusa_order_id as string)
+        const orderUpdateError = await markOrderPacked(req.scope, orderData.medusa_order_id as string)
 
         return res.json({
           success: true,
@@ -464,6 +465,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           trackingNumber: ftResponse.tracking_no,
           trackingUrl: ftResponse.tracking_url,
           provider: 'flyingtigers',
+          order_update_error: orderUpdateError,
         })
       }
 

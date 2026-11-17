@@ -325,7 +325,7 @@ export function CreateShipmentDrawer({
     }
 
     try {
-      await createOrder({
+      const booked: any = await createOrder({
         action: 'create-order',
         providerId: provider,
         orderData: {
@@ -366,6 +366,13 @@ export function CreateShipmentDrawer({
         },
       })
       toast.success('Shipment booked! Tracking number assigned.')
+      if (booked?.order_update_error) {
+        // The courier is booked, but the order itself could not be marked packed
+        toast.warning(
+          `The order wasn't marked as packed: ${booked.order_update_error}. Fix the stock for this item, then use Fulfill items on the order.`,
+          { duration: 15000 }
+        )
+      }
       onCreated()
       onClose()
     } catch (e: any) {

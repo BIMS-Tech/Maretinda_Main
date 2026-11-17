@@ -65,13 +65,19 @@ async function pack(container: any, orderId: string) {
   return readOrder(container, orderId)
 }
 
-/** The courier is booked: the order is packed and waiting for pickup. */
-export async function markOrderPacked(container: any, orderId: string | null | undefined): Promise<void> {
-  if (!orderId) return
+/**
+ * The courier is booked: the order is packed and waiting for pickup. Returns
+ * why it could not be packed, for the seller to fix (e.g. no stock recorded
+ * at the warehouse), or null.
+ */
+export async function markOrderPacked(container: any, orderId: string | null | undefined): Promise<string | null> {
+  if (!orderId) return null
   try {
     await pack(container, orderId)
+    return null
   } catch (error) {
     log("packed", orderId, error)
+    return error instanceof Error ? error.message : String(error)
   }
 }
 
