@@ -208,7 +208,7 @@ medusaIntegrationTestRunner({
         })
         await link.create({ [Modules.STOCK_LOCATION]: { stock_location_id: location.id }, [Modules.FULFILLMENT]: { fulfillment_set_id: set.id } })
         await link.create({ [Modules.STOCK_LOCATION]: { stock_location_id: location.id }, [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" } })
-        const option = await fulfillment.createShippingOptions({
+        const option: any = await fulfillment.createShippingOptions({
           name: "Standard",
           price_type: "flat",
           service_zone_id: set.service_zones[0].id,
@@ -217,7 +217,7 @@ medusaIntegrationTestRunner({
           type: { label: "Standard", description: "Standard", code: "standard" },
           rules: [],
         } as any)
-        const order = await c.resolve(Modules.ORDER).createOrders({
+        const order: any = await c.resolve(Modules.ORDER).createOrders({
           currency_code: "php",
           email: "buyer@example.test",
           shipping_address: { first_name: "Maria", last_name: "Santos", address_1: "1 Rizal St", city: "Angeles City", country_code: "ph", postal_code: "2009" },
