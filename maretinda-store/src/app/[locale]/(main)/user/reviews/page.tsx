@@ -18,7 +18,13 @@ export default async function Page() {
 	return (
 		<Layout>
 			<ReviewsToWrite
-				orders={orders.filter((order) => order.reviews.length === 0)}
+				// Only delivered orders can be reviewed (the backend refuses the rest)
+				orders={orders.filter(
+					(order: any) =>
+						order.reviews.length === 0 &&
+						order.status !== 'canceled' &&
+						['delivered', 'partially_delivered'].includes(order.fulfillment_status),
+				)}
 			/>
 		</Layout>
 	);
