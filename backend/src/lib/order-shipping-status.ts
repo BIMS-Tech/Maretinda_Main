@@ -151,7 +151,9 @@ export async function followCourier(
 ): Promise<void> {
   if (!booking.medusa_order_id || !booking.tracking_number || !next || next === previous) return
   const label = { tracking_number: booking.tracking_number, tracking_url: booking.tracking_url }
-  if (next === "delivered") await markOrderDelivered(container, booking.medusa_order_id, label)
+  // Cancelled with the courier (by the seller, or in the courier's own portal) before pickup
+  if (next === "cancelled") await markOrderUnpacked(container, booking.medusa_order_id)
+  else if (next === "delivered") await markOrderDelivered(container, booking.medusa_order_id, label)
   else if (SHIPPED_STATUSES.includes(next) && !SHIPPED_STATUSES.includes(previous ?? "")) {
     await markOrderShipped(container, booking.medusa_order_id, label)
   }

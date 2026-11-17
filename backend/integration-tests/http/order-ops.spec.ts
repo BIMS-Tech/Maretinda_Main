@@ -244,6 +244,11 @@ medusaIntegrationTestRunner({
 
         await markOrderUnpacked(getContainer(), order.id)
         expect(await status()).toEqual([])
+
+        // The same when the courier reports the booking cancelled
+        await markOrderPacked(getContainer(), order.id)
+        await followCourier(getContainer(), { medusa_order_id: order.id, tracking_number: "FT-X" }, "pending_pickup", "cancelled")
+        expect(await status()).toEqual([])
       })
 
       it("pickup ships it with the tracking number; delivery marks it delivered and starts the return clock", async () => {
