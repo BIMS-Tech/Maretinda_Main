@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
-import { markOrderDelivered } from '../../../lib/order-shipping-status'
+import { followCourier } from '../../../lib/order-shipping-status'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
 /**
@@ -116,9 +116,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         updated_at: new Date(),
       })
 
-    if (internalStatus === 'delivered' && shippingOrder.status !== 'delivered') {
-      await markOrderDelivered(req.scope, shippingOrder.medusa_order_id)
-    }
+    if (internalStatus !== 'unknown') await followCourier(req.scope, shippingOrder, shippingOrder.status, internalStatus)
 
     res.json({ received: true })
   } catch (error) {

@@ -1,20 +1,30 @@
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import {
+  cancelOrderFulfillmentWorkflow,
   createOrderFulfillmentWorkflow,
   createOrderShipmentWorkflow,
   markOrderFulfillmentAsDeliveredWorkflow,
 } from "@medusajs/core-flows"
 
 /**
- * Booking a courier and the order's own status used to be separate: a seller
- * could book Flying Tigers and the order still read "not fulfilled", so the
- * buyer never saw it shipped or delivered, could not ask for a return, and the
- * payout clock (which starts at delivery) never started. These keep the order
- * in step with the courier. Neither throws: the courier booking or update has
- * already happened and must not be undone by a status that could not be set.
+ * Keeps the order's own status in step with the courier booked through
+ * Maretinda. Before this, booking a courier left the order "not fulfilled", so
+ * the buyer never saw it ship or arrive, could not ask for a return, and the
+ * payout clock (which starts at delivery) never started.
+ *
+ *   booked          -> packed (a fulfilment), no email yet
+ *   picked up       -> shipped, with the tracking number; the buyer is emailed
+ *   delivered       -> delivered; the buyer is emailed, return and payout clocks start
+ *   booking cancelled before pickup -> unpacked again
+ *
+ * None of these throw: the courier has already acted, and a status that could
+ * not be set must not undo it. Failures are logged.
  */
 
-type Label = { tracking_number: string; tracking_url?: string | null; label_url?: string | null }
+/** Courier statuses that mean the parcel has left the seller. */
+export const SHIPPED_STATUSES = ["picked_up", "in_transit", "out_for_delivery", "delivered"]
+
+type Label = { tracking_number: string; tracking_url?: string | null }
 
 async function readOrder(container: any, orderId: string) {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
@@ -38,24 +48,40 @@ async function readOrder(container: any, orderId: string) {
   return data[0] as any
 }
 
-/** Packs whatever is still unpacked and marks the order shipped with the courier's tracking number. */
+const log = (what: string, orderId: string, error: unknown) =>
+  console.error(`[order-status] could not mark ${orderId} ${what}:`, error instanceof Error ? error.message : error)
+
+/** Packs whatever part of the order is not packed yet. */
+async function pack(container: any, orderId: string) {
+  const order = await readOrder(container, orderId)
+  if (!order || order.status === "canceled") return null
+  const unpacked = (order.items ?? [])
+    .map((i: any) => ({ id: i.id, quantity: Number(i.quantity) - Number(i.detail?.fulfilled_quantity ?? 0) }))
+    .filter((i: any) => i.quantity > 0)
+  if (!unpacked.length) return order
+  await createOrderFulfillmentWorkflow(container).run({
+    input: { order_id: orderId, items: unpacked, no_notification: true } as any,
+  })
+  return readOrder(container, orderId)
+}
+
+/** The courier is booked: the order is packed and waiting for pickup. */
+export async function markOrderPacked(container: any, orderId: string | null | undefined): Promise<void> {
+  if (!orderId) return
+  try {
+    await pack(container, orderId)
+  } catch (error) {
+    log("packed", orderId, error)
+  }
+}
+
+/** The courier has the parcel: the order is shipped, with its tracking number. */
 export async function markOrderShipped(container: any, orderId: string | null | undefined, label: Label): Promise<void> {
   if (!orderId) return
   try {
-    let order = await readOrder(container, orderId)
-    if (!order || order.status === "canceled") return
-
-    const unpacked = (order.items ?? [])
-      .map((i: any) => ({ id: i.id, quantity: Number(i.quantity) - Number(i.detail?.fulfilled_quantity ?? 0) }))
-      .filter((i: any) => i.quantity > 0)
-    if (unpacked.length) {
-      await createOrderFulfillmentWorkflow(container).run({
-        input: { order_id: orderId, items: unpacked, no_notification: true } as any,
-      })
-      order = await readOrder(container, orderId)
-    }
-
-    const labels = [{ tracking_number: label.tracking_number, tracking_url: label.tracking_url ?? "", label_url: label.label_url ?? label.tracking_url ?? "" }]
+    const order = await pack(container, orderId)
+    if (!order) return
+    const labels = [{ tracking_number: label.tracking_number, tracking_url: label.tracking_url ?? "", label_url: label.tracking_url ?? "" }]
     for (const f of order.fulfillments ?? []) {
       if (f.canceled_at || f.shipped_at) continue
       const items = (f.items ?? []).map((i: any) => ({ id: i.line_item_id, quantity: Number(i.quantity) }))
@@ -65,23 +91,55 @@ export async function markOrderShipped(container: any, orderId: string | null | 
       })
     }
   } catch (error) {
-    console.error(`[order-status] could not mark ${orderId} shipped:`, error instanceof Error ? error.message : error)
+    log("shipped", orderId, error)
   }
 }
 
-/** Marks every shipped, undelivered parcel of the order delivered (the buyer is emailed). */
-export async function markOrderDelivered(container: any, orderId: string | null | undefined): Promise<void> {
+/** The courier delivered the parcel. */
+export async function markOrderDelivered(container: any, orderId: string | null | undefined, label: Label): Promise<void> {
   if (!orderId) return
+  // A parcel can be delivered without a pickup update ever arriving
+  await markOrderShipped(container, orderId, label)
   try {
     const order = await readOrder(container, orderId)
     if (!order || order.status === "canceled") return
     for (const f of order.fulfillments ?? []) {
       if (f.canceled_at || f.delivered_at) continue
-      await markOrderFulfillmentAsDeliveredWorkflow(container).run({
-        input: { orderId, fulfillmentId: f.id },
+      await markOrderFulfillmentAsDeliveredWorkflow(container).run({ input: { orderId, fulfillmentId: f.id } })
+    }
+  } catch (error) {
+    log("delivered", orderId, error)
+  }
+}
+
+/** The booking was cancelled before pickup: the order goes back to waiting to ship. */
+export async function markOrderUnpacked(container: any, orderId: string | null | undefined): Promise<void> {
+  if (!orderId) return
+  try {
+    const order = await readOrder(container, orderId)
+    if (!order) return
+    for (const f of order.fulfillments ?? []) {
+      if (f.canceled_at || f.shipped_at) continue
+      await cancelOrderFulfillmentWorkflow(container).run({
+        input: { order_id: orderId, fulfillment_id: f.id, no_notification: true } as any,
       })
     }
   } catch (error) {
-    console.error(`[order-status] could not mark ${orderId} delivered:`, error instanceof Error ? error.message : error)
+    log("unpacked", orderId, error)
+  }
+}
+
+/** Applies a courier status change to the order. */
+export async function followCourier(
+  container: any,
+  booking: { medusa_order_id?: string | null; tracking_number?: string | null; tracking_url?: string | null },
+  previous: string | null | undefined,
+  next: string | null | undefined
+): Promise<void> {
+  if (!booking.medusa_order_id || !booking.tracking_number || !next || next === previous) return
+  const label = { tracking_number: booking.tracking_number, tracking_url: booking.tracking_url }
+  if (next === "delivered") await markOrderDelivered(container, booking.medusa_order_id, label)
+  else if (SHIPPED_STATUSES.includes(next) && !SHIPPED_STATUSES.includes(previous ?? "")) {
+    await markOrderShipped(container, booking.medusa_order_id, label)
   }
 }

@@ -19,7 +19,7 @@
 import crypto from 'crypto'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { markOrderDelivered } from '../../../lib/order-shipping-status'
+import { followCourier } from '../../../lib/order-shipping-status'
 import { nextShipmentStatus, parseFlyingTigersEvent } from '../../../services/flyingtigers'
 
 /**
@@ -120,9 +120,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
         updated_at: new Date(),
       })
 
-    if (nextStatus === 'delivered' && shippingOrder.status !== 'delivered') {
-      await markOrderDelivered(req.scope, shippingOrder.medusa_order_id)
-    }
+    await followCourier(req.scope, shippingOrder, shippingOrder.status, nextStatus)
 
     res.json({ received: true })
   } catch (error) {

@@ -84,7 +84,7 @@ test.describe('seller onboarding (writes)', () => {
     await answerChat(page, email, password)
     await expect(page.getByText(email).first()).toBeVisible()
     await page.getByRole('button', { name: 'Submit application' }).click()
-    await expect(page.getByText(/application (has been )?(submitted|received)|thank you|we'll review/i).first()).toBeVisible({ timeout: 60_000 })
+    await expect(page.getByText(/application sent|under review/i).first()).toBeVisible({ timeout: 60_000 })
   })
 
   test('SEL-01 a pending applicant cannot reach the dashboard', async ({ page }) => {

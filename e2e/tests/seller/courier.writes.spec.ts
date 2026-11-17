@@ -19,12 +19,12 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
     const headers = { authorization: `Bearer ${await sellerToken(request, email, password)}` }
 
     // An order of seller A's that isn't cancelled and has no active booking
-    const { orders } = await (await request.get(`${API_URL}/vendor/orders?limit=50&fields=id,display_id,status`, { headers })).json()
+    const { orders } = await (await request.get(`${API_URL}/vendor/orders?limit=50&fields=id,display_id,status,fulfillment_status`, { headers })).json()
     const shipments = await (await request.get(`${API_URL}/vendor/shipping-orders`, { headers })).json()
     const booked = new Set(
       (shipments.orders ?? []).filter((s: any) => s.status !== 'cancelled').map((s: any) => s.medusa_order_id),
     )
-    const order = orders.find((o: any) => o.status !== 'canceled' && !booked.has(o.id))
+    const order = orders.find((o: any) => o.status !== 'canceled' && o.fulfillment_status === 'not_fulfilled' && !booked.has(o.id))
     test.skip(!order, 'seller A has no order free to book')
 
     await signInSeller(page, email, password)
@@ -64,6 +64,12 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
     const shipment = await active()
     const trackingNo: string = shipment.tracking_number
     expect(shipment).toMatchObject({ provider: 'flyingtigers', medusa_order_id: order.id })
+
+    // Booking packs the order; it reads shipped only once the courier picks it up
+    const fulfillment = async () =>
+      (await (await request.get(`${API_URL}/vendor/orders/${order.id}?fields=fulfillment_status`, { headers })).json()).order
+        ?.fulfillment_status
+    await expect.poll(fulfillment, { timeout: 30_000 }).toBe('fulfilled')
     // An order can list earlier, cancelled bookings too; work in this one's row
     const row = page
       .locator('div')
@@ -90,5 +96,7 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
       }, { timeout: 30_000 })
       .toBe('cancelled')
     await expect(section.getByRole('button', { name: 'Book Courier' })).toBeVisible()
+    // Cancelled before pickup: the order is waiting to ship again
+    await expect.poll(fulfillment, { timeout: 30_000 }).toBe('not_fulfilled')
   })
 })

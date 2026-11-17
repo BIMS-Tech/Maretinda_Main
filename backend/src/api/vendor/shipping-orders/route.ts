@@ -30,7 +30,7 @@ import {
 } from '../../../services/flyingtigers'
 import { toPhMobile } from '../../../lib/ph-mobile'
 import { sellerOwnsOrder } from '../../../lib/seller-ownership'
-import { markOrderShipped } from '../../../lib/order-shipping-status'
+import { followCourier, markOrderPacked, markOrderUnpacked } from '../../../lib/order-shipping-status'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -113,7 +113,7 @@ async function getPlatformCredentials(pg: any, providerId: string) {
  * refused, to reconcile our record with a status that changed in the carrier's
  * own portal. Returns the mapped internal status, or null if it can't be synced.
  */
-async function syncFlyingTigersStatus(pg: any, order: any): Promise<string | null> {
+async function syncFlyingTigersStatus(pg: any, order: any, container?: any): Promise<string | null> {
   try {
     if (order.provider !== 'flyingtigers' || !order.tracking_number) return null
     const creds = await getPlatformCredentials(pg, 'flyingtigers')
@@ -121,6 +121,7 @@ async function syncFlyingTigersStatus(pg: any, order: any): Promise<string | nul
     const internal = mapFlyingTigersStatus(tracking.status)
     if (internal && internal !== order.status) {
       await pg('seller_shipping_order').where({ id: order.id }).update({ status: internal, updated_at: new Date() })
+      if (container) await followCourier(container, order, order.status, internal)
     }
     return internal
   } catch {
@@ -321,11 +322,8 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           provider_response: JSON.stringify(nvResponse),
         })
 
-        // The order reads shipped, with the tracking number, the moment the courier is booked
-        await markOrderShipped(req.scope, orderData.medusa_order_id as string, {
-          tracking_number: trackingNumber,
-          tracking_url: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
-        })
+        // Booked: the order is packed; it reads shipped once the courier picks it up
+        await markOrderPacked(req.scope, orderData.medusa_order_id as string)
 
         return res.json({
           success: true,
@@ -458,10 +456,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           provider_response: JSON.stringify(ftResponse),
         })
 
-        await markOrderShipped(req.scope, orderData.medusa_order_id as string, {
-          tracking_number: ftResponse.tracking_no,
-          tracking_url: ftResponse.tracking_url,
-        })
+        await markOrderPacked(req.scope, orderData.medusa_order_id as string)
 
         return res.json({
           success: true,
@@ -504,7 +499,7 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
         // longer in a cancellable state (already cancelled in the carrier portal,
         // or already picked up / in transit). Don't 500: sync the real status so
         // the panel stops showing a stale "Cancel" button, and report clearly.
-        const synced = await syncFlyingTigersStatus(pg, shippingOrder)
+        const synced = await syncFlyingTigersStatus(pg, shippingOrder, req.scope)
         return res.status(200).json({
           success: synced === 'cancelled',
           status: synced ?? shippingOrder.status,
@@ -517,6 +512,8 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
       await pg('seller_shipping_order')
         .where({ id: orderId })
         .update({ status: 'cancelled', updated_at: new Date() })
+      // Cancelled before pickup: the order is back to waiting to ship
+      await markOrderUnpacked(req.scope, shippingOrder.medusa_order_id)
 
       return res.json({ success: true, message: 'Shipping order cancelled' })
     }
