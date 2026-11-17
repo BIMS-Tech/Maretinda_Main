@@ -16,6 +16,8 @@ type Remittance = {
   state: State
   cod_received_ref: string | null
   cod_paid_ref: string | null
+  payable_from: string
+  return_open: boolean
 }
 
 type Result = {
@@ -74,7 +76,7 @@ export const CodRemittancesPage = () => {
       <div className="px-6 py-4">
         <Heading>COD Remittances</Heading>
         <Text className="text-ui-fg-subtle" size="small">
-          Cash collected on delivery by couriers booked through Maretinda. Record it when the courier remits it, then when it is paid to the seller.
+          Cash collected on delivery by couriers booked through Maretinda. Record it when the courier remits it, then pay it to the seller from 14 days after delivery, the same rule as online payments. Parcels with an open return wait until it is decided.
         </Text>
       </div>
 
@@ -138,6 +140,7 @@ export const CodRemittancesPage = () => {
                 <Table.HeaderCell>Tracking</Table.HeaderCell>
                 <Table.HeaderCell>Delivered</Table.HeaderCell>
                 <Table.HeaderCell className="text-right">COD amount</Table.HeaderCell>
+                <Table.HeaderCell>Pay seller from</Table.HeaderCell>
                 <Table.HeaderCell>Status</Table.HeaderCell>
                 <Table.HeaderCell>Reference</Table.HeaderCell>
               </Table.Row>
@@ -161,6 +164,9 @@ export const CodRemittancesPage = () => {
                     <Table.Cell>{r.tracking_number || "—"}</Table.Cell>
                     <Table.Cell>{day(r.delivered_at)}</Table.Cell>
                     <Table.Cell className="text-right tabular-nums">{peso(r.cod_amount)}</Table.Cell>
+                    <Table.Cell>
+                      {r.state === "paid" ? "—" : r.return_open ? "Return open" : day(r.payable_from)}
+                    </Table.Cell>
                     <Table.Cell><StatusBadge color={s.color}>{s.label}</StatusBadge></Table.Cell>
                     <Table.Cell>{r.cod_paid_ref || r.cod_received_ref || "—"}</Table.Cell>
                   </Table.Row>

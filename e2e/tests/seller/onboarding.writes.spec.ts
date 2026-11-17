@@ -12,29 +12,61 @@ import { adminPage, adminToken, API_URL, expect, test, writesAllowed } from '../
 
 /** Answers the onboarding chat one question at a time until the review card. */
 async function answerChat(page: Page, email: string, password: string) {
-  for (let step = 0; step < 30; step++) {
-    if (await page.getByRole('button', { name: 'Submit application' }).isVisible()) return
-    const inputs = page.locator('main input:visible, main textarea:visible, input:visible:not([placeholder^="Search"])')
-    for (const input of await inputs.all()) {
+  const byPlaceholder: [RegExp, string][] = [
+    [/first name/i, 'QA'],
+    [/last name/i, 'Chat Seller'],
+    [/^0917/, '09171234567'],
+    [/@example\.com/, email],
+    [/juan's/i, 'QA Chat Trading'],
+    [/^shop name$/i, 'QA Shop Chat'],
+    [/123-456-789/, '123456789000'],
+    [/barangay/i, 'Balibago'],
+    [/zip/i, '2009'],
+    [/house|street/i, '1 Rizal St'],
+    [/general manager/i, 'Owner'],
+  ]
+  const choices = ['Sole proprietor (DTI)', 'Non-VAT', '11–50', 'I make them myself', 'No']
+  for (let step = 0; step < 40; step++) {
+    if (await page.getByRole('button', { name: 'Submit application' }).isVisible()) {
+      for (const box of await page.locator('input[type="checkbox"]').all()) await box.check()
+      return
+    }
+    const province = page.getByLabel('Province')
+    if (await province.isVisible().catch(() => false)) {
+      await province.selectOption('Pampanga')
+      await page.getByLabel('City or municipality').selectOption('Angeles City')
+    }
+    for (const input of await page.locator('input:visible').all()) {
       const type = await input.getAttribute('type')
       const placeholder = (await input.getAttribute('placeholder')) ?? ''
-      if (type === 'checkbox' || type === 'radio' || type === 'file' || type === 'date') continue
-      if ((await input.inputValue()) !== '') continue
-      if (/first name/i.test(placeholder)) await input.fill('QA')
-      else if (/last name/i.test(placeholder)) await input.fill('Chat Seller')
-      else if (type === 'password') await input.fill(password)
-      else if (type === 'email') await input.fill(email)
-      else if (type === 'tel' || /mobile|09|\+63/i.test(placeholder)) await input.fill('09171234567')
-      else if (/promo|code/i.test(placeholder)) continue
-      else if (/landline|\(02\)/i.test(placeholder)) await input.fill('(045) 123 4567')
-      else await input.fill(/address|street|city/i.test(placeholder) ? '1 Rizal St, Balibago, Angeles City, Pampanga 2009' : 'QA Shop Chat')
+      if (type === 'checkbox' || type === 'file' || (await input.inputValue()) !== '') continue
+      if (type === 'password') await input.fill(password)
+      else {
+        const hit = byPlaceholder.find(([re]) => re.test(placeholder))
+        if (hit) await input.fill(hit[1])
+      }
     }
-    const org = page.getByRole('button', { name: 'Sole Proprietorship', exact: true })
-    if (await org.isVisible().catch(() => false)) await org.click()
-    const no = page.getByRole('button', { name: 'No', exact: true })
-    if (await no.isVisible().catch(() => false)) await no.click()
-    const send = page.getByRole('button', { name: /^(Send|Skip)$/ }).last()
-    if (await send.isEnabled().catch(() => false)) await send.click()
+    let clicked = false
+    for (const label of choices) {
+      const button = page.getByRole('button', { name: label, exact: true })
+      if (await button.isVisible().catch(() => false)) {
+        await button.click()
+        clicked = true
+        break
+      }
+    }
+    // "What do you mainly sell?" lists the shop's live categories
+    if (!clicked && (await page.getByText('What do you mainly sell?').last().isVisible().catch(() => false))) {
+      const other = page.getByRole('button', { name: 'Other', exact: true })
+      if (await other.isVisible().catch(() => false)) {
+        await other.click()
+        clicked = true
+      }
+    }
+    if (!clicked) {
+      const send = page.getByRole('button', { name: /^(Send|Skip)$/ }).last()
+      if (await send.isEnabled().catch(() => false)) await send.click()
+    }
     await page.waitForTimeout(1200)
   }
   throw new Error('chat never reached the review card')
@@ -42,9 +74,6 @@ async function answerChat(page: Page, email: string, password: string) {
 
 test.describe('seller onboarding (writes)', () => {
   test.skip(!writesAllowed, 'set E2E_ALLOW_WRITES=1 to run')
-  // testseller (Vercel) is built without VITE_PUBLISHABLE_API_KEY, so sign-up fails there (F27);
-  // run against a local panel on test-api: SELLER_URL=http://localhost:5173
-  test.skip(!process.env.SELLER_URL, 'set SELLER_URL to a seller panel built with the publishable key')
   test.describe.configure({ mode: 'serial' })
 
   const email = `delivered+e2e-chat-seller-${Date.now()}@resend.dev`

@@ -66,7 +66,7 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
         return
       }
       const fullName = `${app.first_name ?? ""} ${app.last_name ?? ""}`.trim()
-      const shopName = app.business_name || fullName || app.email
+      const shopName = app.shop_name || app.business_name || fullName || app.email
       const createAs = await nameWithFreeHandle(db, shopName)
       const { result: seller } = await createSellerWorkflow.run({
         container: req.scope,
@@ -110,9 +110,19 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
           updated_at: new Date(),
         }
         if (app.business_tin) sellerUpdate.tax_id = app.business_tin
+        if (typeof app.vat_registered === "boolean") sellerUpdate.vat_registered = app.vat_registered
         if (docs) sellerUpdate.business_documents = JSON.stringify(docs)
-        if (app.business_address) sellerUpdate.address_line = app.business_address
-        if (app.business_mobile) sellerUpdate.phone = app.business_mobile
+        if (app.business_street) {
+          // Structured address (applications since 17 November 2026)
+          sellerUpdate.address_line = [app.business_street, app.business_barangay, app.business_province].filter(Boolean).join(", ")
+          sellerUpdate.city = app.business_city
+          sellerUpdate.postal_code = app.business_postal_code
+          sellerUpdate.country_code = "ph"
+        } else if (app.business_address) {
+          sellerUpdate.address_line = app.business_address
+        }
+        const phone = app.mobile_number || app.business_mobile
+        if (phone) sellerUpdate.phone = phone
         try {
           await db("seller").where("id", createdSellerId).update(sellerUpdate)
         } catch (e) {
@@ -142,8 +152,15 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
           heading: "You're approved",
           user_name: name,
           paragraphs: [
-            `Welcome to Maretinda. ${app.business_name || "Your shop"} has been approved.`,
-            "Sign in with the email and password you registered with, choose a plan (your first month is free) and finish your store setup to start selling.",
+            `Welcome to Maretinda. ${app.shop_name || app.business_name || "Your shop"} has been approved.`,
+            "Sign in with the email and password you registered with, then:",
+            "1. Choose a plan. Your first month is free.",
+            "2. Finish your store setup: a short shop description, your bank account for payouts, and your pickup address.",
+            `3. Upload your business documents under Store, Business Verification${app.form_of_organization ? ` (for a ${app.form_of_organization})` : ""}. Our team reviews them, usually within a few business days.`,
+            ...(app.sells_regulated
+              ? ["Because you will sell food, cosmetics or health products, our team will also ask for your FDA License to Operate and product registrations (CPR) before those products go live."]
+              : []),
+            "You can add products right away; they go live once your documents are approved.",
           ],
           button: { label: "Sign in to the seller panel", url: `${sellerPanelUrl()}/login` },
         })

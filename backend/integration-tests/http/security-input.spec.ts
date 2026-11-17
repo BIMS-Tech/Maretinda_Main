@@ -1,6 +1,6 @@
 import crypto from "crypto"
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
-import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { sign } from "jsonwebtoken"
 import FlashSaleService from "../../src/services/flash-sale"
 import GiyaPayService from "../../src/services/giyapay"
@@ -15,8 +15,7 @@ import {
   makeReady,
   multipart,
   noThrow,
-  pgOf,
-} from "../helpers"
+  pgOf, applicationBody } from "../helpers"
 
 jest.setTimeout(300 * 1000)
 
@@ -378,6 +377,33 @@ medusaIntegrationTestRunner({
         const res = await post({}, token)
         expect([400, 403]).toContain(res.status)
       })
+
+      it("reviews only a shop or product the buyer received", async () => {
+        const c = getContainer()
+        const { customer, token } = await createCustomer(c)
+        const { seller } = await createSeller(c)
+        const other = (await createSeller(c)).seller
+        const order = await c.resolve(Modules.ORDER).createOrders({
+          customer_id: customer.id,
+          currency_code: "php",
+          email: "buyer@example.test",
+          items: [{ title: "Barong", quantity: 1, unit_price: 700, product_id: "prod_in_order" }],
+        })
+        await c.resolve(ContainerRegistrationKeys.LINK).create({ seller: { seller_id: seller.id }, [Modules.ORDER]: { order_id: order.id } })
+        const review = (reference: string, reference_id: string) =>
+          api.post("/store/reviews", { reference, reference_id, rating: 5, customer_note: "Great", order_id: order.id }, store(token))
+
+        const early = await review("seller", seller.id)
+        expect([early.status, early.data.message]).toEqual([400, expect.stringMatching(/delivered/)])
+
+        const pg = pgOf(c)
+        await pg("fulfillment").insert({ id: "ful_review", location_id: "sloc_test", delivered_at: new Date() })
+        await pg("order_fulfillment").insert({ id: "ordful_review", order_id: order.id, fulfillment_id: "ful_review" })
+
+        expect((await review("seller", other.id)).status).toBe(400)
+        expect((await review("product", "prod_not_in_order")).status).toBe(400)
+        expect((await review("seller", seller.id)).status).toBe(201)
+      })
     })
 
     describe("signup and login abuse", () => {
@@ -408,11 +434,13 @@ medusaIntegrationTestRunner({
         const forged = sign({ auth_identity_id: "authid_victim" }, "not-the-real-secret")
         await api.post(
           "/store/seller-application",
-          { first_name: "A", last_name: "B", email: "a@example.test", business_name: "S", form_of_organization: "Others" },
-          { headers: { "x-publishable-api-key": pk, ...bearer(forged) }, ...noThrow }
+          applicationBody("forged-token@example.test"),
+          // Its own address: the throttling test above used up the default one
+          { headers: { "x-publishable-api-key": pk, "cf-connecting-ip": "203.0.113.55", ...bearer(forged) }, ...noThrow }
         )
-        const row = await pgOf(getContainer())("seller_application").orderBy("submitted_at", "desc").first()
-        if (row) expect(row.auth_identity_id).toBeNull()
+        const row = await pgOf(getContainer())("seller_application").where("email", "forged-token@example.test").first()
+        expect(row).toBeDefined()
+        expect(row.auth_identity_id).toBeNull()
       })
 
       it("rejects absurdly long application fields", async () => {

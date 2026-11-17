@@ -264,7 +264,15 @@ export async function apiSeller(request: import('@playwright/test').APIRequestCo
   const { token } = await reg.json()
   const app = await request.post(`${API_URL}/store/seller-application`, {
     headers: { 'x-publishable-api-key': PUBLISHABLE_KEY, authorization: `Bearer ${token}` },
-    data: { first_name: 'QA', last_name: tag, email, business_name: `QA Shop ${tag}`, form_of_organization: 'Sole Proprietorship', mobile_number: '+639171234567' },
+    data: {
+      first_name: 'QA', last_name: tag, email, mobile_number: '+639171234567',
+      form_of_organization: 'Sole Proprietorship', business_name: `QA Shop ${tag}`, shop_name: `QA Shop ${tag}`,
+      business_tin: '123456789000', vat_registered: false,
+      business_province: 'Pampanga', business_city: 'Angeles City', business_barangay: 'Balibago',
+      business_street: '1 Rizal St', business_postal_code: '2009',
+      main_category: 'Other', product_count: '1–10', product_source: 'I make them myself', sells_regulated: false,
+      terms_accepted: true, privacy_consent: true,
+    },
   })
   if (!app.ok()) throw new Error(`application ${app.status()} ${await app.text()}`)
   const admin = { authorization: `Bearer ${await adminToken(request)}` }

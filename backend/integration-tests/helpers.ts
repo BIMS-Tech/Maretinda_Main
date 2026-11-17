@@ -172,3 +172,30 @@ export function multipart(name: string, type: string, bytes: Buffer) {
   ])
   return { body, headers: { "content-type": `multipart/form-data; boundary=${boundary}` } }
 }
+
+/** A complete seller application, as the seller panel's registration chat sends it. */
+export function applicationBody(email: string, over: Record<string, unknown> = {}) {
+  return {
+    first_name: "Maria",
+    last_name: "Santos",
+    email,
+    mobile_number: "0917 123 4567",
+    form_of_organization: "Sole Proprietorship",
+    business_name: "Santos Handicrafts",
+    shop_name: "Santos Crafts",
+    business_tin: "123456789000",
+    vat_registered: false,
+    business_province: "Pampanga",
+    business_city: "Angeles City",
+    business_barangay: "Balibago",
+    business_street: "1 Rizal St",
+    business_postal_code: "2009",
+    main_category: "Home & Living",
+    product_count: "11–50",
+    product_source: "I make them myself",
+    sells_regulated: false,
+    terms_accepted: true,
+    privacy_consent: true,
+    ...over,
+  }
+}

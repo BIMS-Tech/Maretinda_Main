@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect, ChangeEvent, ReactNode } from "react"
+import { useState, useRef, useEffect, ReactNode } from "react"
 import { Link } from "react-router-dom"
 import { backendUrl, publishableApiKey, sdk } from "../../lib/client/client"
+import { MEDUSA_STOREFRONT_URL } from "../../lib/storefront"
+import phLocations from "../../lib/ph-locations.json"
 import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON } from "../../components/auth/auth-shell"
 import { submitSellerApplication } from "./submit-application"
 import { CAPTCHA_SITE_KEY, CaptchaWidget } from "../../components/common/captcha-widget/captcha-widget"
@@ -12,104 +14,83 @@ import { CAPTCHA_SITE_KEY, CaptchaWidget } from "../../components/common/captcha
 const BOT_NAME = "Tala"
 const BRAND = "#432C63"
 
-
 // ---------------------------------------------------------------------------
-// Constants (mirror of the classic registration form)
+// Constants. The backend checks the same rules (backend/src/lib/seller-application.ts).
 // ---------------------------------------------------------------------------
 
-const DIGITAL_SUPPORT_OPTIONS = [
-  "Website", "Facebook", "Instagram", "TikTok", "Twitter/X",
-  "YouTube", "Email Newsletter", "SMS/Viber", "None",
-]
-
-const ORG_TYPES = [
-  "Sole Proprietorship", "Corporation", "Partnership",
-  "Cooperative", "Association", "Government", "Transportation", "Others",
+const ORG_TYPES: { value: string; label: string }[] = [
+  { value: "Sole Proprietorship", label: "Sole proprietor (DTI)" },
+  { value: "Corporation", label: "Corporation or OPC (SEC)" },
+  { value: "Partnership", label: "Partnership (SEC)" },
+  { value: "Cooperative", label: "Cooperative (CDA)" },
+  { value: "Association", label: "Association" },
+  { value: "Government", label: "Government office" },
+  { value: "Transportation", label: "Transport business" },
+  { value: "Others", label: "Other" },
 ]
 
 const NEEDS_SIGNATORY = ["Corporation", "Partnership", "Cooperative", "Association", "Government"]
 
-const ORG_DOCUMENTS: Record<string, { key: string; label: string }[]> = {
-  "Sole Proprietorship": [
-    { key: "dti_registration", label: "DTI Registration Certificate" },
-    { key: "mayors_permit", label: "Mayor's Business Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government ID" },
-  ],
-  Corporation: [
-    { key: "board_resolution", label: "Board Resolution" },
-    { key: "articles_bylaws", label: "Articles of Incorporation / By-Laws" },
-    { key: "sec_registration", label: "SEC Registration Certificate" },
-    { key: "mayors_permit", label: "DTI / Mayor's Business Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government IDs of Signatories" },
-  ],
-  Partnership: [
-    { key: "partnership_agreement", label: "Partnership Agreement" },
-    { key: "sec_registration", label: "SEC Registration Certificate" },
-    { key: "mayors_permit", label: "Mayor's Business Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government IDs of Partners" },
-  ],
-  Cooperative: [
-    { key: "cda_registration", label: "CDA Registration Certificate" },
-    { key: "bylaws", label: "By-Laws" },
-    { key: "mayors_permit", label: "Mayor's Business Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government IDs" },
-  ],
-  Association: [
-    { key: "registration_certificate", label: "Registration Certificate" },
-    { key: "bylaws", label: "By-Laws / Constitution" },
-    { key: "board_resolution", label: "Board Resolution" },
-    { key: "valid_id", label: "Valid Government IDs of Officers" },
-  ],
-  Government: [
-    { key: "authorization_letter", label: "Official Authorization Letter" },
-    { key: "valid_id", label: "Government ID of Authorized Representative" },
-  ],
-  Transportation: [
-    { key: "business_permit", label: "Business / Franchise Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government IDs" },
-  ],
-  Others: [
-    { key: "business_permit", label: "Business Permit" },
-    { key: "bir_certificate", label: "BIR Certificate of Registration" },
-    { key: "valid_id", label: "Valid Government ID" },
-  ],
+const REGISTRY: Record<string, string> = {
+  "Sole Proprietorship": "your DTI certificate",
+  Corporation: "your SEC registration",
+  Partnership: "your SEC registration",
+  Cooperative: "your CDA registration",
 }
 
+const PRODUCT_COUNTS = ["1–10", "11–50", "51–200", "More than 200"]
+const PRODUCT_SOURCES = [
+  "I make them myself",
+  "My own brand",
+  "Authorized reseller or distributor of other brands",
+  "Unbranded or general merchandise",
+]
+/** Used when the live category list can't be loaded. */
+const FALLBACK_CATEGORIES = ["Fashion", "Food & Beverages", "Health & Beauty", "Home & Living", "Electronics", "Toys & Hobbies"]
+
+const CITIES: Record<string, string[]> = phLocations as Record<string, string[]>
+const PROVINCES = Object.keys(CITIES).sort((a, b) => a.localeCompare(b))
+
+const isPhMobile = (v: string) => {
+  const d = v.replace(/\D/g, "")
+  const local = d.startsWith("63") ? d.slice(2) : d.startsWith("0") ? d.slice(1) : d
+  return /^9\d{9}$/.test(local)
+}
+const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+const isTin = (v: string) => [9, 12, 14].includes(v.replace(/\D/g, "").length)
+
 // ---------------------------------------------------------------------------
-// Types (identical payload shape to the classic form)
+// Types
 // ---------------------------------------------------------------------------
 
 interface FormData {
-  first_name: string; last_name: string; complete_address: string
-  mobile_number: string; email: string; designation: string; target_go_live: string
-  business_name: string; business_address: string; business_landline: string
-  business_mobile: string; business_email: string; business_tin: string
-  form_of_organization: string; merchant_category: string; business_activity: string
+  first_name: string; last_name: string; mobile_number: string; email: string
+  form_of_organization: string; business_name: string; shop_name: string; designation: string
   signatory_first_name: string; signatory_middle_name: string; signatory_last_name: string
-  signatory_email: string; signatory_landline: string; signatory_mobile: string
-  documents: Record<string, string>
-  brand_colors: string; digital_support: string[]; has_marketing_budget: boolean | null
+  signatory_email: string; signatory_mobile: string
+  business_tin: string; vat_registered: boolean | null
+  business_province: string; business_city: string; business_barangay: string
+  business_street: string; business_postal_code: string
+  main_category: string; product_count: string; product_source: string
+  sells_regulated: boolean | null; store_links: string
   promo_code: string
   password: string; confirm_password: string
+  terms_accepted: boolean; privacy_consent: boolean
 }
 
 const INITIAL: FormData = {
-  first_name: "", last_name: "", complete_address: "", mobile_number: "",
-  email: "", designation: "", target_go_live: "",
-  business_name: "", business_address: "", business_landline: "", business_mobile: "",
-  business_email: "", business_tin: "", form_of_organization: "", merchant_category: "",
-  business_activity: "",
+  first_name: "", last_name: "", mobile_number: "", email: "",
+  form_of_organization: "", business_name: "", shop_name: "", designation: "",
   signatory_first_name: "", signatory_middle_name: "", signatory_last_name: "",
-  signatory_email: "", signatory_landline: "", signatory_mobile: "",
-  documents: {},
-  brand_colors: "", digital_support: [], has_marketing_budget: null,
+  signatory_email: "", signatory_mobile: "",
+  business_tin: "", vat_registered: null,
+  business_province: "", business_city: "", business_barangay: "",
+  business_street: "", business_postal_code: "",
+  main_category: "", product_count: "", product_source: "",
+  sells_regulated: null, store_links: "",
   promo_code: "",
   password: "", confirm_password: "",
+  terms_accepted: false, privacy_consent: false,
 }
 
 type Setter = <K extends keyof FormData>(k: K, v: FormData[K]) => void
@@ -119,120 +100,130 @@ type Setter = <K extends keyof FormData>(k: K, v: FormData[K]) => void
 // ---------------------------------------------------------------------------
 
 type QType =
-  | "names" | "text" | "email" | "tel" | "date"
-  | "org" | "signatory-names" | "contact" | "multichoice"
-  | "yesno" | "files" | "password" | "promo"
+  | "names" | "text" | "email" | "tel" | "tin"
+  | "org" | "signatory-names" | "contact" | "choice" | "address"
+  | "password" | "promo"
+
+type Choice = { label: string; value: string | boolean }
 
 interface Question {
   id: string
   type: QType
   when?: (d: FormData) => boolean
   ask: string | ((d: FormData) => string)
-  hint?: string
+  hint?: string | ((d: FormData) => string)
   optional?: boolean
   key?: keyof FormData
   placeholder?: string
   fields?: { key: keyof FormData; label: string; type?: string; placeholder?: string }[]
-  options?: string[]
+  /** For "choice": the options; "categories" means the shop's live category list. */
+  choices?: Choice[] | "categories"
 }
+
+const yesNo = (yes: string, no: string): Choice[] => [{ label: yes, value: true }, { label: no, value: false }]
 
 const QUESTIONS: Question[] = [
   {
     id: "names", type: "names",
     ask: "Let's start with you. What's your name?",
-    hint: "Your personal first and last name.",
-  },
-  {
-    id: "complete_address", type: "text", key: "complete_address",
-    ask: d => `Nice to meet you, ${d.first_name || "there"}. What's your complete address?`,
-    hint: "House No., Street, Barangay, City, Province, ZIP",
-    placeholder: "House No., Street, Barangay, City, Province, ZIP",
+    hint: "As it appears on your government ID.",
   },
   {
     id: "mobile_number", type: "tel", key: "mobile_number",
-    ask: "What's the best mobile number to reach you?",
-    placeholder: "+63 9XX XXX XXXX",
+    ask: d => `Nice to meet you, ${d.first_name || "there"}. What's your mobile number?`,
+    hint: "We call or text this number only about your application and urgent order issues.",
+    placeholder: "0917 123 4567",
   },
   {
     id: "email", type: "email", key: "email",
-    ask: "And your email address? You'll use this to sign in to your seller account.",
+    ask: "And your email address? You'll use it to sign in to your seller account.",
     placeholder: "juan@example.com",
   },
   {
-    id: "designation", type: "text", key: "designation", optional: true,
-    ask: "What's your role or designation in the business?",
-    placeholder: "e.g. Owner, CEO",
-  },
-  {
-    id: "target_go_live", type: "date", key: "target_go_live", optional: true,
-    ask: "Do you have a target go-live date in mind? Pick one, or skip for now.",
+    id: "form_of_organization", type: "org",
+    ask: "Now your business. How is it registered?",
+    hint: "This decides which documents you'll upload after approval.",
   },
   {
     id: "business_name", type: "text", key: "business_name",
-    ask: "Now let's talk about your business. What's the business name?",
-    placeholder: "ABC Trading Co.",
+    ask: d => `What's the registered business name, exactly as on ${REGISTRY[d.form_of_organization] || "your business registration"}?`,
+    placeholder: "e.g. Juan's Handicrafts",
   },
   {
-    id: "business_address", type: "text", key: "business_address",
-    ask: "What's the complete business address?",
-    placeholder: "Complete business address",
+    id: "shop_name", type: "text", key: "shop_name",
+    ask: "What should buyers see as your shop name?",
+    hint: "Your business name or a trade name, up to 60 characters. You can change it later.",
+    placeholder: "Shop name",
   },
   {
-    id: "business_contact", type: "contact", optional: true,
-    ask: "Any business contact details you'd like to add? All of these are optional.",
-    fields: [
-      { key: "business_landline", label: "Landline", placeholder: "(02) XXXX XXXX" },
-      { key: "business_mobile", label: "Mobile", placeholder: "+63 9XX XXX XXXX" },
-      { key: "business_email", label: "Business Email", type: "email", placeholder: "biz@example.com" },
-    ],
-  },
-  {
-    id: "merchant_category", type: "text", key: "merchant_category", optional: true,
-    ask: "How would you categorize your business?",
-    placeholder: "e.g. Retail, Food & Beverage",
-  },
-  {
-    id: "business_activity", type: "text", key: "business_activity", optional: true,
-    ask: "What's your main business activity?",
-    placeholder: "Main business activity",
-  },
-  {
-    id: "form_of_organization", type: "org",
-    ask: "What's your form of organization? This tells me which documents you'll need.",
+    id: "designation", type: "text", key: "designation",
+    when: d => NEEDS_SIGNATORY.includes(d.form_of_organization),
+    ask: "What's your role in the business?",
+    placeholder: "e.g. General Manager",
   },
   {
     id: "signatory", type: "signatory-names",
     when: d => NEEDS_SIGNATORY.includes(d.form_of_organization),
-    ask: d => `Since you're a ${d.form_of_organization}, I'll need your authorized signatory. What's their name?`,
-    hint: "First and last name are required.",
+    ask: d => `Who is the authorized signatory for this ${d.form_of_organization.toLowerCase()}?`,
+    hint: "The person named in your board resolution or authorization. It can be you.",
   },
   {
     id: "signatory_contact", type: "contact", optional: true,
     when: d => NEEDS_SIGNATORY.includes(d.form_of_organization),
-    ask: "Any contact details for your signatory?",
+    ask: "How can we reach the signatory, if it isn't you?",
     fields: [
-      { key: "signatory_email", label: "Email", type: "email" },
-      { key: "signatory_landline", label: "Landline" },
-      { key: "signatory_mobile", label: "Mobile" },
+      { key: "signatory_email", label: "Email", type: "email", placeholder: "Signatory email" },
+      { key: "signatory_mobile", label: "Mobile", placeholder: "Signatory mobile" },
     ],
   },
   {
-    id: "brand_colors", type: "text", key: "brand_colors", optional: true,
-    ask: "Almost done. Do you have brand colors?",
-    placeholder: "e.g. #FF5733, Blue and White",
+    id: "business_tin", type: "tin", key: "business_tin",
+    ask: "What's the business TIN?",
+    hint: "From your BIR Certificate of Registration (Form 2303), with the branch code if you have one. The BIR requires marketplaces to keep it on file for every seller.",
+    placeholder: "123-456-789-00000",
   },
   {
-    id: "digital_support", type: "multichoice", key: "digital_support", optional: true,
-    ask: "Where does your business show up online? Select all that apply.",
-    options: DIGITAL_SUPPORT_OPTIONS,
+    id: "vat_registered", type: "choice", key: "vat_registered",
+    ask: "Is the business registered for VAT?",
+    hint: "Check your Certificate of Registration. It decides whether your invoices show 12% VAT.",
+    choices: yesNo("VAT-registered", "Non-VAT"),
   },
   {
-    id: "has_marketing_budget", type: "yesno",
-    ask: "Do you have a dedicated marketing budget?",
+    id: "business_address", type: "address",
+    ask: "Where is the business located?",
+    hint: "The address on your business registration. You'll set your pickup address separately.",
+  },
+  {
+    id: "main_category", type: "choice", key: "main_category",
+    ask: "What do you mainly sell?",
+    choices: "categories",
+  },
+  {
+    id: "product_count", type: "choice", key: "product_count",
+    ask: "About how many products will you list at first?",
+    choices: PRODUCT_COUNTS.map(v => ({ label: v, value: v })),
+  },
+  {
+    id: "product_source", type: "choice", key: "product_source",
+    ask: "Where do your products come from?",
+    hint: "Branded goods you don't own may need an authorization letter from the brand.",
+    choices: PRODUCT_SOURCES.map(v => ({ label: v, value: v })),
+  },
+  {
+    id: "sells_regulated", type: "choice", key: "sells_regulated",
+    ask: "Will you sell food, drinks, supplements, cosmetics or health products?",
+    hint: "These need FDA permits (a License to Operate and product registration). We'll ask for them before those products go live.",
+    choices: yesNo("Yes", "No"),
+  },
+  {
+    id: "store_links", type: "text", key: "store_links", optional: true,
+    ask: "Do you already sell online? Share a link to your page or shop.",
+    hint: "Facebook page, Shopee, Lazada, TikTok Shop or your website. It helps us review your application faster.",
+    placeholder: "https://",
   },
   {
     id: "password", type: "password",
-    ask: "Last thing — let's secure your account. Create a password.",
+    ask: "Almost done. Create a password for your seller account.",
     hint: "At least 8 characters.",
   },
   {
@@ -250,12 +241,23 @@ function askText(q: Question, d: FormData): string {
   return typeof q.ask === "function" ? q.ask(d) : q.ask
 }
 
+function hintText(q: Question, d: FormData): string | undefined {
+  return typeof q.hint === "function" ? q.hint(d) : q.hint
+}
+
 function isValid(q: Question, d: FormData): boolean {
   switch (q.type) {
     case "names": return !!(d.first_name.trim() && d.last_name.trim())
     case "signatory-names": return !!(d.signatory_first_name.trim() && d.signatory_last_name.trim())
     case "org": return !!d.form_of_organization
-    case "yesno": return d.has_marketing_budget !== null
+    case "tel": return isPhMobile(d.mobile_number)
+    case "email": return isEmail(d.email)
+    case "tin": return isTin(d.business_tin)
+    case "choice": return q.key ? d[q.key] !== null && d[q.key] !== "" : false
+    case "address":
+      return !!(d.business_province && d.business_city && d.business_street.trim() && /^\d{4}$/.test(d.business_postal_code.trim()))
+    case "contact":
+      return !d.signatory_email.trim() || isEmail(d.signatory_email)
     case "password":
       return d.password.length >= 8 && d.password === d.confirm_password
     default:
@@ -267,12 +269,15 @@ function isValid(q: Question, d: FormData): boolean {
 function isFilled(q: Question, d: FormData): boolean {
   switch (q.type) {
     case "contact": return (q.fields || []).some(f => String(d[f.key] ?? "").trim())
-    case "multichoice": return (d.digital_support || []).length > 0
-    case "files": return Object.values(d.documents).some(Boolean)
-    case "date": return !!d.target_go_live
     default:
       return !!(q.key && String(d[q.key] ?? "").trim())
   }
+}
+
+const choiceLabel = (q: Question, d: FormData) => {
+  const v = q.key ? d[q.key] : null
+  const list = Array.isArray(q.choices) ? q.choices : []
+  return list.find(c => c.value === v)?.label ?? String(v ?? "")
 }
 
 function bubbleFor(q: Question, d: FormData): string {
@@ -280,24 +285,24 @@ function bubbleFor(q: Question, d: FormData): string {
     case "names": return `${d.first_name} ${d.last_name}`.trim()
     case "signatory-names":
       return [d.signatory_first_name, d.signatory_middle_name, d.signatory_last_name].filter(Boolean).join(" ")
-    case "org": return d.form_of_organization
-    case "yesno": return d.has_marketing_budget ? "Yes" : "No"
+    case "org": return ORG_TYPES.find(o => o.value === d.form_of_organization)?.label ?? d.form_of_organization
+    case "choice": return choiceLabel(q, d)
+    case "address": return addressLine(d)
     case "password": return "Password set"
-    case "multichoice":
-      return d.digital_support.length ? d.digital_support.join(", ") : "Skipped"
-    case "files": {
-      const n = Object.values(d.documents).filter(Boolean).length
-      return n ? `Uploaded ${n} document${n > 1 ? "s" : ""}` : "Skipped for now"
-    }
     case "contact": {
       const vals = (q.fields || []).map(f => String(d[f.key] ?? "").trim()).filter(Boolean)
       return vals.length ? vals.join(" · ") : "Skipped"
     }
-    case "date": return d.target_go_live || "Skipped"
     default:
       return q.key ? String(d[q.key] ?? "").trim() || "Skipped" : "Skipped"
   }
 }
+
+const addressLine = (d: FormData) =>
+  [d.business_street, d.business_barangay, d.business_city, `${d.business_province} ${d.business_postal_code}`]
+    .map(s => s.trim())
+    .filter(Boolean)
+    .join(", ")
 
 // ---------------------------------------------------------------------------
 // Small UI pieces
@@ -320,65 +325,6 @@ function BotAvatar({ size = 34 }: { size?: number }) {
       style={{ width: size, height: size, background: `linear-gradient(135deg, ${BRAND}, #7d5aa8)` }}
     >
       <Sparkle size={size * 0.52} color="white" />
-    </div>
-  )
-}
-
-function FileUpload({ docKey, label, value, onChange }: {
-  docKey: string; label: string; value: string; onChange: (key: string, url: string) => void
-}) {
-  const [uploading, setUploading] = useState(false)
-  const [err, setErr] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true); setErr("")
-    try {
-      const fd = new FormData()
-      fd.append("files", file)
-      const res = await fetch(`${backendUrl}/store/uploads`, {
-        method: "POST",
-        body: fd,
-        headers: { "x-publishable-api-key": publishableApiKey },
-      })
-      if (!res.ok) throw new Error("Upload failed")
-      const json = await res.json()
-      const url = json.files?.[0]?.url || json.url
-      if (!url) throw new Error("No URL returned")
-      onChange(docKey, url)
-    } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "Upload failed")
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  return (
-    <div className="rounded-lg border border-ui-border-base bg-ui-bg-base p-3 text-sm">
-      <p className="text-xs font-medium text-ui-fg-base mb-2">{label}</p>
-      {value ? (
-        <div className="flex items-center gap-2">
-          <span className="text-ui-tag-green-text text-xs font-medium inline-flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Uploaded
-          </span>
-          <button
-            type="button"
-            onClick={() => { onChange(docKey, ""); if (inputRef.current) inputRef.current.value = "" }}
-            className="text-ui-tag-red-text text-xs underline"
-          >
-            Remove
-          </button>
-        </div>
-      ) : (
-        <label className="cursor-pointer inline-flex items-center gap-1.5 rounded border border-ui-border-base bg-ui-bg-field px-3 py-1.5 text-xs text-ui-fg-subtle hover:bg-ui-bg-field-hover transition-colors">
-          <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFile} className="sr-only" />
-          {uploading ? "Uploading…" : "+ Choose file"}
-        </label>
-      )}
-      {err && <p className="text-ui-tag-red-text text-xs mt-1">{err}</p>}
     </div>
   )
 }
@@ -427,13 +373,13 @@ function SendButton({ label, canSend, onClick }: { label: string; canSend: boole
   )
 }
 
-function Composer({ q, data, set, setDoc, onSend, disabled }: {
+function Composer({ q, data, set, onSend, disabled, categories }: {
   q: Question
   data: FormData
   set: Setter
-  setDoc: (k: string, url: string) => void
   onSend: (chosen?: Partial<FormData>) => void
   disabled: boolean
+  categories: string[]
 }) {
   const [showPass, setShowPass] = useState(false)
   const valid = isValid(q, data)
@@ -448,21 +394,36 @@ function Composer({ q, data, set, setDoc, onSend, disabled }: {
   const send = <SendButton label={sendLabel} canSend={canSend} onClick={() => onSend()} />
 
   // -- single-line text-like inputs --
-  if (["text", "email", "tel", "date", "promo"].includes(q.type)) {
-    const inputType = q.type === "promo" ? "text" : q.type === "text" ? "text" : q.type
+  if (["text", "email", "tel", "tin", "promo"].includes(q.type)) {
+    const inputType = q.type === "email" ? "email" : q.type === "tel" ? "tel" : "text"
+    const value = String(data[q.key!] ?? "")
+    const problem =
+      !value.trim() || valid
+        ? ""
+        : q.type === "tel"
+          ? "Enter a Philippine mobile number, like 0917 123 4567."
+          : q.type === "email"
+            ? "Enter a valid email address."
+            : q.type === "tin"
+              ? "A TIN has 9 digits, plus a 3- or 5-digit branch code if you have one."
+              : ""
     return (
-      <div className={SHELL}>
-        <input
-          autoFocus
-          type={inputType}
-          value={String(data[q.key!] ?? "")}
-          onChange={e => set(q.key!, q.type === "promo" ? e.target.value.toUpperCase() : e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder={q.placeholder || "Type your answer…"}
-          disabled={disabled}
-          className={FIELD}
-        />
-        {send}
+      <div className="space-y-1.5">
+        <div className={SHELL}>
+          <input
+            autoFocus
+            type={inputType}
+            value={value}
+            maxLength={q.id === "shop_name" ? 60 : undefined}
+            onChange={e => set(q.key!, (q.type === "promo" ? e.target.value.toUpperCase() : e.target.value) as never)}
+            onKeyDown={onKeyDown}
+            placeholder={q.placeholder || "Type your answer…"}
+            disabled={disabled}
+            className={FIELD}
+          />
+          {send}
+        </div>
+        {problem && <p className="text-ui-tag-red-text text-xs">{problem}</p>}
       </div>
     )
   }
@@ -518,7 +479,7 @@ function Composer({ q, data, set, setDoc, onSend, disabled }: {
   if (q.type === "org") {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {ORG_TYPES.map(t => {
+        {ORG_TYPES.map(({ value: t, label }) => {
           const on = data.form_of_organization === t
           return (
             <button
@@ -531,7 +492,7 @@ function Composer({ q, data, set, setDoc, onSend, disabled }: {
               }`}
               style={on ? { background: `linear-gradient(135deg, ${BRAND}, #5a3d80)` } : undefined}
             >
-              {t}
+              {label}
             </button>
           )
         })}
@@ -539,64 +500,76 @@ function Composer({ q, data, set, setDoc, onSend, disabled }: {
     )
   }
 
-  if (q.type === "yesno") {
+  if (q.type === "choice") {
+    const list: Choice[] = q.choices === "categories"
+      ? [...categories, "Other"].map(c => ({ label: c, value: c }))
+      : q.choices || []
     return (
-      <div className="flex gap-2">
-        {[{ v: true, l: "Yes" }, { v: false, l: "No" }].map(o => (
+      <div className="flex flex-wrap gap-2">
+        {list.map(o => (
           <button
-            key={o.l}
+            key={String(o.value)}
             type="button"
             disabled={disabled}
-            onClick={() => onSend({ has_marketing_budget: o.v })}
-            className="flex-1 rounded-xl border border-ui-border-base bg-ui-bg-field px-4 py-3 text-sm font-semibold text-ui-fg-base transition-all duration-200 hover:-translate-y-0.5 hover:border-[#432C63]/60 hover:text-[#432C63] hover:shadow-sm active:scale-95"
+            onClick={() => onSend({ [q.key!]: o.value } as Partial<FormData>)}
+            className="rounded-xl border border-ui-border-base bg-ui-bg-field px-4 py-2.5 text-sm font-medium text-ui-fg-base transition-all duration-200 hover:-translate-y-0.5 hover:border-[#432C63]/60 hover:text-[#432C63] hover:shadow-sm active:scale-95"
           >
-            {o.l}
+            {o.label}
           </button>
         ))}
       </div>
     )
   }
 
-  if (q.type === "multichoice") {
-    const values = data.digital_support
-    const toggle = (v: string) =>
-      set("digital_support", values.includes(v) ? values.filter(x => x !== v) : [...values, v])
+  if (q.type === "address") {
+    const cities = CITIES[data.business_province] || []
+    const select = `${FIELD} appearance-none`
     return (
-      <div className="space-y-3">
-        <div className="flex flex-wrap gap-2">
-          {(q.options || []).map(opt => {
-            const on = values.includes(opt)
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => toggle(opt)}
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition-all duration-200 active:scale-95 ${
-                  on ? "border-transparent text-white shadow-sm" : "border-ui-border-base text-ui-fg-base bg-ui-bg-field hover:border-[#432C63]/60"
-                }`}
-                style={on ? { background: `linear-gradient(135deg, ${BRAND}, #5a3d80)` } : undefined}
-              >
-                {on && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                {opt}
-              </button>
-            )
-          })}
+      <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className={SHELL}>
+            <select
+              aria-label="Province"
+              value={data.business_province}
+              onChange={e => { set("business_province", e.target.value); set("business_city", "") }}
+              className={select}
+            >
+              <option value="">Province</option>
+              {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className={SHELL}>
+            <select
+              aria-label="City or municipality"
+              value={data.business_city}
+              onChange={e => set("business_city", e.target.value)}
+              disabled={!cities.length}
+              className={select}
+            >
+              <option value="">City / municipality</option>
+              {cities.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className={SHELL}>
+            <input value={data.business_barangay} onChange={e => set("business_barangay", e.target.value)} onKeyDown={onKeyDown} placeholder="Barangay" className={FIELD} />
+          </div>
+          <div className={SHELL}>
+            <input
+              value={data.business_postal_code}
+              onChange={e => set("business_postal_code", e.target.value.replace(/\D/g, "").slice(0, 4))}
+              onKeyDown={onKeyDown}
+              inputMode="numeric"
+              placeholder="ZIP code"
+              className={FIELD}
+            />
+          </div>
         </div>
-        <div className="flex justify-end">{send}</div>
-      </div>
-    )
-  }
-
-  if (q.type === "files") {
-    const docList = ORG_DOCUMENTS[data.form_of_organization] || []
-    return (
-      <div className="space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[240px] overflow-y-auto pr-1">
-          {docList.map(doc => (
-            <FileUpload key={doc.key} docKey={doc.key} label={doc.label} value={data.documents[doc.key] || ""} onChange={setDoc} />
-          ))}
+        <div className="flex items-center gap-2">
+          <div className={`${SHELL} flex-1`}>
+            <input value={data.business_street} onChange={e => set("business_street", e.target.value)} onKeyDown={onKeyDown} placeholder="House / unit no., building, street" className={FIELD} />
+          </div>
+          {send}
         </div>
-        <div className="flex justify-end">{send}</div>
       </div>
     )
   }
@@ -657,26 +630,25 @@ function ReviewCard({ data, onEdit }: { data: FormData; onEdit: (qid: string) =>
   const add = (label: string, value: string | undefined, qid: string) => {
     if (value && value.trim()) rows.push({ label, value, qid })
   }
+  const org = ORG_TYPES.find(o => o.value === data.form_of_organization)?.label ?? data.form_of_organization
   add("Name", `${data.first_name} ${data.last_name}`, "names")
-  add("Address", data.complete_address, "complete_address")
   add("Mobile", data.mobile_number, "mobile_number")
   add("Email", data.email, "email")
-  add("Designation", data.designation, "designation")
-  add("Target go-live", data.target_go_live, "target_go_live")
-  add("Business", data.business_name, "business_name")
-  add("Business address", data.business_address, "business_address")
-  add("Business landline", data.business_landline, "business_contact")
-  add("Business mobile", data.business_mobile, "business_contact")
-  add("Business email", data.business_email, "business_contact")
-  add("Category", data.merchant_category, "merchant_category")
-  add("Activity", data.business_activity, "business_activity")
-  add("Organization", data.form_of_organization, "form_of_organization")
+  add("Registered as", org, "form_of_organization")
+  add("Business name", data.business_name, "business_name")
+  add("Shop name", data.shop_name, "shop_name")
+  add("Your role", data.designation, "designation")
   if (data.signatory_first_name || data.signatory_last_name)
     add("Signatory", [data.signatory_first_name, data.signatory_middle_name, data.signatory_last_name].filter(Boolean).join(" "), "signatory")
-  add("Signatory email", data.signatory_email, "signatory_contact")
-  add("Brand colors", data.brand_colors, "brand_colors")
-  if (data.digital_support.length) add("Digital presence", data.digital_support.join(", "), "digital_support")
-  if (data.has_marketing_budget !== null) add("Marketing budget", data.has_marketing_budget ? "Yes" : "No", "has_marketing_budget")
+  add("Signatory contact", [data.signatory_email, data.signatory_mobile].filter(Boolean).join(" · "), "signatory_contact")
+  add("TIN", data.business_tin, "business_tin")
+  if (data.vat_registered !== null) add("VAT", data.vat_registered ? "VAT-registered" : "Non-VAT", "vat_registered")
+  add("Business address", addressLine(data), "business_address")
+  add("Mainly sells", data.main_category, "main_category")
+  add("Products", data.product_count, "product_count")
+  add("Source", data.product_source, "product_source")
+  if (data.sells_regulated !== null) add("FDA-regulated products", data.sells_regulated ? "Yes" : "No", "sells_regulated")
+  add("Online shop", data.store_links, "store_links")
   if (data.promo_code) add("Promo code", data.promo_code, "promo_code")
 
   return (
@@ -755,8 +727,22 @@ export const RegisterChat = () => {
   const started = useRef(false)
 
   const set: Setter = (key, value) => setData(prev => ({ ...prev, [key]: value }))
-  const setDoc = (key: string, url: string) =>
-    setData(prev => ({ ...prev, documents: { ...prev.documents, [key]: url } }))
+
+  // The shop's live top-level categories for "What do you mainly sell?"
+  const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES)
+  useEffect(() => {
+    fetch(`${backendUrl}/store/product-categories?limit=100&fields=name,parent_category_id`, {
+      headers: { "x-publishable-api-key": publishableApiKey },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(json => {
+        const names = (json?.product_categories || [])
+          .filter((c: any) => !c.parent_category_id)
+          .map((c: any) => String(c.name))
+        if (names.length) setCategories(names)
+      })
+      .catch(() => {})
+  }, [])
 
   const pushBot = (content: ReactNode) => setMessages(m => [...m, { id: nextId(), role: "bot", content }])
   const pushUser = (content: ReactNode) => setMessages(m => [...m, { id: nextId(), role: "user", content }])
@@ -779,7 +765,8 @@ export const RegisterChat = () => {
       setBotTyping(false)
       const q = QUESTIONS[i]
       pushBot(askText(q, d))
-      if (q.hint) pushBot(<span className="text-ui-fg-subtle">{q.hint}</span>)
+      const hint = hintText(q, d)
+      if (hint) pushBot(<span className="text-ui-fg-subtle">{hint}</span>)
       setIdx(i)
     }, delay)
   }
@@ -826,9 +813,11 @@ export const RegisterChat = () => {
   const handleSend = (chosen?: Partial<FormData>) => {
     const q = QUESTIONS[idx]
     if (!q) return
-    const d: FormData = chosen ? { ...data, ...chosen } : data
-    if (chosen) setData(d)
+    let d: FormData = chosen ? { ...data, ...chosen } : data
     if (!isValid(q, d)) return
+    // Suggest the business name as the shop name; the applicant can edit it
+    if (q.id === "business_name" && !d.shop_name.trim()) d = { ...d, shop_name: d.business_name.trim().slice(0, 60) }
+    if (d !== data) setData(d)
 
     pushUser(bubbleFor(q, d))
 
@@ -855,6 +844,10 @@ export const RegisterChat = () => {
       setError("Passwords do not match.")
       return
     }
+    if (!data.terms_accepted || !data.privacy_consent) {
+      setError("Please tick both boxes to agree to the Seller Agreement and the privacy notice.")
+      return
+    }
     if (CAPTCHA_SITE_KEY && !captchaToken) {
       setError("Please complete the verification check first.")
       return
@@ -875,7 +868,11 @@ export const RegisterChat = () => {
               "x-publishable-api-key": publishableApiKey,
               Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify(captchaToken ? { ...data, captcha_token: captchaToken } : data),
+            // The password belongs to the sign-in only, never the application
+            body: JSON.stringify((({ password: _p, confirm_password: _c, ...application }) => ({
+              ...application,
+              ...(captchaToken ? { captcha_token: captchaToken } : {}),
+            }))(data)),
           }),
       })
       if (result.ok) setPhase("success")
@@ -1034,13 +1031,49 @@ export const RegisterChat = () => {
               </div>
             )}
 
+            {phase === "review" && (
+              <div className="mb-3 flex flex-col gap-2 text-xs text-ui-fg-base">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={data.terms_accepted}
+                    onChange={e => set("terms_accepted", e.target.checked)}
+                  />
+                  <span>
+                    I have read and agree to the{" "}
+                    <a className="underline font-medium" href={`${MEDUSA_STOREFRONT_URL}/ph/terms?doc=seller`} target="_blank" rel="noreferrer">
+                      Seller Agreement
+                    </a>
+                    . I am at least 18 years old and authorized to register this business.
+                  </span>
+                </label>
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={data.privacy_consent}
+                    onChange={e => set("privacy_consent", e.target.checked)}
+                  />
+                  <span>
+                    I agree that Maretinda may process my personal and business information to review this application and run my
+                    shop, as described in the{" "}
+                    <a className="underline font-medium" href={`${MEDUSA_STOREFRONT_URL}/ph/privacy`} target="_blank" rel="noreferrer">
+                      Privacy Policy
+                    </a>{" "}
+                    (Data Privacy Act of 2012).
+                  </span>
+                </label>
+              </div>
+            )}
+
             {phase === "review" ? (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <span className="text-xs text-ui-fg-subtle">By submitting, you agree to Maretinda's seller terms.</span>
+                <span className="text-xs text-ui-fg-subtle">We'll email you once our team has reviewed your application.</span>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={submitting}
+                  disabled={submitting || !data.terms_accepted || !data.privacy_consent}
                   className="rounded-xl px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60 transition-all hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: BRAND }}
                 >
@@ -1049,7 +1082,7 @@ export const RegisterChat = () => {
               </div>
             ) : activeQ && !botTyping ? (
               <>
-                <Composer q={activeQ} data={data} set={set} setDoc={setDoc} onSend={handleSend} disabled={botTyping} />
+                <Composer q={activeQ} data={data} set={set} onSend={handleSend} disabled={botTyping} categories={categories} />
                 {activeQ.optional && (
                   <p className="text-[11px] text-ui-fg-muted mt-2">This one's optional — press Skip to move on.</p>
                 )}

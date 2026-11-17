@@ -138,6 +138,12 @@ export function LegalPage({ eyebrow, heading, tagline, docs }: LegalPageProps) {
 	const [activeSection, setActiveSection] = useState('');
 	const contentRef = useRef<HTMLDivElement>(null);
 
+	// ?doc=seller opens the Seller Agreement directly (linked from seller registration)
+	useEffect(() => {
+		const wanted = new URLSearchParams(window.location.search).get('doc');
+		if (wanted && docs.some((d) => d.key === wanted)) setActiveKey(wanted);
+	}, [docs]);
+
 	const doc = useMemo(
 		() => docs.find((d) => d.key === activeKey) ?? docs[0],
 		[docs, activeKey],

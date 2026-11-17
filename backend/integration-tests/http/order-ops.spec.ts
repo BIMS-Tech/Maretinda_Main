@@ -1,6 +1,7 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { recordAttempt, unconfirmedAttempts } from "../../src/lib/giyapay-attempts"
+import { unshippedOrders } from "../../src/lib/unshipped-orders"
 import { applyCustomMigrations, bearer, createAdmin, createCustomer, createPublishableKey, createSeller, givePlan, noThrow, pgOf } from "../helpers"
 
 jest.setTimeout(180 * 1000)
@@ -87,6 +88,10 @@ medusaIntegrationTestRunner({
         expect(early.data.updated).toBe(0)
 
         await api.post("/admin/cod-remittances", { ids: [mine], step: "received", reference: "FT-REMIT-1" }, { headers: admin })
+        // Paid to the seller only from 14 days after delivery, like online payments
+        const tooSoon = await api.post("/admin/cod-remittances", { ids: [mine], step: "paid", reference: "BANK-0" }, { headers: admin })
+        expect(tooSoon.data).toMatchObject({ updated: 0, skipped: 1 })
+        await pgOf(getContainer())("seller_shipping_order").where("id", mine).update({ updated_at: new Date(Date.now() - 15 * 86_400_000) })
         await api.post("/admin/cod-remittances", { ids: [mine], step: "paid", reference: "BANK-1" }, { headers: admin })
         const end = await api.get("/admin/cod-remittances", { headers: admin })
         expect(end.data.summary.paid).toEqual({ count: 1, amount: 890 })
@@ -156,6 +161,34 @@ medusaIntegrationTestRunner({
         const res = await api.post("/admin/giyapay/unconfirmed", { id: open[0].id, note: "Not in GiyaPay: buyer abandoned" }, { headers: bearer(admin.token) })
         expect(res.data.resolved).toBe(true)
         expect(await unconfirmedAttempts(pg, later)).toEqual([])
+      })
+    })
+
+    describe("unshipped order reminders", () => {
+      it("finds a shop's orders from two days ago that haven't shipped, not shipped or cancelled ones", async () => {
+        const c = getContainer()
+        const pg = pgOf(c)
+        const { seller } = await createSeller(c)
+        const make = async () => {
+          const order = await c.resolve(Modules.ORDER).createOrders({
+            currency_code: "php",
+            email: "buyer@example.test",
+            items: [{ title: "Barong", quantity: 1, unit_price: 700 }],
+          })
+          await c.resolve(ContainerRegistrationKeys.LINK).create({ seller: { seller_id: seller.id }, [Modules.ORDER]: { order_id: order.id } })
+          await pg("order").where("id", order.id).update({ created_at: new Date(Date.now() - 2.5 * 86_400_000) })
+          return order
+        }
+        const waiting = await make()
+        const shipped = await make()
+        await pg("fulfillment").insert({ id: "ful_shipped_rem", location_id: "sloc_test", shipped_at: new Date() })
+        await pg("order_fulfillment").insert({ id: "ordful_shipped_rem", order_id: shipped.id, fulfillment_id: "ful_shipped_rem" })
+        const cancelled = await make()
+        await pg("order").where("id", cancelled.id).update({ canceled_at: new Date(), status: "canceled" })
+
+        const shop = (await unshippedOrders(pg, 2)).get(seller.id)
+        expect(shop?.orders.map((o) => o.id)).toEqual([waiting.id])
+        expect((await unshippedOrders(pg, 5)).get(seller.id)).toBeUndefined()
       })
     })
   },

@@ -94,33 +94,35 @@ const TOPICS = [
 	},
 ];
 
+// Every answer here describes what the system actually does. Change them
+// together with the support assistant's knowledge (backend/src/lib/assistant/knowledge).
 const FAQS: Record<string, { q: string; a: string }[]> = {
 	orders: [
 		{
 			q: 'How do I track my order?',
-			a: 'Go to My Account → Orders. Each order shows its current status and tracking number once the seller ships it. Click "Track shipment" to follow it in real time on the courier\'s website.',
+			a: 'Go to My Account → Orders and open the order. Once the seller ships it you will see the tracking number and a "Track parcel" link to the courier\'s tracking page. We also email you when it ships and when it is delivered.',
 		},
 		{
 			q: 'Can I cancel or modify my order?',
-			a: 'You can cancel an order within 1 hour of placing it, as long as the seller hasn\'t shipped it yet. Go to My Account → Orders → select the order → "Cancel order." Modifications (e.g. changing size or colour) are not possible after checkout — cancel and re-order instead.',
+			a: 'You can cancel an order yourself from its page until the seller starts preparing it, as long as it was not paid online (Cash on Delivery orders). For an order you already paid online, message the seller or write to support@maretinda.com and we will arrange the cancellation and refund. Orders cannot be changed after checkout: cancel and order again instead.',
 		},
 		{
 			q: `My order says "Delivered" but I haven't received it.`,
-			a: 'First check with neighbours or household members. If still missing, contact the seller directly via Messages within 48 hours. If unresolved, raise a dispute from the order page and our team will step in.',
+			a: 'Check with neighbours or anyone at home who may have received it. If it is still missing, message the seller from the order page, and write to support@maretinda.com with your order number if it is not resolved. Please tell us as soon as you can.',
 		},
 		{
-			q: 'Why was my order cancelled automatically?',
-			a: 'Orders are auto-cancelled if payment isn\'t confirmed within 24 hours (for bank transfer/GCash), or if the seller marks the item as out of stock. You will receive a full refund if you were already charged.',
+			q: 'Why was my order cancelled?',
+			a: 'An order is cancelled when you cancel it, or when the seller or Maretinda cancels it, for example when an item is out of stock or the shop has closed. You will get an email either way. If you paid online, our support team will contact you about your refund.',
 		},
 	],
 	shipping: [
 		{
 			q: 'What couriers does Maretinda use?',
-			a: 'Delivery is handled by the individual sellers. Most use LBC, J&T Express, Ninja Van, or Lalamove for same-day within Metro Manila. You\'ll see the seller\'s supported couriers before checkout.',
+			a: 'Sellers ship your order. Many book Flying Tigers through Maretinda, which currently serves selected provinces; others use their own courier. Either way, your order page shows the tracking number once it ships.',
 		},
 		{
 			q: 'How long does delivery take?',
-			a: 'Metro Manila: 1–3 business days. Luzon provinces: 3–5 business days. Visayas & Mindanao: 5–7 business days. Delivery times may vary during peak seasons (Holidays, 11.11, 12.12).',
+			a: 'It depends on where the seller ships from and where you are. As a guide: Metro Manila 1–3 business days, other parts of Luzon 3–5, Visayas and Mindanao 5–7. Peak seasons such as the holidays, 11.11 and 12.12 can add a few days.',
 		},
 		{
 			q: 'Is free shipping available?',
@@ -128,53 +130,53 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'Can I change my delivery address after ordering?',
-			a: 'Address changes are only possible before the seller processes the shipment. Contact the seller via Messages as soon as possible, or reach our support team.',
+			a: 'Only before the seller ships the order. Message the seller from the order page as soon as possible. Once the parcel is booked with a courier the address cannot be changed.',
 		},
 	],
 	returns: [
 		{
 			q: 'What is the return window?',
-			a: 'Most items can be returned within 7 days of delivery for a full refund, provided they are unused, in original packaging, and with complete accessories. Perishables and customised items are non-returnable.',
+			a: 'You can ask for a return within 7 days of delivery. Your order page shows the last day. Items should be unused, in their original packaging and complete. Perishables and customised items cannot be returned.',
 		},
 		{
 			q: 'How do I request a return?',
-			a: 'Go to My Account → Orders → select the order → "Request return." Fill in the reason and upload photos of the item. The seller will approve or decline within 2 business days.',
+			a: 'Go to My Account → Orders → select the order → "Request return", choose the items and the reason, and describe the problem. The seller approves or declines it. If the seller passes it to Maretinda, our team decides. You are emailed at each step.',
 		},
 		{
 			q: 'When will I receive my refund?',
-			a: 'Once the return is confirmed received: GCash/Maya refunds within 1–3 business days; credit/debit card refunds within 5–10 business days (depending on your bank); COD refunds via GCash or bank transfer within 3–5 business days.',
+			a: 'Once your return is approved, Maretinda support contacts you to arrange the return of the item and your refund. If you have not heard from us within 2 business days, write to support@maretinda.com.',
 		},
 		{
 			q: 'What if the item arrived damaged or wrong?',
-			a: 'Photograph the item and packaging immediately. Go to the order and click "Report an issue." We prioritise damage/wrong-item cases and aim to resolve them within 24 hours — either with a replacement or full refund.',
+			a: 'Take photos of the item and the packaging straight away. Request a return from the order page, choosing the reason that fits, and send the photos to the seller through Messages. Write to support@maretinda.com if it is not resolved.',
 		},
 	],
 	payments: [
 		{
 			q: 'What payment methods are accepted?',
-			a: 'We accept GCash, Maya, GiyaPay, Visa/Mastercard (credit & debit), and Cash on Delivery (COD). Bank transfer is available for selected sellers.',
+			a: 'Online payment through GiyaPay (GCash, Visa and Mastercard, and InstaPay), and Cash on Delivery where the seller offers it. The methods available for your order are shown at checkout.',
 		},
 		{
-			q: 'Is Cash on Delivery available nationwide?',
-			a: 'COD is available for most sellers in Metro Manila and major provincial cities. Availability is shown at checkout. COD orders above ₱5,000 may require identity verification.',
+			q: 'Is Cash on Delivery available?',
+			a: 'Many sellers offer it. If Cash on Delivery is available for your order you will see it at checkout. You pay the courier in cash when the parcel arrives.',
 		},
 		{
 			q: 'Why was my payment declined?',
-			a: 'Common reasons: insufficient balance, card limits, incorrect OTP, or your bank blocking online transactions. Try a different payment method, or contact your bank. If the issue persists, reach our support.',
+			a: 'Common reasons: insufficient balance, card limits, an incorrect OTP, or your bank blocking online transactions. Try a different payment method, or contact your bank. If the issue persists, reach our support.',
 		},
 		{
 			q: 'Can I split payment across methods?',
-			a: 'Split payment is not currently supported — one payment method per order. We\'re working on this feature.',
+			a: 'No, each order is paid with one method.',
 		},
 	],
 	account: [
 		{
 			q: 'How do I reset my password?',
-			a: 'On the login page, click "Forgot password?" and enter your email. You\'ll receive a reset link valid for 30 minutes. Check your spam folder if it doesn\'t arrive within a few minutes.',
+			a: 'On the login page, click "Forgot password?" and enter your email. We will email you a reset link; it expires after a short time, so use it soon. Check your spam folder if it does not arrive within a few minutes.',
 		},
 		{
 			q: 'How do I update my phone number or email?',
-			a: 'Go to My Account → Settings → Personal Information. Email changes require re-verification. Phone number changes require an OTP sent to your new number.',
+			a: 'Go to My Account → Settings to update your name and phone number. To change the email you sign in with, write to support@maretinda.com from your current email address.',
 		},
 		{
 			q: 'How do I delete my account?',
@@ -182,25 +184,25 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'Is my personal data secure?',
-			a: 'Yes. Maretinda uses SSL/TLS encryption for all data in transit and at rest. We never share your personal information with third parties without your consent. See our Privacy Policy for full details.',
+			a: 'Connections to Maretinda are encrypted. We share your name, address and phone number only with the seller and courier who need them to deliver your order, and payment details are handled by GiyaPay. See our Privacy Policy for full details.',
 		},
 	],
 	selling: [
 		{
 			q: 'How do I become a seller on Maretinda?',
-			a: 'Click "Sell on Maretinda" in the header to open the seller registration page. Register your shop, upload a valid government ID, and agree to the Seller Terms. Approval takes 1–2 business days.',
+			a: 'Click "Sell on Maretinda" to open the seller application. You will need your business registration details, your TIN and your business address. Our team reviews your application, usually within a few business days. Once approved, choose a plan, add your bank account and upload your business documents for verification.',
 		},
 		{
 			q: 'What fees does Maretinda charge sellers?',
-			a: 'Maretinda charges a flat monthly subscription — there is no commission on sales and no listing fees, so you keep what you earn (minus standard payment processing). Your first month is free, and you can upgrade, downgrade, or cancel anytime. Plans and pricing are shown during registration and in the Seller Dashboard.',
+			a: 'Maretinda charges a monthly or yearly subscription — there is no commission on sales and no listing fees. Payment processing is deducted from online payments. Your first month is free, and you can change or cancel your plan anytime.',
 		},
 		{
 			q: 'How do I get paid as a seller?',
-			a: 'Payments are settled every Friday for orders delivered and confirmed the previous week. You can choose GCash, Maya, or bank transfer as your payout method in Seller Settings.',
+			a: 'By bank transfer to the account in your store settings, 14 days after each order is delivered, so the buyer\'s 7-day return period has passed. Cash on Delivery money is paid the same way once the courier has sent it to Maretinda. Your seller panel shows what is waiting and when it will be paid.',
 		},
 		{
 			q: 'Can I sell from outside Metro Manila?',
-			a: 'Absolutely — sellers from all over the Philippines are welcome. Just make sure your listed couriers serve your area. Many provincial sellers use LBC or J&T for nationwide delivery.',
+			a: 'Yes, sellers from all over the Philippines are welcome. Flying Tigers, booked through Maretinda, currently serves selected provinces; elsewhere you can ship with your own courier and add the tracking number to the order.',
 		},
 	],
 };

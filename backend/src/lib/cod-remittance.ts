@@ -1,3 +1,5 @@
+import { PAYOUT_HOLD_DAYS } from "./settlement-lines"
+
 /**
  * Cash-on-delivery money collected by a courier booked through Maretinda.
  * A booking's COD amount is in parcel_details (is_cod / cod_amount). Once the
@@ -8,6 +10,15 @@
  */
 
 export type CodState = "with_courier" | "to_pay_seller" | "paid"
+
+
+/** COD cash follows the same rule as online payments: the seller is paid PAYOUT_HOLD_DAYS after delivery. */
+const PAYABLE_FROM = `(o.updated_at + interval '${PAYOUT_HOLD_DAYS} days')`
+const OPEN_RETURN = `EXISTS (
+  SELECT 1 FROM order_return_order_return_request_order_order rl
+    JOIN order_return_request rr ON rr.id = rl.order_return_request_id
+   WHERE rl.order_id = o.medusa_order_id AND rl.deleted_at IS NULL AND rr.deleted_at IS NULL
+     AND rr.status IN ('pending', 'escalated'))`
 
 const COD_AMOUNT = `COALESCE(NULLIF(o.parcel_details->>'cod_amount', '')::numeric, NULLIF(o.parcel_details->>'codAmount', '')::numeric, 0)`
 const IS_COD = `(COALESCE(o.parcel_details->>'is_cod', o.parcel_details->>'isCod', 'false') = 'true')`
@@ -37,7 +48,9 @@ export async function listCodRemittances(
       "o.id", "o.seller_id", "s.name as seller_name", "o.medusa_order_id", "o.provider", "o.tracking_number",
       "o.updated_at as delivered_at", "o.cod_received_at", "o.cod_received_ref", "o.cod_paid_at", "o.cod_paid_ref",
       pg.raw(`${COD_AMOUNT} AS cod_amount`),
-      pg.raw(`${STATE} AS state`)
+      pg.raw(`${STATE} AS state`),
+      pg.raw(`${PAYABLE_FROM} AS payable_from`),
+      pg.raw(`${OPEN_RETURN} AS return_open`)
     )
     .orderBy("o.updated_at", "desc")
     .limit(Math.min(limit, 200))
@@ -64,13 +77,19 @@ export async function listCodRemittances(
 
 /**
  * Records a hop. "received" = the courier remitted to Maretinda; "paid" =
- * Maretinda paid the seller, which needs the cash to have been received first.
+ * Maretinda paid the seller, which needs the cash to have been received first,
+ * the 14-day hold after delivery to have passed, and no return to be open.
  * Returns how many bookings moved.
  */
 export async function recordCodStep(pg: any, ids: string[], step: "received" | "paid", reference: string): Promise<number> {
   const eligible = base(pg, {}).whereIn("o.id", ids)
   if (step === "received") eligible.whereNull("o.cod_received_at")
-  else eligible.whereNotNull("o.cod_received_at").whereNull("o.cod_paid_at")
+  else
+    eligible
+      .whereNotNull("o.cod_received_at")
+      .whereNull("o.cod_paid_at")
+      .whereRaw(`${PAYABLE_FROM} <= now()`)
+      .whereRaw(`NOT ${OPEN_RETURN}`)
   const moving: string[] = await eligible.pluck("o.id")
   if (!moving.length) return 0
 

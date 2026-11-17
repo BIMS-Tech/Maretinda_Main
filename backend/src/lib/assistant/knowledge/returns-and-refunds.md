@@ -6,41 +6,32 @@ audience: buyer
 
 ## Return window and eligibility
 
-Most items can be returned within 7 days of delivery for a full refund, provided
-they are unused, in their original packaging, and complete with all accessories.
-
-Non-returnable: perishables, and customised or made-to-order items.
+A buyer can ask for a return within 7 days of the order being delivered. The
+order page shows the last day. Items should be unused, in their original
+packaging and complete with all accessories. Perishables and customised or
+made-to-order items cannot be returned. A return cannot be requested before the
+order is delivered, or for more items than were bought.
 
 ## How to request a return
 
-My Account → Orders → select the order → "Request return". Fill in the reason and
-upload photos of the item. The seller approves or declines within 2 business days.
+My Account → Orders → select the order → "Request return". Choose the items and
+the reason, and describe the problem. The seller approves or declines it. If the
+seller cannot decide, they pass it to Maretinda and our team decides. The buyer
+is emailed when the request is received and at each decision.
 
-Photos are effectively mandatory — return requests without them are routinely
-declined because the seller has nothing to assess.
+Photos help: send them to the seller through Messages on the order page.
 
-## Refund timelines
+## Refunds
 
-Refunds start once the returned item is confirmed received by the seller:
-
-- GCash / Maya: 1–3 business days
-- Credit and debit card: 5–10 business days, depending on the issuing bank
-- Cash on Delivery orders: refunded via GCash or bank transfer, 3–5 business days
-
-The card timeline is set by the bank, not by Maretinda — the refund is released
-immediately on confirmation and then sits in the bank's clearing cycle.
+Once a return is approved, Maretinda's support team contacts the buyer to
+arrange sending the item back and the refund. If the buyer has not heard from
+support within 2 business days, they should write to support@maretinda.com.
+Do not promise a refund timeline in days or a refund method: they are arranged
+by the support team case by case.
 
 ## Damaged, wrong, or missing items
 
 Photograph the item and its packaging immediately, before disposing of anything.
-Open the order and click "Report an issue". Damage and wrong-item cases are
-prioritised, with a target resolution of 24 hours, ending in either a replacement
-or a full refund.
-
-Do not open a standard return for a damaged item — "Report an issue" routes to a
-faster queue.
-
-## Refund policy reference
-
-The full refund policy, including edge cases and dispute escalation, is published
-at /refund-policy.
+Request a return from the order page with the reason that fits, send the photos
+to the seller through Messages, and write to support@maretinda.com if it is not
+resolved.

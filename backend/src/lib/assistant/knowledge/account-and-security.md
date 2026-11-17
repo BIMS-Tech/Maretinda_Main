@@ -7,15 +7,15 @@ audience: buyer
 ## Resetting a password
 
 On the login page click "Forgot password?" and enter the account email. A reset
-link arrives by email and is valid for 30 minutes. If it does not arrive within a
-few minutes, check the spam folder before requesting another — each new request
-invalidates the previous link.
+link arrives by email. It expires after a short time, so it should be used soon;
+if it has expired, request a new one. If it does not arrive within a few minutes,
+check the spam folder.
 
 ## Updating phone number or email
 
-My Account → Settings → Personal Information. Changing the email address requires
-re-verification via the new address. Changing the phone number requires an OTP
-sent to the new number.
+My Account → Settings updates the name and phone number. The sign-in email
+cannot be changed from the account page: the buyer should write to
+support@maretinda.com from their current email address.
 
 ## Deleting an account
 
@@ -25,11 +25,11 @@ the same email can be used to sign up again later. Past orders stay on record
 for the shops. You can't delete your account while an order is still on its
 way; wait until it arrives or is cancelled.
 
-## Data security
+## Data privacy
 
-Maretinda uses SSL/TLS encryption for data in transit and at rest, and does not
-share personal information with third parties without consent. The full detail is
-in the Privacy Policy.
+Connections to Maretinda are encrypted. A buyer's name, address and phone number
+are shared only with the seller and courier who deliver the order, and payments
+are handled by GiyaPay. The full detail is in the Privacy Policy at /privacy.
 
 ## Signing in
 

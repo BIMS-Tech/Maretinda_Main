@@ -2,6 +2,7 @@ import { Button, Container, Heading, StatusBadge, Table, Text, toast } from "@me
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { backendUrl, fetchQuery } from "../../lib/client/client"
+import { SettlementsSection } from "./settlements-section"
 
 type Invoice = { id: string; kind: "order" | "subscription"; number: string; total: string | number; issued_at: string }
 type Cod = {
@@ -52,6 +53,7 @@ export const InvoicesPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <SettlementsSection />
       <Container className="p-0 divide-y">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
@@ -107,7 +109,8 @@ export const InvoicesPage = () => {
         <div className="px-6 py-4">
           <Heading level="h2">Cash on delivery</Heading>
           <Text size="small" className="text-ui-fg-subtle">
-            Cash the courier collected from your buyers. The courier sends it to Maretinda, and Maretinda pays it to your bank account.
+            Cash the courier collected from your buyers. The courier sends it to Maretinda, and Maretinda pays it to your bank account
+            from 14 days after delivery, the same as online payments.
           </Text>
         </div>
         <div className="grid grid-cols-1 gap-3 px-6 py-4 sm:grid-cols-3">

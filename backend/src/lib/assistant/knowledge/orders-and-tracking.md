@@ -6,42 +6,42 @@ audience: buyer
 
 ## How to track an order
 
-Go to My Account → Orders. Each order shows its current status, and a tracking
-number appears once the seller ships it. Click "Track shipment" to follow the
-parcel in real time on the courier's own website.
+Go to My Account → Orders and open the order. Once the seller ships it, the
+order shows the courier, the tracking number and a "Track parcel" link to the
+courier's tracking page. Maretinda also emails the buyer when the order ships
+and when it is delivered.
 
-Order statuses in sequence: Pending payment → Confirmed → Preparing → Shipped →
-Delivered. A "Shipped" order always has a tracking number attached.
+An order with items from two sellers is two orders, each with its own parcel and
+tracking number.
 
 ## Cancelling or modifying an order
 
-An order can be cancelled within 1 hour of being placed, as long as the seller
-has not shipped it yet: My Account → Orders → select the order → "Cancel order".
+A buyer can cancel an order from its page until the seller starts preparing it,
+if it was not paid online (for example a Cash on Delivery order).
 
-Modifications are not possible after checkout. Size, colour, quantity and
-variant cannot be changed on an existing order — cancel it and place a new one
-instead. If the 1-hour window has passed, message the seller directly; they can
-still cancel manually if the parcel has not left their hands.
+An order already paid online cannot be cancelled from the order page: the buyer
+should message the seller or write to support@maretinda.com, and the support
+team arranges the cancellation and the refund.
+
+Orders cannot be modified after checkout (size, colour, quantity or address).
+Cancel and order again instead, if the order can still be cancelled.
 
 ## Order marked Delivered but not received
 
-Check with neighbours and household members first — couriers in the Philippines
-frequently leave parcels with whoever is present. If it is still missing,
-contact the seller through Messages within 48 hours of the delivery timestamp.
-If that does not resolve it, raise a dispute from the order page and the
-Maretinda team steps in.
+Check with neighbours and anyone at home who may have received it. If it is
+still missing, message the seller from the order page, then write to
+support@maretinda.com with the order number. Reporting it quickly helps.
 
-The 48-hour window matters: disputes raised later are harder to win because the
-courier's proof-of-delivery evidence expires.
+## Cancelled orders
 
-## Orders cancelled automatically
-
-An order is auto-cancelled when payment is not confirmed within 24 hours (this
-affects bank transfer and some GCash flows), or when the seller marks the item
-out of stock. Any amount already charged is refunded in full.
+An order is cancelled when the buyer cancels it, or when the seller or Maretinda
+cancels it (for example an item is out of stock or the shop has closed). The
+buyer is emailed. If the order was paid online, the support team contacts the
+buyer about the refund. Maretinda does not cancel unpaid orders automatically.
 
 ## Where order history lives
 
-All past and current orders are at My Account → Orders. Each order page holds the
-invoice, the seller's details, the tracking link, and the buttons for returns,
-cancellation and reporting an issue.
+All past and current orders are at My Account → Orders. Each order page has the
+seller's details, a button to message them, the tracking number once shipped,
+the invoice to download, and the buttons to cancel or request a return when
+those are possible.

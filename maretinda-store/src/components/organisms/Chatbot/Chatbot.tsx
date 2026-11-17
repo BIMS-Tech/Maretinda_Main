@@ -24,26 +24,26 @@ type BotResponse = {
 
 const RESPONSES: Record<string, BotResponse> = {
 	track: {
-		text: 'To track your order, go to My Account → Orders. Each order shows a tracking number once shipped — click it to follow your package on the courier\'s site.',
+		text: 'To track your order, go to My Account → Orders and open it. Once the seller ships it you will see the tracking number and a "Track parcel" link.',
 		links: [{ label: 'View my orders', href: '/user/orders' }],
 	},
 	returns: {
-		text: 'You can return most items within 7 days of delivery. Go to My Account → Orders → select the order → "Request return." Refunds are processed within 1–10 business days depending on your payment method.',
+		text: 'You can ask for a return within 7 days of delivery: My Account → Orders → select the order → "Request return". Once it is approved, our support team contacts you to arrange your refund.',
 		links: [
 			{ label: 'Start a return', href: '/user/orders' },
 			{ label: 'Refund policy', href: '/refund-policy' },
 		],
 	},
 	shipping: {
-		text: 'Delivery times: Metro Manila 1–3 days · Luzon 3–5 days · Visayas & Mindanao 5–7 days. Couriers used include LBC, J&T, Ninja Van, and Lalamove. Orders of ₱499 or more ship free on standard delivery.',
+		text: 'As a guide: Metro Manila 1–3 business days · Luzon 3–5 · Visayas & Mindanao 5–7. Sellers ship with Flying Tigers (selected provinces) or their own courier. Orders of ₱499 or more ship free on standard delivery.',
 		links: [{ label: 'Shop now', href: '/categories' }],
 	},
 	payments: {
-		text: 'Checkout is powered by GiyaPay. We accept GCash, Maya, credit/debit cards (Visa & Mastercard), InstaPay, QR Ph, and Cash on Delivery (COD). COD is available nationwide for most sellers. Split payment is not yet supported.',
+		text: 'Checkout is powered by GiyaPay: GCash, Visa and Mastercard, and InstaPay. Cash on Delivery is available where the seller offers it; you will see it at checkout. Each order is paid with one method.',
 		links: [{ label: 'Help Center — Payments', href: '/help-center#payments' }],
 	},
 	seller: {
-		text: 'Selling on Maretinda runs on a simple subscription — there is no per-sale commission and no listing fees, so you keep what you earn. Register your shop, upload a valid ID, and you will be approved within 1–2 business days. Your first month is free, so you can set up and start selling before paying anything.',
+		text: 'Selling on Maretinda runs on a subscription — no per-sale commission and no listing fees. Apply from the seller panel with your business registration, TIN and address; our team reviews it, usually within a few business days. Your first month is free.',
 		links: [
 			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
 			{ label: 'Plans & pricing', href: PRICING_URL },
@@ -57,7 +57,7 @@ const RESPONSES: Record<string, BotResponse> = {
 		],
 	},
 	password: {
-		text: 'Go to the login page and click "Forgot password?" — enter your email and we\'ll send a reset link valid for 30 minutes. Check your spam folder if you don\'t see it.',
+		text: 'Go to the login page and click "Forgot password?" and enter your email. We will send you a reset link; use it soon, as it expires. Check your spam folder if you don\'t see it.',
 		links: [{ label: 'Go to login', href: '/login' }],
 	},
 	greeting: {

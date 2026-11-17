@@ -2,6 +2,7 @@ import { Avatar } from '@/components/atoms';
 import { OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
 import { OrderParcelItems } from '@/components/molecules/OrderParcelItems/OrderParcelItems';
 import { OrderParcelStatus } from '@/components/molecules/OrderParcelStatus/OrderParcelStatus';
+import { OrderTracking } from '@/components/molecules/OrderTracking/OrderTracking';
 import { retrieveCustomer } from '@/lib/data/customer';
 
 import { Chat } from '../Chat/Chat';
@@ -22,6 +23,9 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 					<div className="py-8 px-3 sm:px-5">
 						<div className="">
 							<OrderParcelStatus order={order} />
+						</div>
+						<div className="pt-4">
+							<OrderTracking orderId={order.id} />
 						</div>
 						<div className="pt-8 pb-6 border-b md:flex items-center justify-between">
 							<div className="flex items-center gap-4 mb-4 md:mb-0">

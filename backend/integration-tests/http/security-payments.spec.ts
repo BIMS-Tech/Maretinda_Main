@@ -281,9 +281,9 @@ medusaIntegrationTestRunner({
     })
 
     describe("POST /store/vendor/register", () => {
-      it("rejects a subscription payment smaller than the plan's price", async () => {
+      it("no longer creates a seller from a paid plan: every seller applies and is approved", async () => {
         const pk = await createPublishableKey(getContainer())
-        await insertTxn({ reference_number: "REF-V1", order_id: "vsub_premium_1767225600000", amount: 1 })
+        await insertTxn({ reference_number: "REF-V1", order_id: "vsub_premium_1767225600000", amount: 39990 })
 
         const res = await api.post(
           "/store/vendor/register",
@@ -291,8 +291,8 @@ medusaIntegrationTestRunner({
           { headers: { "x-publishable-api-key": pk }, ...noThrow }
         )
 
-        expect(res.status).toBe(400)
-        expect(res.data.message).toMatch(/amount/i)
+        expect(res.status).toBe(410)
+        expect(await pgOf(getContainer())("seller").where("email", "s@example.test").first()).toBeUndefined()
       })
     })
 

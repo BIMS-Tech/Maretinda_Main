@@ -30,6 +30,7 @@ import {
 } from '../../../services/flyingtigers'
 import { toPhMobile } from '../../../lib/ph-mobile'
 import { sellerOwnsOrder } from '../../../lib/seller-ownership'
+import { markOrderShipped } from '../../../lib/order-shipping-status'
 
 function getPgConnection(req: AuthenticatedMedusaRequest): any {
   try {
@@ -320,6 +321,12 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           provider_response: JSON.stringify(nvResponse),
         })
 
+        // The order reads shipped, with the tracking number, the moment the courier is booked
+        await markOrderShipped(req.scope, orderData.medusa_order_id as string, {
+          tracking_number: trackingNumber,
+          tracking_url: `https://www.ninjavan.co/en-ph/tracking?id=${trackingNumber}`,
+        })
+
         return res.json({
           success: true,
           shippingOrderId,
@@ -449,6 +456,11 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
           parcel_details: JSON.stringify(orderData.parcel),
           provider_request: JSON.stringify(ftPayload),
           provider_response: JSON.stringify(ftResponse),
+        })
+
+        await markOrderShipped(req.scope, orderData.medusa_order_id as string, {
+          tracking_number: ftResponse.tracking_no,
+          tracking_url: ftResponse.tracking_url,
         })
 
         return res.json({

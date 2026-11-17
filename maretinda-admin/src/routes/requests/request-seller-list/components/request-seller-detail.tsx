@@ -42,6 +42,8 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   );
 }
 
+const yesNo = (v: boolean | null | undefined, yes: string, no: string) => (v === true ? yes : v === false ? no : undefined)
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border border-ui-border-base rounded-xl p-4 flex flex-col gap-3">
@@ -163,65 +165,52 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
           {app.reviewed_at && <span>Reviewed: {formatDate(app.reviewed_at)}</span>}
         </div>
 
-        <Section title="Merchant Details">
+        <Section title="Applicant">
           <Grid>
-            <Field label="First Name" value={app.first_name} />
-            <Field label="Last Name" value={app.last_name} />
+            <Field label="Name" value={`${app.first_name ?? ""} ${app.last_name ?? ""}`.trim()} />
+            <Field label="Role" value={app.designation} />
             <Field label="Email" value={app.email} />
             <Field label="Mobile Number" value={app.mobile_number} />
-            <Field label="Designation" value={app.designation} />
-            <Field label="Target Go-Live" value={app.target_go_live} />
           </Grid>
-          <Field label="Complete Address" value={app.complete_address} />
         </Section>
 
-        <Section title="Business Profile">
+        <Section title="Business">
           <Grid>
-            <Field label="Business Name" value={app.business_name} />
-            <Field label="Organization Type" value={app.form_of_organization} />
+            <Field label="Shop Name (shown to buyers)" value={app.shop_name || app.business_name} />
+            <Field label="Registered Business Name" value={app.business_name} />
+            <Field label="Registered As" value={app.form_of_organization} />
             <Field label="Business TIN" value={app.business_tin} />
-            <Field label="Merchant Category" value={app.merchant_category} />
-            <Field label="Business Landline" value={app.business_landline} />
-            <Field label="Business Mobile" value={app.business_mobile} />
-            <Field label="Business Email" value={app.business_email} />
-            <Field label="Business Activity" value={app.business_activity} />
+            <Field label="VAT Status" value={yesNo(app.vat_registered, "VAT-registered", "Non-VAT")} />
+            <Field label="Promo Code" value={app.promo_code} />
           </Grid>
-          <Field label="Business Address" value={app.business_address} />
+          <Field label="Business Address" value={app.business_address || app.complete_address} />
         </Section>
 
         {app.signatory_first_name && (
           <Section title="Authorized Signatory">
             <Grid>
-              <Field label="First Name" value={app.signatory_first_name} />
-              <Field label="Middle Name" value={app.signatory_middle_name} />
-              <Field label="Last Name" value={app.signatory_last_name} />
+              <Field label="Name" value={[app.signatory_first_name, app.signatory_middle_name, app.signatory_last_name].filter(Boolean).join(" ")} />
               <Field label="Email" value={app.signatory_email} />
-              <Field label="Landline" value={app.signatory_landline} />
               <Field label="Mobile" value={app.signatory_mobile} />
             </Grid>
           </Section>
         )}
 
-        <Section title="Branding & Digital">
+        <Section title="What They Sell">
           <Grid>
-            <Field label="Brand Colors" value={app.brand_colors} />
-            <Field
-              label="Has Marketing Budget"
-              value={
-                app.has_marketing_budget === true ? "Yes" :
-                app.has_marketing_budget === false ? "No" : undefined
-              }
-            />
-            <Field label="Promo Code" value={app.promo_code} />
+            <Field label="Main Category" value={app.main_category || app.merchant_category} />
+            <Field label="Products at Start" value={app.product_count} />
+            <Field label="Product Source" value={app.product_source} />
+            <Field label="FDA-Regulated Products" value={yesNo(app.sells_regulated, "Yes, needs FDA permits", "No")} />
           </Grid>
-          <Field
-            label="Digital Support Channels"
-            value={
-              Array.isArray(app.digital_support) && app.digital_support.length
-                ? app.digital_support.join(", ")
-                : null
-            }
-          />
+          <Field label="Existing Online Shop" value={app.store_links} />
+        </Section>
+
+        <Section title="Agreements">
+          <Grid>
+            <Field label="Seller Agreement" value={app.terms_accepted_at ? `Accepted ${formatDate(app.terms_accepted_at)} (version ${app.terms_version ?? "—"})` : "Not recorded (older application)"} />
+            <Field label="Privacy Notice" value={app.privacy_consent_at ? `Consented ${formatDate(app.privacy_consent_at)}` : "Not recorded (older application)"} />
+          </Grid>
         </Section>
 
         <Section title="Submitted Documents">

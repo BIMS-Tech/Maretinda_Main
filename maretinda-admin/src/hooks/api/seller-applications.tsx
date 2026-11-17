@@ -51,6 +51,23 @@ export interface SellerApplication {
   // Promo / referral code entered at registration
   promo_code: string | null;
 
+  // Asked since 17 November 2026
+  shop_name?: string | null;
+  vat_registered?: boolean | null;
+  business_province?: string | null;
+  business_city?: string | null;
+  business_barangay?: string | null;
+  business_street?: string | null;
+  business_postal_code?: string | null;
+  main_category?: string | null;
+  product_count?: string | null;
+  product_source?: string | null;
+  sells_regulated?: boolean | null;
+  store_links?: string | null;
+  terms_accepted_at?: string | null;
+  terms_version?: string | null;
+  privacy_consent_at?: string | null;
+
   // Documents (key → URL map)
   documents: Record<string, string> | null;
 }

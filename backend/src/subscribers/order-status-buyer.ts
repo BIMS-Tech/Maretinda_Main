@@ -25,9 +25,9 @@ export default async function orderStatusBuyer({ event, container }: SubscriberA
       const link = await pg("order_fulfillment").where("fulfillment_id", event.data.id).whereNull("deleted_at").first("order_id")
       if (!link) return
       orderId = link.order_id
-      tracking = (await pg("fulfillment_label").where("fulfillment_id", event.data.id).whereNull("deleted_at").select("tracking_number"))
-        .map((l: any) => l.tracking_number)
-        .filter(Boolean)
+      tracking = (await pg("fulfillment_label").where("fulfillment_id", event.data.id).whereNull("deleted_at").select("tracking_number", "tracking_url"))
+        .filter((l: any) => l.tracking_number)
+        .map((l: any) => (l.tracking_url ? `${l.tracking_number} (track it at ${l.tracking_url})` : l.tracking_number))
     }
 
     const order = await pg("order").where("id", orderId).first("id", "display_id", "email", "customer_id")
@@ -48,7 +48,7 @@ export default async function orderStatusBuyer({ event, container }: SubscriberA
         heading: "Your order was delivered",
         paragraphs: [
           `Order ${number} has been marked as delivered. We hope you love it.`,
-          "If something isn't right, you can request a return from your order page within 7 days.",
+          "If something isn't right, you can ask for a return from your order page within 7 days of delivery.",
         ],
       },
       canceled: {

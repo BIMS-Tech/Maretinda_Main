@@ -36,7 +36,7 @@ export const RouteMap: RouteObject[] = [
           {
             path: "invoices",
             handle: {
-              breadcrumb: () => "Invoices & COD",
+              breadcrumb: () => "Payouts & Invoices",
             },
             errorElement: <ErrorBoundary />,
             lazy: () => import("../../routes/invoices"),

@@ -91,3 +91,56 @@ describe("captcha", () => {
     expect(res.json.mock.calls[0][0].code).toBe("captcha_required")
   })
 })
+
+describe("return window", () => {
+  const { returnRefusal, RETURN_WINDOW_DAYS } = require("../return-window")
+  const DAY = 24 * 3600 * 1000
+  const delivered = new Date("2026-11-01T10:00:00+08:00")
+  const order = { canceled: false, deliveredAt: delivered, quantities: { li_1: 2 } }
+  const item = [{ line_item_id: "li_1", quantity: 1 }]
+
+  it("allows a return within 7 days of delivery", () => {
+    expect(returnRefusal(order, item, new Date(delivered.getTime() + 6 * DAY))).toBeNull()
+  })
+
+  it("refuses before delivery, after the window, or on a cancelled order", () => {
+    expect(returnRefusal({ ...order, deliveredAt: null }, item)).toMatch(/once the order has been delivered/)
+    expect(returnRefusal(order, item, new Date(delivered.getTime() + (RETURN_WINDOW_DAYS + 1) * DAY))).toMatch(/ended on November 8, 2026/)
+    expect(returnRefusal({ ...order, canceled: true }, item)).toMatch(/cancelled/)
+  })
+
+  it("refuses more than was bought, none, or an item from another order", () => {
+    const now = new Date(delivered.getTime() + DAY)
+    expect(returnRefusal(order, [{ line_item_id: "li_1", quantity: 3 }], now)).toMatch(/between 1 and 2/)
+    expect(returnRefusal(order, [{ line_item_id: "li_1", quantity: 0 }], now)).toMatch(/between 1 and 2/)
+    expect(returnRefusal(order, [{ line_item_id: "li_1", quantity: 1.5 }], now)).toMatch(/between 1 and 2/)
+    expect(returnRefusal(order, [{ line_item_id: "li_9", quantity: 1 }], now)).toMatch(/not part of this order/)
+    expect(returnRefusal(order, [], now)).toMatch(/at least one item/)
+  })
+})
+
+describe("payout hold", () => {
+  const { payoutHold, netOfFees } = require("../settlement-lines")
+  const DAY = 24 * 3600 * 1000
+  const now = new Date("2026-11-20T00:00:00Z")
+  const line = (over: any) => ({ order_id: "order_1", delivered_at: new Date(now.getTime() - 15 * DAY), open_returns: 0, amount: 500, ...over })
+
+  it("releases 14 days after delivery", () => {
+    expect(payoutHold(line({}), now).hold).toBeNull()
+    const early = payoutHold(line({ delivered_at: new Date(now.getTime() - 10 * DAY) }), now)
+    expect(early.hold).toBe("holding")
+    expect(early.release_at.getTime()).toBe(now.getTime() + 4 * DAY)
+  })
+
+  it("holds undelivered, returned, fully refunded and order-less payments", () => {
+    expect(payoutHold(line({ delivered_at: null }), now).hold).toBe("not_delivered")
+    expect(payoutHold(line({ open_returns: 1 }), now).hold).toBe("return_open")
+    expect(payoutHold(line({ amount: 0 }), now).hold).toBe("refunded")
+    expect(payoutHold(line({ order_id: null }), now).hold).toBe("no_order")
+  })
+
+  it("nets the same fees the bank files deduct", () => {
+    expect(netOfFees(1000)).toBe(970)
+    expect(netOfFees(3)).toBe(0)
+  })
+})

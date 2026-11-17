@@ -323,7 +323,7 @@ const useExtensionRoutes = (): Omit<INavItem, "pathname">[] => {
     },
     {
       icon: <GiyaPayIcon />,
-      label: "Invoices & COD",
+      label: "Payouts & Invoices",
       to: "/invoices",
     },
     {

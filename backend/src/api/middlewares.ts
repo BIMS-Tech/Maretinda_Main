@@ -18,6 +18,8 @@ import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWi
 import { auditAdminWrites } from '../lib/audit-log'
 import { emailReturnUpdates } from '../lib/return-emails'
 import { requireCaptcha } from '../lib/captcha'
+import { guardReturnRequest } from '../lib/return-window'
+import { guardReview } from '../lib/review-guard'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -474,7 +476,7 @@ export default defineMiddlewares({
     {
       matcher: '/store/reviews',
       method: ['POST'],
-      middlewares: [rateLimit({ name: 'review', max: 20, windowMs: HOUR })],
+      middlewares: [rateLimit({ name: 'review', max: 20, windowMs: HOUR }), guardReview],
     },
     {
       matcher: '/store/reels/:id/view',
@@ -508,7 +510,7 @@ export default defineMiddlewares({
     { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [requireReadyShop('publish products', publishing)] },
     { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
-    { matcher: '/store/return-request', method: ['POST'], middlewares: [emailReturnUpdates] },
+    { matcher: '/store/return-request', method: ['POST'], middlewares: [guardReturnRequest, emailReturnUpdates] },
     { matcher: '/admin/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates] },
     { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates, answerReturnWithoutRefund] },
     { matcher: '/vendor/reels', method: ['POST'], middlewares: [requireReadyShop('post reels')] },
