@@ -5,8 +5,9 @@ export const OrderParcelActions = ({ order }: { order: any }) => {
 	// Until the seller starts on it; the backend makes the final call
 	if (
 		order.status !== 'canceled' &&
+		// "canceled" here means its only parcel was un-packed (a cancelled courier booking)
 		(!order.fulfillment_status ||
-			order.fulfillment_status === 'not_fulfilled')
+			['not_fulfilled', 'canceled'].includes(order.fulfillment_status))
 	) {
 		return <OrderCancel order={order} />;
 	}
