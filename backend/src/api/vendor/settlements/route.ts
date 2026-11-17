@@ -31,6 +31,9 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   // settled_at is when the bank file listing the line was made
   const paid = await pg("settlement_line")
     .where("seller_id", sellerId)
+    // "legacy" lines only mark payments from before the ledger existed as not
+    // to be paid again; they were never in a bank file
+    .whereNot("kind", "legacy")
     .select("reference_number", "order_id", "kind", "gross_amount", "net_amount", "created_at as settled_at")
     .orderBy("created_at", "desc")
     .limit(100)
