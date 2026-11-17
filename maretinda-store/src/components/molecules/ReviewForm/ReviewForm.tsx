@@ -60,10 +60,11 @@ const Form: React.FC<Props> = ({ handleClose, order, productId }) => {
 			reference_id: productId || order.seller.id,
 		};
 
-		const response = await createReview(body);
+		const response = await createReview(body).catch(() => null);
 
-		if (response.error) {
-			setError('error');
+		// A refused review (e.g. the order isn't delivered yet) comes back as { message }
+		if (!response?.review) {
+			setError(response?.message || 'We could not post your review. Please try again.');
 			return;
 		}
 

@@ -27,6 +27,8 @@ export const OrderReturnSection = ({
 	const [tab, setTab] = useState(0);
 	const [selectedItems, setSelectedItems] = useState<any[]>([]);
 	const [error, setError] = useState<boolean>(false);
+	// Why the server refused the request, e.g. the 7-day return period has ended
+	const [submitError, setSubmitError] = useState('');
 	const [returnMethod, setReturnMethod] = useState<any>(null);
 	const router = useRouter();
 
@@ -83,10 +85,16 @@ export const OrderReturnSection = ({
 			shipping_option_id: returnMethod,
 		};
 
-		const { order_return_request } = await createReturnRequest(data);
+		setSubmitError('');
+		const result = await createReturnRequest(data).catch(() => null);
+		const order_return_request = result?.order_return_request;
 
-		if (!order_return_request.id) {
-			return console.log('Error creating return request');
+		if (!order_return_request?.id) {
+			setSubmitError(
+				result?.message ||
+					'We could not send your return request. Please try again, or write to support@maretinda.com.',
+			);
+			return;
 		}
 
 		router.push(`/user/orders/${order_return_request.id}/request-success`);
@@ -149,6 +157,14 @@ export const OrderReturnSection = ({
 					</div>
 					<div />
 					<div className="col-span-4 md:col-span-3">
+						{submitError && (
+							<p
+								className="mb-4 rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+								role="alert"
+							>
+								{submitError}
+							</p>
+						)}
 						<ReturnSummaryTab
 							currency_code={order.currency_code}
 							handleSubmit={handleSubmit}
