@@ -1,4 +1,4 @@
-import { API_URL, expect, sellerToken, signInSeller, test, writesAllowed } from '../fixtures'
+import { API_URL, apiCodOrder, expect, sellerProducts, sellerToken, signInSeller, test, writesAllowed } from '../fixtures'
 
 /**
  * COU-01: a seller books Flying Tigers for an order from the order page, gets
@@ -18,14 +18,9 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
     const password = process.env.E2E_SELLER_PASSWORD!
     const headers = { authorization: `Bearer ${await sellerToken(request, email, password)}` }
 
-    // An order of seller A's that isn't cancelled and has no active booking
-    const { orders } = await (await request.get(`${API_URL}/vendor/orders?limit=50&fields=id,display_id,status,fulfillment_status`, { headers })).json()
-    const shipments = await (await request.get(`${API_URL}/vendor/shipping-orders`, { headers })).json()
-    const booked = new Set(
-      (shipments.orders ?? []).filter((s: any) => s.status !== 'cancelled').map((s: any) => s.medusa_order_id),
-    )
-    const order = orders.find((o: any) => o.status !== 'canceled' && o.fulfillment_status === 'not_fulfilled' && !booked.has(o.id))
-    test.skip(!order, 'seller A has no order free to book')
+    // A fresh COD order for a product with stock at QA Shop A's warehouse
+    test.skip(!sellerProducts('A').length, 'set E2E_SELLER_PRODUCTS')
+    const order = { id: (await apiCodOrder(request, sellerProducts('A')[0].variantId)).orderId }
 
     await signInSeller(page, email, password)
     await page.goto(`/orders/${order.id}`)
@@ -52,7 +47,10 @@ test.describe('courier booking (Flying Tigers sandbox)', () => {
     await set('1234', 1, '6000')
     const weight = drawer.getByPlaceholder('1.0')
     if (!(await weight.inputValue())) await weight.fill('1')
+    const booking = page.waitForResponse((r) => r.url().includes('/vendor/shipping-orders') && r.request().method() === 'POST')
     await drawer.getByRole('button', { name: 'Book Shipment' }).click()
+    const booked = await (await booking).json()
+    expect(booked.order_update_error ?? null).toBeNull()
     await expect(page.getByText(/Shipment booked/i)).toBeVisible({ timeout: 60_000 })
 
     // The booking carries Flying Tigers' tracking number

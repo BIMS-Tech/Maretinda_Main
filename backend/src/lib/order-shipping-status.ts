@@ -34,7 +34,8 @@ async function readOrder(container: any, orderId: string) {
       "id",
       "status",
       "items.id",
-      "items.quantity",
+      // An order line's quantity is on its detail; items.quantity comes back empty
+      "items.detail.quantity",
       "items.detail.fulfilled_quantity",
       "fulfillments.id",
       "fulfillments.shipped_at",
@@ -48,15 +49,21 @@ async function readOrder(container: any, orderId: string) {
   return data[0] as any
 }
 
+/** Workflow failures are not always Error instances; get a readable reason either way. */
+const reason = (error: any): string =>
+  error?.message ??
+  (Array.isArray(error) ? error.map((e) => e?.error?.message ?? e?.message).filter(Boolean).join("; ") : "") ??
+  String(error)
+
 const log = (what: string, orderId: string, error: unknown) =>
-  console.error(`[order-status] could not mark ${orderId} ${what}:`, error instanceof Error ? error.message : error)
+  console.error(`[order-status] could not mark ${orderId} ${what}:`, reason(error) || error)
 
 /** Packs whatever part of the order is not packed yet. */
 async function pack(container: any, orderId: string) {
   const order = await readOrder(container, orderId)
   if (!order || order.status === "canceled") return null
   const unpacked = (order.items ?? [])
-    .map((i: any) => ({ id: i.id, quantity: Number(i.quantity) - Number(i.detail?.fulfilled_quantity ?? 0) }))
+    .map((i: any) => ({ id: i.id, quantity: Number(i.detail?.quantity ?? i.quantity ?? 0) - Number(i.detail?.fulfilled_quantity ?? 0) }))
     .filter((i: any) => i.quantity > 0)
   if (!unpacked.length) return order
   await createOrderFulfillmentWorkflow(container).run({
@@ -77,7 +84,7 @@ export async function markOrderPacked(container: any, orderId: string | null | u
     return null
   } catch (error) {
     log("packed", orderId, error)
-    return error instanceof Error ? error.message : String(error)
+    return reason(error) || "unknown error"
   }
 }
 

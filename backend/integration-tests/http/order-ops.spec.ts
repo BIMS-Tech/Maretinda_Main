@@ -2,6 +2,7 @@ import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { recordAttempt, unconfirmedAttempts } from "../../src/lib/giyapay-attempts"
 import { unshippedOrders } from "../../src/lib/unshipped-orders"
+import { followCourier, markOrderPacked, markOrderUnpacked } from "../../src/lib/order-shipping-status"
 import { applyCustomMigrations, bearer, createAdmin, createCustomer, createPublishableKey, createSeller, givePlan, noThrow, pgOf } from "../helpers"
 
 jest.setTimeout(180 * 1000)
@@ -189,6 +190,82 @@ medusaIntegrationTestRunner({
         const shop = (await unshippedOrders(pg, 2)).get(seller.id)
         expect(shop?.orders.map((o) => o.id)).toEqual([waiting.id])
         expect((await unshippedOrders(pg, 5)).get(seller.id)).toBeUndefined()
+      })
+    })
+
+    describe("the order follows the courier", () => {
+      /** An order with a real delivery option at a real warehouse, as checkout leaves it. */
+      async function shippableOrder() {
+        const c = getContainer()
+        const link = c.resolve(ContainerRegistrationKeys.LINK)
+        const location = await c.resolve(Modules.STOCK_LOCATION).createStockLocations({ name: `WH ${Date.now()}` })
+        const fulfillment = c.resolve(Modules.FULFILLMENT)
+        const [profile] = await fulfillment.createShippingProfiles([{ name: `Profile ${Date.now()}`, type: "default" }])
+        const set = await fulfillment.createFulfillmentSets({
+          name: `Set ${Date.now()}`,
+          type: "shipping",
+          service_zones: [{ name: `Zone ${Date.now()}`, geo_zones: [{ type: "country", country_code: "ph" }] }],
+        })
+        await link.create({ [Modules.STOCK_LOCATION]: { stock_location_id: location.id }, [Modules.FULFILLMENT]: { fulfillment_set_id: set.id } })
+        await link.create({ [Modules.STOCK_LOCATION]: { stock_location_id: location.id }, [Modules.FULFILLMENT]: { fulfillment_provider_id: "manual_manual" } })
+        const option = await fulfillment.createShippingOptions({
+          name: "Standard",
+          price_type: "flat",
+          service_zone_id: set.service_zones[0].id,
+          shipping_profile_id: profile.id,
+          provider_id: "manual_manual",
+          type: { label: "Standard", description: "Standard", code: "standard" },
+          rules: [],
+        } as any)
+        const order = await c.resolve(Modules.ORDER).createOrders({
+          currency_code: "php",
+          email: "buyer@example.test",
+          shipping_address: { first_name: "Maria", last_name: "Santos", address_1: "1 Rizal St", city: "Angeles City", country_code: "ph", postal_code: "2009" },
+          items: [{ title: "Barong", quantity: 2, unit_price: 700, requires_shipping: true }],
+          shipping_methods: [{ name: "Standard", amount: 120, shipping_option_id: option.id }],
+        } as any)
+        const status = async () => {
+          const { data } = await c.resolve(ContainerRegistrationKeys.QUERY).graph({
+            entity: "order",
+            fields: ["fulfillments.id", "fulfillments.packed_at", "fulfillments.shipped_at", "fulfillments.delivered_at", "fulfillments.canceled_at", "fulfillments.labels.tracking_number"],
+            filters: { id: order.id },
+          })
+          return ((data[0] as any).fulfillments ?? []).filter((f: any) => !f.canceled_at)
+        }
+        return { order, status }
+      }
+
+      it("booking packs it, cancelling the booking unpacks it", async () => {
+        const { order, status } = await shippableOrder()
+        expect(await markOrderPacked(getContainer(), order.id)).toBeNull()
+        const [packed] = await status()
+        expect(packed.packed_at).toBeTruthy()
+        expect(packed.shipped_at).toBeFalsy()
+
+        await markOrderUnpacked(getContainer(), order.id)
+        expect(await status()).toEqual([])
+      })
+
+      it("pickup ships it with the tracking number; delivery marks it delivered and starts the return clock", async () => {
+        const { order, status } = await shippableOrder()
+        const booking = { medusa_order_id: order.id, tracking_number: "FT-TRACK-1", tracking_url: "https://track.example/FT-TRACK-1" }
+        await markOrderPacked(getContainer(), order.id)
+
+        await followCourier(getContainer(), booking, "pending_pickup", "picked_up")
+        let [f] = await status()
+        expect(f.shipped_at).toBeTruthy()
+        expect(f.labels.map((l: any) => l.tracking_number)).toEqual(["FT-TRACK-1"])
+
+        await followCourier(getContainer(), booking, "in_transit", "delivered")
+        ;[f] = await status()
+        expect(f.delivered_at).toBeTruthy()
+      })
+
+      it("a delivery update with no pickup update before it still ships and delivers the order", async () => {
+        const { order, status } = await shippableOrder()
+        await followCourier(getContainer(), { medusa_order_id: order.id, tracking_number: "FT-TRACK-2" }, "pending_pickup", "delivered")
+        const [f] = await status()
+        expect([!!f.packed_at, !!f.shipped_at, !!f.delivered_at]).toEqual([true, true, true])
       })
     })
   },
