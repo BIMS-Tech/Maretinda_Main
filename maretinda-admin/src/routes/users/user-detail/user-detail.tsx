@@ -2,6 +2,7 @@ import { useLoaderData, useParams } from "react-router-dom"
 
 import { useUser } from "../../../hooks/api/users"
 import { UserGeneralSection } from "./components/user-general-section"
+import { UserAccessSection } from "./components/user-access-section"
 import { userLoader } from "./loader"
 
 import { SingleColumnPageSkeleton } from "../../../components/common/skeleton"
@@ -42,6 +43,7 @@ export const UserDetail = () => {
       }}
     >
       <UserGeneralSection user={user} />
+      <UserAccessSection user={user} />
     </SingleColumnPage>
   )
 }

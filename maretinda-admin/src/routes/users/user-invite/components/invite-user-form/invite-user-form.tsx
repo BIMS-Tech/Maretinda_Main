@@ -7,6 +7,7 @@ import {
   Container,
   Heading,
   Input,
+  Select,
   StatusBadge,
   Text,
   Tooltip,
@@ -33,9 +34,12 @@ import {
 import { useUserInviteTableQuery } from "../../../../../hooks/table/query/use-user-invite-table-query"
 import { useDataTable } from "../../../../../hooks/use-data-table"
 import { isFetchError } from "../../../../../lib/is-fetch-error"
+import { AdminRole, useSetAdminRole } from "../../../../../hooks/api/admin-access"
+import { ROLE_OPTIONS } from "../../../common/role-options"
 
 const InviteUserSchema = zod.object({
   email: zod.string().email(),
+  role: zod.enum(["owner", "manager", "finance", "support", "viewer"]),
 })
 
 const PAGE_SIZE = 10
@@ -50,6 +54,7 @@ export const InviteUserForm = () => {
   const form = useForm<zod.infer<typeof InviteUserSchema>>({
     defaultValues: {
       email: "",
+      role: "viewer",
     },
     resolver: zodResolver(InviteUserSchema),
   })
@@ -80,9 +85,12 @@ export const InviteUserForm = () => {
   })
 
   const { mutateAsync, isPending } = useCreateInvite()
+  const { mutateAsync: setRole } = useSetAdminRole()
 
   const handleSubmit = form.handleSubmit(async (values) => {
     try {
+      // The role is recorded first, so it applies the moment they accept
+      await setRole({ email: values.email, role: values.role as AdminRole })
       await mutateAsync({ email: values.email })
       form.reset()
     } catch (error) {
@@ -143,6 +151,30 @@ export const InviteUserForm = () => {
                         </Form.Item>
                       )
                     }}
+                  />
+                  <Form.Field
+                    control={form.control}
+                    name="role"
+                    render={({ field: { onChange, ...field } }) => (
+                      <Form.Item>
+                        <Form.Label>Role</Form.Label>
+                        <Form.Control>
+                          <Select {...field} onValueChange={onChange}>
+                            <Select.Trigger>
+                              <Select.Value />
+                            </Select.Trigger>
+                            <Select.Content>
+                              {ROLE_OPTIONS.map((r) => (
+                                <Select.Item key={r.value} value={r.value}>
+                                  {r.label}
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select>
+                        </Form.Control>
+                        <Form.Hint>{ROLE_OPTIONS.find((r) => r.value === field.value)?.hint}</Form.Hint>
+                      </Form.Item>
+                    )}
                   />
                 </div>
                 <div className="flex items-center justify-end">

@@ -16,6 +16,7 @@ import { SETUP_REQUIRED_CODE, sellerReadiness, setupRequiredMessage } from '../l
 import FlashSaleService from '../services/flash-sale'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 import { auditAdminWrites } from '../lib/audit-log'
+import { adminAccessGate } from '../lib/admin-access'
 import { emailReturnUpdates } from '../lib/return-emails'
 import { requireCaptcha } from '../lib/captcha'
 import { guardReturnRequest } from '../lib/return-window'
@@ -440,7 +441,14 @@ export default defineMiddlewares({
     },
     { matcher: '/auth/*', middlewares: [authRateLimit] },
     { matcher: '/auth/customer/emailpass/register', method: ['POST'], middlewares: [requireCaptcha] },
-    { matcher: '/admin/*', middlewares: [auditAdminWrites] },
+    // Second step of sign-in, then the admin's role (lib/admin-access), then the audit log
+    { matcher: '/admin/*', middlewares: [adminAccessGate, auditAdminWrites] },
+    {
+      matcher: '/admin/mfa/*',
+      method: ['POST'],
+      // Per admin as well as per address: a stolen password can't be paired with code guessing
+      middlewares: [rateLimit({ name: 'admin-mfa', max: 10, windowMs: 15 * 60 * 1000, key: (req) => (req as any).auth_context?.actor_id })],
+    },
     {
       matcher: '/store/seller-application',
       method: ['POST'],

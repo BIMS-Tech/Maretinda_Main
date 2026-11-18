@@ -2185,6 +2185,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/reset-password"),
             },
             {
+              // Second step of signing in: authenticator code, or first-time setup
+              path: "/two-step",
+              lazy: () => import("../../routes/two-step"),
+            },
+            {
               path: "/invite",
               lazy: () => import("../../routes/invite"),
             },

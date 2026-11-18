@@ -1,5 +1,6 @@
 import { useMe } from "../../../hooks/api/users"
 import { ProfileGeneralSection } from "./components/profile-general-section"
+import { ProfileTwoStepSection } from "./components/profile-two-step-section"
 
 import { SingleColumnPageSkeleton } from "../../../components/common/skeleton"
 import { SingleColumnPage } from "../../../components/layout/pages"
@@ -25,6 +26,7 @@ export const ProfileDetail = () => {
       }}
     >
       <ProfileGeneralSection user={user} />
+      <ProfileTwoStepSection />
     </SingleColumnPage>
   )
 }

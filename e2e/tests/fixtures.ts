@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -146,6 +147,47 @@ const cacheFile = (name: string) => path.join(os.tmpdir(), `maretinda-e2e-${name
 const fresh = (file: string) => fs.existsSync(file) && Date.now() - fs.statSync(file).mtimeMs < 6 * 3600_000
 
 /** Admin API token for read checks (order payment status etc.). */
+/**
+ * The test admin's current authenticator code. Admins sign in with a password
+ * and a code (two-step sign-in); E2E_ADMIN_TOTP_SECRET is the secret the test
+ * admin's authenticator was set up with.
+ */
+export function adminTotp(step = Math.floor(Date.now() / 30_000)): string {
+  const secret = process.env.E2E_ADMIN_TOTP_SECRET
+  if (!secret) throw new Error('Set E2E_ADMIN_TOTP_SECRET: the test admin signs in with two-step sign-in')
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+  let bits = 0
+  let value = 0
+  const bytes: number[] = []
+  for (const ch of secret.toUpperCase().replace(/[\s=]/g, '')) {
+    value = (value << 5) | alphabet.indexOf(ch)
+    bits += 5
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 255)
+      bits -= 8
+    }
+  }
+  const counter = Buffer.alloc(8)
+  counter.writeBigUInt64BE(BigInt(step))
+  const hmac = crypto.createHmac('sha1', Buffer.from(bytes)).update(counter).digest()
+  const offset = hmac[hmac.length - 1] & 0xf
+  const n = ((hmac[offset] & 0x7f) << 24) | (hmac[offset + 1] << 16) | (hmac[offset + 2] << 8) | hmac[offset + 3]
+  return String(n % 1_000_000).padStart(6, '0')
+}
+
+/** A fresh code for a step not used yet: a code works once per 30 seconds. */
+async function unusedAdminCode(): Promise<string> {
+  const file = cacheFile('admin-totp-step')
+  const last = fs.existsSync(file) ? Number(fs.readFileSync(file, 'utf8')) : 0
+  let step = Math.floor(Date.now() / 30_000)
+  while (step <= last) {
+    await new Promise((r) => setTimeout(r, 2_000))
+    step = Math.floor(Date.now() / 30_000)
+  }
+  fs.writeFileSync(file, String(step))
+  return adminTotp(step)
+}
+
 export async function adminToken(request: import('@playwright/test').APIRequestContext) {
   const file = cacheFile('admin-token')
   if (fresh(file)) return JSON.parse(fs.readFileSync(file, 'utf8')).token as string
@@ -154,6 +196,15 @@ export async function adminToken(request: import('@playwright/test').APIRequestC
   })
   const { token } = await res.json()
   if (!token) throw new Error(`admin sign-in failed: ${res.status()}`)
+  // Second step, when this environment asks for it
+  const me = await request.get(`${API_URL}/admin/users/me`, { headers: { authorization: `Bearer ${token}` } })
+  if (me.status() === 403) {
+    const verified = await request.post(`${API_URL}/admin/mfa/verify`, {
+      headers: { authorization: `Bearer ${token}` },
+      data: { code: await unusedAdminCode() },
+    })
+    if (!verified.ok()) throw new Error(`admin two-step sign-in failed: ${verified.status()} ${await verified.text()}`)
+  }
   fs.writeFileSync(file, JSON.stringify({ token }))
   return token as string
 }
@@ -173,6 +224,13 @@ export async function adminPage(browser: import('@playwright/test').Browser) {
     await page.locator('input[name="password"]').fill(process.env.E2E_ADMIN_PASSWORD!)
     await page.getByRole('button', { name: /sign in|continue|log in/i }).first().click()
     await expect(page).not.toHaveURL(/\/login/, { timeout: 60_000 })
+    // Two-step sign-in: the authenticator code
+    const twoStep = page.locator('[data-testid="two-step"][data-stage="verify"]')
+    if (await twoStep.waitFor({ timeout: 10_000 }).then(() => true, () => false)) {
+      await page.getByLabel('Authenticator code').fill(await unusedAdminCode())
+      await page.getByRole('button', { name: 'Continue' }).click()
+      await expect(page).not.toHaveURL(/two-step/, { timeout: 60_000 })
+    }
     await context.storageState({ path: file })
   }
   return page

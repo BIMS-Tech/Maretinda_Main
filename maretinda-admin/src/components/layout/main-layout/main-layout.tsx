@@ -39,6 +39,7 @@ import { useExtension } from "../../../providers/extension-provider";
 import { useSearch } from "../../../providers/search-provider";
 import { UserMenu } from "../user-menu";
 import { useDocumentDirection } from "../../../hooks/use-document-direction";
+import { useMyAccess } from "../../../hooks/api/admin-access";
 import {
   useMarkSectionSeenOnVisit,
   useNavBadges,
@@ -196,6 +197,9 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation();
   const badges = useNavBadges();
   const requestCounts = usePendingRequestCounts();
+  // Owner-only pages are hidden from other roles (the API refuses them anyway)
+  const { data: access } = useMyAccess();
+  const isOwner = !access || access.role === "owner";
 
   return [
     {
@@ -339,11 +343,15 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       label: "Listing Reports",
       to: "/listing-reports",
     },
-    {
-      icon: <DocumentText />,
-      label: "Audit Log",
-      to: "/audit-log",
-    },
+    ...(isOwner
+      ? [
+          {
+            icon: <DocumentText />,
+            label: "Audit Log",
+            to: "/audit-log",
+          },
+        ]
+      : []),
     {
       icon: <BottomToTop />,
       label: t("requests.domain"),
@@ -515,6 +523,10 @@ const ExtensionRouteSection = () => {
 const UtilitySection = () => {
   const location = useLocation();
   const { t } = useTranslation();
+  const { data: access } = useMyAccess();
+
+  // Settings are the owner's: other roles can't change them
+  if (access && access.role !== "owner") return null;
 
   return (
     <div className="flex flex-col gap-y-0.5 py-3">
