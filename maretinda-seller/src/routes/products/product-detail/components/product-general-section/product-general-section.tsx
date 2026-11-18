@@ -66,9 +66,14 @@ export const ProductGeneralSection = ({
       <div className="flex items-center justify-between px-6 py-4">
         <Heading>{product.title}</Heading>
         <div className="flex items-center gap-x-4">
-          <StatusBadge color={productStatusColor(product.status)}>
-            {t(`products.productStatus.${product.status}`)}
-          </StatusBadge>
+          {product.status === "draft" && (product.metadata as any)?.publish_when_ready === true ? (
+            // Published while the shop wasn't open; goes live by itself once it is
+            <StatusBadge color="blue">Live when your shop is approved</StatusBadge>
+          ) : (
+            <StatusBadge color={productStatusColor(product.status)}>
+              {t(`products.productStatus.${product.status}`)}
+            </StatusBadge>
+          )}
           <ActionMenu
             groups={[
               {

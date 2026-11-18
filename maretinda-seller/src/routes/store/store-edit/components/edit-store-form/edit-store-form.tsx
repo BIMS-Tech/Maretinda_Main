@@ -204,9 +204,9 @@ export const EditStoreForm = ({ seller }: { seller: Storeseller }) => {
         uploadedMedia = (await Promise.all(fileReqs)).flat()
       }
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message)
-      }
+      // Don't save without the image: say why and let the seller try again
+      toast.error(error instanceof Error ? error.message : "The image could not be uploaded. Please try again.")
+      return
     }
 
     try {

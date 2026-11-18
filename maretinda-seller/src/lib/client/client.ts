@@ -3,7 +3,12 @@ import Medusa from "@medusajs/js-sdk"
 export const backendUrl = __BACKEND_URL__ ?? "/"
 export const publishableApiKey = __PUBLISHABLE_API_KEY__ ?? ""
 
-const token = window.localStorage.getItem("medusa_auth_token") || ""
+/**
+ * The signed-in seller's token, read at the moment of each request. It used to
+ * be read once when the panel loaded, so uploads made after signing in (without
+ * a page reload) went out with no token and were refused with 401.
+ */
+const authToken = () => window.localStorage.getItem("medusa_auth_token") || ""
 
 export const sdk = new Medusa({
   baseUrl: backendUrl,
@@ -23,7 +28,7 @@ export const importProductsQuery = async (file: File) => {
     method: "POST",
     body: formData,
     headers: {
-      authorization: `Bearer ${token}`,
+      authorization: `Bearer ${authToken()}`,
       "x-publishable-api-key": publishableApiKey,
     },
   })
@@ -47,7 +52,7 @@ export const uploadFilesQuery = async (files: any[]) => {
       method: "POST",
       body: formData,
       headers: {
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${authToken()}`,
         "x-publishable-api-key": publishableApiKey,
       },
     })
@@ -58,7 +63,19 @@ export const uploadFilesQuery = async (files: any[]) => {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('[Upload] ❌ Error:', errorText)
-      throw new Error(`Upload failed: ${response.status}`)
+      let serverMessage = ""
+      try {
+        serverMessage = JSON.parse(errorText)?.message || ""
+      } catch {
+        // not JSON
+      }
+      throw new Error(
+        response.status === 401
+          ? "Your session has expired. Please sign in again, then upload the image."
+          : response.status === 429
+            ? "Too many uploads in a minute. Please wait a moment and try again."
+            : `The image could not be uploaded${serverMessage ? `: ${serverMessage}` : ""}. Please try again.`
+      )
     }
     
     const data = await response.json()

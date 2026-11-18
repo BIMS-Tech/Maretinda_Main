@@ -20,6 +20,7 @@ import { emailReturnUpdates } from '../lib/return-emails'
 import { requireCaptcha } from '../lib/captcha'
 import { guardReturnRequest } from '../lib/return-window'
 import { guardReview } from '../lib/review-guard'
+import { holdNewProductUntilReady, holdPublishUntilReady, publishHeldAfterSave } from '../lib/held-products'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
 // falls back to 'supersecret' silently, so refuse to serve traffic instead.
@@ -273,9 +274,6 @@ const requireReadyShop = (action: string, when: (req: MedusaRequest) => boolean 
     }
   }
 
-// Sellers put a product up for sale by proposing it (Mercur then publishes it)
-const publishing = (req: MedusaRequest) => ['proposed', 'published'].includes((req.body as any)?.status)
-
 /** Zone names are unique marketplace-wide; see lib/unique-zone-name. */
 const uniqueZoneNameFor = (table: 'fulfillment_set' | 'service_zone') =>
   async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
@@ -506,8 +504,11 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions, claimFlashSaleStock] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
-    { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap, requireReadyShop('publish products', publishing)] },
-    { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [requireReadyShop('publish products', publishing)] },
+    // A shop that isn't ready yet can still list: the product is held and goes live once it is (lib/held-products)
+    { matcher: '/vendor/products', method: ['POST'], middlewares: [productCap, holdNewProductUntilReady] },
+    { matcher: '/vendor/products/:id/status', method: ['POST'], middlewares: [holdPublishUntilReady] },
+    { matcher: '/vendor/sellers/me', method: ['POST'], middlewares: [publishHeldAfterSave] },
+    { matcher: '/vendor/sellers/me/bank-info', method: ['POST'], middlewares: [publishHeldAfterSave] },
     { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
     { matcher: '/store/return-request', method: ['POST'], middlewares: [guardReturnRequest, emailReturnUpdates] },

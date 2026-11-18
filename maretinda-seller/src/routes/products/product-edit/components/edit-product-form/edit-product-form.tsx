@@ -69,12 +69,15 @@ export const EditProductForm = ({ product }: EditProductFormProps) => {
         ...nullableData,
       },
       {
-        onSuccess: ({ product }) => {
-          toast.success(
-            t("products.edit.successToast", {
-              title: product.title,
-            })
-          )
+        onSuccess: (result: any) => {
+          const { product } = result
+          if (result.held_message) toast.info(result.held_message, { duration: 10000 })
+          else
+            toast.success(
+              t("products.edit.successToast", {
+                title: product.title,
+              })
+            )
           handleSuccess(`/products/${product.id}`)
         },
         onError: (e) => {

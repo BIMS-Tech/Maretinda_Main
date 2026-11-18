@@ -77,6 +77,7 @@ export const ProductCreateForm = ({
   const { mutateAsync, isPending } = useCreateProduct()
   // Until store setup is done a product can only be saved as a draft
   const { canSell, isPending: isSetupPending } = useSetupTasks()
+  // Shop not open yet: publishing holds the product until it is (backend lib/held-products)
   const draftOnly = !isSetupPending && !canSell
 
   /**
@@ -138,9 +139,9 @@ export const ProductCreateForm = ({
         uploadedMedia = (await Promise.all(fileReqs)).flat()
       }
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message)
-      }
+      // Don't save without the image: say why and let the seller try again
+      toast.error(error instanceof Error ? error.message : "The image could not be uploaded. Please try again.")
+      return
     }
 
     await mutateAsync(
@@ -181,11 +182,15 @@ export const ProductCreateForm = ({
       },
       {
         onSuccess: (data) => {
-          toast.success(
-            t("products.create.successToast", {
-              title: data.product.title,
-            })
-          )
+          if (draftOnly && !isDraftSubmission) {
+            toast.success(`${data.product.title} is saved and will go live automatically once your shop is approved.`)
+          } else {
+            toast.success(
+              t("products.create.successToast", {
+                title: data.product.title,
+              })
+            )
+          }
 
           handleSuccess(`../${data.product.id}`)
         },
@@ -358,8 +363,9 @@ export const ProductCreateForm = ({
         <RouteFocusModal.Footer>
           <div className="flex w-full flex-col-reverse items-stretch gap-2 sm:flex-row sm:items-center sm:justify-end">
             {draftOnly && (
-              <p className="text-ui-fg-subtle mr-auto text-xs">
-                Products are saved as drafts until your store setup is finished and approved.
+              <p className="text-ui-fg-subtle mr-auto max-w-[460px] text-xs">
+                Your shop isn't open yet. Products you publish now are held and go live automatically once your store
+                setup is finished and your documents are approved.
               </p>
             )}
             <div className="flex items-center justify-end gap-x-2">
@@ -368,7 +374,7 @@ export const ProductCreateForm = ({
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            {!draftOnly && (
+            {(
               <Button
                 data-name={SAVE_DRAFT_BUTTON}
                 size="small"
@@ -418,14 +424,14 @@ const PrimaryButton = ({
   ) {
     return (
       <Button
-        data-name={draftOnly ? SAVE_DRAFT_BUTTON : "publish-button"}
+        data-name="publish-button"
         key="submit-button"
         type="submit"
         variant="primary"
         size="small"
         isLoading={isLoading}
       >
-        {draftOnly ? "Save as draft" : "Create Product"}
+        {draftOnly ? "Publish when approved" : "Create Product"}
       </Button>
     )
   }

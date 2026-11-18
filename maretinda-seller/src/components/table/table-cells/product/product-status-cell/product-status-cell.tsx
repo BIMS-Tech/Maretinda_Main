@@ -5,12 +5,15 @@ import { HttpTypes } from "@medusajs/types"
 
 type ProductStatusCellProps = {
   status: HttpTypes.AdminProductStatus
+  /** Published while the shop wasn't open; goes live when it is (backend lib/held-products) */
+  held?: boolean
 }
 
-export const ProductStatusCell = ({ status }: ProductStatusCellProps) => {
+export const ProductStatusCell = ({ status, held }: ProductStatusCellProps) => {
   const { t } = useTranslation()
 
   if (!status) return null
+  if (status === "draft" && held) return <StatusCell color="blue">Live when approved</StatusCell>
 
   const [color, text] = {
     draft: ["grey", t("products.productStatus.draft")],

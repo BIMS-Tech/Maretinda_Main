@@ -41,7 +41,12 @@ export const useProductTableColumns = () => {
       }),
       columnHelper.accessor("status", {
         header: () => <ProductStatusHeader />,
-        cell: ({ row }) => <ProductStatusCell status={row.original?.status} />,
+        cell: ({ row }) => (
+          <ProductStatusCell
+            status={row.original?.status}
+            held={(row.original?.metadata as any)?.publish_when_ready === true}
+          />
+        ),
       }),
     ],
     []

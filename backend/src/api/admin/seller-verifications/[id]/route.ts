@@ -1,5 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { sellerPanelUrl, sendNotice } from "../../../../lib/notify"
+import { publishHeldProducts } from "../../../../lib/held-products"
+import { sellerReadiness } from "../../../../lib/seller-readiness"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 function getDb(req: any) {
@@ -60,6 +62,10 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
 
     const [updated] = await db("seller").where("id", id).update(update).returning("*")
 
+    // Products the seller listed while waiting go live now, if setup is also done
+    const published = status === "verified" ? await publishHeldProducts(req.scope, id) : 0
+    const stillNeeded = status === "verified" ? sellerReadiness(updated).missing : []
+
     if (status !== seller.verification_status && status !== "pending_review") {
       const verified = status === "verified"
       await sendNotice(req.scope, {
@@ -69,7 +75,14 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
         heading: verified ? "Your shop is verified" : "Verification not approved",
         user_name: seller.name,
         paragraphs: verified
-          ? ["Your business documents have been approved and your shop now shows the Verified badge.", "Once your store setup is complete, your products can go live."]
+          ? [
+              "Your business documents have been approved and your shop now shows the Verified badge.",
+              published
+                ? `${published} product${published === 1 ? " you listed is" : "s you listed are"} now live on Maretinda.`
+                : stillNeeded.length
+                  ? `To open your shop, finish your store setup: ${stillNeeded.join(", ")}. Products you publish before then go live automatically when it's done.`
+                  : "Your shop is open. Products you publish now go live straight away.",
+            ]
           : [
               "We could not approve your business documents yet.",
               ...(typeof notes === "string" && notes.trim() ? [`Note from our team: ${notes.trim()}`] : []),
