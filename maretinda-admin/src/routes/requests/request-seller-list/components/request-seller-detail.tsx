@@ -78,10 +78,14 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
   });
 
   // Approval waits until the applicant confirms their email (or the team does)
-  const [emailVerifiedAt, setEmailVerifiedAt] = useState(app.email_verified_at ?? null);
+  const [emailVerified, setEmailVerified] = useState({ at: app.email_verified_at ?? null, by: app.email_verified_by ?? null });
+  const emailVerifiedAt = emailVerified.at;
   const markEmail = useMarkApplicationEmailVerified(app.id, {
     onSuccess: ({ application }) => {
-      setEmailVerifiedAt(application.email_verified_at ?? new Date().toISOString());
+      setEmailVerified({
+        at: application.email_verified_at ?? new Date().toISOString(),
+        by: application.email_verified_by ?? "admin",
+      });
       setActionError("");
       toast.success("Email marked as confirmed");
     },
@@ -195,7 +199,7 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
               {emailVerifiedAt ? (
                 <Text className="text-sm text-ui-fg-base">
                   Yes, {formatDate(emailVerifiedAt)}
-                  {app.email_verified_by?.startsWith("admin") ? " (marked by the team)" : ""}
+                  {emailVerified.by?.startsWith("admin") ? " (marked by the team)" : ""}
                 </Text>
               ) : (
                 <div className="flex flex-wrap items-center gap-2">
