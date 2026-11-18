@@ -148,6 +148,29 @@ rm -rf deploy/gcp-export
 | Restore a backup | download from R2 → `scripts/restore-db.sh <file>.dump` |
 | Backup log | `tail /var/backups/maretinda/backup.log` |
 
+### Admin two-step sign-in and roles
+
+Every admin signs in with a password and a code from an authenticator app; the
+first sign-in sets it up and shows ten recovery codes. Roles (Owner, Manager,
+Finance, Support, Viewer) are changed by an Owner on the admin's page under
+Settings → Users. All admins at release became Owners.
+
+- **An admin lost their phone:** they use a recovery code, or an Owner opens
+  their page under Settings → Users → Access → Reset; they set it up again at
+  their next sign-in.
+- **Locked out entirely** (the only Owner lost their phone and recovery codes):
+  on the server, clear that admin's two-step sign-in, and they set it up again:
+  ```bash
+  cd /opt/maretinda
+  docker compose exec -T postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DELETE FROM admin_mfa WHERE user_id = (SELECT id FROM \"user\" WHERE lower(email) = lower('"'"'owner@example.com'"'"'));"'
+  ```
+  (replace the email). To make someone an Owner from the server:
+  `... -c "INSERT INTO admin_role (email, role) VALUES ('owner@example.com', 'owner') ON CONFLICT (email) DO UPDATE SET role = 'owner';"`
+- The secrets are encrypted with `MFA_ENCRYPTION_KEY`, or `COOKIE_SECRET` when
+  that isn't set. Changing it makes every admin set up two-step sign-in again.
+- `ADMIN_MFA_REQUIRED=false` in `backend.env` stops requiring it (admins who
+  turned it on still use it). Leave it required in production.
+
 **Known limits**
 - A backend release restarts Medusa: ~30–60 s of API errors. Deploy at quiet hours.
 - Cloudflare's free plan caps request bodies at **100 MB**: larger reel videos can't be uploaded.
