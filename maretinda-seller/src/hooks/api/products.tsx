@@ -514,11 +514,11 @@ export const useUpdateProduct = (
 
       await delete product.id
       await delete product.rating
-      // The product update route doesn't take a status; it changes through /status
-      const status = payload.status
+      // The product update route doesn't take a status: a product is published
+      // or unpublished from its page (useUpdateProductStatus)
       await delete payload.status
 
-      const updated = await fetchQuery(`/vendor/products/${id}`, {
+      return fetchQuery(`/vendor/products/${id}`, {
         method: "POST",
         body: {
           ...product,
@@ -529,17 +529,6 @@ export const useUpdateProduct = (
           ...payload,
         },
       })
-
-      if (status) {
-        // Before this the chosen status was silently dropped, so a draft could never be published
-        const changed: any = await fetchQuery(`/vendor/products/${id}/status`, {
-          method: "POST",
-          body: { status },
-        })
-        // A shop that isn't open yet: the product is held and goes live when it is
-        if (changed?.held) return { ...updated, held_message: changed.message }
-      }
-      return updated
     },
     onSuccess: async (data, variables, context) => {
       await queryClient.invalidateQueries({
@@ -552,6 +541,25 @@ export const useUpdateProduct = (
       options?.onSuccess?.(data, variables, context)
     },
     ...options,
+  })
+}
+
+/**
+ * Puts a product on sale or takes it off. A shop that isn't open yet gets
+ * { held: true, message }: the product goes live by itself once it is.
+ */
+export const useUpdateProductStatus = (id: string) => {
+  return useMutation({
+    mutationFn: (status: "draft" | "published") =>
+      fetchQuery(`/vendor/products/${id}/status`, { method: "POST", body: { status } }) as Promise<{
+        product: HttpTypes.AdminProduct
+        held?: boolean
+        message?: string
+      }>,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: productsQueryKeys.lists() })
+      await queryClient.invalidateQueries({ queryKey: productsQueryKeys.detail(id) })
+    },
   })
 }
 

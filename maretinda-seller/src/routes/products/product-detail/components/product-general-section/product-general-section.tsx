@@ -1,13 +1,13 @@
-import { PencilSquare, Trash } from "@medusajs/icons"
+import { CheckCircle, EyeSlash, PencilSquare, Trash } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Container, Heading, StatusBadge, usePrompt } from "@medusajs/ui"
+import { Container, Heading, StatusBadge, toast, usePrompt } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { SectionRow } from "../../../../../components/common/section"
 import { useDashboardExtension } from "../../../../../extensions"
-import { useDeleteProduct } from "../../../../../hooks/api/products"
+import { useDeleteProduct, useUpdateProductStatus } from "../../../../../hooks/api/products"
 
 const productStatusColor = (status: string) => {
   switch (status) {
@@ -39,6 +39,18 @@ export const ProductGeneralSection = ({
   const displays = getDisplays("product", "general")
 
   const { mutateAsync } = useDeleteProduct(product.id)
+  const { mutateAsync: setStatus } = useUpdateProductStatus(product.id)
+  const held = product.status === "draft" && (product.metadata as any)?.publish_when_ready === true
+
+  const changeStatus = async (status: "draft" | "published") => {
+    try {
+      const result = await setStatus(status)
+      if (result?.held) toast.info(result.message ?? "Saved. It goes live once your shop is approved.", { duration: 10000 })
+      else toast.success(status === "published" ? `${product.title} is live on Maretinda.` : `${product.title} is hidden from buyers.`)
+    } catch (e: any) {
+      toast.error(e?.message || "Could not change the product's status")
+    }
+  }
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -83,6 +95,12 @@ export const ProductGeneralSection = ({
                     to: "edit",
                     icon: <PencilSquare />,
                   },
+                  // Before this there was no way to publish a draft or take a product off sale
+                  ...(product.status === "published"
+                    ? [{ label: "Unpublish (hide from buyers)", onClick: () => changeStatus("draft"), icon: <EyeSlash /> }]
+                    : !held && product.status !== "proposed"
+                      ? [{ label: "Publish", onClick: () => changeStatus("published"), icon: <CheckCircle /> }]
+                      : []),
                 ],
               },
               {
