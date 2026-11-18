@@ -1,42 +1,11 @@
 import type { Metadata } from 'next';
-import { DM_Serif_Display, Inter, Lora, Plus_Jakarta_Sans, Poppins } from 'next/font/google';
 import type { ReactNode } from 'react';
+import '../fonts/fonts.css';
 import './globals.css';
 
 import { Toaster } from '@medusajs/ui';
 
 import { CookieConsent } from '@/components/organisms/CookieConsent/CookieConsent';
-
-const funnelDisplay = Inter({
-	subsets: ['latin'],
-	variable: '--font-funnel-sans',
-	weight: ['300', '400', '500', '600', '700'],
-});
-
-const lora = Lora({
-	subsets: ['latin'],
-	variable: '--font-lora',
-	weight: ['400', '500', '600', '700'],
-});
-
-const poppins = Poppins({
-	subsets: ['latin'],
-	variable: '--font-poppins',
-	weight: ['400', '500', '600', '700'],
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-	subsets: ['latin'],
-	variable: '--font-jakarta',
-	weight: ['400', '500', '600', '700', '800'],
-});
-
-const dmSerif = DM_Serif_Display({
-	subsets: ['latin'],
-	variable: '--font-dm-serif',
-	weight: '400',
-	style: ['normal', 'italic'],
-});
 
 export const metadata: Metadata = {
 	description:
@@ -66,7 +35,7 @@ export default function RootLayout({
 	return (
 		<html className="" lang={defaultLocale}>
 			<body
-				className={`${funnelDisplay.className} ${lora.variable} ${poppins.variable} ${plusJakarta.variable} ${dmSerif.variable} antialiased bg-primary text-secondary relative`}
+				className="antialiased bg-primary text-secondary relative"
 			>
 				{children}
 				<Toaster position="top-right" />
