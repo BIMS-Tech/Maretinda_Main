@@ -26,6 +26,11 @@ CDA, and so on); the registered business name and the shop name buyers will see;
 the business TIN and VAT status; the business address; what the shop will sell;
 and agreement to the Seller Agreement and the privacy notice.
 
+After sending the application the applicant gets an email with a link to
+confirm their email address; the team approves an application only once it is
+confirmed. Signing in to the seller panel before approval shows the
+application's status, with "Send a new link" if the email is still unconfirmed.
+
 The Maretinda team reviews the application, usually within a few business days,
 and emails the decision. After approval the seller signs in, chooses a plan,
 finishes the store setup (description, bank account for payouts, pickup address)
@@ -57,3 +62,7 @@ their own courier and add the tracking number to the order.
 The seller panel covers products, orders, shipping, vouchers, payouts, invoices
 and analytics. What is available depends on the plan: product limits, staff
 accounts, flash sales and promotions vary by plan.
+
+Sellers get an email when a buyer reviews their shop or one of their products,
+and when an item's stock drops to 5 or fewer and again when it runs out, so
+they can restock before buyers are turned away.

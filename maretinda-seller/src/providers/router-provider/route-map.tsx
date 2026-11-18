@@ -1987,6 +1987,11 @@ export const RouteMap: RouteObject[] = [
             lazy: () => import("../../routes/reset-password"),
           },
           {
+            // The link in the "confirm your email" message sent with an application
+            path: "/verify-email",
+            lazy: () => import("../../routes/verify-email"),
+          },
+          {
             // Signed in, but the application hasn't opened a shop yet
             path: "/application-status",
             lazy: () => import("../../routes/application-status"),

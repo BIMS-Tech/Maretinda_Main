@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { verify } from "jsonwebtoken"
+import { emailVerificationRequired } from "../../../../lib/email-verification"
 
 /**
  * GET /store/seller-application/status
@@ -31,7 +32,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const app = await pg("seller_application")
     .where("auth_identity_id", payload.auth_identity_id)
     .orderBy("submitted_at", "desc")
-    .first("status", "email", "shop_name", "business_name", "submitted_at", "reviewed_at", "admin_notes", "seller_id")
+    .first("status", "email", "shop_name", "business_name", "submitted_at", "reviewed_at", "admin_notes", "seller_id", "email_verified_at")
 
   // A shop exists but this sign-in predates it: signing in again opens it
   const hasShop = !!payload.actor_id || !!app?.seller_id
@@ -41,6 +42,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     status,
     email: app?.email ?? null,
     shop_name: app?.shop_name || app?.business_name || null,
+    // Approval waits for the applicant to confirm their email
+    email_verified: !app || !!app.email_verified_at || !emailVerificationRequired(),
     submitted_at: app?.submitted_at ?? null,
     reviewed_at: app?.reviewed_at ?? null,
     // The team's reason is already in the rejection email; repeat it here

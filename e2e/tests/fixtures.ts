@@ -43,8 +43,12 @@ export async function signInBuyer(page: Page, email: string, password: string) {
   await expect(page).not.toHaveURL(/\/login/)
 }
 
-/** Registers a new buyer through the storefront form and leaves them signed in. */
-export async function registerBuyer(page: Page, tag: string) {
+/**
+ * Registers a new buyer through the storefront form and leaves them signed in.
+ * Their email is confirmed through the admin API (we can't open the emailed
+ * link here) unless `confirmEmail: false`, since unconfirmed buyers can't order.
+ */
+export async function registerBuyer(page: Page, tag: string, { confirmEmail = true } = {}) {
   const email = uniqueEmail(tag)
   const password = `E2e!${Date.now()}`
   await page.goto('/ph/register')
@@ -57,7 +61,22 @@ export async function registerBuyer(page: Page, tag: string) {
   await page.locator('input[name="terms"]').check()
   await page.getByRole('button', { name: 'Create account' }).click()
   await expect(page).not.toHaveURL(/\/register/, { timeout: 60_000 })
+  if (confirmEmail) await confirmBuyerEmail(page.request, email)
   return { email, password }
+}
+
+/** Marks a buyer's email as confirmed, as support can from the customer page. */
+export async function confirmBuyerEmail(request: import('@playwright/test').APIRequestContext, email: string, customerId?: string) {
+  const admin = { authorization: `Bearer ${await adminToken(request)}` }
+  let id = customerId
+  if (!id) {
+    const found = await request.get(`${API_URL}/admin/customers?q=${encodeURIComponent(email)}&fields=id,email,has_account`, { headers: admin })
+    const { customers } = await found.json()
+    id = customers?.find((c: { email: string; has_account: boolean }) => c.email === email && c.has_account)?.id
+  }
+  if (!id) throw new Error(`no customer account for ${email}`)
+  const res = await request.post(`${API_URL}/admin/customers/${id}/email-verification`, { headers: admin })
+  if (!res.ok()) throw new Error(`confirming ${email} failed: ${res.status()} ${await res.text()}`)
 }
 
 export const API_URL = process.env.API_URL || 'https://test-api.maretinda.com'
@@ -285,7 +304,8 @@ export async function apiCodOrder(request: import('@playwright/test').APIRequest
   const email = uniqueEmail('apiorder')
   const password = `E2e!${Date.now()}`
   const { token: regToken } = await call('post', '/auth/customer/emailpass/register', { email, password })
-  await call('post', '/store/customers', { email, first_name: 'API', last_name: 'Buyer' }, regToken)
+  const { customer } = await call('post', '/store/customers', { email, first_name: 'API', last_name: 'Buyer' }, regToken)
+  await confirmBuyerEmail(request, email, customer.id)
   const { token } = await call('post', '/auth/customer/emailpass', { email, password })
   const { regions } = await call('get', '/store/regions')
   const { cart } = await call('post', '/store/carts', { region_id: regions[0].id }, token)
@@ -336,6 +356,8 @@ export async function apiSeller(request: import('@playwright/test').APIRequestCo
   const admin = { authorization: `Bearer ${await adminToken(request)}` }
   const { applications } = await (await request.get(`${API_URL}/admin/seller-applications?limit=50`, { headers: admin })).json()
   const mine = applications.find((a: { email: string }) => a.email === email)
+  // Approval waits for a confirmed email; the team can confirm it for them
+  await request.post(`${API_URL}/admin/seller-applications/${mine.id}/email-verified`, { headers: admin })
   const approved = await request.patch(`${API_URL}/admin/seller-applications/${mine.id}`, { headers: admin, data: { status: 'approved' } })
   if (!approved.ok()) throw new Error(`approval ${approved.status()} ${await approved.text()}`)
   return { email, password, sellerId: (await approved.json()).application.seller_id as string }

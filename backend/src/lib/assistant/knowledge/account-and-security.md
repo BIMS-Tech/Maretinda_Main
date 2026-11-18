@@ -31,6 +31,16 @@ Connections to Maretinda are encrypted. A buyer's name, address and phone number
 are shared only with the seller and courier who deliver the order, and payments
 are handled by GiyaPay. The full detail is in the Privacy Policy at /privacy.
 
+## Confirming your email
+
+After signing up with email and password, Maretinda sends a "Confirm your email"
+message with a link. The email must be confirmed before you can pay or place an
+order, so order updates reach a real inbox. The link works for 3 days. If it
+didn't arrive, check the spam folder, then use "Send a new link" on the checkout
+page or on My Account. Accounts made with Google sign-in are already confirmed.
+If the link still never arrives, write to support@maretinda.com from that email
+address and the team can confirm it.
+
 ## Signing in
 
 Accounts support email-and-password sign-in as well as Google sign-in. An account

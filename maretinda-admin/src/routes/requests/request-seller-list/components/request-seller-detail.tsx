@@ -4,6 +4,7 @@ import { ArrowDownTray } from "@medusajs/icons";
 import { openDocument } from "../../../../lib/private-document";
 
 import {
+  useMarkApplicationEmailVerified,
   useUpdateSellerApplication,
   type SellerApplication,
 } from "@hooks/api/seller-applications";
@@ -76,12 +77,30 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
     onError: (err) => setActionError(err.message || "Action failed"),
   });
 
+  // Approval waits until the applicant confirms their email (or the team does)
+  const [emailVerifiedAt, setEmailVerifiedAt] = useState(app.email_verified_at ?? null);
+  const markEmail = useMarkApplicationEmailVerified(app.id, {
+    onSuccess: ({ application }) => {
+      setEmailVerifiedAt(application.email_verified_at ?? new Date().toISOString());
+      setActionError("");
+      toast.success("Email marked as confirmed");
+    },
+    onError: (err) => setActionError(err.message || "Could not mark the email as confirmed"),
+  });
+
   const docs = typeof app.documents === "string"
     ? JSON.parse(app.documents)
     : (app.documents ?? {});
 
   const handleAction = (status: "approved" | "rejected") => {
     setActionError("");
+    // Checked here too so the linked seller request isn't accepted while the approval itself is refused
+    if (status === "approved" && !emailVerifiedAt) {
+      setActionError(
+        "The applicant hasn't confirmed their email yet. Ask them to open the link we emailed (they can send a new one from the seller panel), or mark it as confirmed above if you've checked it another way."
+      );
+      return;
+    }
     if (matchedRequest?.id && matchedRequest._normalizedStatus === "pending") {
       reviewMutation.mutate({
         id: matchedRequest.id,
@@ -171,6 +190,25 @@ function NewAppDrawer({ row, matchedRequest, close }: { row: NewAppRow; matchedR
             <Field label="Role" value={app.designation} />
             <Field label="Email" value={app.email} />
             <Field label="Mobile Number" value={app.mobile_number} />
+            <div className="col-span-2 flex flex-col gap-1" data-testid="application-email-confirmation">
+              <Text className="text-xs text-ui-fg-muted font-medium uppercase tracking-wide">Email confirmed</Text>
+              {emailVerifiedAt ? (
+                <Text className="text-sm text-ui-fg-base">
+                  Yes, {formatDate(emailVerifiedAt)}
+                  {app.email_verified_by?.startsWith("admin") ? " (marked by the team)" : ""}
+                </Text>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge color="orange">Not confirmed yet</Badge>
+                  <Text className="text-xs text-ui-fg-subtle">You can approve once they open the link we emailed.</Text>
+                  {app.status === "pending" && (
+                    <Button size="small" variant="secondary" isLoading={markEmail.isPending} onClick={() => markEmail.mutate()}>
+                      Mark as confirmed
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </Grid>
         </Section>
 

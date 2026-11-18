@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys, toHandle } from "@medusajs/framework/utils"
 import { createSellerWorkflow } from "@mercurjs/b2c-core/workflows"
 import { isVerificationComplete } from "../../../../lib/seller-verification"
 import { sellerPanelUrl, sendNotice } from "../../../../lib/notify"
+import { emailVerificationRequired } from "../../../../lib/email-verification"
 
 function getDb(req: any) {
   return req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
@@ -50,6 +51,15 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
     const app = await db("seller_application").where("id", id).first()
     if (!app) {
       res.status(404).json({ message: "Application not found" })
+      return
+    }
+
+    if (status === "approved" && app.status !== "approved" && !app.email_verified_at && emailVerificationRequired()) {
+      res.status(409).json({
+        code: "email_not_verified",
+        message:
+          "The applicant hasn't confirmed their email address yet. Ask them to use the link we emailed (they can resend it from the seller panel), or mark the email as confirmed if you have checked it another way.",
+      })
       return
     }
 

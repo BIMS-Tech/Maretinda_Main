@@ -12,6 +12,8 @@ type Status = {
   submitted_at: string | null
   reviewed_at: string | null
   note: string | null
+  /** Approval waits until the applicant confirms their email */
+  email_verified?: boolean
 }
 
 const TOKEN_KEY = "medusa_auth_token"
@@ -29,6 +31,7 @@ export const ApplicationStatus = () => {
   const navigate = useNavigate()
   const [data, setData] = useState<Status | null>(null)
   const [failed, setFailed] = useState(false)
+  const [resend, setResend] = useState<{ sending: boolean; message?: string; ok?: boolean }>({ sending: false })
 
   const signOut = (to = "/login") => {
     window.localStorage.removeItem(TOKEN_KEY)
@@ -55,6 +58,37 @@ export const ApplicationStatus = () => {
 
   const shop = data?.shop_name ? <b>{data.shop_name}</b> : "your shop"
 
+  const resendLink = async () => {
+    setResend({ sending: true })
+    try {
+      const res = await fetch(`${backendUrl}/store/email-verification/resend`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${window.localStorage.getItem(TOKEN_KEY)}`,
+          "x-publishable-api-key": publishableApiKey,
+          "content-type": "application/json",
+        },
+        body: "{}",
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json?.message || "Please try again in a few minutes.")
+      if (json.verified) {
+        setData((d) => (d ? { ...d, email_verified: true } : d))
+        setResend({ sending: false })
+        return
+      }
+      setResend({
+        sending: false,
+        ok: !!json.sent,
+        message: json.sent
+          ? `We sent a new link to ${json.email}. Check your inbox and spam folder.`
+          : "We couldn't send the email just now. Please try again in a few minutes.",
+      })
+    } catch (e) {
+      setResend({ sending: false, ok: false, message: e instanceof Error ? e.message : "Please try again." })
+    }
+  }
+
   let heading = "Checking your application"
   let body: React.ReactNode = (
     <div className="flex justify-center py-6">
@@ -73,6 +107,33 @@ export const ApplicationStatus = () => {
         </button>
         <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
           Sign out
+        </button>
+      </>
+    )
+  } else if (data?.status === "pending" && data.email_verified === false) {
+    heading = "Confirm your email to finish applying"
+    body = (
+      <>
+        <p>
+          Thank you for applying to sell on Maretinda with {shop}. We sent a confirmation link to{" "}
+          <b>{data.email ?? "your email"}</b>. Open it to confirm this is your address; our team reviews your
+          application once it's confirmed.
+        </p>
+        <p className="text-ui-fg-muted text-sm">Can't find it? Check your spam folder, or send a new link.</p>
+        {resend.message && (
+          <p className={`text-sm ${resend.ok ? "text-ui-fg-interactive" : "text-ui-fg-error"}`} role="alert">
+            {resend.message}
+          </p>
+        )}
+      </>
+    )
+    actions = (
+      <>
+        <button type="button" className={PRIMARY_BUTTON} onClick={resendLink} disabled={resend.sending} data-testid="resend-confirmation">
+          {resend.sending ? "Sending…" : "Send a new link"}
+        </button>
+        <button type="button" className={SECONDARY_BUTTON} onClick={() => window.location.reload()}>
+          I've confirmed it
         </button>
       </>
     )
@@ -178,7 +239,7 @@ export const ApplicationStatus = () => {
           : "Every shop on Maretinda is reviewed by our team before it opens to buyers."
       }
     >
-      <div className="flex flex-col gap-5" data-testid="application-status" data-status={data?.status ?? (failed ? "error" : "loading")}>
+      <div className="flex flex-col gap-5" data-testid="application-status" data-status={data?.status ?? (failed ? "error" : "loading")} data-email-verified={data ? String(data.email_verified !== false) : undefined}>
         <h1 className="font-display text-ui-fg-base text-[30px] leading-tight">{heading}</h1>
         <div className="text-ui-fg-subtle flex flex-col gap-3 text-[15px] leading-relaxed">{body}</div>
         {actions && <div className="flex flex-col gap-3 pt-2">{actions}</div>}

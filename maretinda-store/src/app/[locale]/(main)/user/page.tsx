@@ -4,7 +4,9 @@ import Link from 'next/link';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { Layout } from '@/components/organisms';
 import { CartIcon, HouseIcon, SettingIcon } from '@/icons/navigation';
+import { EmailVerificationNotice } from '@/components/molecules/EmailVerificationNotice/EmailVerificationNotice';
 import { retrieveCustomer } from '@/lib/data/customer';
+import { getEmailVerification } from '@/lib/data/email-verification';
 import { SELLER_PANEL_URL, SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 import { loginPath } from '@/lib/helpers/safe-return-to';
 
@@ -62,9 +64,14 @@ export default async function UserPage({
 		redirect(loginPath((await searchParams).returnTo));
 	}
 
+	const verification = await getEmailVerification();
+
 	return (
 		<Layout>
 			<div className="md:col-span-3 flex flex-col gap-5">
+				{verification && !verification.verified && (
+					<EmailVerificationNotice context="account" email={verification.email} />
+				)}
 				<section className="rounded-2xl border border-[#432C63]/[0.08] bg-gradient-to-br from-[#F6F2FB] to-white px-6 py-7 sm:px-8 sm:py-9 shadow-[0_4px_24px_rgba(67,44,99,0.08)]">
 					<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#432C63]/60">
 						Dashboard

@@ -171,6 +171,29 @@ Settings → Users. All admins at release became Owners.
 - `ADMIN_MFA_REQUIRED=false` in `backend.env` stops requiring it (admins who
   turned it on still use it). Leave it required in production.
 
+### Email confirmation and seller alerts
+
+New buyers get a "confirm your email" link at sign-up and can't pay or place an
+order until they open it; seller applicants get one with their application and
+can't be approved until it's confirmed. Accounts and applications from before
+2026-11-19, and Google sign-ups, count as confirmed. It depends on email
+working (Resend), so check that first.
+
+- **"The link never arrived":** the buyer can send a new one from checkout or My
+  Account. Support can confirm it on the customer's admin page (Email
+  confirmation → Mark as confirmed); for an applicant, in the application review
+  (Email confirmed → Mark as confirmed). Do it only when they've shown they own
+  the address, e.g. by writing from it.
+- `EMAIL_VERIFICATION_REQUIRED=false` in `backend.env` switches it off
+  everywhere. It is on whenever `NODE_ENV=production`.
+- Sellers are emailed when a buyer reviews their shop or a product, and when an
+  item's stock drops to `LOW_STOCK_THRESHOLD` (default 5) and again when it runs
+  out.
+- The mobile app's sign-up shows the Turnstile check from the storefront's
+  `/api/mobile-captcha` page, switched on by the same `TURNSTILE_SITE_KEY`. Build
+  the app with `EXPO_PUBLIC_STOREFRONT_URL` pointing at the storefront for that
+  environment (default `https://maretinda.com`).
+
 **Known limits**
 - A backend release restarts Medusa: ~30–60 s of API errors. Deploy at quiet hours.
 - Cloudflare's free plan caps request bodies at **100 MB**: larger reel videos can't be uploaded.

@@ -8,7 +8,9 @@ import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPay
 import CartReview from '@/components/sections/CartReview/CartReview';
 import CartShippingMethodsSection from '@/components/sections/CartShippingMethodsSection/CartShippingMethodsSection';
 import { retrieveCart } from '@/lib/data/cart';
+import { EmailVerificationNotice } from '@/components/molecules/EmailVerificationNotice/EmailVerificationNotice';
 import { retrieveCustomer } from '@/lib/data/customer';
+import { getEmailVerification } from '@/lib/data/email-verification';
 import { listCartShippingMethods } from '@/lib/data/fulfillment';
 import { listCartPaymentMethods } from '@/lib/data/payment';
 
@@ -46,9 +48,10 @@ async function CheckoutPageContent({}) {
 		redirect('/login?returnTo=/checkout');
 	}
 
-	const [shippingMethods, paymentMethods] = await Promise.all([
+	const [shippingMethods, paymentMethods, verification] = await Promise.all([
 		listCartShippingMethods(cart.id, false),
 		listCartPaymentMethods(cart.region?.id ?? ''),
+		getEmailVerification(),
 	]);
 
 	return (
@@ -58,6 +61,13 @@ async function CheckoutPageContent({}) {
 				<h1 className="text-4xl font-bold text-center mb-10" style={{ color: '#111827' }}>
 					Checkout
 				</h1>
+
+				{/* Payment and "Place order" are refused until the email is confirmed */}
+				{verification && !verification.verified && (
+					<div className="mb-6">
+						<EmailVerificationNotice context="checkout" email={verification.email} />
+					</div>
+				)}
 
 				{/* Two Column Layout */}
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

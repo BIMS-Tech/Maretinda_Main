@@ -5,6 +5,7 @@ import { TwoColumnPage } from "../../../components/layout/pages"
 import { useCustomer } from "../../../hooks/api/customers"
 import { useExtension } from "../../../providers/extension-provider"
 import { CustomerAddressSection } from "./components/customer-address-section/customer-address-section"
+import { CustomerEmailSection } from "./components/customer-email-section"
 import { CustomerGeneralSection } from "./components/customer-general-section"
 import { CustomerGroupSection } from "./components/customer-group-section"
 import { CustomerOrderSection } from "./components/customer-order-section"
@@ -51,6 +52,7 @@ export const CustomerDetail = () => {
         <CustomerGroupSection customer={customer} />
       </TwoColumnPage.Main>
       <TwoColumnPage.Sidebar>
+        <CustomerEmailSection customer={customer} />
         <CustomerAddressSection customer={customer} />
       </TwoColumnPage.Sidebar>
     </TwoColumnPage>

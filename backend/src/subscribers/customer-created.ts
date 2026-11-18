@@ -4,6 +4,7 @@ import {
 } from "@medusajs/framework"
 import { Modules } from "@medusajs/framework/utils"
 import { BRAND_NAME } from "../lib/brand"
+import { emailVerificationRequired, sendCustomerVerification } from "../lib/email-verification"
 
 /** Resend provider template name - must match @mercurjs/resend emailTemplates key */
 const BUYER_ACCOUNT_CREATED_TEMPLATE = "buyerAccountCreatedEmailTemplate"
@@ -40,6 +41,20 @@ export default async function customerCreatedHandler({
       console.log(`👥 Added ${customer.email} to '${FIRST_TIME_BUYERS_GROUP}' group`)
     } catch (groupError) {
       console.error("⚠️ Failed to add customer to First Time Buyers group:", groupError)
+    }
+
+    // A new account gets one email: welcome plus the link to confirm the
+    // address (needed before the first order). Google sign-ups, guests and
+    // local development get the plain welcome.
+    if (customer.has_account && emailVerificationRequired()) {
+      try {
+        if (await sendCustomerVerification(container, customerId, { welcome: true })) {
+          console.log(`✉️ Welcome + confirm-email sent to ${customer.email}`)
+          return
+        }
+      } catch (verifyError) {
+        console.error("⚠️ Confirm-email failed, sending the plain welcome:", verifyError)
+      }
     }
 
     const storeName = BRAND_NAME

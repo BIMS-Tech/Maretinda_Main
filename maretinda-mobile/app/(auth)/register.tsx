@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CaptchaCheck, type CaptchaState } from '@/components/CaptchaCheck';
 import { GoogleSignInButton } from '@/components/GoogleSignInButton';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -29,6 +30,8 @@ export default function RegisterScreen() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<CaptchaState>({ required: null, token: '' });
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   function update(field: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -43,6 +46,14 @@ export default function RegisterScreen() {
       setError('Passwords do not match');
       return;
     }
+    if (captcha.required !== false && !captcha.token) {
+      setError(
+        captcha.required === null
+          ? 'Please wait for the verification check to load'
+          : 'Please complete the verification check',
+      );
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -52,9 +63,12 @@ export default function RegisterScreen() {
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         phone: form.phone.trim() || undefined,
+        captcha_token: captcha.token || undefined,
       });
     } catch (err) {
       setError(getErrorMessage(err));
+      // A token works once: get a fresh check for the next try
+      setCaptchaKey((k) => k + 1);
     } finally {
       setLoading(false);
     }
@@ -154,6 +168,7 @@ export default function RegisterScreen() {
                 value={form.confirm_password}
                 onChangeText={(v) => update('confirm_password', v)}
               />
+              <CaptchaCheck onChange={setCaptcha} resetKey={captchaKey} />
               {error ? (
                 <Text className="text-sm text-red-500">{error}</Text>
               ) : null}

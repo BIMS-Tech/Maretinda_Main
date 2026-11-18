@@ -21,6 +21,8 @@ import { emailReturnUpdates } from '../lib/return-emails'
 import { requireCaptcha } from '../lib/captcha'
 import { guardReturnRequest } from '../lib/return-window'
 import { guardReview } from '../lib/review-guard'
+import { emailSellerAboutReview } from '../lib/review-emails'
+import { requireVerifiedEmail } from '../lib/email-verification'
 import { holdNewProductUntilReady, holdPublishUntilReady, publishHeldAfterSave } from '../lib/held-products'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -480,9 +482,19 @@ export default defineMiddlewares({
       middlewares: [rateLimit({ name: 'chat-start', max: 20, windowMs: HOUR })],
     },
     {
+      matcher: '/store/email-verification/resend',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'verify-resend', max: 5, windowMs: HOUR })],
+    },
+    {
+      matcher: '/store/email-verification/confirm',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'verify-confirm', max: 30, windowMs: 15 * MINUTE })],
+    },
+    {
       matcher: '/store/reviews',
       method: ['POST'],
-      middlewares: [rateLimit({ name: 'review', max: 20, windowMs: HOUR }), guardReview],
+      middlewares: [rateLimit({ name: 'review', max: 20, windowMs: HOUR }), guardReview, emailSellerAboutReview],
     },
     {
       matcher: '/store/reels/:id/view',
@@ -509,7 +521,10 @@ export default defineMiddlewares({
     { matcher: '/vendor/shipping-options/:id', method: ['POST'], middlewares: [addFreeShippingTier] },
     { matcher: '/store/carts/:id', method: ['POST'], middlewares: [guardPromoCodes] },
     { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
-    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [refuseClosedShopItems(productsInCart), guardCartPromotions, claimFlashSaleStock] },
+    // An unconfirmed email can't pay or order: checked on the payment step too,
+    // so an online payment is never taken for an order that would be refused
+    { matcher: '/store/payment-collections/:id/payment-sessions', method: ['POST'], middlewares: [requireVerifiedEmail] },
+    { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [requireVerifiedEmail, refuseClosedShopItems(productsInCart), guardCartPromotions, claimFlashSaleStock] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
     // A shop that isn't ready yet can still list: the product is held and goes live once it is (lib/held-products)

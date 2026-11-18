@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -14,10 +15,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useCart } from '@/context/cart';
+import { resendEmailVerification } from '@/lib/auth';
 import {
   addShippingAddress,
   completeCart,
 } from '@/lib/cart';
+import { getErrorMessage } from '@/lib/client';
 import { formatPrice } from '@/lib/utils';
 import { getCartId } from '@/lib/storage';
 
@@ -38,6 +41,9 @@ export default function CheckoutScreen() {
   const [step, setStep] = useState<'address' | 'review'>('address');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Orders wait until the buyer confirms their email
+  const [needsEmail, setNeedsEmail] = useState(false);
+  const [emailNotice, setEmailNotice] = useState('');
   const [form, setForm] = useState<AddressForm>({
     first_name: '',
     last_name: '',
@@ -84,9 +90,18 @@ export default function CheckoutScreen() {
         router.replace(`/order/${orderId}`);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to place order');
+      setError(getErrorMessage(err) || 'Failed to place order');
+      setNeedsEmail(axios.isAxiosError(err) && err.response?.data?.code === 'email_not_verified');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    try {
+      setEmailNotice(await resendEmailVerification());
+    } catch (err) {
+      setEmailNotice(getErrorMessage(err));
     }
   }
 
@@ -178,6 +193,12 @@ export default function CheckoutScreen() {
               </View>
 
               {error ? <Text className="text-sm text-red-500">{error}</Text> : null}
+              {needsEmail ? (
+                <View className="gap-2">
+                  <Button title="Send a new confirmation link" variant="outline" onPress={handleResend} />
+                  {emailNotice ? <Text className="text-sm text-gray-600">{emailNotice}</Text> : null}
+                </View>
+              ) : null}
 
               <Text className="text-xs text-gray-400 text-center">
                 Payment will be collected upon delivery (COD) or via Stripe after order placement.

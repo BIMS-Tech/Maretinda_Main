@@ -92,10 +92,12 @@ test.describe('seller onboarding (writes)', () => {
     await page.locator('input[name="email"]').fill(email)
     await page.locator('input[name="password"]').fill(password)
     await page.getByRole('button', { name: 'Sign In' }).click()
-    // Not the dashboard and not a blank page: a screen saying the application is under review
+    // Not the dashboard and not a blank page: a screen asking them to confirm their email first
     await expect(page).toHaveURL(/\/application-status/, { timeout: 60_000 })
-    await expect(page.getByRole('heading', { name: 'Your application is under review' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByRole('heading', { name: 'Confirm your email to finish applying' })).toBeVisible({ timeout: 30_000 })
     await expect(page.getByText(email).first()).toBeVisible()
+    await page.getByTestId('resend-confirmation').click()
+    await expect(page.getByText(/We sent a new link to/)).toBeVisible({ timeout: 30_000 })
     await page.goto('/dashboard')
     await expect(page).toHaveURL(/\/application-status/, { timeout: 60_000 })
     await expect(page.getByRole('link', { name: 'Orders' })).toHaveCount(0)
@@ -105,6 +107,13 @@ test.describe('seller onboarding (writes)', () => {
     const admin = await adminPage(browser)
     await admin.goto('/requests/seller')
     await admin.getByRole('row').filter({ hasText: email }).getByRole('button', { name: 'Review' }).click()
+    // Not before the applicant's email is confirmed; the team can confirm it for them
+    const confirmation = admin.getByTestId('application-email-confirmation')
+    await expect(confirmation).toContainText('Not confirmed yet')
+    await admin.getByRole('button', { name: 'Approve', exact: true }).click()
+    await expect(admin.getByText(/hasn't confirmed their email yet/)).toBeVisible()
+    await confirmation.getByRole('button', { name: 'Mark as confirmed' }).click()
+    await expect(confirmation).toContainText('marked by the team', { timeout: 30_000 })
     await admin.getByRole('button', { name: 'Approve', exact: true }).click()
     // The review dialog closes only when approval succeeds; errors show inside it
     await expect(admin.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0, { timeout: 60_000 })

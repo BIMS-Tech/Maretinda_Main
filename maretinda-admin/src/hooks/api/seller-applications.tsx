@@ -68,6 +68,11 @@ export interface SellerApplication {
   terms_version?: string | null;
   privacy_consent_at?: string | null;
 
+  // Approval waits for the applicant to confirm their email (since 19 November 2026)
+  email_verified_at?: string | null;
+  /** "link", "existing" (applied before confirmation existed) or "admin:<user id>" */
+  email_verified_by?: string | null;
+
   // Documents (key → URL map)
   documents: Record<string, string> | null;
 }
@@ -116,5 +121,25 @@ export const useUpdateSellerApplication = (
       options?.onSuccess?.(data, vars, ctx);
     },
     ...options,
+  });
+};
+
+/** The team confirms the applicant's email another way (the link never arrived). */
+export const useMarkApplicationEmailVerified = (
+  id: string,
+  options?: UseMutationOptions<{ application: SellerApplication }, Error, void>
+) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () =>
+      (await sdk.client.fetch<{ application: SellerApplication }>(
+        `/admin/seller-applications/${id}/email-verified`,
+        { method: "POST" }
+      )) as any,
+    ...options,
+    onSuccess: (data, vars, ctx) => {
+      qc.invalidateQueries({ queryKey: sellerApplicationsQueryKeys.lists() });
+      options?.onSuccess?.(data, vars, ctx);
+    },
   });
 };

@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import crypto from "crypto"
 import { sendNotice } from "../../../lib/notify"
+import { emailVerificationRequired, sellerVerificationLink, VERIFY_LINK_DAYS } from "../../../lib/email-verification"
 import { parseApplication, SELLER_TERMS_VERSION } from "../../../lib/seller-application"
 import { verify } from "jsonwebtoken"
 
@@ -88,17 +89,25 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
     })
 
     const applicant = `${input.first_name} ${input.last_name}`
+    // The team can approve only once the applicant has confirmed this address
+    const confirmUrl = emailVerificationRequired() ? await sellerVerificationLink(db, id, input.email) : null
     await sendNotice(req.scope, {
       to: input.email,
-      subject: "We received your Maretinda seller application",
+      subject: confirmUrl
+        ? "Confirm your email to finish your Maretinda seller application"
+        : "We received your Maretinda seller application",
       eyebrow: "Seller application",
-      heading: "Application received",
+      heading: confirmUrl ? "Please confirm your email" : "Application received",
       user_name: applicant,
       paragraphs: [
         `Thank you for applying to sell on Maretinda as ${input.shop_name}.`,
-        "Our team is reviewing your application. We will email you as soon as there is a decision, usually within a few business days.",
+        ...(confirmUrl
+          ? ["Please confirm this is your email address. Our team reviews your application once it is confirmed."]
+          : []),
+        "We will email you as soon as there is a decision, usually within a few business days.",
       ],
-      note: `Reference: ${id}`,
+      button: confirmUrl ? { label: "Confirm my email", url: confirmUrl } : null,
+      note: confirmUrl ? `The link works for ${VERIFY_LINK_DAYS} days. Reference: ${id}` : `Reference: ${id}`,
     })
     await sendNotice(req.scope, {
       to: process.env.SELLER_APPLICATION_NOTIFY_EMAIL || "sales@bims.tech",
@@ -109,7 +118,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse): Promise<voi
       paragraphs: [
         `${applicant} (${input.email}) applied to sell as ${input.shop_name} (${input.business_name}, ${input.form_of_organization}).`,
         `Sells: ${input.main_category}, ${input.product_count} products, ${input.product_source.toLowerCase()}.${input.sells_regulated ? " Includes FDA-regulated products." : ""}`,
-        "Open Requests in the admin panel to approve or reject it.",
+        confirmUrl
+          ? "They have been asked to confirm their email; you can approve once they have (or mark it confirmed in the review if you checked it another way)."
+          : "Open Requests in the admin panel to approve or reject it.",
       ],
       note: `Reference: ${id}`,
     })

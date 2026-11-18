@@ -12,6 +12,8 @@ export interface RegisterParams {
   first_name: string;
   last_name: string;
   phone?: string;
+  /** Cloudflare Turnstile token, when the sign-up check is switched on */
+  captcha_token?: string;
 }
 
 export async function login({ email, password }: LoginParams): Promise<string> {
@@ -30,11 +32,13 @@ export async function register({
   first_name,
   last_name,
   phone,
+  captcha_token,
 }: RegisterParams): Promise<string> {
   // Step 1: Register credentials → get token
   const { data: registerData } = await client.post(
     '/auth/customer/emailpass/register',
     { email, password },
+    captcha_token ? { headers: { 'x-captcha-token': captcha_token } } : undefined,
   );
   const token = registerData.token as string;
   await setToken(token);
@@ -86,4 +90,13 @@ export async function resetPassword(
     token,
     password,
   });
+}
+
+/** Sends the signed-in buyer a new "confirm your email" link. Returns what to tell them. */
+export async function resendEmailVerification(): Promise<string> {
+  const { data } = await client.post('/store/email-verification/resend', {});
+  if (data?.verified) return 'Your email is already confirmed. Try placing your order again.';
+  return data?.sent
+    ? `We sent a new link to ${data.email}. Open it, then come back and place your order.`
+    : "We couldn't send the email just now. Please try again in a few minutes.";
 }
