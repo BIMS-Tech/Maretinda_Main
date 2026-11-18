@@ -158,13 +158,25 @@ export const ApplicationStatus = () => {
     <AuthShell
       portal="Seller Centre"
       headline={
-        <>
-          Almost there.
-          <br />
-          <Accent>Your shop is on its way.</Accent>
-        </>
+        data?.status === "rejected" ? (
+          <>
+            Thanks for applying.
+            <br />
+            <Accent>We're here to help.</Accent>
+          </>
+        ) : (
+          <>
+            Almost there.
+            <br />
+            <Accent>Your shop is on its way.</Accent>
+          </>
+        )
       }
-      lede="Every shop on Maretinda is reviewed by our team before it opens to buyers."
+      lede={
+        data?.status === "rejected"
+          ? "Most applications that aren't approved just need a document or detail corrected."
+          : "Every shop on Maretinda is reviewed by our team before it opens to buyers."
+      }
     >
       <div className="flex flex-col gap-5" data-testid="application-status" data-status={data?.status ?? (failed ? "error" : "loading")}>
         <h1 className="font-display text-ui-fg-base text-[30px] leading-tight">{heading}</h1>
