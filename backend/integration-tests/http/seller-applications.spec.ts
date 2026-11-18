@@ -112,6 +112,32 @@ medusaIntegrationTestRunner({
         expect(again.status).toBe(409)
       })
 
+      it("tells a signed-in applicant where their application stands, and only theirs", async () => {
+        const pk = await createPublishableKey(getContainer())
+        const email = fresh()
+        const ip = { "cf-connecting-ip": `198.51.100.${++seq % 250}` }
+        const reg = await api.post("/auth/seller/emailpass/register", { email, password: "Applicant-pass-1" }, { headers: ip, ...noThrow })
+        const status = (token?: string) =>
+          api.get("/store/seller-application/status", {
+            headers: { "x-publishable-api-key": pk, ...(token ? bearer(token) : {}) },
+            ...noThrow,
+          })
+
+        expect((await status()).status).toBe(401)
+        expect((await status("not-a-token")).status).toBe(401)
+        expect((await status(reg.data.token)).data.status).toBe("none")
+
+        const sent = await api.post("/store/seller-application", applicationBody(email), {
+          headers: { "x-publishable-api-key": pk, ...ip, ...bearer(reg.data.token) },
+          ...noThrow,
+        })
+        expect((await status(reg.data.token)).data).toMatchObject({ status: "pending", email, shop_name: "Santos Crafts", note: null })
+
+        const { token: admin } = await createAdmin(getContainer())
+        await api.patch(`/admin/seller-applications/${sent.data.application_id}`, { status: "rejected", admin_notes: "Blurry ID" }, { headers: bearer(admin), ...noThrow })
+        expect((await status(reg.data.token)).data).toMatchObject({ status: "rejected", note: "Blurry ID" })
+      })
+
       it("approval opens the shop under its shop name with the TIN, VAT status, phone and address", async () => {
         const email = fresh()
         const res = await apply(applicationBody(email, { vat_registered: true }))

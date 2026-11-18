@@ -158,7 +158,7 @@ export const fetchQuery = async (
       throw new Error("Authentication failed. Please log in again.")
     }
 
-    throw new Error(errorData.message || "Nieznany błąd serwera")
+    throw new Error(errorData.message || "Something went wrong. Please try again.")
   }
 
   return response.json()

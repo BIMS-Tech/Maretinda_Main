@@ -1,0 +1,181 @@
+import { Spinner } from "@medusajs/icons"
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+
+import { Accent, AuthShell, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
+import { backendUrl, publishableApiKey } from "../../lib/client/client"
+
+type Status = {
+  status: "pending" | "rejected" | "approved" | "none"
+  email: string | null
+  shop_name: string | null
+  submitted_at: string | null
+  reviewed_at: string | null
+  note: string | null
+}
+
+const TOKEN_KEY = "medusa_auth_token"
+
+const day = (d: string | null) =>
+  d ? new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" }) : null
+
+/**
+ * What an applicant sees when they sign in before their shop exists: their
+ * application is under review, wasn't approved, or was approved since they
+ * signed in. Every seller-panel page needs a shop, so without this they were
+ * bounced back to an empty sign-in form.
+ */
+export const ApplicationStatus = () => {
+  const navigate = useNavigate()
+  const [data, setData] = useState<Status | null>(null)
+  const [failed, setFailed] = useState(false)
+
+  const signOut = (to = "/login") => {
+    window.localStorage.removeItem(TOKEN_KEY)
+    navigate(to, { replace: true })
+  }
+
+  useEffect(() => {
+    const token = window.localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      navigate("/login", { replace: true })
+      return
+    }
+    fetch(`${backendUrl}/store/seller-application/status`, {
+      headers: { authorization: `Bearer ${token}`, "x-publishable-api-key": publishableApiKey },
+    })
+      .then(async (res) => {
+        if (res.status === 401) return signOut()
+        if (!res.ok) throw new Error(String(res.status))
+        setData(await res.json())
+      })
+      .catch(() => setFailed(true))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const shop = data?.shop_name ? <b>{data.shop_name}</b> : "your shop"
+
+  let heading = "Checking your application"
+  let body: React.ReactNode = (
+    <div className="flex justify-center py-6">
+      <Spinner className="animate-spin text-ui-fg-interactive" />
+    </div>
+  )
+  let actions: React.ReactNode = null
+
+  if (failed) {
+    heading = "We couldn't check your application"
+    body = <p>Please try again in a moment. If it keeps happening, write to support@maretinda.com.</p>
+    actions = (
+      <>
+        <button type="button" className={PRIMARY_BUTTON} onClick={() => window.location.reload()}>
+          Try again
+        </button>
+        <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
+          Sign out
+        </button>
+      </>
+    )
+  } else if (data?.status === "pending") {
+    heading = "Your application is under review"
+    body = (
+      <>
+        <p>
+          Thank you for applying to sell on Maretinda with {shop}
+          {data.submitted_at ? <> on {day(data.submitted_at)}</> : null}. Our team is reviewing your application, usually
+          within a few business days.
+        </p>
+        <p>
+          We'll email you{data.email ? <> at <b>{data.email}</b></> : null} as soon as it's approved. Then sign in here
+          to choose your plan (the first month is free) and set up your shop.
+        </p>
+        <p className="text-ui-fg-muted text-sm">Questions? Write to support@maretinda.com.</p>
+      </>
+    )
+    actions = (
+      <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
+        Sign out
+      </button>
+    )
+  } else if (data?.status === "rejected") {
+    heading = "Your application wasn't approved"
+    body = (
+      <>
+        <p>
+          We reviewed your application for {shop}
+          {data.reviewed_at ? <> on {day(data.reviewed_at)}</> : null} and couldn't approve it this time.
+        </p>
+        {data.note && (
+          <p className="rounded-lg border border-ui-border-base bg-ui-bg-subtle px-4 py-3 text-sm">
+            <b>Note from our team:</b> {data.note}
+          </p>
+        )}
+        <p>
+          If you have more information to share, write to support@maretinda.com. You can also apply again with updated
+          details.
+        </p>
+      </>
+    )
+    actions = (
+      <>
+        <button type="button" className={PRIMARY_BUTTON} onClick={() => signOut("/register")}>
+          Apply again
+        </button>
+        <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
+          Sign out
+        </button>
+      </>
+    )
+  } else if (data?.status === "approved") {
+    heading = "Your shop is approved"
+    body = <p>Good news: {shop} has been approved. Sign in again to open your seller panel.</p>
+    actions = (
+      <button type="button" className={PRIMARY_BUTTON} onClick={() => signOut()}>
+        Sign in again
+      </button>
+    )
+  } else if (data?.status === "none") {
+    heading = "No application found"
+    body = (
+      <p>
+        This account doesn't have a seller application yet. Apply to sell on Maretinda and our team will review it, usually
+        within a few business days.
+      </p>
+    )
+    actions = (
+      <>
+        <button type="button" className={PRIMARY_BUTTON} onClick={() => signOut("/register")}>
+          Apply to sell
+        </button>
+        <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
+          Sign out
+        </button>
+      </>
+    )
+  }
+
+  return (
+    <AuthShell
+      portal="Seller Centre"
+      headline={
+        <>
+          Almost there.
+          <br />
+          <Accent>Your shop is on its way.</Accent>
+        </>
+      }
+      lede="Every shop on Maretinda is reviewed by our team before it opens to buyers."
+    >
+      <div className="flex flex-col gap-5" data-testid="application-status" data-status={data?.status ?? (failed ? "error" : "loading")}>
+        <h1 className="font-display text-ui-fg-base text-[30px] leading-tight">{heading}</h1>
+        <div className="text-ui-fg-subtle flex flex-col gap-3 text-[15px] leading-relaxed">{body}</div>
+        {actions && <div className="flex flex-col gap-3 pt-2">{actions}</div>}
+        <p className="text-center text-xs text-ui-fg-muted">
+          <Link to="/login" onClick={() => window.localStorage.removeItem(TOKEN_KEY)} className="hover:underline">
+            Use a different account
+          </Link>
+        </p>
+      </div>
+    </AuthShell>
+  )
+}

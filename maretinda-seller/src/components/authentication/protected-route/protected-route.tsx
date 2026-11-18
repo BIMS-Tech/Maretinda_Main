@@ -36,6 +36,13 @@ export const ProtectedRoute = () => {
   }
 
   if (!seller) {
+    // Signed in, but no shop yet: the application is pending, rejected, or was
+    // approved after this sign-in. Show where it stands instead of the login page.
+    const message = String((error as any)?.message ?? "")
+    if ((error as any)?.status === 403 || /seller is not active/i.test(message)) {
+      return <Navigate to="/application-status" replace />
+    }
+
     // Handle authentication errors gracefully
     if (error) {
       console.warn("Authentication error in protected route:", error)

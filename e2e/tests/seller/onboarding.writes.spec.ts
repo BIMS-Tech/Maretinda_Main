@@ -92,8 +92,12 @@ test.describe('seller onboarding (writes)', () => {
     await page.locator('input[name="email"]').fill(email)
     await page.locator('input[name="password"]').fill(password)
     await page.getByRole('button', { name: 'Sign In' }).click()
+    // Not the dashboard and not a blank page: a screen saying the application is under review
+    await expect(page).toHaveURL(/\/application-status/, { timeout: 60_000 })
+    await expect(page.getByRole('heading', { name: 'Your application is under review' })).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText(email).first()).toBeVisible()
     await page.goto('/dashboard')
-    await expect(page.getByText(/pending|under review|not (yet )?approved|awaiting/i).first().or(page.locator('input[name="email"]'))).toBeVisible()
+    await expect(page).toHaveURL(/\/application-status/, { timeout: 60_000 })
     await expect(page.getByRole('link', { name: 'Orders' })).toHaveCount(0)
   })
 
