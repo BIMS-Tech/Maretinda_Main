@@ -39,13 +39,13 @@ export const DashboardOnboarding = ({
           buttonLabel="Manage"
         />
         <OnboardingRow
-          label="Setup Locations & Shipping"
+          label="Set up your pickup place and delivery fee"
           state={locations_shipping}
-          link="/settings/locations"
-          buttonLabel="Setup"
+          link="/shipping?tab=setup"
+          buttonLabel="Set up"
         />
         <OnboardingRow
-          label="Add products and start selling"
+          label="Add your products and enter their stock"
           state={products}
           link="/products/create"
           buttonLabel="Add"

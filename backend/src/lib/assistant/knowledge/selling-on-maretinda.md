@@ -63,6 +63,7 @@ The seller panel covers products, orders, shipping, vouchers, payouts, invoices
 and analytics. What is available depends on the plan: product limits, staff
 accounts, flash sales and promotions vary by plan.
 
-Sellers get an email when a buyer reviews their shop or one of their products,
-and when an item's stock drops to 5 or fewer and again when it runs out, so
-they can restock before buyers are turned away.
+Sellers get an email when a buyer reviews their shop or one of their products.
+On the Growth and Premium plans they are also emailed when an item's stock drops
+to 5 or fewer and again when it runs out. Every plan shows items running low
+under Inventory.

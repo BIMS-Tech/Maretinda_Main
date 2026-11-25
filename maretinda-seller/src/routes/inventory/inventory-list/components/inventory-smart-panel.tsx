@@ -15,15 +15,18 @@ type InventoryItemWithLevels = {
   title?: string | null
   sku?: string | null
   stocked_quantity?: number | null
-  location_levels?: { stocked_quantity: number }[]
+  location_levels?: { stocked_quantity: number; reserved_quantity?: number }[]
 }
 
+/** What buyers can still order: on hand minus what is sold and waiting to ship. */
 const getTotalStock = (item: InventoryItemWithLevels): number => {
-  if (item.stocked_quantity != null) return item.stocked_quantity
-  return (
-    item.location_levels?.reduce((s, l) => s + (l.stocked_quantity ?? 0), 0) ??
-    0
-  )
+  if (item.location_levels?.length) {
+    return item.location_levels.reduce(
+      (s, l) => s + (l.stocked_quantity ?? 0) - (l.reserved_quantity ?? 0),
+      0
+    )
+  }
+  return item.stocked_quantity ?? 0
 }
 
 export const InventorySmartPanel = () => {

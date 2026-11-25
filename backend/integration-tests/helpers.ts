@@ -3,6 +3,7 @@ import path from "path"
 import { sign } from "jsonwebtoken"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { createApiKeysWorkflow } from "@medusajs/core-flows"
+import { setUpDelivery } from "../src/lib/delivery-setup"
 
 /**
  * Shared setup for HTTP integration tests.
@@ -154,6 +155,30 @@ export async function makeReady(container: any, sellerId: string) {
     account_name: "Test Shop Inc",
     branch_name: "Angeles",
     verification_status: "verified",
+  })
+  await makeDeliverable(container, sellerId)
+}
+
+/** A pickup location and a ₱120 standard delivery fee, as the guided setup leaves them. */
+export async function makeDeliverable(container: any, sellerId: string) {
+  const pg = pgOf(container)
+  if (!(await pg("sales_channel").first("id"))) {
+    await container.resolve(Modules.SALES_CHANNEL).createSalesChannels({ name: "Test store" })
+  }
+  const profiles = await pg("shipping_profile").whereNull("deleted_at").first("id")
+  if (!profiles) await container.resolve(Modules.FULFILLMENT).createShippingProfiles([{ name: "Default", type: "default" }])
+  const seller = await pg("seller").where("id", sellerId).first("id", "name", "handle")
+  return setUpDelivery(container, seller, {
+    pickup: {
+      name: "Main store",
+      address_1: "1 Rizal St",
+      address_2: "Balibago",
+      city: "Angeles City",
+      province: "Pampanga",
+      postal_code: "2009",
+      phone: "+639171234567",
+    },
+    fees: { standard: 120, express: null },
   })
 }
 

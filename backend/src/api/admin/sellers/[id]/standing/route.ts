@@ -1,6 +1,7 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { isSuspended } from "../../../../../lib/seller-plan"
+import { deliveryReady } from "../../../../../lib/delivery-setup"
 import { sellerReadiness } from "../../../../../lib/seller-readiness"
 
 /**
@@ -19,6 +20,7 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
     .orderBy("end_date", "desc")
     .first("plan_name", "price", "billing_period", "is_trial", "end_date")
   const setup = sellerReadiness(seller)
+  const delivery = await deliveryReady(pg, seller.id)
 
   res.json({
     open: !isSuspended(seller) && !!plan && setup.ready,
@@ -33,6 +35,8 @@ export const GET = async (req: AuthenticatedMedusaRequest, res: MedusaResponse) 
         }
       : null,
     setup,
+    // Without it buyers can't check out, and new products wait as drafts
+    delivery_ready: delivery,
     verification_status: seller.verification_status ?? "unverified",
   })
 }

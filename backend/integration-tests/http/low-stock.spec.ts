@@ -1,6 +1,6 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
-import { applyCustomMigrations, createSeller } from "../helpers"
+import { applyCustomMigrations, createSeller, givePlan, seedPlans } from "../helpers"
 import { alertLowStock, alertLowStockForVariants, stockOfVariants } from "../../src/lib/low-stock"
 
 jest.setTimeout(300 * 1000)
@@ -14,10 +14,12 @@ medusaIntegrationTestRunner({
     })
 
     /** A shop's variant with real stock at one warehouse, as the seller panel sets it up. */
-    async function stockedVariant(stocked: number, reserved = 0, manage_inventory = true) {
+    async function stockedVariant(stocked: number, reserved = 0, manage_inventory = true, plan = "Growth") {
       const c = getContainer()
       const stamp = `${Date.now()}${Math.random().toString(36).slice(2, 6)}`
       const { seller } = await createSeller(c, { email: `shop-${stamp}@example.test` })
+      await seedPlans(c)
+      await givePlan(c, seller.id, { plan_name: plan })
       const [product] = await c.resolve(Modules.PRODUCT).createProducts([
         {
           title: `Tee ${stamp}`,
@@ -73,6 +75,13 @@ medusaIntegrationTestRunner({
       expect(await levels(variant.id)).toEqual([])
       await set(30, 27)
       expect(await levels(variant.id)).toEqual([["low", 3]])
+    })
+
+    it("alerts only shops whose plan has them: Growth and Premium, not Starter", async () => {
+      for (const [plan, expected] of [["Starter", []], ["Growth", [["low", 2]]], ["Premium", [["low", 2]]]] as const) {
+        const { variant } = await stockedVariant(2, 0, true, plan)
+        expect(await levels(variant.id)).toEqual(expected)
+      }
     })
 
     it("checks the variants in a placed order and skips ones that don't track stock", async () => {

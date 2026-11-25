@@ -34,6 +34,10 @@ export const maxStaff = (plan: ActivePlan) =>
 
 export const hasMarketing = (plan: ActivePlan) => MARKETING_PLANS.includes(plan.name)
 
+/** Low-stock alerts come with "Smart inventory + alerts" (Growth) and up; Starter has plain inventory. */
+export const hasStockAlerts = (plan: ActivePlan) =>
+  typeof plan.features.inventory === "string" ? plan.features.inventory !== "standard" : MARKETING_PLANS.includes(plan.name)
+
 export async function productCount(pg: any, sellerId: string): Promise<number> {
   const row = await pg("seller_seller_product_product as l")
     .join("product as p", "p.id", "l.product_id")

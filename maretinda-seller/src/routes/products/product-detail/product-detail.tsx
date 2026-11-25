@@ -10,6 +10,7 @@ import { ProductOptionSection } from "./components/product-option-section"
 import { ProductOrganizationSection } from "./components/product-organization-section"
 import { ProductVariantSection } from "./components/product-variant-section"
 
+import { StockEditor } from "../../../components/common/stock-editor"
 import { useDashboardExtension } from "../../../extensions"
 import { ProductAdditionalAttributesSection } from "./components/product-additional-attribute-section/ProductAdditionalAttributesSection"
 import { Product3DModelSection } from "./components/product-3d-model-section"
@@ -51,6 +52,7 @@ export const ProductDetail = () => {
         <ProductGeneralSection product={product} />
         <ProductMediaSection product={product} />
         <ProductOptionSection product={product} />
+        <StockEditor productId={id!} title="Stock" />
         <ProductVariantSection product={product} />
       </TwoColumnPage.Main>
       <TwoColumnPage.Sidebar>

@@ -37,8 +37,8 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
         <Text size="xsmall" className="text-ui-tag-green-text ">
           Checkout shipping is set up. Customers can select shipping options at checkout.
         </Text>
-        <Link to="/shipping?tab=guide" className="ml-auto text-xs text-ui-tag-green-text hover:underline flex items-center gap-1">
-          View Guide <ArrowRightMini className="w-3 h-3" />
+        <Link to="/shipping?tab=setup" className="ml-auto text-xs text-ui-tag-green-text hover:underline flex items-center gap-1">
+          Change address or fees <ArrowRightMini className="w-3 h-3" />
         </Link>
       </div>
     )
@@ -69,8 +69,8 @@ function ShippingSetupBanner({ stockLocations }: { stockLocations: any[] }) {
               Next: <strong>{nextStep.label}</strong>
             </Text>
           )}
-          <Link to="/shipping?tab=guide" className="inline-flex items-center gap-1 mt-1.5 text-xs text-ui-tag-orange-text hover:underline">
-            View Setup Guide <ArrowRightMini className="w-3 h-3" />
+          <Link to="/shipping?tab=setup" className="inline-flex items-center gap-1 mt-1.5 text-xs text-ui-tag-orange-text hover:underline">
+            Do it all in one form <ArrowRightMini className="w-3 h-3" />
           </Link>
         </div>
       </div>

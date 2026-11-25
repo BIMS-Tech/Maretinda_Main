@@ -4,12 +4,14 @@ import { requiredDocsFor } from "../../lib/business-documents"
 import { storeReadiness } from "../../lib/store-readiness"
 import { getSettlementInfo } from "../../lib/settlement"
 import { Storeseller } from "../../types/user"
+import { DeliverySetup, useDeliverySetup } from "./delivery-setup"
 import { useMe } from "./users"
 
 export type SetupTaskKey =
   | "store_profile"
   | "business_address"
   | "bank_details"
+  | "delivery"
   | "verification"
 
 /** One field or document the seller has to supply. */
@@ -57,7 +59,8 @@ const toPercent = (completed: number, total: number) =>
  * quarters when a whole section flips to done.
  */
 const buildRequirements = (
-  seller: Storeseller
+  seller: Storeseller,
+  delivery?: DeliverySetup | null
 ): Record<SetupTaskKey, SetupRequirement[]> => {
   const settlement = getSettlementInfo(seller)
   const documents = seller.business_documents || {}
@@ -91,6 +94,13 @@ const buildRequirements = (
             needs("Bank address", settlement.beneficiaryBankAddress),
           ]),
     ],
+    // Without these buyers can't check out, and published products stay drafts
+    delivery: delivery
+      ? [
+          { label: "Pickup place", complete: !!delivery.location && !delivery.missing.some((m) => m.startsWith("pickup")) },
+          { label: "Delivery fee", complete: !delivery.missing.includes("delivery fee") && !delivery.missing.includes("delivery area") },
+        ]
+      : [],
     // Mirrors the verification form exactly (TIN, org type, documents) so the
     // bar on that screen and the one in the checklist track the same thing.
     verification: [
@@ -108,8 +118,8 @@ const buildRequirements = (
  * Everything a seller must supply before the store can trade: profile, company
  * address, settlement bank, and the legal documents admins review.
  */
-export const buildSetupTasks = (seller: Storeseller): SetupTask[] => {
-  const requirements = buildRequirements(seller)
+export const buildSetupTasks = (seller: Storeseller, delivery?: DeliverySetup | null): SetupTask[] => {
+  const requirements = buildRequirements(seller, delivery)
   const verificationStatus = seller.verification_status || "unverified"
   const awaitingReview = verificationStatus === "pending_review"
   const isRejected = verificationStatus === "rejected"
@@ -151,6 +161,12 @@ export const buildSetupTasks = (seller: Storeseller): SetupTask[] => {
       label: "Settlement bank details",
       description: "Where your payouts are deposited.",
       to: "/settings/store/edit",
+    }),
+    withProgress({
+      key: "delivery",
+      label: "Pickup place and delivery fee",
+      description: "Where couriers collect your parcels and what buyers pay for delivery.",
+      to: "/shipping?tab=setup",
     }),
     withProgress({
       key: "verification",
@@ -207,11 +223,14 @@ export const getSetupProgress = (tasks: SetupTask[]): SetupProgress => {
 }
 
 export const useSetupTasks = () => {
-  const { seller, isPending, isError } = useMe()
+  const { seller, isPending: isPendingSeller, isError } = useMe()
+  // If it can't be read, the other tasks still show; the API decides what may be published
+  const { data: delivery, isPending: isPendingDelivery } = useDeliverySetup({ enabled: !!seller })
+  const isPending = isPendingSeller || (!!seller && isPendingDelivery)
 
   const tasks = useMemo(
-    () => (seller ? buildSetupTasks(seller) : []),
-    [seller]
+    () => (seller ? buildSetupTasks(seller, delivery).filter((t) => t.totalCount > 0) : []),
+    [seller, delivery]
   )
 
   const pending = tasks.filter((task) => !task.complete)

@@ -1,5 +1,6 @@
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { sellerPanelUrl, sendNotice } from "./notify"
+import { activePlanOf, hasStockAlerts } from "./plan-features"
 
 /** At or below this many units a variant counts as running low. */
 export const lowStockThreshold = () => {
@@ -103,8 +104,8 @@ export function lowStockEmail(items: (VariantStock & { level: "low" | "out" })[]
 }
 
 /**
- * After an order: warns each shop once when a variant it sells drops to the
- * threshold, and once more when it runs out. Restocking above the threshold
+ * After an order: warns each shop on a plan with stock alerts once when a
+ * variant it sells drops to the threshold, and once more when it runs out. Restocking above the threshold
  * re-arms the warning. Returns what was sent (for tests and logs).
  */
 export async function alertLowStock(container: any, orderIds: string[]) {
@@ -120,8 +121,15 @@ export async function alertLowStock(container: any, orderIds: string[]) {
 
 export async function alertLowStockForVariants(container: any, variantIds: string[]) {
   const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-  const stocks = await stockOfVariants(pg, variantIds)
+  const all = await stockOfVariants(pg, variantIds)
   const threshold = lowStockThreshold()
+  // Alerts are a Growth and Premium feature; other shops see the same status on their Inventory page
+  const alerted = new Set<string>()
+  for (const id of new Set(all.map((s) => s.seller_id).filter(Boolean) as string[])) {
+    const plan = await activePlanOf(pg, id)
+    if (plan && hasStockAlerts(plan)) alerted.add(id)
+  }
+  const stocks = all.filter((s) => s.seller_id && alerted.has(s.seller_id))
 
   const due: (VariantStock & { level: "low" | "out" })[] = []
   for (const s of stocks) {

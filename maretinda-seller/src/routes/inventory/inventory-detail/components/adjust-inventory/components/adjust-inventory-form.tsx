@@ -49,9 +49,9 @@ export const AdjustInventoryForm = ({
       stocked_quantity: z.union([z.number(), z.string()]),
     })
     .superRefine((data, ctx) => {
-      const quantity = data.stocked_quantity
-        ? castNumber(data.stocked_quantity)
-        : null
+      // 0 is a real quantity (sold out); only an empty field is missing
+      const quantity =
+        data.stocked_quantity === "" ? null : castNumber(data.stocked_quantity)
 
       if (quantity === null) {
         ctx.addIssue({
@@ -87,7 +87,7 @@ export const AdjustInventoryForm = ({
     name: "stocked_quantity",
   })
 
-  const availableQuantity = stockedQuantityUpdate
+  const availableQuantity = stockedQuantityUpdate !== ""
     ? castNumber(stockedQuantityUpdate) - level.reserved_quantity
     : 0 - level.reserved_quantity
 

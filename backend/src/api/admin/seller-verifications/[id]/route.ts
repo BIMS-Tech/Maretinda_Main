@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { sellerPanelUrl, sendNotice } from "../../../../lib/notify"
 import { publishHeldProducts } from "../../../../lib/held-products"
+import { DELIVERY_MISSING, deliveryReady } from "../../../../lib/delivery-setup"
 import { sellerReadiness } from "../../../../lib/seller-readiness"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
@@ -64,7 +65,8 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
 
     // Products the seller listed while waiting go live now, if setup is also done
     const published = status === "verified" ? await publishHeldProducts(req.scope, id) : 0
-    const stillNeeded = status === "verified" ? sellerReadiness(updated).missing : []
+    const stillNeeded = status === "verified" ? [...sellerReadiness(updated).missing] : []
+    if (status === "verified" && !(await deliveryReady(db, id))) stillNeeded.push(DELIVERY_MISSING)
 
     if (status !== seller.verification_status && status !== "pending_review") {
       const verified = status === "verified"

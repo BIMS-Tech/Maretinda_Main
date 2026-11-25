@@ -8,7 +8,8 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { Badge, Container, Heading, Text } from "@medusajs/ui"
-import { CheckCircle, XCircle, ArrowUpRightOnBox } from "@medusajs/icons"
+import { CheckCircle, XCircle } from "@medusajs/icons"
+import { Link } from "react-router-dom"
 import { fetchQuery } from "../../../lib/client"
 
 type PlatformCarrier = {
@@ -153,14 +154,9 @@ export function ShippingSetup() {
           ))}
         </div>
         <div className="mt-4 pt-4 border-t">
-          <a
-            href="https://help.maretinda.com/shipping"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1 text-ui-fg-interactive hover:text-ui-tag-purple-text text-sm"
-          >
-            Shipping guide & FAQs <ArrowUpRightOnBox className="w-3.5 h-3.5" />
-          </a>
+          <Link to="/shipping?tab=guide" className="text-ui-fg-interactive text-sm hover:underline">
+            How to ship an order, step by step
+          </Link>
         </div>
       </Container>
     </div>

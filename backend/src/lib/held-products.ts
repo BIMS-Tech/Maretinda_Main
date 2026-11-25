@@ -2,6 +2,7 @@ import type { MedusaNextFunction, MedusaRequest, MedusaResponse } from "@medusaj
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { updateProductsWorkflow } from "@medusajs/core-flows"
 import { checkConfigurationRule, ConfigurationRuleType } from "@mercurjs/framework"
+import { DELIVERY_MISSING, deliveryReady } from "./delivery-setup"
 import { sellerReadiness } from "./seller-readiness"
 import { sellerIdOfMember } from "./seller-ownership"
 
@@ -16,6 +17,16 @@ import { sellerIdOfMember } from "./seller-ownership"
 export const HELD_FLAG = "publish_when_ready"
 
 const publishing = (status: unknown) => status === "proposed" || status === "published"
+
+/**
+ * What keeps a shop's products from going on sale: unfinished store setup, or
+ * no way to deliver. A product nobody can check out with isn't worth listing.
+ */
+async function notReady(pg: any, seller: any): Promise<string[]> {
+  const missing = [...sellerReadiness(seller).missing]
+  if (!(await deliveryReady(pg, seller.id))) missing.push(DELIVERY_MISSING)
+  return missing
+}
 
 async function sellerOf(req: MedusaRequest) {
   const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
@@ -32,7 +43,7 @@ export async function holdNewProductUntilReady(req: MedusaRequest, _res: MedusaR
     const body = (req.body ?? {}) as Record<string, any>
     if (!publishing(body.status)) return next()
     const seller = await sellerOf(req)
-    if (!seller || sellerReadiness(seller).ready) return next()
+    if (!seller || !(await notReady(req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION), seller)).length) return next()
     const held = { status: "draft", metadata: { ...(body.metadata ?? {}), [HELD_FLAG]: true } }
     Object.assign(body, held)
     const validated = (req as any).validatedBody
@@ -52,10 +63,10 @@ export async function holdPublishUntilReady(req: MedusaRequest, res: MedusaRespo
     if (!publishing((req.body as any)?.status)) return next()
     const seller = await sellerOf(req)
     if (!seller) return next()
-    const { ready, missing } = sellerReadiness(seller)
-    if (ready) return next()
-
     const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const missing = await notReady(pg, seller)
+    if (!missing.length) return next()
+
     const own = await pg("seller_seller_product_product")
       .where({ seller_id: seller.id, product_id: req.params.id })
       .whereNull("deleted_at")
@@ -84,7 +95,7 @@ export async function publishHeldProducts(container: any, sellerId: string | nul
   try {
     const pg = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
     const seller = await pg("seller").where("id", sellerId).whereNull("deleted_at").first()
-    if (!seller || !sellerReadiness(seller).ready) return 0
+    if (!seller || (await notReady(pg, seller)).length) return 0
     const held = await pg("product as p")
       .join("seller_seller_product_product as l", "l.product_id", "p.id")
       .where("l.seller_id", sellerId)
