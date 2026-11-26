@@ -153,3 +153,6 @@ backend/src/modules/**/dist/
 
 # Service account keys never belong in the repo
 backend/config/gcs-key.json
+
+# Screen recordings shared for reference, not part of the code
+/Screen Recording*.mov

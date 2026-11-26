@@ -1,4 +1,4 @@
-import { adminToken, API_URL, expect, peso, sellerProducts, sellerToken, test, writesAllowed } from '../fixtures'
+import { adminToken, API_URL, expect, PUBLISHABLE_KEY, sellerProducts, sellerToken, test, writesAllowed } from '../fixtures'
 
 /**
  * SOP-08: an admin runs a flash sale, a seller enters a product, the admin
@@ -37,18 +37,18 @@ test.describe('flash sale (writes)', () => {
     // ₱444 less 25% is ₱333
     const salePrice = tote.price * 0.75
     const { urls } = await import('../../playwright.config')
+    const { product } = await (await request.get(`${API_URL}/store/products/${tote.productId}?fields=handle`, {
+      headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
+    })).json()
     const store = await browser.newPage({ baseURL: urls.store })
     await expect(async () => {
       await store.goto('/ph/flash-sale')
-      await expect(store.getByText(peso(salePrice)).or(store.getByText(`₱${salePrice}`)).first()).toBeVisible({ timeout: 5_000 })
+      await expect(store.locator(`[data-product="${product.handle}"]`)).toHaveAttribute('data-price', String(salePrice), { timeout: 5_000 })
     }).toPass({ timeout: 180_000 })
 
-    const { product } = await (await request.get(`${API_URL}/store/products/${tote.productId}?fields=handle`, {
-      headers: { 'x-publishable-api-key': 'pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27' },
-    })).json()
     await store.goto(`/ph/products/${product.handle}`)
     await expect(store.getByText(new RegExp(`₱${salePrice}(\\.00)?\\b`)).first()).toBeVisible()
-    await expect(store.getByText(peso(tote.price)).first()).toBeVisible()
+    await expect(store.getByText(new RegExp(`₱${tote.price}(\\.00)?\\b`)).first()).toBeVisible()
 
     // End it so the price goes back, as it would after the window. The page
     // kept the sale price for 3-10 minutes on test (F36); checkout refuses it.

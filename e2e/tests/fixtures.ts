@@ -27,7 +27,8 @@ export function uniqueEmail(tag: string) {
   const base = process.env.E2E_EMAIL
   if (!base) throw new Error('Set E2E_EMAIL (a real mailbox you own) to run write tests')
   const [user, domain] = base.split('@')
-  return `${user}+e2e-${tag}-${Date.now()}@${domain}`
+  // Workers can start in the same millisecond
+  return `${user}+e2e-${tag}-${Date.now()}${crypto.randomInt(1000)}@${domain}`
 }
 
 export async function expectNoErrorBoundary(page: Page) {
@@ -80,7 +81,8 @@ export async function confirmBuyerEmail(request: import('@playwright/test').APIR
 }
 
 export const API_URL = process.env.API_URL || 'https://test-api.maretinda.com'
-export const PUBLISHABLE_KEY = 'pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27'
+export const PUBLISHABLE_KEY =
+  process.env.E2E_PUBLISHABLE_KEY || 'pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27'
 
 /** product_id:variant_id:price entries from E2E_SELLER_PRODUCTS / E2E_SELLER_B_PRODUCTS. */
 export function sellerProducts(seller: 'A' | 'B' = 'A') {
@@ -135,13 +137,13 @@ export async function fillCheckoutAddress(page: Page) {
 
 /** Picks a delivery option for every seller in the cart and moves to payment. */
 export async function chooseDelivery(page: Page, option = 'Standard Delivery') {
-  // One picker per seller; each choice adds a "Method" line below them
-  const pickers = page.getByRole('button', { name: 'Choose Delivery Option' })
-  const sellers = await page.getByRole('heading', { name: /^Shipping from/ }).count()
-  for (let i = 0; i < sellers; i++) {
-    await pickers.nth(i).click()
-    await page.getByRole('option', { name: new RegExp(option) }).first().click()
-    await expect(page.getByText('Method', { exact: true })).toHaveCount(i + 1)
+  // One set of choices per seller
+  const sellers = page.getByRole('radiogroup', { name: /^Shipping from/ })
+  await expect(sellers.first()).toBeVisible()
+  for (let i = 0; i < (await sellers.count()); i++) {
+    const choice = sellers.nth(i).getByRole('radio', { name: new RegExp(option) }).first()
+    await choice.click()
+    await expect(choice).toBeChecked()
   }
   // The button ignores clicks while the chosen method is still saving
   await expect(async () => {

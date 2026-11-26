@@ -1,4 +1,4 @@
-import { expect, expectNoErrorBoundary, test } from '../fixtures'
+import { API_URL, expect, expectNoErrorBoundary, PUBLISHABLE_KEY, test } from '../fixtures'
 
 /**
  * Browsing cases BRW-01 to BRW-13 from docs/qa-test-cases.md. Read-only, so
@@ -40,20 +40,32 @@ test.describe('browsing (read-only)', () => {
     const search = page.getByPlaceholder('Search for products...').locator('visible=true').first()
     await search.fill('shirt')
     await search.press('Enter')
-    await expect(page).toHaveURL(/\/categories\?query=shirt/)
-    await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
+    await expect(page).toHaveURL(/\/search\?q=shirt/)
+    await expect(page.locator('[data-product]').first()).toBeVisible()
+  })
+
+  test('BRW-02 search forgives a typo', async ({ page, request }) => {
+    // A real product's name with two letters swapped still finds that product
+    const res = await request.get(`${API_URL}/store/search?limit=24&sort=newest`, { headers: { 'x-publishable-api-key': PUBLISHABLE_KEY } })
+    const { products } = await res.json()
+    const word = products.flatMap((p: { title: string }) => p.title.toLowerCase().match(/[a-z]{7,}/g) ?? [])[0]
+    test.skip(!word, 'no product name with a long word')
+    const typo = word.slice(0, 3) + word[4] + word[3] + word.slice(5)
+    await page.goto(`/ph/search?q=${typo}`)
+    await expect(page.locator('[data-product]').filter({ hasText: new RegExp(word, 'i') }).first()).toBeVisible()
   })
 
   test('BRW-03 product page shows the exact price', async ({ page, request, pageErrors }) => {
     test.skip(!sellerProduct, 'set E2E_SELLER_PRODUCTS')
     const [productId, , price] = sellerProduct!
-    const res = await request.get(`${process.env.API_URL ?? 'https://test-api.maretinda.com'}/store/products/${productId}?fields=handle`, {
-      headers: { 'x-publishable-api-key': 'pk_5d82a686fb7066bf78c6f23c1910f2f279d818dddf4fe349e04e266508a95b27' },
+    const res = await request.get(`${API_URL}/store/products/${productId}?fields=handle`, {
+      headers: { 'x-publishable-api-key': PUBLISHABLE_KEY },
     })
     const { product } = await res.json()
     await page.goto(`/ph/products/${product.handle}`)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByText(`₱${Number(price).toLocaleString('en-PH')}.00`).first()).toBeVisible()
+    // Whole pesos, as on the cards: centavos only show when there are some
+    await expect(page.getByText(`₱${Number(price).toLocaleString('en-PH')}`, { exact: true }).first()).toBeVisible()
     await expect(page.getByRole('button', { name: 'Add to Cart' })).toBeVisible()
     expect(pageErrors).toEqual([])
   })
@@ -69,15 +81,17 @@ test.describe('browsing (read-only)', () => {
 
   test('BRW-05 flash sale price matches the product page', async ({ page }) => {
     await page.goto('/ph/flash-sale')
-    const card = page.locator('a[href*="/products/"]').first()
+    const card = page.locator('[data-product]').first()
     test.skip((await card.count()) === 0, 'no product in a live flash sale')
-    const cardPrices = (await card.innerText()).match(/₱[\d,.]+/g) ?? []
-    const href = await card.getAttribute('href')
+    const salePrice = Number(await card.getAttribute('data-price'))
+    const href = await card.locator('a[href*="/products/"]').first().getAttribute('href')
     await page.goto(href!.startsWith('/ph') ? href! : `/ph${href}`)
-    const pagePrices = (await page.locator('main').innerText()).match(/₱[\d,.]+/g) ?? []
-    expect(cardPrices.length).toBeGreaterThan(0)
+    expect(salePrice).toBeGreaterThan(0)
     // The sale price on the card appears on the product page too
-    expect(pagePrices.map(peso)).toContain(peso(cardPrices[0]))
+    await expect(async () => {
+      const pagePrices = (await page.locator('main').innerText()).match(/₱[\d,.]+/g) ?? []
+      expect(pagePrices.map(peso)).toContain(salePrice)
+    }).toPass()
   })
 
   test('BRW-06 share menu leads with Copy link', async ({ page, isMobile }) => {
@@ -100,23 +114,35 @@ test.describe('browsing (read-only)', () => {
   })
 
   test('BRW-08 price sorting orders by cheapest variant', async ({ page }) => {
-    // Known bug: the Algolia sort indexes (products_price_asc/_desc,
-    // products_rating_desc) were never created, so every sort is a no-op.
-    // Fixed by running backend/src/scripts/apply-algolia-settings.ts; remove
-    // this marker once it has run.
-    test.fail()
-    await page.goto('/ph/categories')
-    await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
-    // Algolia listings sort through the dropdown, not a URL parameter. Click
-    // it where a shopper would: its centre, which on desktop is the chevron.
-    await page.getByRole('button', { name: 'Sort by: Default' }).locator('visible=true').first().click()
-    await page.getByRole('option', { name: 'Price: low to high' }).locator('visible=true').first().click()
-    await page.waitForLoadState('networkidle')
-    const prices = await page.locator('a[href*="/products/"]').evaluateAll((as) =>
-      as.map((a) => (a.textContent?.match(/₱[\d,.]+/g) ?? []).map((p) => Number(p.replace(/[^\d.]/g, '')))).filter((p) => p.length).map((p) => Math.min(...p))
-    )
-    expect(prices.length).toBeGreaterThan(1)
-    expect(prices).toEqual([...prices].sort((a, b) => a - b))
+    await page.goto('/ph/search')
+    await expect(page.locator('[data-product]').first()).toBeVisible()
+    const prices = () => page.locator('[data-product][data-price]').evaluateAll((cards) => cards.map((c) => Number((c as HTMLElement).dataset.price)))
+    for (const [option, sort, ordered] of [
+      ['Price: low to high', 'price_asc', (a: number, b: number) => a - b],
+      ['Price: high to low', 'price_desc', (a: number, b: number) => b - a],
+    ] as const) {
+      await page.getByRole('button', { name: /^Sort by/ }).locator('visible=true').first().click()
+      await page.getByRole('option', { name: option }).locator('visible=true').first().click()
+      await expect(page).toHaveURL(new RegExp(`sort=${sort}`))
+      await expect(async () => {
+        const shown = await prices()
+        expect(shown.length).toBeGreaterThan(1)
+        expect(shown).toEqual([...shown].sort(ordered))
+      }).toPass()
+    }
+  })
+
+  test('BRW-08 filters narrow the list and stay in the address', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'on phones the filters open in a sheet')
+    await page.goto('/ph/search')
+    await expect(page.locator('[data-product]').first()).toBeVisible()
+    await page.goto('/ph/search?min_price=100&max_price=1000&sort=price_asc')
+    await expect(page.locator('[data-product]').first()).toBeVisible()
+    const prices = await page.locator('[data-product][data-price]').evaluateAll((cards) => cards.map((c) => Number((c as HTMLElement).dataset.price)))
+    expect(Math.min(...prices)).toBeGreaterThanOrEqual(100)
+    expect(Math.max(...prices)).toBeLessThanOrEqual(1000)
+    await page.getByTestId('active-filters').getByRole('button', { name: /^Remove/ }).click()
+    await expect(page).not.toHaveURL(/min_price/)
   })
 
   test('BRW-09 reels feed plays', async ({ page, pageErrors }) => {
@@ -175,7 +201,7 @@ test.describe('browsing (read-only)', () => {
     await expect(search).toBeVisible()
     await search.fill('shirt')
     await search.press('Enter')
-    await expect(page).toHaveURL(/query=shirt/)
-    await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
+    await expect(page).toHaveURL(/\/search\?q=shirt/)
+    await expect(page.locator('[data-product]').first()).toBeVisible()
   })
 })

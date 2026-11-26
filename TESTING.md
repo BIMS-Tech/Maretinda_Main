@@ -48,9 +48,7 @@ Things the specs know about the test environment:
 
 ## Known failures
 
-Tests marked `it.failing` / `test.fail` describe the correct behaviour of a known bug. They pass while the bug exists and start failing once it's fixed: at that point, remove the marker.
-
-- **BRW-08 price sorting** (`e2e/tests/store/browse.spec.ts`): the Algolia sort indexes were never created, so every sort is a no-op. Run `backend/src/scripts/apply-algolia-settings.ts` against the live search app, then remove the marker.
+Tests marked `it.failing` / `test.fail` describe the correct behaviour of a known bug. They pass while the bug exists and start failing once it's fixed: at that point, remove the marker. There are none at the moment.
 
 ## Still open
 

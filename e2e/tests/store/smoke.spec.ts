@@ -47,13 +47,18 @@ test.describe('storefront (read-only)', () => {
     await expect(page.getByRole('menuitem').or(page.getByRole('button')).filter({ hasText: /copy link/i }).first()).toBeVisible()
   })
 
-  test('search submits to the category listing with the query', async ({ page }) => {
+  test('search opens its results with the query', async ({ page }) => {
     await page.goto('/ph')
     const search = page.getByPlaceholder('Search for products...').locator('visible=true').first()
     await search.fill('shirt')
     await search.press('Enter')
-    await expect(page).toHaveURL(/\/categories\?query=shirt/)
+    await expect(page).toHaveURL(/\/search\?q=shirt/)
     await expectNoErrorBoundary(page)
+  })
+
+  test('an old search link still works', async ({ page }) => {
+    await page.goto('/ph/categories?query=shirt')
+    await expect(page).toHaveURL(/\/search\?q=shirt/)
   })
 
   test('category listing shows products', async ({ page }) => {

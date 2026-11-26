@@ -138,7 +138,7 @@ test.describe('seller orders (writes)', () => {
     const store = await browser.newPage({ baseURL: urls.store })
     await store.goto(`/ph/products/${handle}`)
     await expect(store.getByRole('heading', { level: 1 })).toHaveText(title)
-    await expect(store.getByText('₱555.00').first()).toBeVisible()
+    await expect(store.getByText(/₱555(\.00)?\b/).first()).toBeVisible()
     await store.close()
   })
 })

@@ -76,12 +76,11 @@ test.describe('cart and checkout (writes)', () => {
     // Before a method is chosen the summary must not claim shipping is free
     await expect(page.getByText('Shipping').locator('..').getByText('Free', { exact: true })).toHaveCount(0)
 
-    await page.getByRole('button', { name: 'Choose Delivery Option' }).click()
     // ₱770 is over ₱499, so every option ships free
     for (const name of ['Regular Delivery', 'Standard Delivery', 'Express Delivery']) {
-      await expect(page.getByRole('option', { name: new RegExp(`${name}.*Free`) })).toBeVisible()
+      await expect(page.getByRole('radio', { name: new RegExp(`${name}.*Free`) })).toBeVisible()
     }
-    await page.getByRole('option', { name: /Standard Delivery/ }).click()
+    await page.getByRole('radio', { name: /Standard Delivery/ }).click()
     await expect(page.getByText(peso(shirt.price + standardShipping(shirt.price))).first()).toBeVisible()
   })
 
@@ -90,9 +89,8 @@ test.describe('cart and checkout (writes)', () => {
     await registerBuyer(page, 'chk03b')
     await addToCart(page, tote.productId)
     await fillCheckoutAddress(page)
-    await page.getByRole('button', { name: 'Choose Delivery Option' }).click()
     for (const [name, fee] of [['Regular Delivery', 85], ['Standard Delivery', 120], ['Express Delivery', 200]] as const) {
-      await expect(page.getByRole('option', { name: new RegExp(`${name}.*${peso(fee).replace(/[.]/g, '\\.')}`) })).toBeVisible()
+      await expect(page.getByRole('radio', { name: new RegExp(`${name}.*${peso(fee).replace(/[.]/g, '\\.')}`) })).toBeVisible()
     }
   })
 
