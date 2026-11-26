@@ -18,8 +18,6 @@ const DEFAULTS: HeroSettings = {
   badge: "New season · Pampanga local",
   featured_product_name: "Filipiniana Sundress",
   featured_product_category: "Fashion · Summer Drop",
-  featured_product_rating_count: 248,
-  featured_product_sold_this_week: 247,
   featured_product_link: "/categories",
   featured_product_image: "/images/featured-products/fashion.png",
   sellers_count: "12,800+",
@@ -144,8 +142,6 @@ export const StoreFront = () => {
       featured_product_name: product.title,
       featured_product_link: `/products/${product.handle}`,
       featured_product_image: product.thumbnail || prev.featured_product_image,
-      featured_product_rating_count: product.review_count || prev.featured_product_rating_count,
-      featured_product_sold_this_week: product.trending_score || prev.featured_product_sold_this_week,
     }))
     setIsDirty(true)
     toast.success(`"${product.title}" applied to hero. Adjust the category below, then save.`)
@@ -282,21 +278,7 @@ export const StoreFront = () => {
               placeholder={DEFAULTS.featured_product_category}
             />
           </FieldRow>
-          <FieldRow label="Rating count" hint="Number shown next to the stars">
-            <Input
-              type="number"
-              value={form.featured_product_rating_count}
-              onChange={(e) => set("featured_product_rating_count", Number(e.target.value))}
-            />
-          </FieldRow>
-          <FieldRow label="Sold this week" hint="Shown in the 'X sold this week' chip">
-            <Input
-              type="number"
-              value={form.featured_product_sold_this_week}
-              onChange={(e) => set("featured_product_sold_this_week", Number(e.target.value))}
-            />
-          </FieldRow>
-          <FieldRow label="Product link" hint="Where the → arrow navigates">
+          <FieldRow label="Product link" hint="Where the → arrow navigates. Its price, rating and weekly sales come from the product itself.">
             <Input
               value={form.featured_product_link}
               onChange={(e) => set("featured_product_link", e.target.value)}

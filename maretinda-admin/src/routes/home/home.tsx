@@ -11,6 +11,8 @@ import { Container, Heading, StatusBadge, Text } from "@medusajs/ui"
 
 import { useMarketplaceOverview } from "@hooks/api/marketplace"
 
+import { CountUp, GrowBar, MaskedText } from "../../components/common/motion/motion"
+
 /** Pesos, as Medusa stores them here (no centavos to divide out). */
 const peso = (amount: number) =>
   "₱" + amount.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -29,10 +31,13 @@ const Kpi = ({
   value,
   sub,
   to,
+  format,
 }: {
   icon: React.ElementType
   label: string
   value: string | number
+  /** How a counted value is written, e.g. as money */
+  format?: (n: number) => string
   sub: string
   to?: string
 }) => {
@@ -46,7 +51,9 @@ const Kpi = ({
       </div>
       <div>
         <Text size="small" className="text-ui-fg-subtle">{label}</Text>
-        <p className="text-ui-fg-base mt-0.5 text-2xl font-semibold tracking-tight">{value}</p>
+        <p className="text-ui-fg-base mt-0.5 text-2xl font-semibold tracking-tight">
+          {typeof value === "number" ? <CountUp value={value} format={format} /> : value}
+        </p>
         <Text size="xsmall" className="text-ui-fg-muted mt-1">{sub}</Text>
       </div>
     </Container>
@@ -58,7 +65,7 @@ const ShopBar = ({ label, value, max, tone }: { label: string; value: number; ma
   <div className="flex items-center gap-3">
     <Text size="xsmall" className="text-ui-fg-subtle w-32 shrink-0">{label}</Text>
     <div className="bg-ui-bg-subtle h-2 flex-1 overflow-hidden rounded-full">
-      <div className={`h-full rounded-full ${tone}`} style={{ width: `${max ? Math.round((value / max) * 100) : 0}%` }} />
+      <GrowBar share={max ? value / max : 0} className={tone} />
     </div>
     <Text size="xsmall" weight="plus" className="w-8 text-right">{value}</Text>
   </div>
@@ -80,7 +87,9 @@ export const Home = () => {
     <div className="flex flex-col gap-4">
       <div>
         <Text size="small" className="text-ui-fg-muted">{format(new Date(), "EEEE, MMMM d, yyyy")}</Text>
-        <Heading level="h1" className="mt-0.5">Marketplace overview</Heading>
+        <h1 className="font-display text-ui-fg-base mt-0.5 text-[30px] leading-tight">
+          <MaskedText text="Marketplace overview" />
+        </h1>
       </div>
 
       {isError && (
@@ -101,7 +110,8 @@ export const Home = () => {
             <Kpi
               icon={CurrencyDollar}
               label="Sales, last 30 days"
-              value={peso(data.orders.sales_30_days)}
+              value={data.orders.sales_30_days}
+              format={peso}
               sub={`${data.orders.last_30_days} orders, cancellations left out`}
             />
             <Kpi icon={ShoppingBag} label="Orders" value={data.orders.total} sub="All time" to="/orders" />
@@ -115,7 +125,8 @@ export const Home = () => {
             <Kpi
               icon={CreditCard}
               label="Monthly recurring revenue"
-              value={peso(data.subscriptions.mrr)}
+              value={data.subscriptions.mrr}
+              format={peso}
               sub={`${data.subscriptions.paid} paid plans · ${data.subscriptions.trials} free months`}
               to="/subscriptions"
             />
