@@ -176,8 +176,10 @@ jobs:
 
   # ── Storefront (Next.js SSR) ─────────────────────────────────────────────
   store:
-    needs: [changes, config]
-    if: ${{ !cancelled() && needs.changes.outputs.store == 'true' && needs.config.result != 'failure' }}
+    # After the backend: a new storefront may call routes only the new backend
+    # has. When the backend isn't part of this deploy, the store goes ahead.
+    needs: [changes, config, backend]
+    if: ${{ !cancelled() && needs.changes.outputs.store == 'true' && needs.config.result != 'failure' && needs.backend.result != 'failure' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
