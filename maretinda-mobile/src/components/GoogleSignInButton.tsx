@@ -41,7 +41,7 @@ export function GoogleSignInButton({
         style={{ opacity: loading ? 0.7 : 1 }}
       >
         {loading ? (
-          <ActivityIndicator size="small" color="#5B1072" />
+          <ActivityIndicator size="small" color="#432C63" />
         ) : (
           /* Google 'G' icon using colored text */
           <View className="w-5 h-5 items-center justify-center">

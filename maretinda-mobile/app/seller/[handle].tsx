@@ -1,121 +1,72 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useState } from 'react';
+import { Text, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ProductCard } from '@/components/ProductCard';
-import { StarRating } from '@/components/StarRating';
+import { Rise } from '@/components/motion';
+import { ProductListing } from '@/components/ProductListing';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Loading } from '@/components/ui/Loading';
-import { useRegion } from '@/context/region';
-import { listProducts } from '@/lib/products';
-import { getSeller, listSellerReviews } from '@/lib/seller';
+import { getSeller } from '@/lib/seller';
+import { plainText } from '@/lib/product';
+import { colors } from '@/theme';
 
 export default function SellerScreen() {
   const { handle } = useLocalSearchParams<{ handle: string }>();
-  const router = useRouter();
-  const { region } = useRegion();
-
+  const [broken, setBroken] = useState(false);
   const { data: seller, isLoading } = useQuery({
-    queryKey: ['seller', handle],
-    queryFn: () => getSeller(handle!),
     enabled: !!handle,
-  });
-
-  const { data: productsData } = useQuery({
-    queryKey: ['products', 'seller', seller?.id, region?.id],
-    queryFn: () =>
-      listProducts({
-        regionId: region!.id,
-        limit: 20,
-      }),
-    enabled: !!seller?.id && !!region?.id,
-  });
-
-  const { data: reviews } = useQuery({
-    queryKey: ['reviews', 'seller', seller?.id],
-    queryFn: () => listSellerReviews(seller!.id),
-    enabled: !!seller?.id,
+    queryFn: () => getSeller(handle!),
+    queryKey: ['seller', handle],
   });
 
   if (isLoading) return <Loading />;
-  if (!seller)
+  if (!seller) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-gray-500">Seller not found</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+        <ScreenHeader title="Shop" />
+        <EmptyState icon="storefront-outline" title="This shop isn't here">
+          It may have closed, or its address may have changed.
+        </EmptyState>
+      </SafeAreaView>
     );
+  }
 
-  const products = productsData?.products ?? [];
-
+  const about = plainText(seller.description);
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={{ paddingBottom: 24 }}
-        columnWrapperStyle={{ gap: 12, paddingHorizontal: 16 }}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={() => (
-          <>
-            {/* Back */}
-            <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-              <Pressable
-                onPress={() => router.back()}
-                className="w-9 h-9 items-center justify-center rounded-full bg-surface"
-              >
-                <Ionicons name="arrow-back" size={20} color="#374151" />
-              </Pressable>
-              <Text className="text-lg font-bold text-gray-900 flex-1">Seller</Text>
-            </View>
-
-            {/* Seller info */}
-            <View className="bg-white px-5 py-6 gap-4">
-              <View className="flex-row items-center gap-4">
-                {seller.photo ? (
-                  <Image
-                    source={{ uri: seller.photo }}
-                    style={{ width: 56, height: 56, borderRadius: 28 }}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View className="w-14 h-14 rounded-full bg-primary/10 items-center justify-center">
-                    <Ionicons name="storefront-outline" size={28} color="#5B1072" />
-                  </View>
-                )}
-                <View className="flex-1 gap-1">
-                  <Text className="text-xl font-bold text-gray-900">{seller.name}</Text>
-                  {seller.rating && (
-                    <View className="flex-row items-center gap-2">
-                      <StarRating rating={seller.rating} />
-                      <Text className="text-sm text-gray-500">
-                        ({seller.review_count ?? reviews?.length ?? 0} reviews)
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              {seller.description && (
-                <Text className="text-sm text-gray-500">{seller.description}</Text>
+      <ScreenHeader title={seller.name} />
+      <ProductListing
+        header={
+          <View style={{ alignItems: 'center', flexDirection: 'row', gap: 14, paddingBottom: 6, paddingHorizontal: 16 }}>
+            <Animated.View entering={ZoomIn.springify().damping(15)} style={{ alignItems: 'center', backgroundColor: colors.lilac, borderRadius: 999, height: 64, justifyContent: 'center', overflow: 'hidden', width: 64 }}>
+              {seller.photo && !broken ? (
+                <Image contentFit="cover" onError={() => setBroken(true)} source={{ uri: seller.photo }} style={{ height: 64, width: 64 }} transition={240} />
+              ) : (
+                <Text style={{ color: colors.purple, fontSize: 24, fontWeight: '700' }}>{seller.name?.[0]?.toUpperCase()}</Text>
               )}
-            </View>
-
-            {/* Products header */}
-            <View className="px-5 pt-5 pb-3">
-              <Text className="text-base font-bold text-gray-900">
-                Products ({products.length})
-              </Text>
-            </View>
-          </>
-        )}
-        renderItem={({ item, index }) => (
-          <View style={{ flex: 1, marginTop: 12, marginLeft: index % 2 === 0 ? 0 : 0 }}>
-            <ProductCard product={item} regionCurrencyCode={region?.currency_code} />
+            </Animated.View>
+            <Rise delay={80} style={{ flex: 1 }}>
+              {(seller as any).verification_status === 'verified' && (
+                <View style={{ alignItems: 'center', flexDirection: 'row', gap: 4 }}>
+                  <Ionicons color={colors.purple} name="checkmark-circle" size={15} />
+                  <Text style={{ color: colors.purple, fontSize: 12.5, fontWeight: '700' }}>Verified shop</Text>
+                </View>
+              )}
+              {about ? (
+                <Text numberOfLines={2} style={{ color: colors.muted, fontSize: 13, lineHeight: 18 }}>
+                  {about}
+                </Text>
+              ) : null}
+            </Rise>
           </View>
-        )}
+        }
+        scope={{ seller: handle }}
       />
     </SafeAreaView>
   );

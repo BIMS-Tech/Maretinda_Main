@@ -1,13 +1,16 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Press, Rise } from '@/components/motion';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Loading } from '@/components/ui/Loading';
 import { useAuth } from '@/context/auth';
 import { listOrders } from '@/lib/orders';
+import { colors } from '@/theme';
 import { capitalize, formatDate, formatPrice, orderStatusColor } from '@/lib/utils';
 
 export default function OrdersScreen() {
@@ -24,26 +27,16 @@ export default function OrdersScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface">
-      <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-        <Pressable
-          onPress={() => router.back()}
-          className="w-9 h-9 items-center justify-center rounded-full bg-surface"
-        >
-          <Ionicons name="arrow-back" size={20} color="#374151" />
-        </Pressable>
-        <Text className="text-lg font-bold text-gray-900">My Orders</Text>
-      </View>
+      <ScreenHeader title="My orders" />
 
       <FlatList
         data={data?.orders ?? []}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20, gap: 12 }}
+        contentContainerStyle={{ flexGrow: 1, gap: 12, padding: 16 }}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => router.push(`/order/${item.id}`)}
-            className="bg-white rounded-2xl p-5 gap-3 active:opacity-80"
-          >
+        renderItem={({ item, index }) => (
+          <Rise index={index}>
+          <Press onPress={() => router.push(`/order/${item.id}`)} scale={0.98} style={{ backgroundColor: colors.white, borderRadius: 22, gap: 12, padding: 18 }}>
             <View className="flex-row items-center justify-between">
               <Text className="text-sm font-bold text-gray-900">
                 Order #{item.display_id}
@@ -61,14 +54,14 @@ export default function OrdersScreen() {
                 {formatPrice(item.total, item.currency_code ?? 'PHP')}
               </Text>
             </View>
-          </Pressable>
+          </Press>
+          </Rise>
         )}
-        ListEmptyComponent={() => (
-          <View className="flex-1 items-center justify-center py-16 gap-3">
-            <Ionicons name="receipt-outline" size={48} color="#d1d5db" />
-            <Text className="text-gray-400">No orders yet</Text>
-          </View>
-        )}
+        ListEmptyComponent={
+          <EmptyState action="Start shopping" icon="receipt-outline" onPress={() => router.push('/')} title="No orders yet">
+            Once you place an order, it will appear here.
+          </EmptyState>
+        }
       />
     </SafeAreaView>
   );

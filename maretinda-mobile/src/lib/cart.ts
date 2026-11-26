@@ -46,7 +46,7 @@ export async function removeCartItem(lineItemId: string) {
   const { data } = await client.delete(
     `/store/carts/${cartId}/line-items/${lineItemId}`,
   );
-  return data.cart;
+  return data.cart ?? data.parent;
 }
 
 export async function transferCart(token: string) {

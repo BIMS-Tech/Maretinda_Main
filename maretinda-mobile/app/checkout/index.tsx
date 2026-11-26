@@ -10,8 +10,12 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FormError } from '@/components/FormError';
+import { SPRING_SOFT } from '@/components/motion';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useCart } from '@/context/cart';
@@ -23,6 +27,7 @@ import {
 import { getErrorMessage } from '@/lib/client';
 import { formatPrice } from '@/lib/utils';
 import { getCartId } from '@/lib/storage';
+import { colors } from '@/theme';
 
 interface AddressForm {
   first_name: string;
@@ -33,6 +38,16 @@ interface AddressForm {
   postal_code: string;
   country_code: string;
   phone: string;
+}
+
+/** How far along the checkout is. */
+function Progress({ done }: { done: number }) {
+  const style = useAnimatedStyle(() => ({ width: withSpring(`${done * 100}%`, SPRING_SOFT) }));
+  return (
+    <View style={{ backgroundColor: '#EDE6F5', borderRadius: 999, height: 4, marginBottom: 4, marginHorizontal: 20, overflow: 'hidden' }}>
+      <Animated.View style={[{ backgroundColor: colors.purple, borderRadius: 999, height: 4 }, style]} />
+    </View>
+  );
 }
 
 export default function CheckoutScreen() {
@@ -113,21 +128,8 @@ export default function CheckoutScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Header */}
-        <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-          <Pressable onPress={() => (step === 'review' ? setStep('address') : router.back())} className="w-9 h-9 items-center justify-center rounded-full bg-surface">
-            <Ionicons name="arrow-back" size={20} color="#374151" />
-          </Pressable>
-          <Text className="text-lg font-bold text-gray-900">
-            {step === 'address' ? 'Shipping Address' : 'Review Order'}
-          </Text>
-        </View>
-
-        {/* Step indicator */}
-        <View className="bg-white px-5 py-3 flex-row items-center gap-2 border-b border-border">
-          <View className={`h-1 flex-1 rounded-full ${step === 'address' || step === 'review' ? 'bg-primary' : 'bg-border'}`} />
-          <View className={`h-1 flex-1 rounded-full ${step === 'review' ? 'bg-primary' : 'bg-border'}`} />
-        </View>
+        <ScreenHeader onBack={() => (step === 'review' ? setStep('address') : router.back())} title={step === 'address' ? 'Where to?' : 'Review your order'} />
+        <Progress done={step === 'review' ? 1 : 0.5} />
 
         <ScrollView
           contentContainerStyle={{ padding: 20, gap: 16 }}
@@ -154,12 +156,12 @@ export default function CheckoutScreen() {
                 </View>
               </View>
               <Input label="Phone" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => update('phone', v)} />
-              {error ? <Text className="text-sm text-red-500">{error}</Text> : null}
+              {error ? <FormError>{error}</FormError> : null}
             </>
           ) : (
             <>
               {/* Address review */}
-              <View className="bg-white rounded-2xl p-5 gap-2">
+              <View className="bg-white rounded-[22px] p-5 gap-2">
                 <Text className="text-sm font-bold text-gray-900">Shipping to</Text>
                 <Text className="text-sm text-gray-500">
                   {form.first_name} {form.last_name}
@@ -171,7 +173,7 @@ export default function CheckoutScreen() {
               </View>
 
               {/* Order items */}
-              <View className="bg-white rounded-2xl p-5 gap-3">
+              <View className="bg-white rounded-[22px] p-5 gap-3">
                 <Text className="text-sm font-bold text-gray-900">Items</Text>
                 {cart?.items?.map((item) => (
                   <View key={item.id} className="flex-row justify-between">
@@ -192,7 +194,7 @@ export default function CheckoutScreen() {
                 </View>
               </View>
 
-              {error ? <Text className="text-sm text-red-500">{error}</Text> : null}
+              {error ? <FormError>{error}</FormError> : null}
               {needsEmail ? (
                 <View className="gap-2">
                   <Button title="Send a new confirmation link" variant="outline" onPress={handleResend} />

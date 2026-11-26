@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/auth';
@@ -49,18 +50,10 @@ export default function SettingsScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-          <Pressable
-            onPress={() => router.back()}
-            className="w-9 h-9 items-center justify-center rounded-full bg-surface"
-          >
-            <Ionicons name="arrow-back" size={20} color="#374151" />
-          </Pressable>
-          <Text className="text-lg font-bold text-gray-900">Account Settings</Text>
-        </View>
+      <ScreenHeader title="Account settings" />
 
         <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} keyboardShouldPersistTaps="handled">
-          <View className="bg-white rounded-2xl p-5 gap-4">
+          <View className="bg-white rounded-[22px] p-5 gap-4">
             <Text className="text-sm font-bold text-gray-900">Profile</Text>
             <Input
               label="First name"
@@ -84,7 +77,7 @@ export default function SettingsScreen() {
             ) : null}
           </View>
 
-          <View className="bg-white rounded-2xl p-5 gap-3">
+          <View className="bg-white rounded-[22px] p-5 gap-3">
             <Text className="text-sm font-bold text-gray-900">Email</Text>
             <Text className="text-sm text-gray-500">{customer?.email}</Text>
             <Text className="text-xs text-gray-400">Email cannot be changed</Text>

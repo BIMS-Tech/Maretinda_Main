@@ -1,7 +1,9 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
-import { setToken } from './storage';
+import { startShopping } from './auth';
 import { transferCart } from './cart';
+import { isShopperToken } from './session';
+import { setToken } from './storage';
 
 const BACKEND_URL =
   process.env.EXPO_PUBLIC_MEDUSA_BACKEND_URL || 'http://localhost:9000';
@@ -23,10 +25,12 @@ export async function signInWithGoogle(): Promise<{ token: string } | null> {
   // Extract token from URL params
   const url = result.url;
   const params = new URL(url).searchParams;
-  const token = params.get('token') ?? params.get('access_token');
+  const signIn = params.get('token') ?? params.get('access_token');
 
-  if (!token) return null;
+  if (!signIn) return null;
 
+  // The first time, Google has signed them in but there is no shopping account yet
+  const token = isShopperToken(signIn) ? signIn : await startShopping(signIn);
   await setToken(token);
   await transferCart(token);
   return { token };

@@ -1,10 +1,10 @@
+/** Amounts are in pesos. Centavos only show when there are some. */
 export function formatPrice(amount: number, currencyCode = 'PHP'): string {
-  return new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: currencyCode.toUpperCase(),
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount / 100);
+  const value = Number(amount) || 0;
+  const centavos = Number.isInteger(value) ? 0 : 2;
+  const currency = currencyCode.toUpperCase();
+  const number = value.toLocaleString('en-PH', { maximumFractionDigits: centavos, minimumFractionDigits: centavos });
+  return currency === 'PHP' ? `₱${number}` : `${currency} ${number}`;
 }
 
 export function getInitials(firstName?: string, lastName?: string): string {

@@ -9,13 +9,15 @@ export interface ProductVariant {
   id: string;
   title: string;
   sku?: string;
-  inventory_quantity?: number;
+  inventory_quantity?: number | null;
+  manage_inventory?: boolean;
+  allow_backorder?: boolean;
   calculated_price?: {
     calculated_amount: number;
     original_amount: number;
     currency_code: string;
   };
-  options?: { value: string; option: { title: string } }[];
+  options?: { value: string; option?: { title: string } }[];
 }
 
 export interface Product {
@@ -31,6 +33,49 @@ export interface Product {
   categories?: { id: string; name: string; handle: string }[];
   metadata?: Record<string, unknown>;
   seller?: Seller;
+  reviews?: Review[];
+  calculated_amount?: number | null;
+}
+
+/** A product as a card shows it. */
+export interface ProductCardData {
+  id: string;
+  title: string;
+  handle: string;
+  thumbnail: string | null;
+  price: number | null;
+  original_price: number | null;
+  currency_code: string;
+  flash_sale: boolean;
+  in_stock: boolean;
+  /** The only variant, when there is nothing to choose */
+  variant_id: string | null;
+  rating: number;
+  review_count: number;
+  sold: number;
+  brand: string | null;
+  category: { name: string; handle: string } | null;
+  seller: { id: string; name: string; handle: string; verified: boolean } | null;
+}
+
+export interface SearchResult {
+  products: ProductCardData[];
+  count: number;
+  page: number;
+  pages: number;
+  relaxed: boolean;
+  did_you_mean: string | null;
+  on_sale_count: number;
+  in_stock_count: number;
+  verified_count: number;
+}
+
+export interface SuggestResult {
+  query: string;
+  did_you_mean: string | null;
+  products: ProductCardData[];
+  categories: { name: string; handle: string; count: number }[];
+  shops: { name: string; handle: string; count: number }[];
 }
 
 export interface Seller {

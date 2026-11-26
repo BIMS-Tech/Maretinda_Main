@@ -1,12 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, Text, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MaskedText, Press, Rise } from '@/components/motion';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/auth';
 import { getInitials } from '@/lib/utils';
+import { colors, serif } from '@/theme';
 
 interface MenuItemProps {
   icon: string;
@@ -17,113 +21,78 @@ interface MenuItemProps {
 
 function MenuItem({ icon, label, onPress, badge }: MenuItemProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="flex-row items-center gap-4 py-4 border-b border-border active:bg-surface"
-    >
-      <View className="w-9 h-9 rounded-full bg-primary/10 items-center justify-center">
-        <Ionicons name={icon as any} size={18} color="#5B1072" />
+    <Press onPress={onPress} scale={0.98} style={{ alignItems: 'center', flexDirection: 'row', gap: 14, paddingVertical: 13 }}>
+      <View style={{ alignItems: 'center', backgroundColor: colors.lilac, borderRadius: 999, height: 42, justifyContent: 'center', width: 42 }}>
+        <Ionicons color={colors.purple} name={icon as any} size={19} />
       </View>
-      <Text className="flex-1 text-base text-gray-800">{label}</Text>
+      <Text style={{ color: colors.ink, flex: 1, fontSize: 15.5, fontWeight: '600' }}>{label}</Text>
       {badge && (
-        <View className="bg-primary rounded-full px-2 py-0.5">
-          <Text className="text-white text-xs font-bold">{badge}</Text>
+        <View style={{ backgroundColor: colors.yellow, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+          <Text style={{ color: colors.purple, fontSize: 12, fontWeight: '800' }}>{badge}</Text>
         </View>
       )}
-      <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
-    </Pressable>
+      <Ionicons color={colors.faint} name="chevron-forward" size={17} />
+    </Press>
   );
 }
 
 export default function AccountScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { customer, logout, isLoading } = useAuth();
 
   if (!customer) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 items-center justify-center px-6 gap-6">
-          <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center">
-            <Ionicons name="person-outline" size={40} color="#5B1072" />
+      <SafeAreaView className="flex-1 bg-surface">
+        <View style={{ alignItems: 'center', flex: 1, gap: 22, justifyContent: 'center', paddingHorizontal: 28 }}>
+          <Animated.View entering={ZoomIn.springify().damping(14)} style={{ alignItems: 'center', backgroundColor: colors.lilac, borderRadius: 999, height: 88, justifyContent: 'center', width: 88 }}>
+            <Ionicons color={colors.purple} name="person-outline" size={38} />
+          </Animated.View>
+          <View style={{ alignItems: 'center', gap: 6 }}>
+            <MaskedText style={{ color: colors.ink, fontSize: 30, lineHeight: 36 }} text="Good to see you" />
+            <Text style={{ color: colors.muted, fontSize: 14.5, textAlign: 'center' }}>Sign in to follow your orders and keep a wishlist.</Text>
           </View>
-          <View className="items-center gap-2">
-            <Text className="text-xl font-bold text-gray-900">
-              Sign in to your account
-            </Text>
-            <Text className="text-center text-gray-500">
-              Track orders, save your wishlist and more
-            </Text>
-          </View>
-          <View className="w-full gap-3">
-            <Button
-              title="Sign In"
-              size="lg"
-              onPress={() => router.push('/(auth)/login')}
-            />
-            <Button
-              title="Create Account"
-              variant="outline"
-              size="lg"
-              onPress={() => router.push('/(auth)/register')}
-            />
-          </View>
+          <Rise delay={140} style={{ alignSelf: 'stretch', gap: 10 }}>
+            <Button onPress={() => router.push('/(auth)/login')} size="lg" title="Sign in" />
+            <Button onPress={() => router.push('/(auth)/register')} size="lg" title="Create account" variant="outline" />
+          </Rise>
         </View>
       </SafeAreaView>
     );
   }
 
+  const menu = [
+    { href: '/orders', icon: 'receipt-outline', label: 'My orders' },
+    { href: '/wishlist', icon: 'heart-outline', label: 'Wishlist' },
+    { href: '/addresses', icon: 'location-outline', label: 'Saved addresses' },
+    { href: '/settings', icon: 'settings-outline', label: 'Account settings' },
+  ] as const;
+
   return (
-    <SafeAreaView className="flex-1 bg-surface">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile header */}
-        <View className="bg-white px-5 py-6 flex-row items-center gap-4">
-          <View className="w-14 h-14 rounded-full bg-primary items-center justify-center">
-            <Text className="text-white text-xl font-bold">
-              {getInitials(customer.first_name, customer.last_name)}
-            </Text>
+    <View style={{ backgroundColor: colors.cream, flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+        <LinearGradient colors={[colors.purple, '#2A1B3E']} end={{ x: 1, y: 1 }} start={{ x: 0, y: 0 }} style={{ borderBottomLeftRadius: 32, borderBottomRightRadius: 32, gap: 14, paddingBottom: 30, paddingHorizontal: 22, paddingTop: insets.top + 22 }}>
+          <Animated.View entering={ZoomIn.springify().damping(14)} style={{ alignItems: 'center', backgroundColor: colors.yellow, borderRadius: 999, height: 66, justifyContent: 'center', width: 66 }}>
+            <Text style={{ color: colors.purple, fontFamily: serif, fontSize: 26 }}>{getInitials(customer.first_name, customer.last_name) || customer.email[0]?.toUpperCase()}</Text>
+          </Animated.View>
+          <View>
+            <MaskedText style={{ color: colors.white, fontSize: 30, lineHeight: 36 }} text={`Hello, ${customer.first_name || 'there'}`} />
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13.5 }}>{customer.email}</Text>
           </View>
-          <View className="flex-1">
-            <Text className="text-lg font-bold text-gray-900">
-              {customer.first_name} {customer.last_name}
-            </Text>
-            <Text className="text-sm text-gray-500">{customer.email}</Text>
-          </View>
+        </LinearGradient>
+
+        <View style={{ backgroundColor: colors.white, borderRadius: 24, margin: 16, paddingHorizontal: 16, paddingVertical: 6 }}>
+          {menu.map((item, i) => (
+            <Rise index={i} key={item.href}>
+              <MenuItem icon={item.icon} label={item.label} onPress={() => router.push(item.href)} />
+            </Rise>
+          ))}
         </View>
 
-        {/* Menu */}
-        <View className="bg-white mt-3 px-5">
-          <MenuItem
-            icon="receipt-outline"
-            label="My Orders"
-            onPress={() => router.push('/orders')}
-          />
-          <MenuItem
-            icon="heart-outline"
-            label="Wishlist"
-            onPress={() => router.push('/wishlist')}
-          />
-          <MenuItem
-            icon="location-outline"
-            label="Saved Addresses"
-            onPress={() => router.push('/addresses')}
-          />
-          <MenuItem
-            icon="settings-outline"
-            label="Account Settings"
-            onPress={() => router.push('/settings')}
-          />
-        </View>
-
-        <View className="px-5 mt-6 mb-8">
-          <Button
-            title="Sign Out"
-            variant="outline"
-            size="lg"
-            loading={isLoading}
-            onPress={logout}
-          />
+        <View style={{ paddingHorizontal: 16 }}>
+          <Button loading={isLoading} onPress={logout} size="lg" title="Sign out" variant="outline" />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,103 +1,140 @@
-import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import {
-  FlatList,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { ProductCard } from '@/components/ProductCard';
-import { InlineLoading } from '@/components/ui/Loading';
-import { useRegion } from '@/context/region';
-import { listProducts } from '@/lib/products';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import React, { useRef, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-function useLocalDebounce(value: string, delay: number) {
-  const [debounced, setDebounced] = React.useState(value);
-  React.useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
+import { EASE_OUT, Press, Rise } from '@/components/motion';
+import { ProductListing } from '@/components/ProductListing';
+import { useRegion } from '@/context/region';
+import { suggest } from '@/lib/products';
+import { useDebounced } from '@/lib/use-debounced';
+import { colors } from '@/theme';
 
 export default function SearchScreen() {
+  const router = useRouter();
   const { region } = useRegion();
-  const [query, setQuery] = useState('');
-  const debouncedQuery = useLocalDebounce(query, 400);
+  const input = useRef<TextInput>(null);
+  const [text, setText] = useState('');
+  const [q, setQ] = useState('');
+  const [typing, setTyping] = useState(false);
+  const settled = useDebounced(text.trim());
 
-  const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['products', 'search', debouncedQuery, region?.id],
-    queryFn: () =>
-      listProducts({
-        regionId: region!.id,
-        q: debouncedQuery || undefined,
-        limit: 20,
-      }),
-    enabled: !!region?.id,
+  const { data } = useQuery({
+    enabled: typing && !!region?.id,
+    placeholderData: (previous) => previous,
+    queryFn: () => suggest(settled, region?.id),
+    queryKey: ['suggest', settled, region?.id],
   });
 
-  const products = data?.products ?? [];
+  const search = (words: string) => {
+    setText(words);
+    setQ(words.trim());
+    setTyping(false);
+    input.current?.blur();
+  };
+
+  const box = useAnimatedStyle(() => ({ borderColor: withTiming(typing ? colors.purple : colors.line, { duration: 220, easing: EASE_OUT }) }));
+  const categories = data?.categories.slice(0, 8) ?? [];
+  const shops = data?.shops.slice(0, 3) ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
-      {/* Search bar */}
-      <View className="bg-white px-5 pt-4 pb-3">
-        <View className="flex-row items-center gap-3 bg-surface rounded-xl px-4 py-3">
-          <Ionicons name="search-outline" size={18} color="#9ca3af" />
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      <View style={{ alignItems: 'center', flexDirection: 'row', gap: 10, paddingBottom: 12, paddingHorizontal: 16, paddingTop: 8 }}>
+        <Animated.View layout={LinearTransition.duration(260).easing(EASE_OUT)} style={[{ alignItems: 'center', backgroundColor: colors.white, borderRadius: 999, borderWidth: 1.5, flex: 1, flexDirection: 'row', gap: 10, height: 48, paddingHorizontal: 16 }, box]}>
+          <Ionicons color={colors.purple} name="search" size={18} />
           <TextInput
-            className="flex-1 text-base text-gray-900"
-            placeholder="Search products…"
-            placeholderTextColor="#9ca3af"
-            value={query}
-            onChangeText={setQuery}
-            autoFocus
+            accessibilityLabel="Search for products"
+            autoCorrect={false}
+            onChangeText={setText}
+            onFocus={() => setTyping(true)}
+            onSubmitEditing={() => search(text)}
+            placeholder="Search for products"
+            placeholderTextColor={colors.faint}
+            ref={input}
             returnKeyType="search"
+            style={{ color: colors.ink, flex: 1, fontSize: 15, height: '100%' }}
+            value={text}
           />
-          {query.length > 0 && (
-            <Ionicons
-              name="close-circle"
-              size={18}
-              color="#9ca3af"
-              onPress={() => setQuery('')}
-            />
+          {text.length > 0 && (
+            <Pressable
+              accessibilityLabel="Clear"
+              accessibilityRole="button"
+              hitSlop={10}
+              onPress={() => {
+                setText('');
+                setQ('');
+                input.current?.focus();
+              }}
+            >
+              <Ionicons color={colors.faint} name="close-circle" size={18} />
+            </Pressable>
           )}
-        </View>
+        </Animated.View>
+        {typing && (
+          <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)}>
+            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => search(q)}>
+              <Text style={{ color: colors.purple, fontSize: 14, fontWeight: '600' }}>Cancel</Text>
+            </Pressable>
+          </Animated.View>
+        )}
       </View>
 
-      {/* Results */}
-      {isLoading || isFetching ? (
-        <InlineLoading />
-      ) : products.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-3">
-          <Ionicons name="search-outline" size={48} color="#d1d5db" />
-          <Text className="text-gray-400 text-base">
-            {debouncedQuery ? 'No products found' : 'Start typing to search'}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          contentContainerStyle={{ padding: 16, gap: 12 }}
-          columnWrapperStyle={{ gap: 12 }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={{ flex: 1 }}>
-              <ProductCard
-                product={item}
-                regionCurrencyCode={region?.currency_code}
-              />
+      {typing ? (
+        <ScrollView contentContainerStyle={{ gap: 22, paddingBottom: 40, paddingHorizontal: 16, paddingTop: 6 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {settled && data?.did_you_mean && (
+            <Pressable onPress={() => search(data.did_you_mean!)}>
+              <Text style={{ color: colors.muted, fontSize: 14 }}>
+                Did you mean <Text style={{ color: colors.purple, fontWeight: '700' }}>{data.did_you_mean}</Text>?
+              </Text>
+            </Pressable>
+          )}
+          {categories.length > 0 && (
+            <View style={{ gap: 10 }}>
+              <Text style={{ color: colors.faint, fontSize: 11, fontWeight: '700', letterSpacing: 1.4 }}>{settled ? 'CATEGORIES' : 'POPULAR CATEGORIES'}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {categories.map((c, i) => (
+                  <Rise index={i} key={c.handle} layout>
+                    <Press onPress={() => router.push(`/category/${c.handle}`)} style={{ backgroundColor: colors.white, borderColor: colors.line, borderRadius: 999, borderWidth: 1, paddingHorizontal: 15, paddingVertical: 9 }}>
+                      <Text style={{ color: colors.ink, fontSize: 13.5, fontWeight: '600' }}>{c.name}</Text>
+                    </Press>
+                  </Rise>
+                ))}
+              </View>
             </View>
           )}
-          ListFooterComponent={() => (
-            <Text className="text-center text-xs text-gray-400 py-4">
-              {data?.count} product{data?.count !== 1 ? 's' : ''} found
-            </Text>
+          {(data?.products.length ?? 0) > 0 && (
+            <View style={{ gap: 4 }}>
+              <Text style={{ color: colors.faint, fontSize: 11, fontWeight: '700', letterSpacing: 1.4, marginBottom: 4 }}>{settled ? 'PRODUCTS' : 'POPULAR NOW'}</Text>
+              {data!.products.map((p, i) => (
+                <Rise index={i} key={p.id} layout>
+                  <Press onPress={() => router.push(`/product/${p.id}`)} scale={0.98} style={{ alignItems: 'center', flexDirection: 'row', gap: 12, paddingVertical: 9 }}>
+                    <Ionicons color={colors.faint} name="search-outline" size={17} />
+                    <Text numberOfLines={1} style={{ color: colors.ink, flex: 1, fontSize: 14.5 }}>
+                      {p.title}
+                    </Text>
+                    <Ionicons color={colors.faint} name="arrow-forward-outline" size={16} style={{ transform: [{ rotate: '-45deg' }] }} />
+                  </Press>
+                </Rise>
+              ))}
+            </View>
           )}
-        />
+          {shops.length > 0 && settled ? (
+            <View style={{ gap: 4 }}>
+              <Text style={{ color: colors.faint, fontSize: 11, fontWeight: '700', letterSpacing: 1.4, marginBottom: 4 }}>SHOPS</Text>
+              {shops.map((shop) => (
+                <Press key={shop.handle} onPress={() => router.push(`/seller/${shop.handle}`)} scale={0.98} style={{ alignItems: 'center', flexDirection: 'row', gap: 12, paddingVertical: 9 }}>
+                  <Ionicons color={colors.purple} name="storefront-outline" size={17} />
+                  <Text style={{ color: colors.ink, fontSize: 14.5 }}>{shop.name}</Text>
+                </Press>
+              ))}
+            </View>
+          ) : null}
+        </ScrollView>
+      ) : (
+        <ProductListing q={q} />
       )}
     </SafeAreaView>
   );

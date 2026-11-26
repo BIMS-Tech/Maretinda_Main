@@ -1,98 +1,74 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Animated, { FadeInUp, LinearTransition } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CartItemRow } from '@/components/CartItemRow';
+import { CountUp, EASE_OUT, MaskedText } from '@/components/motion';
 import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Loading } from '@/components/ui/Loading';
 import { useCart } from '@/context/cart';
-import { formatPrice } from '@/lib/utils';
+import { useToast } from '@/context/toast';
+import { getErrorMessage } from '@/lib/client';
+import { colors } from '@/theme';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { cart, isLoading, updateItem, removeItem } = useCart();
+  const notify = useToast();
+  const { cart, isLoading, itemCount, updateItem, removeItem } = useCart();
 
   if (isLoading && !cart) return <Loading message="Loading cart…" />;
 
-  const isEmpty = !cart || cart.items?.length === 0;
-  const currencyCode = cart?.currency_code ?? 'PHP';
+  const currency = cart?.currency_code ?? 'PHP';
+  const tell = (err: unknown) => notify(getErrorMessage(err), { tone: 'error' });
+  const items = cart?.items ?? [];
+  const Row = ({ label, amount }: { label: string; amount: number }) => (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <Text style={{ color: colors.muted, fontSize: 14 }}>{label}</Text>
+      <CountUp amount={amount} currency={currency} style={{ color: colors.ink, fontSize: 14, fontWeight: '600' }} />
+    </View>
+  );
 
   return (
-    <SafeAreaView className="flex-1 bg-surface">
-      {/* Header */}
-      <View className="bg-white px-5 py-4 border-b border-border">
-        <Text className="text-xl font-bold text-gray-900">My Cart</Text>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      <View style={{ paddingBottom: 10, paddingHorizontal: 20, paddingTop: 10 }}>
+        <MaskedText style={{ color: colors.ink, fontSize: 32, lineHeight: 38 }} text="Your cart" />
+        {itemCount > 0 && <Text style={{ color: colors.muted, fontSize: 13.5 }}>{itemCount === 1 ? '1 item' : `${itemCount} items`}</Text>}
       </View>
 
-      {isEmpty ? (
-        <View className="flex-1 items-center justify-center gap-4">
-          <Ionicons name="bag-outline" size={64} color="#d1d5db" />
-          <Text className="text-lg font-semibold text-gray-500">
-            Your cart is empty
-          </Text>
-          <Button
-            title="Start Shopping"
-            onPress={() => router.push('/')}
-          />
-        </View>
+      {!items.length ? (
+        <EmptyState action="Start shopping" icon="bag-outline" onPress={() => router.push('/')} title="Your cart is empty">
+          Find something you love: it will wait for you here.
+        </EmptyState>
       ) : (
         <>
-          <ScrollView
-            contentContainerStyle={{ padding: 20 }}
-            showsVerticalScrollIndicator={false}
-          >
-            {cart.items.map((item) => (
+          <Animated.ScrollView contentContainerStyle={{ gap: 12, padding: 16 }} showsVerticalScrollIndicator={false}>
+            {items.map((item, i) => (
               <CartItemRow
-                key={item.id}
+                currency={currency}
+                index={i}
                 item={item}
-                onIncrease={() => updateItem(item.id, item.quantity + 1)}
-                onDecrease={() => {
-                  if (item.quantity > 1) updateItem(item.id, item.quantity - 1);
-                  else removeItem(item.id);
-                }}
-                onRemove={() => removeItem(item.id)}
+                key={item.id}
+                onChange={(quantity) => updateItem(item.id, quantity).catch(tell)}
+                onRemove={() => removeItem(item.id).catch(tell)}
               />
             ))}
-
-            {/* Order summary */}
-            <View className="bg-white rounded-2xl p-5 mt-4 gap-3">
-              <Text className="text-base font-bold text-gray-900">
-                Order Summary
-              </Text>
-              <View className="flex-row justify-between">
-                <Text className="text-gray-500">Subtotal</Text>
-                <Text className="font-medium">
-                  {formatPrice(cart.subtotal ?? 0, currencyCode)}
-                </Text>
+            <Animated.View layout={LinearTransition.duration(320).easing(EASE_OUT)} style={{ backgroundColor: colors.white, borderRadius: 22, gap: 12, marginTop: 4, padding: 18 }}>
+              <Row amount={cart?.subtotal ?? 0} label="Subtotal" />
+              {(cart?.shipping_total ?? 0) > 0 && <Row amount={cart!.shipping_total} label="Shipping" />}
+              <View style={{ backgroundColor: colors.line, height: 1 }} />
+              <View style={{ alignItems: 'baseline', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ color: colors.ink, fontSize: 16, fontWeight: '700' }}>Total</Text>
+                <CountUp amount={cart?.total ?? 0} currency={currency} style={{ color: colors.purple, fontSize: 22, fontWeight: '800' }} />
               </View>
-              {(cart.shipping_total ?? 0) > 0 && (
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-500">Shipping</Text>
-                  <Text className="font-medium">
-                    {formatPrice(cart.shipping_total ?? 0, currencyCode)}
-                  </Text>
-                </View>
-              )}
-              <View className="h-px bg-border" />
-              <View className="flex-row justify-between">
-                <Text className="font-bold text-gray-900">Total</Text>
-                <Text className="font-bold text-primary text-lg">
-                  {formatPrice(cart.total ?? 0, currencyCode)}
-                </Text>
-              </View>
-            </View>
-          </ScrollView>
+            </Animated.View>
+          </Animated.ScrollView>
 
-          {/* Checkout CTA */}
-          <View className="bg-white px-5 py-4 border-t border-border">
-            <Button
-              title={`Checkout · ${formatPrice(cart.total ?? 0, currencyCode)}`}
-              size="lg"
-              onPress={() => router.push('/checkout')}
-            />
-          </View>
+          <Animated.View entering={FadeInUp.duration(420).easing(EASE_OUT).delay(160)} style={{ backgroundColor: colors.white, borderTopColor: colors.line, borderTopWidth: 1, paddingHorizontal: 20, paddingVertical: 14 }}>
+            <Button onPress={() => router.push('/checkout')} size="lg" title="Check out" variant="accent" />
+          </Animated.View>
         </>
       )}
     </SafeAreaView>

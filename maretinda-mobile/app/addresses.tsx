@@ -12,10 +12,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Press } from '@/components/motion';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/context/auth';
 import { client } from '@/lib/client';
+import { colors } from '@/theme';
 
 async function listAddresses() {
   const { data } = await client.get('/store/customers/me/addresses');
@@ -73,23 +76,18 @@ export default function AddressesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface">
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-          <Pressable
-            onPress={() => router.back()}
-            className="w-9 h-9 items-center justify-center rounded-full bg-surface"
-          >
-            <Ionicons name="arrow-back" size={20} color="#374151" />
-          </Pressable>
-          <Text className="text-lg font-bold text-gray-900 flex-1">Saved Addresses</Text>
-          <Pressable onPress={() => setShowForm((v) => !v)}>
-            <Ionicons name={showForm ? 'close' : 'add'} size={24} color="#5B1072" />
-          </Pressable>
-        </View>
+      <ScreenHeader title="Saved addresses"
+        aside={
+          <Press accessibilityLabel={showForm ? "Close" : "Add an address"} onPress={() => setShowForm((v) => !v)} scale={0.88} style={{ padding: 8 }}>
+            <Ionicons name={showForm ? 'close' : 'add'} size={24} color={colors.purple} />
+          </Press>
+        }
+      />
 
         <ScrollView contentContainerStyle={{ padding: 20, gap: 12 }} keyboardShouldPersistTaps="handled">
           {/* Add form */}
           {showForm && (
-            <View className="bg-white rounded-2xl p-5 gap-4">
+            <View className="bg-white rounded-[22px] p-5 gap-4">
               <Text className="text-sm font-bold text-gray-900">New Address</Text>
               <View className="flex-row gap-3">
                 <View className="flex-1">
@@ -127,7 +125,7 @@ export default function AddressesScreen() {
             </View>
           ) : (
             (addresses ?? []).map((addr: any) => (
-              <View key={addr.id} className="bg-white rounded-2xl p-5 gap-2">
+              <View key={addr.id} className="bg-white rounded-[22px] p-5 gap-2">
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
                     <Text className="text-sm font-semibold text-gray-900">

@@ -6,6 +6,7 @@ import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { Loading } from '@/components/ui/Loading';
 import { getOrder } from '@/lib/orders';
 import { capitalize, formatDate, formatPrice, orderStatusColor } from '@/lib/utils';
@@ -32,22 +33,11 @@ export default function OrderDetailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      {/* Header */}
-      <View className="bg-white px-5 py-4 flex-row items-center gap-3 border-b border-border">
-        <Pressable
-          onPress={() => router.back()}
-          className="w-9 h-9 items-center justify-center rounded-full bg-surface"
-        >
-          <Ionicons name="arrow-back" size={20} color="#374151" />
-        </Pressable>
-        <Text className="text-lg font-bold text-gray-900 flex-1">
-          Order #{order.display_id}
-        </Text>
-      </View>
+      <ScreenHeader title={`Order #${order.display_id}`} />
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }} showsVerticalScrollIndicator={false}>
         {/* Status */}
-        <View className="bg-white rounded-2xl p-5 gap-3">
+        <View className="bg-white rounded-[22px] p-5 gap-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-sm font-bold text-gray-900">Order Status</Text>
             <Text className={`text-sm font-semibold capitalize ${orderStatusColor(order.status)}`}>
@@ -69,7 +59,7 @@ export default function OrderDetailScreen() {
         </View>
 
         {/* Items */}
-        <View className="bg-white rounded-2xl p-5 gap-4">
+        <View className="bg-white rounded-[22px] p-5 gap-4">
           <Text className="text-sm font-bold text-gray-900">Items</Text>
           {order.items?.map((item: any) => (
             <View key={item.id} className="flex-row gap-3">
@@ -98,7 +88,7 @@ export default function OrderDetailScreen() {
 
         {/* Shipping address */}
         {order.shipping_address && (
-          <View className="bg-white rounded-2xl p-5 gap-2">
+          <View className="bg-white rounded-[22px] p-5 gap-2">
             <Text className="text-sm font-bold text-gray-900">Shipped to</Text>
             <Text className="text-sm text-gray-500">
               {order.shipping_address.first_name} {order.shipping_address.last_name}
@@ -115,7 +105,7 @@ export default function OrderDetailScreen() {
         )}
 
         {/* Totals */}
-        <View className="bg-white rounded-2xl p-5 gap-3">
+        <View className="bg-white rounded-[22px] p-5 gap-3">
           <Text className="text-sm font-bold text-gray-900">Payment Summary</Text>
           <View className="flex-row justify-between">
             <Text className="text-sm text-gray-500">Total</Text>

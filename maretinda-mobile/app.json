@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#5B1072"
+      "backgroundColor": "#432C63"
     },
     "ios": {
       "supportsTablet": false,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#5B1072"
+        "backgroundColor": "#432C63"
       },
       "package": "com.maretinda.app"
     },
@@ -37,7 +37,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#5B1072"
+          "backgroundColor": "#432C63"
         }
       ],
       "expo-asset",

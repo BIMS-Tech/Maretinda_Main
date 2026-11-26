@@ -13,6 +13,7 @@ WebBrowser.maybeCompleteAuthSession();
 import { AuthProvider } from '@/context/auth';
 import { CartProvider } from '@/context/cart';
 import { RegionProvider } from '@/context/region';
+import { ToastProvider } from '@/context/toast';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,63 +27,66 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [loaded] = useFonts({});
+  const [loaded, failed] = useFonts({ DMSerifDisplay_400Regular: require('../assets/fonts/DMSerifDisplay-Regular.ttf') });
 
   useEffect(() => {
-    if (loaded) {
+    // Without the heading font the app still opens, in the phone's own
+    if (loaded || failed) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, failed]);
 
-  if (!loaded) return null;
+  if (!loaded && !failed) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
       <RegionProvider>
         <AuthProvider>
           <CartProvider>
-            <StatusBar style="auto" />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen
-                name="product/[id]"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="category/[handle]"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="seller/[handle]"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="checkout/index"
-                options={{ animation: 'slide_from_bottom' }}
-              />
-              <Stack.Screen
-                name="order/[id]"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="orders"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="wishlist"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="settings"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen
-                name="addresses"
-                options={{ animation: 'slide_from_right' }}
-              />
-              <Stack.Screen name="+not-found" />
-            </Stack>
+            <ToastProvider>
+              <StatusBar style="auto" />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen
+                  name="product/[id]"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="category/[handle]"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="seller/[handle]"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="checkout/index"
+                  options={{ animation: 'slide_from_bottom' }}
+                />
+                <Stack.Screen
+                  name="order/[id]"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="orders"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="wishlist"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="settings"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen
+                  name="addresses"
+                  options={{ animation: 'slide_from_right' }}
+                />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </ToastProvider>
           </CartProvider>
         </AuthProvider>
       </RegionProvider>

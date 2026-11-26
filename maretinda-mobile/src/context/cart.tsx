@@ -56,28 +56,42 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
-  const updateItem = useCallback(
-    async (lineItemId: string, quantity: number) => {
+  // What the shopper asked for shows at once; the shop's answer settles it
+  const change = useCallback(
+    async (asked: (cart: Cart) => Cart, send: () => Promise<Cart>) => {
+      const before = cart;
+      if (before) setCart(asked(before));
       setIsLoading(true);
       try {
-        const updated = await updateCartItemFn(lineItemId, quantity);
-        setCart(updated);
+        setCart(await send());
+      } catch (err) {
+        setCart(before);
+        throw err;
       } finally {
         setIsLoading(false);
       }
     },
-    [],
+    [cart],
   );
 
-  const removeItem = useCallback(async (lineItemId: string) => {
-    setIsLoading(true);
-    try {
-      const updated = await removeCartItemFn(lineItemId);
-      setCart(updated);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const updateItem = useCallback(
+    (lineItemId: string, quantity: number) =>
+      change(
+        (c) => ({ ...c, items: c.items.map((i) => (i.id === lineItemId ? { ...i, quantity } : i)) }),
+        () => updateCartItemFn(lineItemId, quantity),
+      ),
+    [change],
+  );
+
+  const removeItem = useCallback(
+    (lineItemId: string) =>
+      change(
+        (c) => ({ ...c, items: c.items.filter((i) => i.id !== lineItemId) }),
+        // Deleting answers with the cart in some versions and its parent in others
+        async () => (await removeCartItemFn(lineItemId)) ?? (await getCart()),
+      ),
+    [change],
+  );
 
   const itemCount =
     cart?.items?.reduce((acc, item) => acc + item.quantity, 0) ?? 0;
