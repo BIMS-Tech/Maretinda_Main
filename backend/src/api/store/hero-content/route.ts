@@ -117,6 +117,43 @@ async function resolveProductPrice(
 }
 
 /**
+ * What buyers really think of the featured product and how many were sold in
+ * the last seven days. Never typed in: a made-up rating under a real product
+ * would be a lie to whoever buys it.
+ */
+async function resolveProductNumbers(req: MedusaRequest, productLink: string | undefined) {
+  const handle = productLink?.match(/^\/products\/([^/?#]+)/)?.[1]
+  const none = { featured_product_rating: 0, featured_product_rating_count: 0, featured_product_sold_this_week: 0 }
+  if (!handle) return none
+  try {
+    const knex = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+    const { rows } = await knex.raw(
+      `SELECT
+         (SELECT COUNT(*)::int FROM product_product_review_review x JOIN review r ON r.id = x.review_id
+           WHERE x.product_id = p.id AND x.deleted_at IS NULL AND r.deleted_at IS NULL AND r.reference = 'product') AS reviews,
+         (SELECT ROUND(AVG(r.rating)::numeric, 1)::float FROM product_product_review_review x JOIN review r ON r.id = x.review_id
+           WHERE x.product_id = p.id AND x.deleted_at IS NULL AND r.deleted_at IS NULL AND r.reference = 'product') AS rating,
+         (SELECT COALESCE(SUM(oi.quantity), 0)::int FROM order_item oi
+           JOIN order_line_item li ON li.id = oi.item_id
+           JOIN "order" o ON o.id = oi.order_id AND o.version = oi.version
+           WHERE li.product_id = p.id AND o.created_at >= NOW() - INTERVAL '7 days'
+             AND o.status NOT IN ('canceled', 'archived') AND o.deleted_at IS NULL AND oi.deleted_at IS NULL) AS sold
+       FROM product p WHERE p.handle = ? AND p.deleted_at IS NULL LIMIT 1`,
+      [decodeURIComponent(handle)]
+    )
+    if (!rows[0]) return none
+    return {
+      featured_product_rating: rows[0].rating ?? 0,
+      featured_product_rating_count: rows[0].reviews ?? 0,
+      featured_product_sold_this_week: rows[0].sold ?? 0,
+    }
+  } catch (e) {
+    console.error("[Hero Content] Failed to read the product's reviews and sales:", (e as Error).message)
+    return none
+  }
+}
+
+/**
  * GET /store/hero-content
  *
  * welcome_promo — priority:
@@ -223,6 +260,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const resolvedPrice = await resolveProductPrice(req, site_settings.featured_product_link as string | undefined)
     if (resolvedPrice) {
       site_settings = { ...site_settings, ...resolvedPrice }
+    }
+    site_settings = {
+      ...site_settings,
+      ...(await resolveProductNumbers(req, site_settings.featured_product_link as string | undefined)),
     }
 
     // --- Live seller count ---

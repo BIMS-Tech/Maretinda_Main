@@ -55,15 +55,16 @@ export default async function trendingScoreJob(
     // Step 2: avg rating + review count per product from the reviews table
     let ratingsMap: Record<string, { avg: number; count: number }> = {}
     try {
+      // A review's product is in the link table; `review` itself doesn't say
       const ratingsResult = await pg.raw(`
         SELECT
-          reference_id AS product_id,
-          ROUND(AVG(rating)::numeric, 1)::float AS avg_rating,
+          x.product_id,
+          ROUND(AVG(r.rating)::numeric, 1)::float AS avg_rating,
           COUNT(*)::int AS review_count
-        FROM review
-        WHERE reference = 'product'
-          AND deleted_at IS NULL
-        GROUP BY reference_id
+        FROM product_product_review_review x
+        JOIN review r ON r.id = x.review_id AND r.deleted_at IS NULL AND r.reference = 'product'
+        WHERE x.deleted_at IS NULL
+        GROUP BY x.product_id
       `)
       for (const row of ratingsResult.rows ?? []) {
         ratingsMap[row.product_id] = {

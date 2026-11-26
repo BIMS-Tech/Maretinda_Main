@@ -457,6 +457,11 @@ export default defineMiddlewares({
       middlewares: [rateLimit({ name: 'seller-application', max: 5, windowMs: HOUR }), requireCaptcha],
     },
     {
+      matcher: '/store/auth/shopper-profile',
+      method: ['POST'],
+      middlewares: [rateLimit({ name: 'shopper-profile', max: 10, windowMs: HOUR })],
+    },
+    {
       matcher: '/store/uploads',
       method: ['POST'],
       middlewares: [rateLimit({ name: 'public-upload', max: 30, windowMs: HOUR })],
@@ -507,6 +512,12 @@ export default defineMiddlewares({
       middlewares: [
         rateLimit({ name: 'reel-view', max: 10, windowMs: MINUTE, key: (req) => req.params?.id }),
       ],
+    },
+    // Generous: the store asks from its own server, so its buyers can share an address
+    {
+      matcher: '/store/search*',
+      method: ['GET'],
+      middlewares: [rateLimit({ name: 'search', max: 3000, windowMs: MINUTE })],
     },
     {
       matcher: '/store/calculate-shipping',
