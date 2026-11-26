@@ -8,7 +8,7 @@ export const publishableApiKey = __PUBLISHABLE_API_KEY__ ?? ""
  * be read once when the panel loaded, so uploads made after signing in (without
  * a page reload) went out with no token and were refused with 401.
  */
-const authToken = () => window.localStorage.getItem("medusa_auth_token") || ""
+export const authToken = () => window.localStorage.getItem("medusa_auth_token") || ""
 
 export const sdk = new Medusa({
   baseUrl: backendUrl,

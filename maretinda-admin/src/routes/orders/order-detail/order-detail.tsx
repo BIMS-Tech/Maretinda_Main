@@ -18,6 +18,7 @@ import { OrderSummarySection } from "./components/order-summary-section";
 import { DEFAULT_FIELDS } from "./constants";
 import { orderLoader } from "./loader";
 import { OrderRemainingOrdersGroupSection } from "./components/order-remaining-orders-group-section";
+import { OrderFailedDeliverySection } from "./components/order-failed-delivery-section";
 
 export const OrderDetail = () => {
   const initialData = useLoaderData() as Awaited<
@@ -92,6 +93,7 @@ export const OrderDetail = () => {
       </TwoColumnPage.Main>
       <TwoColumnPage.Sidebar>
         <OrderCustomerSection order={order} />
+        <OrderFailedDeliverySection order={order} />
         <OrderActivitySection order={order} />
         <OrderRemainingOrdersGroupSection />
       </TwoColumnPage.Sidebar>

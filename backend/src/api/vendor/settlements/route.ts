@@ -2,6 +2,7 @@ import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { netOfFees, PAYOUT_HOLD_DAYS, payoutLines } from "../../../lib/settlement-lines"
 import { sellerIdOfMember } from "../../../lib/seller-ownership"
+import { depositBalance, depositMinimum, openCharges } from "../../../lib/seller-charges"
 
 const round = (n: number) => Math.round(n * 100) / 100
 
@@ -41,13 +42,26 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   const sum = (rows: typeof pending, pick: (r: (typeof pending)[number]) => boolean) =>
     round(rows.filter(pick).reduce((n, r) => n + r.net_amount, 0))
 
+  // Owed from refunds: kept back from the next payouts, then from the deposit
+  const owed = await openCharges(pg, [sellerId])
+  const recovered = await pg("seller_charge_recovery as r")
+    .join("seller_charge as c", "c.id", "r.charge_id")
+    .where("c.seller_id", sellerId)
+    .select("c.label", "r.amount", "r.source", "r.created_at")
+    .orderBy("r.created_at", "desc")
+    .limit(50)
+
   res.json({
     hold_days: PAYOUT_HOLD_DAYS,
+    charges: owed.map((c) => ({ label: c.label, amount: c.amount, owed: c.owed, created_at: c.created_at })),
+    recovered: recovered.map((r: any) => ({ ...r, amount: Number(r.amount) })),
+    deposit: { balance: await depositBalance(pg, sellerId), minimum: depositMinimum() },
     summary: {
       ready: sum(pending, (r) => r.hold === null),
       holding: sum(pending, (r) => r.hold === "holding"),
       awaiting_delivery: sum(pending, (r) => r.hold === "not_delivered"),
       return_open: sum(pending, (r) => r.hold === "return_open"),
+      owed: round(owed.reduce((n, c) => n + c.owed, 0)),
       paid_total: round(paid.reduce((n: number, p: any) => n + Number(p.net_amount ?? p.gross_amount ?? 0), 0)),
     },
     pending,

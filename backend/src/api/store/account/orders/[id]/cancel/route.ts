@@ -6,8 +6,9 @@ import { cancelOrderWorkflow } from "@medusajs/core-flows"
  * POST /store/account/orders/:id/cancel
  *
  * A buyer cancels their own order while the seller hasn't started on it.
- * Orders already paid online are refused here: cancelling one means sending
- * money back, and that goes through support until refunds are handled in-app.
+ * Orders already paid online go through a cancellation request instead
+ * (POST /store/cancellation-requests): support checks with the seller, and the
+ * refund is logged for accounting to send.
  */
 export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse) {
   const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
@@ -44,7 +45,7 @@ export async function POST(req: AuthenticatedMedusaRequest, res: MedusaResponse)
     return res.status(409).json({
       type: "not_allowed",
       code: "paid_online",
-      message: "This order is already paid. To cancel it and get your money back, message the seller or write to support@maretinda.com.",
+      message: "This order is already paid online. Use Request cancellation on the order page: we ask the seller to hold it and refund you less the payment processing fee.",
     })
   }
 

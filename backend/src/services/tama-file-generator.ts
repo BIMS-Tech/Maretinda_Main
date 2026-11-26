@@ -221,7 +221,8 @@ class TamaFileGeneratorService extends MedusaService({}) {
 
       return rows.map((row: any) => {
         const grossAmount = Number(row.amount)
-        const netAmount = this.calculateNetAmount(grossAmount)
+        // After fees and anything the shop owes from refunds (lib/seller-charges)
+        const netAmount = row.net_amount ?? this.calculateNetAmount(grossAmount)
         
         return {
           id: row.id,
@@ -233,6 +234,7 @@ class TamaFileGeneratorService extends MedusaService({}) {
           beneficiary_account: row.beneficiary_account,
           amount: grossAmount,
           net_amount: netAmount,
+          recoveries: row.recoveries ?? [],
           transaction_date: new Date(row.transaction_date),
           remarks: row.remarks || 'MARETINDA SETTLEMENT'
         }
@@ -251,9 +253,10 @@ class TamaFileGeneratorService extends MedusaService({}) {
   ): string {
     const fileDate = transactionDate || new Date()
     const headerRecord = this.generateHeaderRecord(fundingAccount, fileDate)
-    const detailRecords = transactions.map(transaction =>
-      this.generateDetailRecord(transaction)
-    )
+    // A line wholly taken by what the shop owes is recorded as paid but not sent to the bank
+    const detailRecords = transactions
+      .filter(transaction => (transaction.net_amount ?? 1) > 0)
+      .map(transaction => this.generateDetailRecord(transaction))
     return [headerRecord, ...detailRecords].join('\n')
   }
 
@@ -270,7 +273,7 @@ class TamaFileGeneratorService extends MedusaService({}) {
 
     const headerRow = ['H', fundingAccount, formattedDate, '11:00 AM']
 
-    const detailRows = transactions.map(transaction => {
+    const detailRows = transactions.filter(transaction => (transaction.net_amount ?? 1) > 0).map(transaction => {
       const netAmount = transaction.net_amount ?? this.calculateNetAmount(transaction.amount)
       const formattedAmount = this.formatAmount(netAmount)
       return ['D', '', transaction.reference_number, '', '', transaction.beneficiary_account, formattedAmount, transaction.remarks || 'MARETINDA SETTLEMENT']

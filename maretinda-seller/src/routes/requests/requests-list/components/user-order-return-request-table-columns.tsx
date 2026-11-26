@@ -1,6 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table"
 import { DateCell } from "../../../../components/table/table-cells/common/date-cell"
 import { StatusCell } from "../../../../components/table/table-cells/common/status-cell"
+import { useReturnCases } from "../../../../hooks/api/return-cases"
 
 const columnHelper = createColumnHelper<any>()
 
@@ -19,7 +20,12 @@ const getStatusColor: any = (status: string) => {
   }
 }
 
+const when = (d: string) => new Date(d).toLocaleString("en-PH", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+
 export const useOrderReturnRequestTableColumns = () => {
+  // The case beside each request: its stage and the next deadline
+  const { data } = useReturnCases()
+  const cases = new Map((data?.return_cases ?? []).map((c) => [c.request_id, c]))
   return [
     columnHelper.accessor("id", {
       header: "Order",
@@ -45,13 +51,16 @@ export const useOrderReturnRequestTableColumns = () => {
     columnHelper.accessor("status", {
       header: "Status",
       cell: ({ row }) => {
+        const c = cases.get(row.original.id)
+        const due = c?.stage === "seller_review" ? `Answer by ${when(c.respond_by)}` : c?.stage === "inspecting" && c.inspect_by ? `Check by ${when(c.inspect_by)}` : null
         return (
-          <div className="flex h-full w-full items-center overflow-hidden">
-            <span className="truncate uppercase">
-              <StatusCell color={getStatusColor(row.original.status)}>
-                {row.original.status}
+          <div className="flex h-full w-full flex-col justify-center overflow-hidden">
+            <span className="truncate">
+              <StatusCell color={c?.stage === "seller_review" ? "orange" : getStatusColor(row.original.status)}>
+                {c?.stage_label ?? row.original.status}
               </StatusCell>
             </span>
+            {due && <span className="text-ui-fg-muted truncate text-xs">{due}</span>}
           </div>
         )
       },

@@ -1,4 +1,5 @@
 import {
+  ArrowUturnLeft,
   Bolt,
   BottomToTop,
   BuildingStorefront,
@@ -327,6 +328,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <TruckFast />,
       label: "Shipping Orders",
       to: "/shipping-orders",
+    },
+    {
+      icon: <ArrowUturnLeft />,
+      label: "Returns & Refunds",
+      to: "/returns",
     },
     {
       icon: <DocumentText />,

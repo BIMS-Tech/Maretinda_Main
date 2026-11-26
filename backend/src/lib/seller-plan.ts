@@ -1,4 +1,5 @@
 import { sellerReadiness } from "./seller-readiness"
+import { sellersBelowDeposit } from "./seller-charges"
 
 /**
  * A seller sells only while on a plan: paid, or the free first month. Without
@@ -7,7 +8,7 @@ import { sellerReadiness } from "./seller-readiness"
  * that changes what the shop sells or where it ships needs a plan.
  */
 const WORKS_WITHOUT_PLAN =
-  /^\/vendor\/(subscription|sellers|orders|returns|return-request|shipping-orders|chat|talkjs|payouts|payout-account|invites\/accept|me|notifications)(\/|$)/
+  /^\/vendor\/(subscription|sellers|orders|returns|return-request|return-cases|return-evidence|shipping-orders|chat|talkjs|payouts|payout-account|invites\/accept|me|notifications)(\/|$)/
 
 export const vendorRequestNeedsPlan = (method: string, path: string) =>
   method.toUpperCase() !== "GET" && !WORKS_WITHOUT_PLAN.test(path)
@@ -34,16 +35,18 @@ export const isSuspended = (seller: { store_status?: string | null }) =>
 
 /**
  * A shop is closed to buyers when an admin suspended it, it has no plan
- * running, or its store setup isn't finished (see lib/seller-readiness). Of
- * the given sellers, the closed ones.
+ * running, its store setup isn't finished (see lib/seller-readiness), or its
+ * security deposit is below the required minimum (lib/seller-charges; off
+ * while the minimum is 0). Of the given sellers, the closed ones.
  */
 export async function closedSellers(pg: any, sellerIds: string[]): Promise<{ id: string; name: string; handle: string }[]> {
   const ids = [...new Set(sellerIds.filter(Boolean))]
   if (!ids.length) return []
   const noPlan = new Set(await sellersWithoutPlan(pg, ids))
   const sellers = await pg("seller").whereIn("id", ids).whereNull("deleted_at").select("*")
+  const lowDeposit = await sellersBelowDeposit(pg, ids)
   return sellers
-    .filter((s: any) => isSuspended(s) || noPlan.has(s.id) || !sellerReadiness(s).ready)
+    .filter((s: any) => isSuspended(s) || noPlan.has(s.id) || !sellerReadiness(s).ready || lowDeposit.has(s.id))
     .map((s: any) => ({ id: s.id, name: s.name, handle: s.handle }))
 }
 

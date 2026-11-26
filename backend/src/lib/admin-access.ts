@@ -49,7 +49,9 @@ const WRITE_AREA: Record<string, Area> = {
   upload: "operations", "trending-products": "operations", "customer-groups": "operations",
   // Helping buyers and sellers
   returns: "support", "return-request": "support", "listing-reports": "support", reviews: "support",
-  customers: "support", chat: "support", reels: "support",
+  customers: "support", chat: "support", reels: "support", "return-cases": "support", "cancellation-requests": "support",
+  // Refunds and what sellers owe: money
+  refunds: "finance", "refund-receipts": "finance", "seller-charges": "finance", "seller-deposits": "finance",
 }
 
 /** Reading these shows bank details, private IDs, keys or other admins' activity. */
@@ -57,6 +59,8 @@ const READ_AREA: Record<string, Area> = {
   "api-keys": "settings", invites: "settings", "audit-log": "settings", "admin-roles": "settings",
   settlement: "finance", tama: "finance", dft: "finance", reports: "finance",
   documents: "operations",
+  // Buyers' bank and e-wallet details, and their claim evidence
+  refunds: "finance", "seller-deposits": "finance", "return-cases": "support", "return-evidence": "support",
 }
 
 const READS = ["GET", "HEAD", "OPTIONS"]

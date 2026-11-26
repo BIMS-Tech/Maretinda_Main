@@ -1,13 +1,14 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
-import { applyCustomMigrations, bearer, createAdmin, createCustomer, createSeller, noThrow, tokenFor } from "../helpers"
+import { applyCustomMigrations, bearer, createAdmin, createCustomer, createSeller, noThrow, pgOf, tokenFor } from "../helpers"
 
 jest.setTimeout(300 * 1000)
 
 /**
- * A seller who won't decide a return escalates it to Maretinda. Mercur has
- * no admin route for that, so escalated returns had nowhere to go: the
- * admin's Order Return screen called a route that didn't exist.
+ * Escalated returns are decided by Maretinda from the admin's Order Return
+ * screen. The full process (proof, deadlines, refunds) is in
+ * returns-refunds.spec.ts; this covers the admin list and decision routes and
+ * that the replaced seller route points to the new one.
  */
 medusaIntegrationTestRunner({
   inApp: true,
@@ -40,6 +41,17 @@ medusaIntegrationTestRunner({
         { order_return: { order_return_request_id: request.id }, [Modules.ORDER]: { order_id: order.id } },
         { seller: { seller_id: seller.id }, order_return: { order_return_request_id: request.id } },
       ])
+      const stage = status === "escalated" ? "escalated" : status === "pending" ? "seller_review" : "closed"
+      await pgOf(container)("return_case").insert({
+        request_id: request.id,
+        order_id: order.id,
+        seller_id: seller.id,
+        customer_id: customer.id,
+        payment: "cod",
+        reasons: JSON.stringify(["damaged-defective"]),
+        stage,
+        respond_by: new Date(Date.now() + 48 * 3600_000),
+      })
       return { ...request, order, seller, sellerToken: tokenFor("seller", member.id) }
     }
 
@@ -67,6 +79,7 @@ medusaIntegrationTestRunner({
         await admin()
       )
       expect(res.status).toBe(200)
+      expect(res.data.stage).toBe("closed")
       const saved = await (getContainer().resolve("order_return") as any).retrieveOrderReturnRequest(escalated.id)
       expect(saved).toMatchObject({ status: "canceled", admin_reviewer_note: "Photos show the item was used" })
       expect(saved.admin_reviewer_id).toBeTruthy()
@@ -79,7 +92,7 @@ medusaIntegrationTestRunner({
         { status: "canceled", admin_reviewer_note: "x" },
         await admin()
       )
-      expect(res.status).toBe(400)
+      expect(res.status).toBe(409)
     })
 
     it.each([[{ status: "withdrawn", admin_reviewer_note: "x" }], [{ status: "canceled" }]])("refuses %j", async (body) => {
@@ -87,38 +100,33 @@ medusaIntegrationTestRunner({
       expect((await api.post(`/admin/return-request/${escalated.id}`, body, await admin())).status).toBe(400)
     })
 
-    it.each(["escalated", "withdrawn"])("lets the seller mark a return %s", async (status) => {
+    it("the old seller route says where returns are answered now", async () => {
       const pending = await returnRequest("pending")
       const res = await api.post(
         `/vendor/return-request/${pending.id}`,
-        { status, vendor_reviewer_note: "Over to Maretinda" },
+        { status: "withdrawn", vendor_reviewer_note: "Over to Maretinda" },
         { headers: bearer(pending.sellerToken), ...noThrow }
       )
-      expect(res.status).toBe(200)
-      const saved = await (getContainer().resolve("order_return") as any).retrieveOrderReturnRequest(pending.id)
-      expect(saved.status).toBe(status)
+      expect(res.status).toBe(410)
+      expect(res.data.message).toMatch(/Requests → Returns/)
     })
 
     it("doesn't let one seller answer another's return", async () => {
       const pending = await returnRequest("pending")
       const other = await returnRequest("pending")
       const res = await api.post(
-        `/vendor/return-request/${pending.id}`,
-        { status: "withdrawn", vendor_reviewer_note: "x" },
+        `/vendor/return-cases/${pending.id}/respond`,
+        { action: "accept_return" },
         { headers: bearer(other.sellerToken), ...noThrow }
       )
-      expect(res.status).toBeGreaterThanOrEqual(400)
+      expect(res.status).toBe(404)
       expect((await (getContainer().resolve("order_return") as any).retrieveOrderReturnRequest(pending.id)).status).toBe("pending")
     })
 
     it("only answers a return once", async () => {
       const done = await returnRequest("escalated")
-      const res = await api.post(
-        `/vendor/return-request/${done.id}`,
-        { status: "withdrawn", vendor_reviewer_note: "x" },
-        { headers: bearer(done.sellerToken), ...noThrow }
-      )
-      expect(res.status).toBe(400)
+      const res = await api.post(`/vendor/return-cases/${done.id}/respond`, { action: "accept_return" }, { headers: bearer(done.sellerToken), ...noThrow })
+      expect(res.status).toBe(409)
     })
 
     it("is for admins only", async () => {

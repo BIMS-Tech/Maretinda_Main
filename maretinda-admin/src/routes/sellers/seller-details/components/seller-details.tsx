@@ -17,6 +17,7 @@ import { useSellerOrdersTableQuery } from "@hooks/table/query";
 import { SellerCustomerGroupsSection } from "@routes/sellers/common/components/seller-customer-groups-section";
 import { SellerGeneralSection } from "@routes/sellers/common/components/seller-general-section";
 import { SellerStandingSection } from "@routes/sellers/common/components/seller-standing-section";
+import { SellerDepositSection } from "@routes/sellers/common/components/seller-deposit-section";
 import { SellerOrdersSection } from "@routes/sellers/common/components/seller-orders-section";
 import { SellerProductsSection } from "@routes/sellers/common/components/seller-products-section";
 
@@ -92,6 +93,7 @@ export const SellerDetails = () => {
     <>
       <SellerGeneralSection seller={data?.seller as sellerseller} />
       <SellerStandingSection sellerId={id!} />
+      <SellerDepositSection sellerId={id!} />
       <SellerOrdersSection seller_orders={orders as AdminOrderListResponse} />
       <SellerProductsSection
         seller_products={products as AdminProductListResponse}

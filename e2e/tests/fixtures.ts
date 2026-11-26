@@ -239,21 +239,25 @@ export async function adminPage(browser: import('@playwright/test').Browser) {
   await page.goto('/orders')
   // The panel redirects to /login only after it has loaded
   const loginForm = page.locator('input[name="email"]')
-  await expect(loginForm.or(page.getByRole('link', { name: 'Orders' }).first())).toBeVisible({ timeout: 60_000 })
+  const twoStep = page.locator('[data-testid="two-step"][data-stage="verify"]')
+  await expect(loginForm.or(twoStep).or(page.getByRole('link', { name: 'Orders' }).first())).toBeVisible({ timeout: 60_000 })
+  let signedIn = false
   if (await loginForm.isVisible()) {
     await page.locator('input[name="email"]').fill(process.env.E2E_ADMIN_EMAIL!)
     await page.locator('input[name="password"]').fill(process.env.E2E_ADMIN_PASSWORD!)
     await page.getByRole('button', { name: /sign in|continue|log in/i }).first().click()
     await expect(page).not.toHaveURL(/\/login/, { timeout: 60_000 })
-    // Two-step sign-in: the authenticator code
-    const twoStep = page.locator('[data-testid="two-step"][data-stage="verify"]')
-    if (await twoStep.waitFor({ timeout: 10_000 }).then(() => true, () => false)) {
-      await page.getByLabel('Authenticator code').fill(await unusedAdminCode())
-      await page.getByRole('button', { name: 'Continue' }).click()
-      await expect(page).not.toHaveURL(/two-step/, { timeout: 60_000 })
-    }
-    await context.storageState({ path: file })
+    await twoStep.waitFor({ timeout: 10_000 }).catch(() => {})
+    signedIn = true
   }
+  // Two-step sign-in: after the password, or again on a cached session whose second step has lapsed
+  if (await twoStep.isVisible()) {
+    await page.getByLabel('Authenticator code').fill(await unusedAdminCode())
+    await page.getByRole('button', { name: 'Continue' }).click()
+    await expect(page).not.toHaveURL(/two-step/, { timeout: 60_000 })
+    signedIn = true
+  }
+  if (signedIn) await context.storageState({ path: file })
   return page
 }
 

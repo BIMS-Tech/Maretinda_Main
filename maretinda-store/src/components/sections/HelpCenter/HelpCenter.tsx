@@ -104,7 +104,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'Can I cancel or modify my order?',
-			a: 'You can cancel an order yourself from its page until the seller starts preparing it, as long as it was not paid online (Cash on Delivery orders). For an order you already paid online, message the seller or write to support@maretinda.com and we will arrange the cancellation and refund. Orders cannot be changed after checkout: cancel and order again instead.',
+			a: 'You can cancel an order yourself from its page until the seller starts preparing it, as long as it was not paid online (Cash on Delivery orders). For an order you paid online, press Request cancellation on the order page before it ships: we ask the seller to hold it and refund what you paid, less the payment processing fee. Orders cannot be changed after checkout: cancel and order again instead.',
 		},
 		{
 			q: `My order says "Delivered" but I haven't received it.`,
@@ -112,7 +112,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'Why was my order cancelled?',
-			a: 'An order is cancelled when you cancel it, or when the seller or Maretinda cancels it, for example when an item is out of stock or the shop has closed. You will get an email either way. If you paid online, our support team will contact you about your refund.',
+			a: 'An order is cancelled when you cancel it, or when the seller or Maretinda cancels it, for example when an item is out of stock or the shop has closed. You will get an email either way. If you paid online, Maretinda refunds you in full when the seller cancelled, within 7–14 business days; the refund and its reference number show on your order page.',
 		},
 	],
 	shipping: [
@@ -136,19 +136,19 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 	returns: [
 		{
 			q: 'What is the return window?',
-			a: 'You can ask for a return within 7 days of delivery. Your order page shows the last day. Items should be unused, in their original packaging and complete. Perishables and customised items cannot be returned.',
+			a: 'You can ask for a return within 7 days of delivery, for an item that is damaged, defective, wrong, incomplete, not as described, counterfeit or expired, or a parcel that never arrived. A change of mind is not covered. Items you send back must be unused, with all packaging, tags and freebies. Opened personal care items, food and custom-made goods can only be returned if they arrived damaged, expired or wrong.',
 		},
 		{
 			q: 'How do I request a return?',
-			a: 'Go to My Account → Orders → select the order → "Request return", choose the items and the reason, and describe the problem. The seller approves or declines it. If the seller passes it to Maretinda, our team decides. You are emailed at each step.',
+			a: 'Go to My Account → Orders → select the order → "Request return". Choose the items and the reason, add clear photos with the waybill in view (and the unboxing video for a damaged or incomplete item), and enter your GCash, Maya or bank account for the refund. The seller has 48 hours to answer; with no answer it is approved. If the seller disputes it, you can escalate it to Maretinda, and we decide within 7 days.',
 		},
 		{
 			q: 'When will I receive my refund?',
-			a: 'Once your return is approved, Maretinda support contacts you to arrange the return of the item and your refund. If you have not heard from us within 2 business days, write to support@maretinda.com.',
+			a: 'Once the seller has your returned item (or approves a refund without a return), Maretinda\'s accounting team sends the refund to the account you gave: within 7–14 business days for online payments and 3–5 for cash on delivery. You get the reference number, date and receipt by email and on your order page. A damaged or wrong item is refunded in full, with the original delivery fee when you return the whole order, plus what you paid to send it back.',
 		},
 		{
 			q: 'What if the item arrived damaged or wrong?',
-			a: 'Take photos of the item and the packaging straight away. Request a return from the order page, choosing the reason that fits, and send the photos to the seller through Messages. Write to support@maretinda.com if it is not resolved.',
+			a: 'Take photos of the item and the packaging, with the waybill in view, and keep the unboxing video if you recorded one. Then request a return from the order page within 7 days of delivery and add them there: that is what the seller and Maretinda look at.',
 		},
 	],
 	payments: [

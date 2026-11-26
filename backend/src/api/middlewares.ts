@@ -17,12 +17,11 @@ import FlashSaleService from '../services/flash-sale'
 import { PLAN_REQUIRED_MESSAGE, closedShopMessage, closedShopsSelling, sellersWithoutPlan, vendorRequestNeedsPlan } from '../lib/seller-plan'
 import { auditAdminWrites } from '../lib/audit-log'
 import { adminAccessGate } from '../lib/admin-access'
-import { emailReturnUpdates } from '../lib/return-emails'
 import { requireCaptcha } from '../lib/captcha'
-import { guardReturnRequest } from '../lib/return-window'
 import { guardReview } from '../lib/review-guard'
 import { emailSellerAboutReview } from '../lib/review-emails'
 import { requireVerifiedEmail } from '../lib/email-verification'
+import { codBlocked } from '../lib/cancellations'
 import { holdNewProductUntilReady, holdPublishUntilReady, publishHeldAfterSave } from '../lib/held-products'
 
 // A known default signs tokens anyone can forge, including admin ones. Medusa
@@ -365,45 +364,29 @@ const claimFlashSaleStock = async (req: MedusaRequest, res: MedusaResponse, next
   }
 }
 
-/**
- * A seller declining ("withdrawn") or escalating a buyer's return. Mercur's
- * route runs a workflow that links the order's returns to the seller and
- * crashes when there are none, which is every time before a refund, so those
- * two answers are saved here. Refunds still go through Mercur: they open the
- * return that its linking needs.
- */
-const answerReturnWithoutRefund = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+/** Mercur's return routes, replaced: says where returns are handled now. */
+const returnsMovedTo = (where: string) => (_req: MedusaRequest, res: MedusaResponse) =>
+  res.status(410).json({ type: 'not_allowed', message: `Returns are handled from ${where} now, with photos and where to send the refund.` })
+
+/** Policy 1.5: buyers whose COD parcels kept coming back undelivered pay online instead. */
+const refuseCodAfterFailedDeliveries = async (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
   try {
-    const { status, vendor_reviewer_note } = (req.body ?? {}) as { status?: string; vendor_reviewer_note?: unknown }
-    if (status !== 'withdrawn' && status !== 'escalated') return next()
-    if (typeof vendor_reviewer_note !== 'string') {
-      return res.status(400).json({ type: 'invalid_data', message: 'Add a note for the buyer' })
-    }
+    if ((req.body as any)?.provider_id !== 'pp_system_default') return next()
     const db: any = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
-    const sellerId = await sellerIdOfMember(db, (req as any).auth_context?.actor_id)
-    const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-    const { data } = await query.graph({
-      entity: 'order_return_request',
-      fields: ['id', 'status', 'seller.id'],
-      filters: { id: req.params.id },
-    })
-    const request: any = data[0]
-    if (!request || !sellerId || request.seller?.id !== sellerId) {
-      return res.status(404).json({ type: 'not_found', message: 'Return request not found' })
+    const cart = await db('cart_payment_collection as l')
+      .join('cart as c', 'c.id', 'l.cart_id')
+      .where('l.payment_collection_id', req.params.id)
+      .whereNull('l.deleted_at')
+      .first('c.customer_id', 'c.email')
+    const customerId = (req as any).auth_context?.actor_id ?? cart?.customer_id ?? null
+    if (await codBlocked(db, customerId, cart?.email ?? null)) {
+      return res.status(403).json({
+        type: 'not_allowed',
+        code: 'cod_restricted',
+        message: "Cash on delivery isn't available on your account because earlier COD parcels couldn't be delivered. Please pay online.",
+      })
     }
-    if (request.status !== 'pending') {
-      return res.status(400).json({ type: 'invalid_data', message: 'This return has already been answered' })
-    }
-    const [order_return_request] = await (req.scope.resolve('order_return') as any).updateOrderReturnRequests([
-      {
-        id: request.id,
-        status,
-        vendor_reviewer_note,
-        vendor_reviewer_id: (req as any).auth_context?.actor_id,
-        vendor_review_date: new Date(),
-      },
-    ])
-    res.json({ order_return_request })
+    next()
   } catch (error) {
     next(error)
   }
@@ -539,7 +522,7 @@ export default defineMiddlewares({
     { matcher: '/store/carts/:id/promotions', method: ['POST'], middlewares: [guardPromoCodes] },
     // An unconfirmed email can't pay or order: checked on the payment step too,
     // so an online payment is never taken for an order that would be refused
-    { matcher: '/store/payment-collections/:id/payment-sessions', method: ['POST'], middlewares: [requireVerifiedEmail] },
+    { matcher: '/store/payment-collections/:id/payment-sessions', method: ['POST'], middlewares: [requireVerifiedEmail, refuseCodAfterFailedDeliveries] },
     { matcher: '/store/carts/:id/complete', method: ['POST'], middlewares: [requireVerifiedEmail, refuseClosedShopItems(productsInCart), guardCartPromotions, claimFlashSaleStock] },
     { matcher: '/store/carts/:id/line-items', method: ['POST'], middlewares: [refuseClosedShopItems(productOfAddedVariant)] },
     { matcher: '/vendor/*', middlewares: [requirePlanForVendorChanges] },
@@ -550,9 +533,17 @@ export default defineMiddlewares({
     { matcher: '/vendor/sellers/me/bank-info', method: ['POST'], middlewares: [publishHeldAfterSave] },
     { matcher: '/vendor/products/import', method: ['POST'], middlewares: [productCap, requireReadyShop('import products')] },
     { matcher: '/vendor/invites', method: ['POST'], middlewares: [staffCap] },
-    { matcher: '/store/return-request', method: ['POST'], middlewares: [guardReturnRequest, emailReturnUpdates] },
-    { matcher: '/admin/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates] },
-    { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [emailReturnUpdates, answerReturnWithoutRefund] },
+    // Returns go through /store/return-cases and /vendor/return-cases (lib/return-cases), which collect the proof,
+    // deadlines and refund the policy needs; Mercur's own routes would skip all of it
+    { matcher: '/store/return-request', method: ['POST'], middlewares: [returnsMovedTo('your order page (Request a return)')] },
+    { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [returnsMovedTo('Requests → Returns in the seller panel')] },
+    { matcher: '/store/return-cases', method: ['POST'], middlewares: [authenticate('customer', ['bearer', 'session']), rateLimit({ name: 'return-open', max: 10, windowMs: HOUR, key: (req) => (req as any).auth_context?.actor_id })] },
+    { matcher: '/store/return-cases/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },
+    { matcher: '/store/return-evidence', method: ['POST'], middlewares: [authenticate('customer', ['bearer', 'session']), rateLimit({ name: 'return-evidence', max: 40, windowMs: HOUR, key: (req) => (req as any).auth_context?.actor_id })] },
+    { matcher: '/store/return-evidence/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },
+    { matcher: '/store/cancellation-requests', method: ['POST'], middlewares: [authenticate('customer', ['bearer', 'session']), rateLimit({ name: 'cancel-request', max: 10, windowMs: HOUR })] },
+    { matcher: '/store/refunds/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },
+    { matcher: '/vendor/return-evidence', method: ['POST'], middlewares: [rateLimit({ name: 'vendor-return-evidence', max: 60, windowMs: HOUR, key: (req) => (req as any).auth_context?.actor_id })] },
     { matcher: '/vendor/reels', method: ['POST'], middlewares: [requireReadyShop('post reels')] },
     { matcher: '/vendor/flash-sales/*', middlewares: [marketingFeature('Flash sales'), requireReadyShop('join flash sales')] },
     { matcher: '/vendor/promotions', middlewares: [marketingFeature('Promotions and vouchers'), requireReadyShop('run promotions and vouchers')] },

@@ -73,6 +73,11 @@ export function getRouteMap({
               lazy: () => import("../../routes/audit-log"),
             },
             {
+              path: "/returns",
+              errorElement: <ErrorBoundary />,
+              lazy: () => import("../../routes/returns"),
+            },
+            {
               path: "/cod-remittances",
               errorElement: <ErrorBoundary />,
               lazy: () => import("../../routes/cod-remittances"),

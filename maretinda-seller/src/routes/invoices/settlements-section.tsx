@@ -18,15 +18,87 @@ type Pending = {
 
 type Paid = { reference_number: string; order_id: string | null; kind: string; gross_amount: number; net_amount: number; settled_at: string }
 
+type Charge = { label: string; amount: number; owed: number; created_at: string }
+type Recovery = { label: string; amount: number; source: "payout" | "deposit" | "cod"; created_at: string }
+
 type Result = {
   hold_days: number
-  summary: { ready: number; holding: number; awaiting_delivery: number; return_open: number; paid_total: number }
+  summary: { ready: number; holding: number; awaiting_delivery: number; return_open: number; owed?: number; paid_total: number }
+  charges?: Charge[]
+  recovered?: Recovery[]
+  deposit?: { balance: number; minimum: number }
   pending: Pending[]
   paid: Paid[]
 }
 
 const peso = (n: number | string) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(Number(n) || 0)
 const day = (d: string) => new Date(d).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })
+
+const FROM: Record<Recovery["source"], string> = {
+  payout: "Kept from a payout",
+  cod: "Kept from cash-on-delivery remittance",
+  deposit: "Taken from your deposit",
+}
+
+/** Refund costs charged to the shop, how they are being recovered, and the deposit. */
+const Charges = ({ data }: { data: Result }) => {
+  const charges = data.charges ?? []
+  const recovered = data.recovered ?? []
+  const deposit = data.deposit
+  if (!charges.length && !recovered.length && !(deposit && (deposit.minimum > 0 || deposit.balance > 0))) return null
+  return (
+    <div className="flex flex-col gap-3" data-testid="seller-charges">
+      <div>
+        <Text size="small" weight="plus">Charges from refunds</Text>
+        <Text size="xsmall" className="text-ui-fg-subtle text-pretty">
+          When a buyer is refunded for your fault after you were already paid (or for a return postage or processing fee that is
+          yours to cover), the amount is kept from your next payouts. Anything still owed after 14 days comes from your security deposit.
+        </Text>
+      </div>
+      {deposit && (deposit.minimum > 0 || deposit.balance > 0) && (
+        <div className="rounded-lg border border-ui-border-base p-3">
+          <Text size="small" className="text-ui-fg-subtle">Security deposit</Text>
+          <Text weight="plus">{peso(deposit.balance)}</Text>
+          {deposit.minimum > 0 && deposit.balance < deposit.minimum && (
+            <Text size="xsmall" className="text-ui-fg-error">Below the required {peso(deposit.minimum)}. Top it up by contacting support@maretinda.com.</Text>
+          )}
+        </div>
+      )}
+      {!!charges.length && (
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Charge</Table.HeaderCell>
+              <Table.HeaderCell>Date</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Amount</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Still owed</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {charges.map((c, i) => (
+              <Table.Row key={i}>
+                <Table.Cell>{c.label}</Table.Cell>
+                <Table.Cell>{day(c.created_at)}</Table.Cell>
+                <Table.Cell className="text-right tabular-nums">{peso(c.amount)}</Table.Cell>
+                <Table.Cell className="text-right tabular-nums">{peso(c.owed)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      )}
+      {!!recovered.length && (
+        <div>
+          <Text size="xsmall" weight="plus" className="mb-1">Recovered so far</Text>
+          {recovered.slice(0, 10).map((r, i) => (
+            <Text key={i} size="xsmall" className="text-ui-fg-subtle">
+              {day(r.created_at)} · {r.label}: {peso(r.amount)} ({FROM[r.source]})
+            </Text>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const HOLDS: Record<Exclude<Hold, null> | "ready", { label: (r: Pending) => string; color: "grey" | "orange" | "blue" | "green" | "red" }> = {
   ready: { label: () => "In the next payout", color: "green" },
@@ -54,6 +126,7 @@ export const SettlementsSection = () => {
     { label: "Waiting for delivery", value: data?.summary.awaiting_delivery },
     { label: "Paid to you", value: data?.summary.paid_total },
   ]
+  const owed = data?.summary.owed ?? 0
 
   return (
     <Container className="p-0 divide-y">
@@ -79,10 +152,16 @@ export const SettlementsSection = () => {
           <Text className="text-ui-fg-error">Could not load your payouts. Refresh to try again.</Text>
         ) : isLoading ? (
           <Text className="text-ui-fg-subtle">Loading…</Text>
-        ) : !data?.pending.length && !data?.paid.length ? (
+        ) : !data?.pending.length && !data?.paid.length && !data?.charges?.length ? (
           <Text className="text-ui-fg-subtle">No online payments yet.</Text>
         ) : (
           <div className="flex flex-col gap-6">
+            {owed > 0 && (
+              <Text size="small" className="text-ui-fg-error">
+                {peso(owed)} from refunds will be kept from your next payout.
+              </Text>
+            )}
+            <Charges data={data!} />
             {!!data?.pending.length && (
               <div>
                 <Text size="small" weight="plus" className="mb-2">Not paid yet</Text>

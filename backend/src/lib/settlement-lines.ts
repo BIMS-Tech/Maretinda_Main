@@ -1,3 +1,5 @@
+import { allocateCharges, recordRecoveries, Recovery, releaseRecoveries } from "./seller-charges"
+
 /**
  * What is owed to sellers from online payments, one line per payment per
  * seller. A buyer pays once for a cart that Mercur splits into one order per
@@ -134,13 +136,18 @@ export async function payoutLines(
               JOIN order_return_request rr ON rr.id = rl.order_return_request_id
              WHERE rl.order_id = sp.order_id AND rl.deleted_at IS NULL AND rr.deleted_at IS NULL
                AND rr.status IN ('pending', 'escalated')) AS open_returns,
-           (SELECT COALESCE(sum(li.unit_price * rli.quantity), 0)
+           -- What goes back to the buyer: the refund the policy worked out, or for
+           -- returns approved before refunds were tracked, the items' price
+           (SELECT COALESCE(sum(r.amount), 0) FROM buyer_refund r
+             WHERE r.order_id = sp.order_id AND r.kind = 'return' AND r.status <> 'void')
+           + (SELECT COALESCE(sum(li.unit_price * rli.quantity), 0)
               FROM order_return_order_return_request_order_order rl
               JOIN order_return_request rr ON rr.id = rl.order_return_request_id
               JOIN order_return_request_line_item rli ON rli.return_request_id = rr.id AND rli.deleted_at IS NULL
               JOIN order_line_item li ON li.id = rli.line_item_id
              WHERE rl.order_id = sp.order_id AND rl.deleted_at IS NULL AND rr.deleted_at IS NULL
-               AND rr.status = 'refunded') AS refunded_value,
+               AND rr.status = 'refunded'
+               AND NOT EXISTS (SELECT 1 FROM buyer_refund r2 WHERE r2.request_id = rr.id AND r2.status <> 'void')) AS refunded_value,
            s.name AS seller_name,
            COALESCE(s.bank_name, s.dft_bank_name) AS bank_name,
            COALESCE(s.swift_code, s.dft_swift_code) AS swift_code,
@@ -194,12 +201,17 @@ export async function payoutLines(
   })
 }
 
-/** The lines a bank file may pay now: delivered more than PAYOUT_HOLD_DAYS ago, no open return. */
-export async function unsettledLines(pg: any, dateFrom?: string, dateTo?: string): Promise<SettlementLine[]> {
-  return (await payoutLines(pg, { dateFrom, dateTo })).filter((l) => l.hold === null)
+/**
+ * The lines a bank file may pay now: delivered more than PAYOUT_HOLD_DAYS ago,
+ * no open return. net_amount is after the fees and after anything the shop
+ * owes from earlier refunds (lib/seller-charges); recoveries say what of it.
+ */
+export async function unsettledLines(pg: any, dateFrom?: string, dateTo?: string): Promise<(SettlementLine & { net_amount: number; recoveries: Recovery[] })[]> {
+  const ready = (await payoutLines(pg, { dateFrom, dateTo })).filter((l) => l.hold === null)
+  return allocateCharges(pg, ready.map((l) => ({ ...l, net_amount: netOfFees(l.amount) })))
 }
 
-type PaidLine = { id: string; seller_id?: string | null; order_id?: string | null; reference_number: string; amount: number; net_amount?: number }
+type PaidLine = { id: string; seller_id?: string | null; order_id?: string | null; reference_number: string; amount: number; net_amount?: number; recoveries?: Recovery[] }
 
 /** Records the lines a bank file pays, so no later file includes them again. */
 export async function markSettled(pg: any, lines: PaidLine[], kind: "tama" | "dft", generationId: string) {
@@ -219,9 +231,11 @@ export async function markSettled(pg: any, lines: PaidLine[], kind: "tama" | "df
     )
     .onConflict(["transaction_id", "seller_id"])
     .ignore()
+  await recordRecoveries(pg, lines.flatMap((l) => l.recoveries ?? []), "payout", `${kind}:${generationId}`)
 }
 
 /** A deleted bank file was never sent, so what it listed is owed again. */
 export async function releaseSettled(pg: any, kind: "tama" | "dft", generationId: string) {
   await pg("settlement_line").where({ kind, generation_id: generationId }).delete()
+  await releaseRecoveries(pg, "payout", `${kind}:${generationId}`)
 }

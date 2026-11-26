@@ -196,6 +196,38 @@ sellers' are **order summaries** (OS-…), and each says it is not an invoice.
 - Monthly on the 1st, each shop gets a document for the fees its payouts
   deducted the month before.
 
+### Returns, refunds and cancellations
+
+Follows the proposed Return, Refund and Cancellation Policy (storefront
+`/returns-policy`). Admin → **Returns & Refunds** has four tabs.
+
+- **Returns.** Buyers ask within 7 days of delivery, with photos (and an
+  unboxing video for damaged, defective or incomplete items) and a GCash, Maya
+  or bank account for the refund. The shop answers in 48 hours or it is
+  approved automatically. If the shop disputes, the buyer can escalate; those
+  come first in the list and must be decided within 7 days. The decision sets
+  whose fault it was, which decides who pays return postage and the fee.
+- **Refunds to send.** Every refund is sent by hand: online payments within
+  7–14 business days, cash on delivery within 3–5. Send it to the account
+  shown, then **Mark as sent** with the reference, exact amount, date and the
+  receipt. The buyer is emailed and sees it on the order.
+- **Cancellations.** Buyers can ask to cancel a paid-online order before it
+  ships. Approving cancels the order and queues the refund (less the
+  processing fee).
+- **Failed delivery:** on the order page, **Record failed delivery** with the
+  courier's return fee. A prepaid order is refunded less shipping, that fee and
+  the processing fee. After `COD_RTS_LIMIT` (default 2) failed COD orders, that
+  buyer can't choose cash on delivery.
+- **What shops owe.** A refund charged to a shop (its fault after it was
+  paid, or return postage and fees it must cover) comes off its next payouts
+  and COD remittances; anything left after 14 days comes from its security
+  deposit. Finance records deposits and waives charges on the seller's admin
+  page. `SELLER_SECURITY_DEPOSIT_MIN` (default 0 = no deposit required).
+- `PAYMENT_PROCESSING_RATE` (default `0.025`) is the fee kept on refunds a
+  buyer causes. Change it when the GiyaPay rates are confirmed.
+- Evidence and receipts are private: only the buyer, that shop and support or
+  finance admins can open them. They are stored in the database for now.
+
 ### Email confirmation and seller alerts
 
 New buyers get a "confirm your email" link at sign-up and can't pay or place an
@@ -211,9 +243,11 @@ working (Resend), so check that first.
   the address, e.g. by writing from it.
 - `EMAIL_VERIFICATION_REQUIRED=false` in `backend.env` switches it off
   everywhere. It is on whenever `NODE_ENV=production`.
-- Sellers are emailed when a buyer reviews their shop or a product, and when an
-  item's stock drops to `LOW_STOCK_THRESHOLD` (default 5) and again when it runs
-  out.
+- Sellers are emailed when a buyer reviews their shop or a product. Shops on
+  Growth or Premium are also emailed when an item's stock drops to
+  `LOW_STOCK_THRESHOLD` (default 5) and again when it runs out (the plan's
+  "smart inventory and alerts"); Starter shops see the same status on their
+  Inventory page.
 - The mobile app's sign-up shows the Turnstile check from the storefront's
   `/api/mobile-captcha` page, switched on by the same `TURNSTILE_SITE_KEY`. Build
   the app with `EXPO_PUBLIC_STOREFRONT_URL` pointing at the storefront for that

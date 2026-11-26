@@ -1,4 +1,5 @@
 import { Avatar } from '@/components/atoms';
+import { OrderRefunds } from '@/components/cells/OrderRefunds/OrderRefunds';
 import { OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
 import { OrderParcelItems } from '@/components/molecules/OrderParcelItems/OrderParcelItems';
 import { OrderParcelStatus } from '@/components/molecules/OrderParcelStatus/OrderParcelStatus';
@@ -62,6 +63,7 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 						</div>
 						<div className="pt-4 pb-0">
 							<OrderParcelActions order={order} />
+							<OrderRefunds orderId={order.id} />
 						</div>
 					</div>
 				</div>

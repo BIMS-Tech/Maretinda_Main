@@ -222,7 +222,8 @@ class DftFileGeneratorService extends MedusaService({}) {
 
       return rows.map((row: any) => {
         const grossAmount = Number(row.amount)
-        const netAmount = this.calculateNetAmount(grossAmount)
+        // After fees and anything the shop owes from refunds (lib/seller-charges)
+        const netAmount = row.net_amount ?? this.calculateNetAmount(grossAmount)
         
         return {
           id: row.id,
@@ -237,6 +238,7 @@ class DftFileGeneratorService extends MedusaService({}) {
           beneficiary_bank_address: row.beneficiary_bank_address,
           amount: grossAmount,
           net_amount: netAmount,
+          recoveries: row.recoveries ?? [],
           transaction_date: new Date(row.transaction_date),
           remarks: row.remarks || 'MARETINDA SETTLEMENT'
         }
@@ -253,9 +255,10 @@ class DftFileGeneratorService extends MedusaService({}) {
     transactionDate?: Date
   ): string {
     const fileDate = transactionDate || new Date()
-    const detailRecords = transactions.map(transaction =>
-      this.generateDftRecord(transaction, fileDate)
-    )
+    // A line wholly taken by what the shop owes is recorded as paid but not sent to the bank
+    const detailRecords = transactions
+      .filter(transaction => (transaction.net_amount ?? 1) > 0)
+      .map(transaction => this.generateDftRecord(transaction, fileDate))
     return detailRecords.join('\n')
   }
 

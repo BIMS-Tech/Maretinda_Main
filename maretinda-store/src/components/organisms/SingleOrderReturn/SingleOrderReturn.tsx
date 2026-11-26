@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 import { Avatar, Badge, Card, Divider } from '@/components/atoms';
+import { ReturnCasePanel } from '@/components/cells/ReturnCasePanel/ReturnCasePanel';
 import { StepProgressBar } from '@/components/cells/StepProgressBar/StepProgressBar';
 import { CollapseIcon } from '@/icons';
 import { convertToLocale } from '@/lib/helpers/money';
@@ -14,6 +15,14 @@ import { cn } from '@/lib/utils';
 import { Chat } from '../Chat/Chat';
 
 const steps = ['pending', 'processing', 'sent'];
+
+const STATUS_LABELS: Record<string, string> = {
+	canceled: 'Not approved',
+	escalated: 'With Maretinda',
+	pending: 'Requested',
+	refunded: 'Approved',
+	withdrawn: 'Disputed by the seller',
+};
 
 export const SingleOrderReturn = ({
 	item,
@@ -70,7 +79,7 @@ export const SingleOrderReturn = ({
 						className="uppercase label-md !font-semibold"
 						level="h3"
 					>
-						{item.status}
+						{STATUS_LABELS[item.status] ?? item.status}
 					</Heading>
 					<p className="label-sm text-secondary flex gap-2">
 						{item.line_items.length}{' '}
@@ -96,12 +105,15 @@ export const SingleOrderReturn = ({
 					}}
 				>
 					<Divider />
-					<div className="p-4 uppercase">
-						<StepProgressBar
-							currentStep={currentStep}
-							steps={steps}
-						/>
-					</div>
+					<ReturnCasePanel requestId={item.id} />
+					{currentStep >= 0 && (
+						<div className="p-4 uppercase">
+							<StepProgressBar
+								currentStep={currentStep}
+								steps={steps}
+							/>
+						</div>
+					)}
 					<Divider />
 					<div className="p-4 flex justify-between">
 						<div className="flex items-center gap-2">
