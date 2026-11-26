@@ -42,7 +42,7 @@ export const ProductCard = ({
 	const pictureEl = () => picture.current;
 
 	return (
-		<article className="group relative flex w-full flex-col" data-price={product.price ?? undefined} data-product={product.handle}>
+		<article className="group relative flex w-full flex-col" data-in-stock={product.in_stock} data-price={product.price ?? undefined} data-product={product.handle}>
 			<div className="relative">
 				<ProductLink picture={pictureEl} product={product} tabIndex={-1}>
 					<div

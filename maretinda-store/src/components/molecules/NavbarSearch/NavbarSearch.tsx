@@ -278,8 +278,11 @@ export const NavbarSearch = ({ categories = [] }: { categories?: Category[] }) =
 	const nothing = !!upToDate && !!query && upToDate.products.length === 0;
 
 	return (
+		// A real form: pressed before the page is interactive, Enter still opens the results
 		<form
+			action={`/${locale}/search`}
 			className="relative w-full"
+			method="get"
 			onSubmit={(e) => {
 				e.preventDefault();
 				if (open && at >= 0 && options[at]) options[at].run();
@@ -326,6 +329,7 @@ export const NavbarSearch = ({ categories = [] }: { categories?: Category[] }) =
 					className="min-w-0 flex-1 border-0 bg-transparent py-3 pl-3 pr-2 text-[16px] text-[#1B1B1B] placeholder:text-[#A39DAC] focus:outline-none focus:ring-0 lg:text-[15px]"
 					enterKeyHint="search"
 					maxLength={120}
+					name="q"
 					onChange={(e) => {
 						setText(e.target.value);
 						setOpen(true);

@@ -102,12 +102,16 @@ test.describe('browsing (read-only)', () => {
     await expect(items.first()).toHaveText(/copy link/i)
   })
 
-  test('BRW-07 seller page loads its tabs', async ({ page, pageErrors }) => {
+  test('BRW-07 seller page loads its tabs', async ({ page, request, pageErrors }) => {
     await page.goto('/ph')
     await page.getByRole('heading', { name: 'Top local sellers' }).scrollIntoViewIfNeeded()
-    await page.locator('a[href*="/sellers/"]').filter({ hasText: /IBITA Fashion/ }).first().click()
-    await expect(page).toHaveURL(/\/sellers\//)
-    await expect(page.getByRole('heading', { name: 'IBITA Fashion' }).first()).toBeVisible()
+    await expect(page.locator('a[href*="/sellers/"]').first()).toBeVisible()
+    // A shop that is open: a closed shop's products are hidden, so its page has none
+    const res = await request.get(`${API_URL}/store/search?limit=1&sort=popular`, { headers: { 'x-publishable-api-key': PUBLISHABLE_KEY } })
+    const seller = (await res.json()).products?.[0]?.seller
+    test.skip(!seller, 'no product from an open shop')
+    await page.goto(`/ph/sellers/${seller.handle}`)
+    await expect(page.getByRole('heading', { name: seller.name }).first()).toBeVisible()
     await expect(page.locator('a[href*="/products/"]').first()).toBeVisible()
     await expectNoErrorBoundary(page)
     expect(pageErrors).toEqual([])
@@ -116,7 +120,9 @@ test.describe('browsing (read-only)', () => {
   test('BRW-08 price sorting orders by cheapest variant', async ({ page }) => {
     await page.goto('/ph/search')
     await expect(page.locator('[data-product]').first()).toBeVisible()
-    const prices = () => page.locator('[data-product][data-price]').evaluateAll((cards) => cards.map((c) => Number((c as HTMLElement).dataset.price)))
+    // Sold-out products come after the ones in stock, so the order is checked among those in stock
+    const prices = () => page.locator('[data-product][data-in-stock="true"][data-price]').evaluateAll((cards) => cards.map((c) => Number((c as HTMLElement).dataset.price)))
+    const stock = () => page.locator('[data-product]').evaluateAll((cards) => cards.map((c) => (c as HTMLElement).dataset.inStock))
     for (const [option, sort, ordered] of [
       ['Price: low to high', 'price_asc', (a: number, b: number) => a - b],
       ['Price: high to low', 'price_desc', (a: number, b: number) => b - a],
@@ -128,6 +134,8 @@ test.describe('browsing (read-only)', () => {
         const shown = await prices()
         expect(shown.length).toBeGreaterThan(1)
         expect(shown).toEqual([...shown].sort(ordered))
+        const all = await stock()
+        expect(all.slice(all.indexOf('false') + 1 || all.length)).not.toContain('true')
       }).toPass()
     }
   })
