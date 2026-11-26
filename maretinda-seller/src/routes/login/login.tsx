@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Alert, Hint, Input } from "@medusajs/ui"
-import { CheckCircleSolid, Spinner } from "@medusajs/icons"
+import { CheckCircleSolid } from "@medusajs/icons"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
@@ -10,7 +11,8 @@ import { Form } from "../../components/common/form"
 import { useDashboardExtension } from "../../extensions"
 import { useSignInWithEmailPass } from "../../hooks/api"
 import { isFetchError } from "../../lib/is-fetch-error"
-import { Accent, AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
+import { AuthShell, Butterfly, GlassCard, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
+import { CountUp, MorphLabel, Shake, Sparkline } from "../../components/common/motion/motion"
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -32,12 +34,15 @@ export const Login = () => {
   })
 
   const { mutateAsync, isPending } = useSignInWithEmailPass()
+  const [signedIn, setSignedIn] = useState(false)
+  const [refused, setRefused] = useState(0)
 
   const handleSubmit = form.handleSubmit(async ({ email, password }) => {
     await mutateAsync(
       { email, password },
       {
         onError: (error) => {
+          setRefused((n) => n + 1)
           if (isFetchError(error)) {
             if (error.status === 401) {
               form.setError("email", { type: "manual", message: error.message })
@@ -47,10 +52,12 @@ export const Login = () => {
           form.setError("root.serverError", { type: "manual", message: error.message })
         },
         onSuccess: () => {
-          setTimeout(() => navigate(from, { replace: true }), 1000)
+          setSignedIn(true)
+          setTimeout(() => navigate(from, { replace: true }), 700)
         },
       }
-    )
+    // Shown on the form already: nothing more to do with it here
+    ).catch(() => undefined)
   })
 
   const meaningfulReason = reason && !reason.toLowerCase().includes("failed to fetch") ? reason : ""
@@ -62,13 +69,7 @@ export const Login = () => {
   return (
     <AuthShell
       portal="Seller Centre"
-      headline={
-        <>
-          Your shop, open to
-          <br />
-          <Accent>the whole Philippines.</Accent>
-        </>
-      }
+      lines={["Your shop, open to", "the whole Philippines."]}
       lede="List your products, take orders and get paid, with buyers from Luzon to Mindanao finding you on Maretinda."
       preview={<SellerPreview />}
     >
@@ -81,6 +82,7 @@ export const Login = () => {
         ))}
 
         <Form {...form}>
+          <Shake again={refused}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-y-5" noValidate>
             <Form.Field
               control={form.control}
@@ -121,13 +123,13 @@ export const Login = () => {
 
             <button
               type="submit"
-              disabled={isPending}
-              className={`${PRIMARY_BUTTON} mt-1`}
+              disabled={isPending || signedIn}
+              className={`${PRIMARY_BUTTON} mt-1 overflow-hidden ${signedIn ? "!bg-ui-tag-green-icon" : ""}`}
             >
-              {isPending && <Spinner className="animate-spin" />}
-              {isPending ? "Signing in…" : "Sign in"}
+              <MorphLabel state={signedIn ? "done" : isPending ? "busy" : "idle"} idle="Sign in" busy="Signing in…" done="Welcome back" />
             </button>
           </form>
+          </Shake>
         </Form>
 
         {getWidgets("login.after").map((Component, i) => (
@@ -160,12 +162,12 @@ function SellerPreview() {
     <>
       <GlassCard className="absolute left-0 top-0 w-[260px]" tilt={-2}>
         <p className="text-xs opacity-60">Today's sales</p>
-        <p className="mt-1 text-[26px] font-semibold tracking-tight">₱12,480</p>
+        <p className="mt-1 text-[26px] font-semibold tracking-tight">
+          <CountUp value={12480} format={(n) => `₱${Math.round(n).toLocaleString("en-PH")}`} />
+        </p>
         <div className="mt-1 flex items-end justify-between">
           <span className="rounded-full bg-ui-tag-green-bg px-2 py-0.5 text-[11px] font-medium text-ui-tag-green-text">+18% vs yesterday</span>
-          <svg width="96" height="32" viewBox="0 0 96 32" fill="none" aria-hidden>
-            <polyline points="0,26 14,22 28,24 42,15 56,17 70,9 84,11 96,3" stroke="#FFC533" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Sparkline points={[6, 10, 8, 17, 15, 23, 21, 29]} className="text-[#FFC533]" />
         </div>
       </GlassCard>
       <GlassCard className="absolute right-0 top-[96px] w-[280px]" tilt={2} delay={1400}>

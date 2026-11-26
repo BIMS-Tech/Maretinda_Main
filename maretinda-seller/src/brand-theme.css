@@ -180,8 +180,126 @@
 }
 
 /* ─── Motion ──────────────────────────────────────────────────────────────
- * Quick and quiet: nothing over 250 ms, nothing that blocks input.
+ * The storefront's movement: things arrive quickly and settle softly, one
+ * after another. Nothing waits on an animation to be used.
  */
+:root {
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* A page's cards rise in, one after another; a table's first rows follow */
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes panel-row {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.page-in .shadow-elevation-card-rest {
+  animation: panel-rise 520ms var(--ease-soft) backwards;
+}
+.page-in .shadow-elevation-card-rest:nth-child(2) { animation-delay: 70ms; }
+.page-in .shadow-elevation-card-rest:nth-child(3) { animation-delay: 140ms; }
+.page-in .shadow-elevation-card-rest:nth-child(4) { animation-delay: 210ms; }
+.page-in .shadow-elevation-card-rest:nth-child(n + 5) { animation-delay: 260ms; }
+.page-in .shadow-elevation-card-rest .shadow-elevation-card-rest {
+  animation: none;
+}
+.page-in tbody tr:nth-child(-n + 14) {
+  animation: panel-row 420ms var(--ease-soft) backwards;
+  animation-delay: calc(var(--row, 0) * 28ms + 60ms);
+}
+.page-in tbody tr:nth-child(2) { --row: 1; }
+.page-in tbody tr:nth-child(3) { --row: 2; }
+.page-in tbody tr:nth-child(4) { --row: 3; }
+.page-in tbody tr:nth-child(5) { --row: 4; }
+.page-in tbody tr:nth-child(6) { --row: 5; }
+.page-in tbody tr:nth-child(7) { --row: 6; }
+.page-in tbody tr:nth-child(8) { --row: 7; }
+.page-in tbody tr:nth-child(9) { --row: 8; }
+.page-in tbody tr:nth-child(10) { --row: 9; }
+.page-in tbody tr:nth-child(11) { --row: 10; }
+.page-in tbody tr:nth-child(12) { --row: 11; }
+.page-in tbody tr:nth-child(13) { --row: 12; }
+.page-in tbody tr:nth-child(14) { --row: 13; }
+
+/* Drawers, dialogs and menus arrive with the same soft ease */
+[role="dialog"][data-state="open"],
+[data-radix-popper-content-wrapper] > [data-state="open"] {
+  animation-timing-function: var(--ease-soft) !important;
+}
+[role="dialog"][data-state="open"] {
+  animation-duration: 380ms !important;
+}
+
+/* A count that changes pops */
+@keyframes panel-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.panel-pop {
+  animation: panel-pop 420ms var(--ease-soft) both;
+}
+
+/* The main section of a collapsible menu opens to its height */
+@keyframes panel-open {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+}
+@keyframes panel-close {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+.panel-collapse {
+  overflow: hidden;
+}
+.panel-collapse[data-state="open"] {
+  animation: panel-open 300ms var(--ease-soft);
+}
+.panel-collapse[data-state="closed"] {
+  animation: panel-close 220ms var(--ease-soft);
+}
+
+/* A soft glow drifting behind the dashboard's greeting */
+@keyframes panel-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-36px, 18px) scale(1.12);
+  }
+}
+.panel-drift {
+  animation: panel-drift 14s ease-in-out infinite;
+}
 
 /* Buttons and pressable controls give a little under the finger */
 .transition-fg:not(:disabled):active {
@@ -210,6 +328,17 @@
   }
 }
 .brand-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--brand-purple) / 0.06) 25%,
+    rgb(var(--brand-purple) / 0.12) 37%,
+    rgb(var(--brand-purple) / 0.06) 63%
+  );
+  background-size: 400% 100%;
+  animation: brand-shimmer 1.4s ease infinite;
+}
+/* Skeletons too */
+.animate-pulse.bg-ui-bg-component {
   background: linear-gradient(
     90deg,
     rgb(var(--brand-purple) / 0.06) 25%,
@@ -328,7 +457,7 @@
   }
 }
 .brand-rise {
-  animation: brand-rise 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: brand-rise 600ms var(--ease-soft) both;
 }
 @keyframes brand-float {
   0%,
@@ -354,5 +483,9 @@
   .transition-fg:not(:disabled):active,
   .brand-card-hover:hover {
     transform: none;
+  }
+  .panel-drift,
+  .brand-float {
+    animation: none;
   }
 }

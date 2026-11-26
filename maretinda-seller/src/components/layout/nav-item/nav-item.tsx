@@ -8,9 +8,11 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
+import { motion } from "motion/react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
 import { ConditionalTooltip } from "../../common/conditional-tooltip"
+import { SPRING } from "../../common/motion/motion"
 
 type ItemType = "core" | "extension" | "setting"
 
@@ -31,13 +33,20 @@ export type INavItem = {
   badge?: number
 }
 
+/** What marks the page you're on. One per menu, so it slides from item to item. */
+const NavPill = () => (
+  <motion.span layoutId="nav-pill" transition={SPRING} className="bg-ui-bg-highlight absolute inset-0 rounded-lg">
+    <span className="bg-ui-bg-interactive absolute -left-3 bottom-1.5 top-1.5 w-[3px] rounded-r-full" />
+  </motion.span>
+)
+
 const NavBadge = ({ count }: { count?: number }) => {
   if (!count) {
     return null
   }
 
   return (
-    <span className="bg-ui-tag-orange-bg text-ui-tag-orange-text border-ui-tag-orange-border ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-[11px] font-medium leading-none">
+    <span key={count} className="panel-pop bg-ui-tag-orange-bg text-ui-tag-orange-text border-ui-tag-orange-border ml-auto flex h-5 min-w-5 items-center justify-center rounded-full border px-1.5 text-[11px] font-medium leading-none">
       {count > 99 ? "99+" : count}
     </span>
   )
@@ -45,9 +54,9 @@ const NavBadge = ({ count }: { count?: number }) => {
 
 const BASE_NAV_LINK_CLASSES =
   "relative text-ui-fg-subtle transition-fg hover:bg-ui-bg-highlight hover:text-ui-fg-base flex items-center gap-x-2 rounded-lg py-1 pl-1 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
-// Brand purple for the page you're on, with a bar at the left edge
+// Brand purple for the page you're on; the pill behind it slides there from the last one
 const ACTIVE_NAV_LINK_CLASSES =
-  "bg-ui-bg-highlight text-ui-fg-interactive font-medium hover:bg-ui-bg-highlight-hover [&_svg]:text-ui-fg-interactive before:absolute before:-left-3 before:top-1.5 before:bottom-1.5 before:w-[3px] before:rounded-r-full before:bg-ui-bg-interactive"
+  "text-ui-fg-interactive font-medium hover:bg-transparent [&_svg]:text-ui-fg-interactive"
 const NESTED_NAV_LINK_CLASSES = "pl-[34px] pr-2 py-1 w-full text-ui-fg-muted"
 const SETTING_NAV_LINK_CLASSES = "pl-2 py-1"
 
@@ -140,6 +149,7 @@ export const NavItem = ({
   )
 
   const isSetting = type === "setting"
+  const lit = (path: string, isActive: boolean) => (["core", "setting"].includes(type) ? pathname.startsWith(path) && !pathname.split(path)[1] : isActive)
 
   return (
     <div className="px-3">
@@ -167,15 +177,22 @@ export const NavItem = ({
             )
           }}
         >
-          {type !== "setting" && (
-            <div className="flex size-6 items-center justify-center">
-              <Icon icon={icon} type={type} />
-            </div>
+          {({ isActive }) => (
+            <>
+              {lit(to, isActive) && <NavPill />}
+              <span className="relative z-[1] flex min-w-0 flex-1 items-center gap-x-2">
+                {type !== "setting" && (
+                  <div className="flex size-6 items-center justify-center">
+                    <Icon icon={icon} type={type} />
+                  </div>
+                )}
+                <Text size="small" weight="plus" leading="compact">
+                  {label}
+                </Text>
+                <NavBadge count={badge} />
+              </span>
+            </>
           )}
-          <Text size="small" weight="plus" leading="compact">
-            {label}
-          </Text>
-          <NavBadge count={badge} />
         </NavLink>
       </NavItemTooltip>
       {items && items.length > 0 && (
@@ -194,7 +211,7 @@ export const NavItem = ({
             </Text>
             <NavBadge count={badge} />
           </RadixCollapsible.Trigger>
-          <RadixCollapsible.Content>
+          <RadixCollapsible.Content className="panel-collapse">
             <div className="flex flex-col gap-y-0.5 pb-2 pt-0.5">
               <ul className="flex flex-col gap-y-0.5">
                 <li className="flex w-full items-center gap-x-1 lg:hidden">
@@ -213,9 +230,16 @@ export const NavItem = ({
                         )
                       }}
                     >
-                      <Text size="small" weight="plus" leading="compact">
-                        {label}
-                      </Text>
+                      {({ isActive }) => (
+                        <>
+                          {lit(to, isActive) && <NavPill />}
+                          <span className="relative z-[1]">
+                            <Text size="small" weight="plus" leading="compact">
+                              {label}
+                            </Text>
+                          </span>
+                        </>
+                      )}
                     </NavLink>
                   </NavItemTooltip>
                 </li>
@@ -237,9 +261,16 @@ export const NavItem = ({
                             )
                           }}
                         >
-                          <Text size="small" weight="plus" leading="compact">
-                            {item.label}
-                          </Text>
+                          {({ isActive }) => (
+                            <>
+                              {lit(item.to, isActive) && <NavPill />}
+                              <span className="relative z-[1] flex flex-1 items-center gap-x-2">
+                                <Text size="small" weight="plus" leading="compact">
+                                  {item.label}
+                                </Text>
+                              </span>
+                            </>
+                          )}
                         </NavLink>
                       </NavItemTooltip>
                     </li>

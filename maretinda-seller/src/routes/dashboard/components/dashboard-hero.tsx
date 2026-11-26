@@ -4,6 +4,7 @@ import { useMe } from "../../../hooks/api"
 import { usePlanLimits } from "../../../hooks/api/plan-limits"
 import { useSetupTasks } from "../../../hooks/api/setup-tasks"
 import { useSubscriptionStatus } from "../../../hooks/api/subscription"
+import { MaskedText } from "../../../components/common/motion/motion"
 import { daysLeft } from "../dashboard-stats"
 
 const greeting = (hour: number) => (hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening")
@@ -40,7 +41,7 @@ export const DashboardHero = () => {
       {/* Soft yellow glow, the brand's accent */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-30 blur-3xl"
+        className="panel-drift pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full opacity-30 blur-3xl"
         style={{ background: "#FFC533" }}
       />
       <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
@@ -48,9 +49,8 @@ export const DashboardHero = () => {
           <p className="text-sm text-white/70">
             {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-[28px]">
-            {greeting(new Date().getHours())}
-            {seller?.name ? `, ${seller.name}` : ""}
+          <h1 className="font-display mt-1 text-[30px] leading-tight md:text-[36px]">
+            <MaskedText text={`${greeting(new Date().getHours())}${seller?.name ? `, ${seller.name}` : ""}`} />
           </h1>
           {planName && (
             <Link

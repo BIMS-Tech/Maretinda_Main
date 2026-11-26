@@ -1,6 +1,8 @@
 import { CircleHalfSolid, Moon, Sun } from "@medusajs/icons"
 import type { ReactNode } from "react"
 
+import { MaskedText } from "../common/motion/motion"
+
 import { useTheme } from "../../providers/theme-provider"
 
 /** The Maretinda butterfly: four petals around the centre. */
@@ -63,6 +65,7 @@ export const Accent = ({ children }: { children: ReactNode }) => (
 export function AuthShell({
   portal,
   headline,
+  lines,
   lede,
   preview,
   wide = false,
@@ -72,6 +75,8 @@ export function AuthShell({
 }: {
   portal: string
   headline?: ReactNode
+  /** The headline as two lines of words that rise into place, the second in the accent */
+  lines?: [string, string]
   lede?: string
   preview?: ReactNode
   /** A roomier card, for the sign-up conversation */
@@ -99,16 +104,32 @@ export function AuthShell({
       </header>
 
       <main className="relative mx-auto flex w-full max-w-[1200px] flex-1 items-center gap-16 px-6 pb-10 pt-2 sm:px-10 lg:py-10">
-        {headline && (
+        {(headline || lines) && (
           <section className="hidden flex-1 lg:block">
-            <h1 className="font-display text-[44px] leading-[1.08] text-[#2A1B3F] dark:text-white xl:text-[54px]">{headline}</h1>
-            {lede && <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#4A3A63] dark:text-white/70">{lede}</p>}
+            <h1 className="font-display text-[44px] leading-[1.08] text-[#2A1B3F] dark:text-white xl:text-[54px]">
+              {lines ? (
+                <>
+                  <MaskedText text={lines[0]} />
+                  <br />
+                  <Accent>
+                    <MaskedText text={lines[1]} delay={0.18} />
+                  </Accent>
+                </>
+              ) : (
+                headline
+              )}
+            </h1>
+            {lede && (
+              <p className="brand-rise mt-4 max-w-md text-[15px] leading-relaxed text-[#4A3A63] dark:text-white/70" style={{ animationDelay: "260ms" }}>
+                {lede}
+              </p>
+            )}
             {preview && <div className="relative mt-12 h-[220px] max-w-[460px]">{preview}</div>}
           </section>
         )}
 
         <div
-          className={`brand-rise auth-glass mx-auto w-full rounded-3xl ${wide ? "max-w-[640px]" : "max-w-[460px]"} ${headline ? "lg:mx-0" : ""} ${
+          className={`brand-rise auth-glass mx-auto w-full rounded-3xl ${wide ? "max-w-[640px]" : "max-w-[460px]"} ${headline || lines ? "lg:mx-0" : ""} ${
             flush ? "flex h-[min(760px,calc(100dvh-150px))] min-h-[520px] flex-col overflow-hidden" : "p-7 sm:p-10"
           }`}
         >

@@ -34,7 +34,7 @@ import { useReviews } from "../../../hooks/api/review"
 import { usePayouts } from "../../../hooks/api/payouts"
 import { Calendar } from "../../../components/common/calendar/calendar"
 import { ChartSkeleton } from "./chart-skeleton"
-import { CountUp } from "../../../components/common/motion/motion"
+import { CountUp, GrowBar, Segmented } from "../../../components/common/motion/motion"
 import { orderStats } from "../dashboard-stats"
 
 const formatMoney = (amount: number) => {
@@ -86,10 +86,13 @@ const StatCard = ({
   iconBg,
   iconColor,
   href,
+  format: write,
 }: {
   icon: React.ElementType
   label: string
   value: string | number
+  /** How a counted value is written, e.g. as money */
+  format?: (n: number) => string
   sub?: string
   iconBg: string
   iconColor: string
@@ -107,7 +110,7 @@ const StatCard = ({
       </div>
       <div>
         <p className="text-2xl font-bold text-ui-fg-base">
-          {typeof value === "number" ? <CountUp value={value} /> : value}
+          {typeof value === "number" ? <CountUp value={value} format={write} /> : value}
         </p>
         <p className="text-sm font-medium text-ui-fg-subtle mt-0.5">{label}</p>
         {sub && <p className="text-xs text-ui-fg-muted mt-1">{sub}</p>}
@@ -241,6 +244,11 @@ export const DashboardCharts = ({
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     )
 
+  // Quick ranges, besides the calendar
+  const span = differenceInDays(new Date(`${to}`), new Date(`${from}`))
+  const preset = (["7", "30", "90"] as const).find((d) => Math.abs(span - Number(d)) <= 1 && format(new Date(`${to}`), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"))
+  const pickPreset = (days: string) => updateDateRange(`${addDays(new Date(), -Number(days))}`, `${new Date()}`)
+
   const lineColors: Record<string, string> = {
     orders: "#432C63",
     customers: "#E0A800",
@@ -262,7 +270,8 @@ export const DashboardCharts = ({
         <StatCard
           icon={CurrencyDollar}
           label="Total Revenue"
-          value={formatMoney(totalRevenue)}
+          value={totalRevenue}
+          format={formatMoney}
           sub={`Avg ${formatMoney(avgOrderValue)}/order`}
           iconBg="bg-ui-tag-orange-bg"
           iconColor="text-ui-tag-orange-icon"
@@ -360,6 +369,18 @@ export const DashboardCharts = ({
               </Button>
             )}
             {analyticsLevel !== "basic" && (
+              <Segmented
+                label="Date range"
+                value={(preset ?? "custom") as "7" | "30" | "90" | "custom"}
+                onChange={(d) => d !== "custom" && pickPreset(d)}
+                options={[
+                  { value: "7", label: "7 days" },
+                  { value: "30", label: "30 days" },
+                  { value: "90", label: "90 days" },
+                ]}
+              />
+            )}
+            {analyticsLevel !== "basic" && (
               <Popover>
                 <Popover.Trigger asChild>
                   <Button variant="secondary" size="small">
@@ -402,12 +423,12 @@ export const DashboardCharts = ({
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="ordersGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      <stop offset="5%" stopColor={lineColors.orders} stopOpacity={0.22} />
+                      <stop offset="95%" stopColor={lineColors.orders} stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="customersGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      <stop offset="5%" stopColor={lineColors.customers} stopOpacity={0.22} />
+                      <stop offset="95%" stopColor={lineColors.customers} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis
@@ -416,24 +437,29 @@ export const DashboardCharts = ({
                     tickFormatter={(v) => format(new Date(v), "MMM d")}
                   />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                  <CartesianGrid stroke="rgb(67 44 99 / 0.08)" vertical={false} />
                   <Tooltip content={<CustomTooltip />} />
                   {activeLines.includes("orders") && (
                     <Area
                       type="monotone"
                       dataKey="orders"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
+                      stroke={lineColors.orders}
+                      strokeWidth={2.2}
                       fill="url(#ordersGrad)"
+                      animationDuration={1100}
+                      animationEasing="ease-out"
                     />
                   )}
                   {activeLines.includes("customers") && (
                     <Area
                       type="monotone"
                       dataKey="customers"
-                      stroke="#8b5cf6"
-                      strokeWidth={2}
+                      stroke={lineColors.customers}
+                      strokeWidth={2.2}
                       fill="url(#customersGrad)"
+                      animationDuration={1100}
+                      animationBegin={150}
+                      animationEasing="ease-out"
                     />
                   )}
                 </AreaChart>
@@ -449,7 +475,7 @@ export const DashboardCharts = ({
               <button
                 key={key}
                 onClick={() => toggleLine(key)}
-                className={`p-4 border rounded-xl flex flex-col items-start transition-all ${
+                className={`p-4 border rounded-xl flex flex-col items-start transition-all duration-300 active:scale-[0.98] ${
                   activeLines.includes(key)
                     ? "border-ui-border-strong bg-ui-bg-subtle"
                     : "border-ui-border-base bg-ui-bg-base opacity-50"
@@ -465,7 +491,7 @@ export const DashboardCharts = ({
                   </span>
                 </div>
                 <p className="text-xl font-bold text-ui-fg-base">
-                  {key === "orders" ? totals.orders : totals.customers}
+                  <CountUp value={key === "orders" ? totals.orders : totals.customers} />
                 </p>
                 <p className="text-xs text-ui-fg-muted">In date range</p>
               </button>
@@ -554,7 +580,8 @@ export const DashboardCharts = ({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-xs font-semibold text-ui-fg-base">
-                        {formatMoney((order.total ?? 0) / 100)}
+                        {/* Pesos already: dividing by 100 showed ₱7.70 for a ₱770 order */}
+                        {formatMoney(order.total ?? 0)}
                       </td>
                       <td className="px-4 py-3 text-xs text-ui-fg-muted whitespace-nowrap">
                         {order.created_at
@@ -605,14 +632,7 @@ export const DashboardCharts = ({
                 <div key={label} className="flex items-center gap-3">
                   <span className="w-20 shrink-0 text-xs text-ui-fg-subtle">{label}</span>
                   <div className="h-2 flex-1 rounded-full bg-ui-bg-subtle overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${color}`}
-                      style={{
-                        width: orderList.length > 0
-                          ? `${(value / orderList.length) * 100}%`
-                          : "0%",
-                      }}
-                    />
+                    <GrowBar share={orderList.length > 0 ? value / orderList.length : 0} className={color} />
                   </div>
                   <span className={`w-6 text-right text-xs font-bold ${textColor}`}>
                     {value}

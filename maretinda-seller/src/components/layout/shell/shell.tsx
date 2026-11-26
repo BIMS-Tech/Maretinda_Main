@@ -1,6 +1,6 @@
 import { SidebarLeft, TriangleRightMini, XMark } from "@medusajs/icons"
 import { IconButton, clx } from "@medusajs/ui"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react"
 import { Dialog as RadixDialog } from "radix-ui"
 import { PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -31,8 +31,12 @@ export const Shell = ({ children }: PropsWithChildren) => {
       <div className="relative flex h-screen flex-col items-start overflow-hidden lg:flex-row">
         <NavigationBar loading={loading} />
         <div>
-          <MobileSidebarContainer>{children}</MobileSidebarContainer>
-          <DesktopSidebarContainer>{children}</DesktopSidebarContainer>
+          <LayoutGroup id="mobile-menu">
+            <MobileSidebarContainer>{children}</MobileSidebarContainer>
+          </LayoutGroup>
+          <LayoutGroup id="desktop-menu">
+            <DesktopSidebarContainer>{children}</DesktopSidebarContainer>
+          </LayoutGroup>
         </div>
         <div className="flex h-screen w-full flex-col overflow-auto">
           <Topbar />
@@ -87,8 +91,9 @@ const NavigationBar = ({ loading }: { loading: boolean }) => {
 }
 
 /**
- * Each section fades and rises in. Keyed on the first path segment only, so
- * a modal route opened over a list (e.g. /products/create) leaves the list
+ * Each section rises in, and its cards and first table rows follow one after
+ * another (.page-in in brand-theme.css). Keyed on the first path segment only,
+ * so a modal route opened over a list (e.g. /products/create) leaves the list
  * where it is.
  */
 const PageTransition = ({ children }: PropsWithChildren) => {
@@ -98,10 +103,10 @@ const PageTransition = ({ children }: PropsWithChildren) => {
   return (
     <motion.div
       key={section}
-      className="flex flex-col gap-y-2"
-      initial={reduce ? false : { opacity: 0, y: 6 }}
+      className="page-in flex flex-col gap-y-2"
+      initial={reduce ? false : { opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
@@ -159,7 +164,13 @@ const Breadcrumbs = () => {
         const isSingle = crumbs.length === 1
 
         return (
-          <li key={index} className={clx("flex items-center")}>
+          <motion.li
+            key={crumb.path}
+            className={clx("flex items-center")}
+            initial={{ opacity: 0, x: -6 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1], delay: index * 0.04 }}
+          >
             {!isLast ? (
               <Link
                 className="transition-fg hover:text-ui-fg-subtle"
@@ -185,7 +196,7 @@ const Breadcrumbs = () => {
                 <TriangleRightMini />
               </span>
             )}
-          </li>
+          </motion.li>
         )
       })}
     </ol>

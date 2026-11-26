@@ -2,7 +2,7 @@ import { Spinner } from "@medusajs/icons"
 import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
-import { Accent, AuthShell, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
+import { AuthShell, PRIMARY_BUTTON, SECONDARY_BUTTON } from "../../components/auth/auth-shell"
 import { backendUrl, publishableApiKey } from "../../lib/client/client"
 
 type Status = {
@@ -196,18 +196,26 @@ export const ApplicationStatus = () => {
       </button>
     )
   } else if (data?.status === "none") {
-    heading = "No application found"
+    heading = "This sign-in has no shop"
     body = (
-      <p>
-        This account doesn't have a seller application yet. Apply to sell on Maretinda and our team will review it, usually
-        within a few business days.
-      </p>
+      <>
+        <p>
+          The email and password are right{data.email ? <> for <b>{data.email}</b></> : null}, but no shop goes with them
+          yet. If you shop on Maretinda, sign in on the storefront instead.
+        </p>
+        <p>To sell, apply with this email: our team reviews applications, usually within a few business days.</p>
+      </>
     )
     actions = (
       <>
         <button type="button" className={PRIMARY_BUTTON} onClick={() => signOut("/register")}>
           Apply to sell
         </button>
+        {__STOREFRONT_URL__ && (
+          <a href={__STOREFRONT_URL__} className={SECONDARY_BUTTON}>
+            Go to the storefront
+          </a>
+        )}
         <button type="button" className={SECONDARY_BUTTON} onClick={() => signOut()}>
           Sign out
         </button>
@@ -218,25 +226,19 @@ export const ApplicationStatus = () => {
   return (
     <AuthShell
       portal="Seller Centre"
-      headline={
-        data?.status === "rejected" ? (
-          <>
-            Thanks for applying.
-            <br />
-            <Accent>We're here to help.</Accent>
-          </>
-        ) : (
-          <>
-            Almost there.
-            <br />
-            <Accent>Your shop is on its way.</Accent>
-          </>
-        )
+      lines={
+        data?.status === "rejected"
+          ? ["Thanks for applying.", "We're here to help."]
+          : data?.status === "none"
+            ? ["Not a shop yet.", "Open one in minutes."]
+            : ["Almost there.", "Your shop is on its way."]
       }
       lede={
         data?.status === "rejected"
           ? "Most applications that aren't approved just need a document or detail corrected."
-          : "Every shop on Maretinda is reviewed by our team before it opens to buyers."
+          : data?.status === "none"
+            ? "Tell us about your shop in a short chat. The first month is free."
+            : "Every shop on Maretinda is reviewed by our team before it opens to buyers."
       }
     >
       <div className="flex flex-col gap-5" data-testid="application-status" data-status={data?.status ?? (failed ? "error" : "loading")} data-email-verified={data ? String(data.email_verified !== false) : undefined}>
