@@ -64,8 +64,23 @@ medusaIntegrationTestRunner({
     describe("delivery setup", () => {
       it("does every step at once, and says what was missing before", async () => {
         const s = await shop()
+        await pgOf(getContainer())("seller_application").insert({
+          id: `sapp_${Date.now()}`,
+          seller_id: s.seller.id,
+          email: "a@example.test",
+          status: "approved",
+          submitted_at: new Date(),
+          business_street: "12 Mango Ave",
+          business_barangay: "Lahug",
+          business_city: "Cebu City",
+          business_province: "Cebu",
+          business_postal_code: "6000",
+          mobile_number: "+639171234567",
+        })
         const before = await api.get("/vendor/delivery-setup", s.as)
         expect(before.data).toMatchObject({ ready: false, location: null, missing: ["pickup location", "delivery fee"] })
+        // Starts from the application's address, which keeps its parts apart
+        expect(before.data.suggested_pickup).toMatchObject({ address_1: "12 Mango Ave", address_2: "Lahug", city: "Cebu City", province: "Cebu", postal_code: "6000" })
 
         const saved = await api.post("/vendor/delivery-setup", { pickup, fees: { standard: 120, express: 250 } }, s.as)
         expect(saved.status).toBe(200)

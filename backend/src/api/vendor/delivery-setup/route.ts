@@ -15,17 +15,24 @@ export async function GET(req: AuthenticatedMedusaRequest, res: MedusaResponse) 
   const seller = await sellerOf(req)
   if (!seller) return res.status(401).json({ message: "Unauthorized" })
   const status = await deliveryStatus(req.scope, seller.id)
+  // Where the seller already told us they are, to start the form with. The
+  // application keeps street, barangay, city and province apart; the shop's
+  // own address joins them into one line.
+  const pg = req.scope.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+  const app = await pg("seller_application")
+    .where("seller_id", seller.id)
+    .orderBy("submitted_at", "desc")
+    .first("business_street", "business_barangay", "business_city", "business_province", "business_postal_code", "mobile_number")
   res.json({
     ...status,
-    // Where the seller already told us they are, to start the form with
     suggested_pickup: {
       name: "Main store",
-      address_1: seller.address_line ?? "",
-      address_2: null,
-      city: seller.city ?? "",
-      province: seller.state ?? "",
-      postal_code: seller.postal_code ?? "",
-      phone: seller.phone ?? "",
+      address_1: app?.business_street || seller.address_line || "",
+      address_2: app?.business_barangay || null,
+      city: app?.business_city || seller.city || "",
+      province: app?.business_province || seller.state || "",
+      postal_code: app?.business_postal_code || seller.postal_code || "",
+      phone: seller.phone || app?.mobile_number || "",
     },
   })
 }
