@@ -1,12 +1,16 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
+
+import { MaskedText, SuccessMark } from '@/components/motion';
 import { isManual, paymentInfoMap } from '@/lib/constants';
 import { giyapayMethodTitle } from '@/lib/helpers/giyapay-method';
 import { convertToLocale } from '@/lib/helpers/money';
 import { getImageUrl } from '@/lib/helpers/get-image-url';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+
+const after = (ms: number) => ({ '--delay': `${ms}ms` }) as CSSProperties;
 
 export const OrderConfirmedSection = ({
 	order,
@@ -37,15 +41,12 @@ export const OrderConfirmedSection = ({
 				// Individual orders share the same GiyaPay transaction via the order set
 				const orderIdForLookup = (order as any).order_set?.id || order.id;
 
-				console.log('[Order Confirmed] Fetching transaction for:', orderIdForLookup);
-
 				const res = await fetch(
 					`/api/giyapay/transaction?order_id=${orderIdForLookup}`,
 					{ headers: { accept: 'application/json' } },
 				);
 				if (res.ok) {
 					const data = await res.json();
-					console.log('[Order Confirmed] Transaction found:', data);
 					setTxn({
 						amount: data.amount,
 						currency: data.currency,
@@ -54,9 +55,8 @@ export const OrderConfirmedSection = ({
 						referenceNumber: data.referenceNumber,
 						sellerName: data.sellerName,
 					});
-				} else {
-					console.log('[Order Confirmed] Transaction not found, will use payment collection data');
 				}
+				// Not found: the payment collection's own name is used instead
 			} catch (error) {
 				console.log('[Order Confirmed] Error fetching transaction:', error);
 			}
@@ -104,34 +104,23 @@ export const OrderConfirmedSection = ({
 	];
 
 	return (
-		<div className="min-h-screen bg-gray-50 py-10 sm:py-14">
+		<div className="min-h-screen py-10 sm:py-14">
 			<div className="max-w-3xl mx-auto px-4">
 				{/* Header Section */}
 				<div className="text-center mb-8">
-					<div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100 ring-8 ring-green-50">
-						<svg
-							className="h-10 w-10 text-green-600"
-							viewBox="0 0 24 24"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth={2.5}
-							strokeLinecap="round"
-							strokeLinejoin="round"
-							aria-hidden="true"
-						>
-							<path d="M5 13l4 4L19 7" />
-						</svg>
-					</div>
-					<h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Thank You!</h1>
-					<p className="text-lg text-gray-700 mb-1">Your order was placed successfully.</p>
-					<p className="text-gray-600 text-sm sm:text-base">
+					<SuccessMark className="mb-6" size={92} />
+					<h1 className="mb-3 font-serif text-[42px] leading-tight tracking-[-0.01em] text-[#1B1B1B] sm:text-[54px]">
+						<MaskedText delay={420} play text="Thank You!" />
+					</h1>
+					<p className="rise-in text-lg text-gray-700 mb-1" style={after(620)}>Your order was placed successfully.</p>
+					<p className="rise-in text-gray-600 text-sm sm:text-base" style={after(700)}>
 						We&apos;ve sent the order confirmation to{' '}
 						<span className="font-semibold text-gray-900 break-all">{order.email}</span>.
 					</p>
 				</div>
 
 				{/* Order Summary Card */}
-				<div className="bg-brandPurple text-white rounded-2xl p-6 sm:p-8 mb-8 shadow-lg">
+				<div className="rise-in bg-brandPurple text-white rounded-[24px] p-6 sm:p-8 mb-6 shadow-[0_24px_50px_-20px_rgba(67,44,99,0.6)]" style={after(800)}>
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
 						{summaryFields.map((field) => (
 							<div key={field.label} className="min-w-0">
@@ -143,7 +132,7 @@ export const OrderConfirmedSection = ({
 				</div>
 
 				{/* Order Details Section */}
-				<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+				<div className="rise-in bg-white rounded-[24px] border border-[#EFEAF4] p-6 sm:p-8" style={after(900)}>
 					<h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Order Details</h2>
 
 					{/* Products Header */}
@@ -229,10 +218,10 @@ export const OrderConfirmedSection = ({
 				</div>
 
 				{/* Navigation Buttons */}
-				<div className="mt-8 flex flex-col sm:flex-row gap-3">
+				<div className="rise-in mt-8 flex flex-col sm:flex-row gap-3" style={after(1000)}>
 					<LocalizedClientLink
 						href="/"
-						className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-action text-action-on-primary font-semibold px-6 py-3 text-center transition-colors hover:bg-action-hover"
+						className="flex-1 inline-flex items-center justify-center gap-2 press rounded-full bg-action text-action-on-primary font-semibold px-6 py-3.5 text-center"
 					>
 						<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 							<path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17M17 13v4a2 2 0 002 2 2 2 0 002-2M9 21a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z" />
@@ -241,7 +230,7 @@ export const OrderConfirmedSection = ({
 					</LocalizedClientLink>
 					<LocalizedClientLink
 						href={orderSetId ? `/user/orders/${orderSetId}` : '/user/orders'}
-						className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-brandPurple text-white font-semibold px-6 py-3 text-center transition-colors hover:bg-brandPurple/90"
+						className="flex-1 inline-flex items-center justify-center gap-2 press rounded-full bg-brandPurple text-white font-semibold px-6 py-3.5 text-center"
 					>
 						<svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 							<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />

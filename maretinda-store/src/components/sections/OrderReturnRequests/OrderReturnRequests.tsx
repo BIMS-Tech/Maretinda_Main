@@ -1,6 +1,6 @@
-import { Heading } from '@medusajs/ui';
 import { isEmpty } from 'lodash';
 
+import { AccountEmpty } from '@/components/organisms/Layout/AccountHeading';
 import { OrdersPagination } from '@/components/organisms/OrdersPagination/OrdersPagination';
 import { SingleOrderReturn } from '@/components/organisms/SingleOrderReturn/SingleOrderReturn';
 
@@ -25,19 +25,18 @@ export const OrderReturnRequests = ({
 
 	if (isEmpty(processedReturns)) {
 		return (
-			<div className="mt-8 px-4">
-				<Heading
-					className="uppercase text-center heading-lg"
-					level="h2"
-				>
-					No returns
-				</Heading>
-				<p className="text-center text-secondary max-w-96 w-full mt-8 mx-auto">
-					{
-						"You haven't requested any returns yet. Once you request a return, it will appear here."
-					}
-				</p>
-			</div>
+			<AccountEmpty
+				action="See your orders"
+				href="/user/orders"
+				icon={
+					<svg aria-hidden="true" fill="none" height="30" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="30">
+						<path d="M4 9h11a5 5 0 010 10h-4M4 9l4-4M4 9l4 4" />
+					</svg>
+				}
+				title="No returns"
+			>
+				You haven't asked to return anything. You can, from an order's page, within 7 days of it being delivered.
+			</AccountEmpty>
 		);
 	}
 

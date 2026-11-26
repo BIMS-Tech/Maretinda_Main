@@ -1,3 +1,4 @@
+import { Reveal } from '@/components/motion';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -48,7 +49,7 @@ export default async function CollectionsPage() {
 					No collections yet. Check back soon.
 				</p>
 			) : (
-				<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5">
+				<Reveal className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-5" variant="group">
 					{collections.map((col, i) => {
 						const img = getImage(col);
 						return (
@@ -92,7 +93,7 @@ export default async function CollectionsPage() {
 							</Link>
 						);
 					})}
-				</div>
+				</Reveal>
 			)}
 		</main>
 	);

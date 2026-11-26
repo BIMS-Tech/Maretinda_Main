@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { MaskedText } from '@/components/motion';
 import { Layout } from '@/components/organisms';
 import { CartIcon, HouseIcon, SettingIcon } from '@/icons/navigation';
 import { EmailVerificationNotice } from '@/components/molecules/EmailVerificationNotice/EmailVerificationNotice';
@@ -76,10 +77,8 @@ export default async function UserPage({
 					<p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#432C63]/60">
 						Dashboard
 					</p>
-					<h2 className="mt-2 font-lora text-3xl !font-bold text-[#432C63] break-words sm:text-4xl">
-						{user.first_name
-							? `Welcome, ${user.first_name}`
-							: 'Welcome to Maretinda'}
+					<h2 className="mt-2 break-words font-serif text-[32px] leading-tight tracking-[-0.01em] text-[#432C63] sm:text-[42px]">
+						<MaskedText play text={user.first_name ? `Welcome, ${user.first_name}` : 'Welcome to Maretinda'} />
 					</h2>
 					<p className="mt-3 max-w-xl text-base leading-relaxed text-black/65">
 						Your account is ready to go. Pick up where you left off

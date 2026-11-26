@@ -1,10 +1,14 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import Image from 'next/image';
 
-import { CartSummary } from '@/components/organisms';
+import { AnimatedNumber, SPRING_SOFT } from '@/components/motion';
+import { CartSummary } from '@/components/organisms/CartSummary/CartSummary';
 import { UpdateCartItemButton } from '@/components/molecules/UpdateCartItemButton/UpdateCartItemButton';
+import { cardImage, groundOf } from '@/lib/helpers/card-image';
 import { convertToLocale } from '@/lib/helpers/money';
 
 import PaymentButton from './PaymentButton';
@@ -50,56 +54,51 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
 			</div>
 
 			{/* Product Items List */}
-			<div className="mb-5 space-y-3">
-				{allItems.map((item) => {
-					const unitPrice = convertToLocale({
-						amount: item.unit_price || 0,
-						currency_code: cart.currency_code,
-					});
-
-					return (
-						<div key={item.id} className="flex items-center gap-3 pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: '#f3f4f6' }}>
-							{/* Product Image */}
-							<div className="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg flex-shrink-0 overflow-hidden">
-								{item.thumbnail ? (
+			<ul className="relative mb-6 space-y-4">
+				<AnimatePresence initial={false} mode="popLayout">
+					{allItems.map((item) => (
+						<m.li
+							animate={{ opacity: 1, x: 0 }}
+							className="flex items-center gap-4"
+							exit={{ opacity: 0, x: 30 }}
+							initial={{ opacity: 0, x: 30 }}
+							key={item.id}
+							layout
+							transition={SPRING_SOFT}
+						>
+							<span className="relative h-[68px] w-[68px] shrink-0">
+								<span className="relative block h-full w-full overflow-hidden rounded-[16px]" style={{ backgroundColor: groundOf(item.product_id ?? item.id) }}>
 									<Image
 										alt={item.title || 'Product'}
-										className="rounded-lg object-cover w-full h-full"
-										height={64}
-										src={decodeURIComponent(item.thumbnail)}
-										width={64}
+										className="object-contain p-2 mix-blend-multiply"
+										fill
+										sizes="68px"
+										src={cardImage(item.thumbnail) || '/images/placeholder.svg'}
 									/>
-								) : (
-									<Image
-										alt="Product placeholder"
-										className="rounded opacity-30"
-										height={32}
-										src={'/images/placeholder.svg'}
-										width={32}
-									/>
-								)}
-							</div>
-
-							{/* Product Info */}
-							<div className="flex-1 min-w-0">
-								<h3 className="text-[14px] font-semibold leading-snug line-clamp-2 text-[#111827]">
-									{item.title || item.subtitle}
-								</h3>
-								<p className="text-[12px] text-[#9ca3af] mt-0.5">{item.sellerName}</p>
-								<div className="flex items-center justify-between mt-1.5">
-									<span className="text-[14px] font-bold text-[#432C63]">
-										{unitPrice}
-									</span>
-									<UpdateCartItemButton
-										lineItemId={item.id}
-										quantity={item.quantity}
+								</span>
+								<span className="badge-bump absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#1E1430] px-1 text-[10.5px] font-bold tabular-nums text-white" key={item.quantity}>
+									{item.quantity}
+								</span>
+							</span>
+							<div className="min-w-0 flex-1">
+								<h3 className="line-clamp-2 text-[14px] font-semibold leading-snug text-[#111827]">{item.product_title || item.title || item.subtitle}</h3>
+								<p className="mt-0.5 truncate text-[12px] text-[#9ca3af]">
+									{item.variant_title && !/default/i.test(item.variant_title) ? `${item.variant_title} · ` : ''}
+									{item.sellerName}
+								</p>
+								<div className="mt-2 flex items-center justify-between gap-2">
+									<UpdateCartItemButton lineItemId={item.id} quantity={item.quantity} />
+									<AnimatedNumber
+										className="text-[14px] font-bold text-[#432C63]"
+										format={(n) => convertToLocale({ amount: n, currency_code: cart.currency_code })}
+										value={(item.unit_price || 0) * item.quantity}
 									/>
 								</div>
 							</div>
-						</div>
-					);
-				})}
-			</div>
+						</m.li>
+					))}
+				</AnimatePresence>
+			</ul>
 
 			{/* Order Totals */}
 			<div className="mb-6">

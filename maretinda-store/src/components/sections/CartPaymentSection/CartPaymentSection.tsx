@@ -1,14 +1,15 @@
 'use client';
 
 import { RadioGroup } from '@headlessui/react';
-import { CheckCircleSolid, CreditCard } from '@medusajs/icons';
-import { Container, Heading, Text } from '@medusajs/ui';
+import { CreditCard } from '@medusajs/icons';
+import { Text } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/atoms';
+import { Collapse, MorphButton } from '@/components/motion';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { initiatePaymentSession } from '@/lib/data/cart';
+import { cn } from '@/lib/utils';
 
 import {
 	isGiyaPay as isGiyaPayFunc,
@@ -16,9 +17,8 @@ import {
 	paymentInfoMap,
 } from '../../../lib/constants';
 import { GIYAPAY_METHOD_TITLES } from '../../../lib/helpers/giyapay-method';
-import PaymentContainer, {
-	StripeCardContainer,
-} from '../../organisms/PaymentContainer/PaymentContainer';
+import { StripeCardContainer } from '../../organisms/PaymentContainer/PaymentContainer';
+import { CheckoutStepHeader, Choice } from '../CheckoutStep/CheckoutStep';
 
 // Titles live in the helper so the order confirmation page shows the same names
 const GIYAPAY_METHOD_CONFIG: Record<string, { title: string; icon: React.ReactNode }> = {
@@ -65,9 +65,6 @@ const CartPaymentSection = ({
 	cart: any;
 	availablePaymentMethods: StoreCardPaymentMethod[] | null;
 }) => {
-	console.log('[Payment] Cart payment collection:', cart.payment_collection);
-	console.log('[Payment] Available payment methods:', availablePaymentMethods);
-	
 	const activeSession = cart.payment_collection?.payment_sessions?.find(
 		(paymentSession: any) => paymentSession.status === 'pending',
 	);
@@ -94,18 +91,13 @@ const CartPaymentSection = ({
 	const isStripe = isStripeFunc(selectedPaymentMethod);
 
 	const setPaymentMethod = async (method: string) => {
-		console.log('[Payment] Selecting payment method:', method);
-		console.log('[Payment] isGiyaPay:', isGiyaPayFunc(method));
-		console.log('[Payment] Cart ID:', cart.id);
 		setError(null);
 		setSelectedPaymentMethod(method);
 		if (isStripeFunc(method) || isGiyaPayFunc(method)) {
-			console.log('[Payment] Initiating payment session...');
 			try {
-				const result = await initiatePaymentSession(cart, {
+				await initiatePaymentSession(cart, {
 					provider_id: method,
 				});
-				console.log('[Payment] Payment session initiated:', result);
 			} catch (error) {
 				console.error('[Payment] Failed to initiate payment session:', error);
 				setError(error instanceof Error ? error.message : 'Failed to initiate payment session');
@@ -221,62 +213,33 @@ const CartPaymentSection = ({
 
 	return (
 		<div>
-			{/* Header with Checkmark and Edit */}
-			<div className="flex items-center justify-between mb-4">
-				<div className="flex items-center gap-3">
-					{!isOpen && paymentReady ? (
-						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#432C63' }}>
-							<CheckCircleSolid className="text-white" width={16} height={16} />
-						</div>
-					) : (
-						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
-						</div>
-					)}
-					<h2 className="text-xl font-bold" style={{ color: '#111827' }}>
-						Payment
-					</h2>
-				</div>
-				{!isOpen && paymentReady && (
-					<button
-						type="button"
-						onClick={handleEdit}
-						className="text-sm font-semibold hover:opacity-80 transition-opacity"
-						style={{ color: '#432C63' }}
-					>
-						Edit
-					</button>
-				)}
-			</div>
+			<CheckoutStepHeader done={!!paymentReady} n={3} onEdit={handleEdit} open={isOpen} title="Payment" />
 			<div>
-				<div className={isOpen ? 'block' : 'hidden'}>
+				{/* Folds rather than unmounts: the card fields live in here */}
+				<div className={cn('grid transition-[grid-template-rows,opacity] duration-500 ease-soft', isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+				<div className="min-h-0 overflow-hidden" inert={!isOpen}>
+				<div className="p-[3px] pt-6">
 					{!paidByGiftcard && availablePaymentMethods?.length && (
-						<div className="flex flex-col gap-3">
+						<div aria-label="Payment method" className="flex flex-col gap-2.5" role="radiogroup">
 							{/* GiyaPay sub-methods as direct top-level options */}
-							{giyaPayMethod && giyaPayEnabledMethods.map((method) => {
-								const config = GIYAPAY_METHOD_CONFIG[method];
-								if (!config) return null;
-								const isSelected = isGiyaPayFunc(selectedPaymentMethod) && selectedGiyaSubMethod === method;
-								return (
-									<button
-										key={method}
-										type="button"
-										onClick={() => setGiyaPaySubMethod(method)}
-										className="w-full flex items-center gap-x-3 px-3.5 py-2.5 border rounded-lg text-left hover:bg-gray-50 transition-colors"
-										style={{
-											borderColor: isSelected ? '#432C63' : '#e5e7eb',
-											borderWidth: isSelected ? '2px' : '1px',
-											backgroundColor: isSelected ? 'rgba(67,44,99,0.05)' : 'white',
-										}}
-									>
-										<div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-[#432C63] bg-[#432C63]' : 'border-gray-300 bg-white'}`}>
-											{isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-										</div>
-										<div className="flex-shrink-0">{config.icon}</div>
-										<span className="text-sm font-semibold" style={{ color: '#111827' }}>{config.title}</span>
-									</button>
-								);
-							})}
+							{giyaPayMethod && (
+								<div className="grid gap-2.5 sm:grid-cols-2">
+									{giyaPayEnabledMethods.map((method) => {
+										const config = GIYAPAY_METHOD_CONFIG[method];
+										if (!config) return null;
+										return (
+											<Choice
+												group="payment"
+												icon={config.icon}
+												key={method}
+												onSelect={() => setGiyaPaySubMethod(method)}
+												selected={!!isGiyaPayFunc(selectedPaymentMethod) && selectedGiyaSubMethod === method}
+												title={config.title}
+											/>
+										);
+									})}
+								</div>
+							)}
 
 							{/* Stripe — own card */}
 							{stripeMethod && (
@@ -295,21 +258,20 @@ const CartPaymentSection = ({
 							)}
 
 							{/* Cash on Delivery & other non-GiyaPay methods */}
-							{codMethods && codMethods.length > 0 && (
-								<RadioGroup onChange={(value: string) => setPaymentMethod(value)} value={selectedPaymentMethod}>
-									<div className="flex flex-col gap-3">
-										{codMethods.map((paymentMethod) => (
-											<div key={paymentMethod.id} className="border border-gray-300 rounded-lg overflow-hidden">
-												<PaymentContainer
-													paymentInfoMap={paymentInfoMap}
-													paymentProviderId={paymentMethod.id}
-													selectedPaymentOptionId={selectedPaymentMethod}
-												/>
-											</div>
-										))}
-									</div>
-								</RadioGroup>
-							)}
+							{codMethods?.map((paymentMethod) => (
+								<Choice
+									group="payment"
+									icon={
+										<span className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-white text-[#432C63]">
+											{paymentInfoMap[paymentMethod.id]?.icon ?? <CreditCard />}
+										</span>
+									}
+									key={paymentMethod.id}
+									onSelect={() => setPaymentMethod(paymentMethod.id)}
+									selected={selectedPaymentMethod === paymentMethod.id}
+									title={paymentInfoMap[paymentMethod.id]?.title || paymentMethod.id}
+								/>
+							))}
 						</div>
 					)}
 
@@ -332,24 +294,26 @@ const CartPaymentSection = ({
 						error={error}
 					/>
 
-					<Button
-						className="mt-5 rounded-lg !font-semibold h-10 text-sm px-6 w-full sm:w-auto"
+					<MorphButton
+						busy="Saving…"
+						className="mt-6 flex h-12 w-full items-center justify-center rounded-full bg-[#FFC533] px-8 text-[14px] font-bold text-[#432C63] disabled:opacity-50 sm:w-auto"
 						disabled={
 							(isStripe && !cardComplete) ||
 							(!selectedPaymentMethod && !paidByGiftcard) ||
-						(isGiyaPayFunc(selectedPaymentMethod) && !selectedGiyaSubMethod)
+							(isGiyaPayFunc(selectedPaymentMethod) && !selectedGiyaSubMethod)
 						}
-						loading={isLoading}
+						done="Saved"
+						idle="Continue to review"
 						onClick={handleSubmit}
-						style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 600 }}
+						state={isLoading ? 'busy' : 'idle'}
 						type="button"
-					>
-						Continue to review
-					</Button>
+					/>
+				</div>
+				</div>
 				</div>
 
-				<div className={isOpen ? 'hidden' : 'block'}>
-					<div className="pb-2">
+				<Collapse open={!isOpen && !!paymentReady}>
+					<div className="mt-4 rounded-[18px] bg-[#F8F5FB] px-4 py-3">
 						{cart && paymentReady && activeSession ? (
 							<p className="text-sm" style={{ color: '#6b7280' }}>
 								{isGiyaPayFunc(activeSession?.provider_id) ? (GIYAPAY_METHOD_CONFIG[selectedGiyaSubMethod]?.title || selectedGiyaSubMethod || 'GiyaPay') : (paymentInfoMap[activeSession?.provider_id]?.title || activeSession?.provider_id)}
@@ -360,7 +324,7 @@ const CartPaymentSection = ({
 							</p>
 						) : null}
 					</div>
-				</div>
+				</Collapse>
 			</div>
 		</div>
 	);

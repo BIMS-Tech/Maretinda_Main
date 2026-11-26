@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { Button, Card } from '@/components/atoms';
 import { AddressForm, Modal } from '@/components/molecules';
+import { AccountHeading } from '@/components/organisms/Layout/AccountHeading';
 import { emptyDefaultAddressValues } from '@/components/molecules/AddressForm/AddressForm';
 import type { AddressFormData } from '@/components/molecules/AddressForm/schema';
 import { deleteCustomerAddress } from '@/lib/data/customer';
@@ -72,15 +73,13 @@ export const Addresses = ({
 						: 'space-y-10',
 				)}
 			>
-				<h1 className="text-3xl capitalize text-black font-lora !font-bold">
-					Addresses
-				</h1>
+				<AccountHeading title="Addresses" />
 				{isEmpty(user.addresses) ? (
 					<div className="flex flex-col text-center items-center w-full lg:pt-24 lg:px-26">
-						<p className="text-5xl font-bold font-lora text-primary w-full">
+						<p className="w-full text-[17px] font-bold text-[#1B1B1B]">
 							No saved shipping addresses
 						</p>
-						<p className="text-base font-normal text-black text-secondary w-full mt-6">
+						<p className="mt-1.5 w-full text-[13.5px] text-[#737373]">
 							You currently have no saved shipping addresses.{' '}
 							<br />
 							Add an address to make your checkout process quicker

@@ -462,7 +462,7 @@ export const HelpCenter = () => {
 						},
 						{
 							label: s.refundPolicy,
-							href: '/refund-policy',
+							href: '/help-center#returns',
 							icon: (
 								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
 									<rect x="2" y="5" width="20" height="14" rx="2" /><circle cx="12" cy="12" r="3" /><path d="M6 12h.01M18 12h.01" />

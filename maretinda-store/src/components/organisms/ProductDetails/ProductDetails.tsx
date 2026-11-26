@@ -21,7 +21,9 @@ export const ProductDetails = async ({
 	flashSaleItem,
 	brand,
 	shopClosed = false,
+	descriptionHtml,
 }: {
+	descriptionHtml: string;
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
 	};
@@ -46,6 +48,7 @@ export const ProductDetails = async ({
 	return (
 		<div className="flex flex-col gap-5">
 			<ProductDetailsHeader
+				descriptionHtml={descriptionHtml}
 				flashSaleItem={flashSaleItem ?? null}
 				locale={locale}
 				product={product}

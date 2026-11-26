@@ -37,15 +37,9 @@ export const metadata: Metadata = {
 	title: 'Home',
 };
 
-export default async function Home({
-	params,
-	searchParams,
-}: {
-	params: Promise<{ locale: string }>;
-	searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-	const { locale } = await params;
-	const resolvedSearchParams = searchParams ? await searchParams : {};
+import { SELLER_PANEL_URL } from '@/lib/helpers/cross-links';
+
+export default async function Home() {
 	const heroContent = await getHeroContent();
 
 	return (
@@ -56,10 +50,8 @@ export default async function Home({
 					{ label: 'Start Shopping', path: '/categories' },
 					{
 						label: 'Become a Seller',
-						path:
-							process.env.NEXT_PUBLIC_ALGOLIA_ID === 'UO3C5Y8NHX'
-								? 'https://seller-sandbox.vercel.app/'
-								: 'https://seller.maretinda.com/login',
+						// The seller panel this storefront links to (test or production), not a guess from the old search keys
+						path: `${SELLER_PANEL_URL}/login`,
 					},
 				]}
 				heroContent={heroContent}
@@ -72,10 +64,10 @@ export default async function Home({
 			<CampaignBanners />
 
 			{/* 4. Flash Sale — live countdown + product cards */}
-			<FlashSaleSection locale={locale} />
+			<FlashSaleSection />
 
 			{/* 4. Trending Now — 6-card product grid with filter pills */}
-			<TrendingNowSection searchParams={resolvedSearchParams} />
+			<TrendingNowSection />
 
 			{/* 5. Reels — seller videos; renders nothing until sellers post */}
 			<div className="max-w-[1360px] w-full mx-auto px-4 lg:px-6">

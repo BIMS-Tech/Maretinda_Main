@@ -6,12 +6,22 @@ import { useSearchParams } from 'next/navigation';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/atoms';
+import { MorphButton, type MorphState } from '@/components/motion';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
 import { placeOrder } from '@/lib/data/cart';
 
 import { isGiyaPay, isManual, isStripe } from '../../../lib/constants';
 import GiyaPayButton from './GiyaPayButton';
+
+export const PLACE_ORDER =
+	'flex h-[54px] w-full items-center justify-center rounded-full bg-[#432C63] px-6 text-[15px] font-bold text-white shadow-[0_16px_34px_-12px_rgba(67,44,99,0.6)] hover:bg-[#372248] disabled:bg-[#DDD7E5] disabled:text-[#8A8493] disabled:shadow-none aria-busy:bg-[#6B5487] aria-busy:text-white';
+const WAITING = 'h-[54px] w-full cursor-not-allowed rounded-full bg-[#F1EDF6] px-6 text-[14px] font-semibold text-[#8A8493]';
+
+/** Placing an order ends in a redirect, which reaches us as a rejection. */
+const redirected = (err: any): { error?: string } =>
+	err?.message === 'NEXT_REDIRECT' || String(err?.digest ?? '').startsWith('NEXT_REDIRECT')
+		? {}
+		: { error: "We couldn't reach the server. Please check your orders before trying again." };
 
 type PaymentButtonProps = {
 	cart: HttpTypes.StoreCart;
@@ -36,9 +46,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 	// until then a pay button here would still charge the previous method.
 	if (step === 'address' || step === 'delivery' || step === 'payment') {
 		return (
-			<Button className="w-full" data-testid={dataTestId} disabled>
+			<button className={WAITING} data-testid={dataTestId} disabled type="button">
 				Finish the steps to place your order
-			</Button>
+			</button>
 		);
 	}
 
@@ -62,9 +72,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 			);
 		default:
 			return (
-				<Button className="w-full" disabled>
+				<button className={WAITING} disabled type="button">
 					Select a payment method
-				</Button>
+				</button>
 			);
 	}
 };
@@ -83,13 +93,9 @@ const StripePaymentButton = ({
 	const [disabled, setDisabled] = useState(true);
 
 	const onPaymentCompleted = async () => {
-		await placeOrder()
-			.catch((err) => {
-				setErrorMessage(err.message);
-			})
-			.finally(() => {
-				setSubmitting(false);
-			});
+		const result = await placeOrder().catch(redirected);
+		setSubmitting(false);
+		if (result?.error) setErrorMessage(result.error);
 	};
 
 	const stripe = useStripe();
@@ -166,14 +172,16 @@ const StripePaymentButton = ({
 
 	return (
 		<>
-			<Button
-				className="w-full py-2.5 !text-black !font-medium rounded-sm text-md"
+			<MorphButton
+				busy="Placing your order…"
+				className={PLACE_ORDER}
 				disabled={disabled || notReady}
-				loading={submitting}
+				done="Order placed"
+				idle="Place order"
 				onClick={handlePayment}
-			>
-				Place order
-			</Button>
+				state={submitting ? 'busy' : 'idle'}
+				type="button"
+			/>
 			<ErrorMessage
 				data-testid="stripe-payment-error-message"
 				error={errorMessage}
@@ -190,29 +198,35 @@ const ManualTestPaymentButton = ({
 	'data-testid'?: string;
 }) => {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [state, setState] = useState<MorphState>('idle');
 
-	const onPaymentCompleted = async () => {
-		await placeOrder().catch((err) => {
-			setErrorMessage(
-				err.message !== 'NEXT_REDIRECT' ? err.message : null,
-			);
-		});
-	};
-
-	const handlePayment = () => {
-		onPaymentCompleted();
+	const handlePayment = async () => {
+		// A second click while the first is on its way must not order twice
+		if (state !== 'idle') return;
+		setState('busy');
+		setErrorMessage(null);
+		const result = await placeOrder().catch(redirected);
+		if (result?.error) {
+			setState('idle');
+			setErrorMessage(result.error);
+			return;
+		}
+		setState('done');
 	};
 
 	return (
 		<>
-			<Button
-				className="w-full py-2.5 !text-black !font-medium rounded-sm text-md"
+			<MorphButton
+				busy="Placing your order…"
+				className={PLACE_ORDER}
 				data-testid={dataTestId}
 				disabled={notReady}
+				done="Order placed"
+				idle="Place order"
 				onClick={handlePayment}
-			>
-				Place order
-			</Button>
+				state={state}
+				type="button"
+			/>
 			<ErrorMessage
 				data-testid="manual-payment-error-message"
 				error={errorMessage}

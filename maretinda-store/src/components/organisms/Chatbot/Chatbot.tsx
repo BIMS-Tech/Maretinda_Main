@@ -31,7 +31,7 @@ const RESPONSES: Record<string, BotResponse> = {
 		text: 'You can ask for a return within 7 days of delivery: My Account → Orders → select the order → "Request return". Once it is approved, our support team contacts you to arrange your refund.',
 		links: [
 			{ label: 'Start a return', href: '/user/orders' },
-			{ label: 'Refund policy', href: '/refund-policy' },
+			{ label: 'Refund policy', href: '/help-center#returns' },
 		],
 	},
 	shipping: {

@@ -1,4 +1,4 @@
-import { Button } from '@/components/atoms';
+import { MaskedText } from '@/components/motion';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { CartItems, CartSummary } from '@/components/organisms';
 import { retrieveCart } from '@/lib/data/cart';
@@ -17,23 +17,23 @@ export const Cart = async () => {
 	return (
 		<div className="w-full">
 			{/* Shopping Cart Title */}
-			<h1 className="text-4xl capitalize text-black font-lora font-bold text-center mb-8">
-				Shopping Cart
+			<h1 className="mb-8 font-serif text-[38px] leading-tight tracking-[-0.01em] text-[#1B1B1B] lg:text-[50px]">
+				<MaskedText play text="Shopping Cart" />
 			</h1>
 
 			{/* Two Column Layout */}
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 				{/* Left Column - Products */}
 				<div className="lg:col-span-8">
-					<div className="bg-white user-content-wrapper">
+					<div className="rise-in rounded-[24px] border border-[#EFEAF4] bg-white p-5 sm:p-7">
 						<CartItems cart={cart} />
 					</div>
 				</div>
 
 				{/* Right Column - Order Summary */}
 				<div className="lg:col-span-4">
-					<div className="bg-white rounded-lg p-6 h-fit sticky top-4" style={{ boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)' }}>
-						<h2 className="text-xl mb-4" style={{ color: '#111827', fontWeight: 900 }}>Order Summary</h2>
+					<div className="rise-in sticky top-[132px] h-fit rounded-[24px] border border-[#EFEAF4] bg-white p-6 shadow-[0_20px_50px_-30px_rgba(67,44,99,0.4)]" style={{ '--delay': '120ms' } as React.CSSProperties}>
+						<h2 className="mb-4 text-[19px] font-extrabold text-[#1B1B1B]">Order Summary</h2>
 						{/* Coupon Code Section: nothing to discount in an empty cart */}
 						{totalItems > 0 && (
 							<div className="mb-8">
@@ -59,23 +59,19 @@ export const Cart = async () => {
 						<div className="mt-6">
 							{customer ? (
 								<LocalizedClientLink href="/checkout?step=address">
-									<Button 
-										className="w-full py-4 !text-black font-bold rounded-md transition-colors hover:!bg-yellow-500"
-										style={{ backgroundColor: '#facc15' }}
-									>
+									<span className="press flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#FFC533] text-[14.5px] font-bold text-[#432C63]">
 										Proceed To Checkout
-									</Button>
+										<svg aria-hidden="true" className="arrow" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24" width="16"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+									</span>
 								</LocalizedClientLink>
 							) : (
 								<LocalizedClientLink
 									href={`/user?returnTo=${encodeURIComponent('/checkout?step=address')}`}
 								>
-									<Button 
-										className="w-full py-4 !text-black font-bold rounded-md transition-colors hover:!bg-yellow-500"
-										style={{ backgroundColor: '#facc15' }}
-									>
+									<span className="press flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-[#FFC533] text-[14.5px] font-bold text-[#432C63]">
 										Login to checkout
-									</Button>
+										<svg aria-hidden="true" className="arrow" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" viewBox="0 0 24 24" width="16"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+									</span>
 								</LocalizedClientLink>
 							)}
 						</div>

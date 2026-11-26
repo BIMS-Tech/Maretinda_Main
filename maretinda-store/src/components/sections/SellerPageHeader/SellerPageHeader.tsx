@@ -1,14 +1,15 @@
 import type { HttpTypes } from '@medusajs/types';
 import { format } from 'date-fns';
-import Image from 'next/image';
 
 import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import type { SellerProps } from '@/types/seller';
 
+import { SellerAvatar } from '@/components/cells/SellerAvatar/SellerAvatar';
+import { MaskedText } from '@/components/motion';
+
 import { Chat } from '../../organisms/Chat/Chat';
 
 const BANNER_COLORS = ['#E8DEF7', '#E2D9C7', '#D9EAE2', '#F2D9E2', '#D9E5F0', '#F0E4CC', '#FFE2D2', '#D8EAD9'];
-const AVATAR_COLORS = ['#9B80D2', '#D9CFB8', '#5FA88B', '#D98AA1', '#7FA8C9', '#E8B87A', '#E26D5C', '#6BBF8A'];
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)';
 
 const VerifiedBadge = () => (
@@ -40,7 +41,6 @@ export const SellerPageHeader = ({
 }) => {
 	const colorIdx = getColorIndex(seller.id);
 	const bannerBg = BANNER_COLORS[colorIdx];
-	const avatarBg = AVATAR_COLORS[colorIdx];
 
 	const reviews = seller.reviews?.filter((r) => r !== null) ?? [];
 	const reviewCount = reviews.length;
@@ -48,7 +48,7 @@ export const SellerPageHeader = ({
 	const ratingRounded = Math.round(rating * 10) / 10;
 
 	return (
-		<div className="rounded-2xl overflow-hidden border" style={{ borderColor: '#EDEAE3' }}>
+		<div className="rise-in overflow-hidden rounded-[24px] border" style={{ borderColor: '#EDEAE3' }}>
 			{/* Banner */}
 			<div
 				className="h-36 lg:h-48 w-full"
@@ -59,26 +59,8 @@ export const SellerPageHeader = ({
 			<div className="bg-white px-6 lg:px-8 pb-6">
 				<div className="flex items-end justify-between -mt-10 mb-4 flex-wrap gap-3">
 					{/* Avatar */}
-					<div
-						className="w-20 h-20 rounded-full border-4 border-white overflow-hidden flex-shrink-0"
-						style={{ backgroundColor: avatarBg, boxShadow: '0 2px 8px rgba(20,20,20,0.08)' }}
-					>
-						{seller.photo ? (
-							<Image
-								src={seller.photo}
-								alt={seller.name}
-								width={80}
-								height={80}
-								className="w-full h-full object-cover"
-							/>
-						) : (
-							<div
-								className="w-full h-full flex items-center justify-center text-white font-extrabold text-[28px]"
-								style={{ backgroundColor: avatarBg, backgroundImage: STRIPE }}
-							>
-								{seller.name.charAt(0).toUpperCase()}
-							</div>
-						)}
+					<div className="pop-in h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_6px_18px_rgba(20,20,20,0.12)]" style={{ '--delay': '160ms' } as React.CSSProperties}>
+						<SellerAvatar alt={seller.name} photo={seller.photo} size={72} />
 					</div>
 
 					{/* Actions */}
@@ -97,7 +79,7 @@ export const SellerPageHeader = ({
 
 				{/* Name + verified */}
 				<div className="flex items-center gap-2 mb-1">
-					<h1 className="text-[22px] font-extrabold text-[#1B1B1B]">{seller.name}</h1>
+					<h1 className="font-serif text-[30px] leading-tight tracking-[-0.01em] text-[#1B1B1B]"><MaskedText delay={120} play text={seller.name} /></h1>
 					{seller.verification_status === 'verified' && <VerifiedBadge />}
 				</div>
 

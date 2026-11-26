@@ -1,11 +1,13 @@
 import type { HttpTypes } from '@medusajs/types';
 
-import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import type { AdditionalAttributeProps } from '@/types/product';
 
 const ProductTabDetails = ({
 	product,
+	descriptionHtml,
 }: {
+	/** Already cleaned by sanitizeSellerHtml, on the server */
+	descriptionHtml: string;
 	product: HttpTypes.StoreProduct & {
 		attribute_values?: AdditionalAttributeProps[];
 	};
@@ -38,9 +40,9 @@ const ProductTabDetails = ({
 				</h3>
 				<div
 					className="text-[14.5px] text-gray-600 leading-relaxed product-details"
-					// biome-ignore lint/security/noDangerouslySetInnerHtml: sanitized seller markup
+					// biome-ignore lint/security/noDangerouslySetInnerHtml: cleaned on the server by sanitizeSellerHtml
 					dangerouslySetInnerHTML={{
-						__html: sanitizeSellerHtml(product?.description),
+						__html: descriptionHtml,
 					}}
 				/>
 			</section>

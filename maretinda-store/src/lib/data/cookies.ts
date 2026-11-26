@@ -3,6 +3,7 @@ import 'server-only';
 import { cookies as nextCookies } from 'next/headers';
 
 import { sessionCookieOptions } from '@/lib/helpers/session-cookie';
+import { isShopperToken } from '@/lib/helpers/session-token';
 
 export const getAuthHeaders = async (): Promise<
 	{ authorization: string } | {}
@@ -10,7 +11,9 @@ export const getAuthHeaders = async (): Promise<
 	const cookies = await nextCookies();
 	const token = cookies.get('_medusa_jwt')?.value;
 
-	if (!token) {
+	// A token that opens no shopper account (see isShopperToken) counts as signed
+	// out. Browsers that kept one from before recover on their own this way.
+	if (!isShopperToken(token)) {
 		return {};
 	}
 

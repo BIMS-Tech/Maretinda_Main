@@ -1,3 +1,4 @@
+import { Reveal } from '@/components/motion';
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getActiveCampaigns } from '@/lib/data/vouchers'
@@ -35,7 +36,7 @@ export default async function CampaignsPage() {
 						<p className="text-sm mt-1">Check back soon!</p>
 					</div>
 				) : (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<Reveal className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" variant="group">
 						{campaigns.map((campaign) => {
 							const endsAt = campaign.ends_at ? new Date(campaign.ends_at) : null
 							const daysLeft = endsAt
@@ -107,7 +108,7 @@ export default async function CampaignsPage() {
 								</Link>
 							)
 						})}
-					</div>
+					</Reveal>
 				)}
 			</div>
 		</main>

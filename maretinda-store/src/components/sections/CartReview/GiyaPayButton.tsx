@@ -3,7 +3,7 @@
 import type { HttpTypes } from '@medusajs/types';
 import { useEffect, useState } from 'react';
 
-import { Button } from '@/components/atoms';
+import { MorphButton } from '@/components/motion';
 import { ErrorMessage } from '@/components/molecules';
 
 type GiyaPayButtonProps = {
@@ -134,15 +134,16 @@ const GiyaPayButton = ({
 
 	return (
 		<>
-			<Button
-				className="w-full"
+			<MorphButton
+				busy="Opening secure payment…"
+				className="flex h-[54px] w-full items-center justify-center rounded-full bg-[#432C63] px-6 text-[15px] font-bold text-white shadow-[0_16px_34px_-12px_rgba(67,44,99,0.6)] hover:bg-[#372248] aria-busy:bg-[#6B5487]"
 				data-testid={dataTestId}
-				disabled={submitting}
-				loading={submitting}
+				done={buttonLabel}
+				idle={buttonLabel}
 				onClick={handlePayment}
-			>
-				{buttonLabel}
-			</Button>
+				state={submitting ? 'busy' : 'idle'}
+				type="button"
+			/>
 
 			<ErrorMessage
 				data-testid="giyapay-payment-error-message"

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { MaskedText } from '@/components/motion';
 import { Layout } from '@/components/organisms';
 import { OrderDetailsSection } from '@/components/sections/OrderDetailsSection/OrderDetailsSection';
 import { ArrowLeftIcon } from '@/icons';
@@ -141,9 +142,9 @@ export default async function UserPage({
 					</Button>
 				</LocalizedClientLink>
 				<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between my-8 gap-2">
-					<h1 className="heading-md !font-bold text-black uppercase font-lora">
-						Order #{orderSet.display_id}
-					</h1>
+					<h2 className="font-serif text-[28px] leading-tight tracking-[-0.01em] text-[#1B1B1B] lg:text-[34px]">
+						<MaskedText play text={`Order #${orderSet.display_id}`} />
+					</h2>
 					<p className="label-lg !font-normal text-primary">
 						Order date:{' '}
 						<span className="!font-bold">

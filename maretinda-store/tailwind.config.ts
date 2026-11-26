@@ -178,6 +178,16 @@ export default {
 				primary: 'rgba(var(--content-action-on-primary))',
 				secondary: 'rgba(var(--content-action-on-secondary))',
 			},
+			// Named, because the preset's animation plugin makes arbitrary values
+			// ambiguous and Tailwind then drops them. Same curves as app/motion.css.
+			transitionDuration: {
+				1200: '1200ms',
+				400: '400ms',
+			},
+			transitionTimingFunction: {
+				soft: 'cubic-bezier(0.16, 1, 0.3, 1)',
+				spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+			},
 			fontFamily: {
 				lora: [
 					'var(--font-lora)',

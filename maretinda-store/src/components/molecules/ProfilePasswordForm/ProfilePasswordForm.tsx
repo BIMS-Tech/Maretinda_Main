@@ -17,26 +17,11 @@ import {
 import { Button, Card } from '@/components/atoms';
 import { LabeledInput } from '@/components/cells';
 import { updateCustomerPassword } from '@/lib/data/customer';
+import { validatePassword } from '@/lib/helpers/password';
 import { cn } from '@/lib/utils';
 
 import LocalizedClientLink from '../LocalizedLink/LocalizedLink';
 import { type ProfilePasswordFormData, profilePasswordSchema } from './schema';
-
-function validatePassword(password: string) {
-	const errors = {
-		noDigitOrSymbol: !/[0-9!@#$%^&*(),.?":{}|<>_\-+=[\]\\/~`]/.test(
-			password,
-		),
-		noLower: !/[a-z]/.test(password),
-		noUpper: !/[A-Z]/.test(password),
-		tooShort: password.length < 8,
-	};
-
-	return {
-		errors,
-		isValid: !Object.values(errors).some(Boolean),
-	};
-}
 
 export const ProfilePasswordForm = ({ token }: { token?: string }) => {
 	const form = useForm<ProfilePasswordFormData>({

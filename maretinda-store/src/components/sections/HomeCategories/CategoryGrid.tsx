@@ -1,8 +1,12 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import Link from 'next/link';
 import { useState } from 'react';
+
+import { EASE_OUT, Reveal, SPRING_SOFT } from '@/components/motion';
 
 const TILE_COLORS: Record<string, string> = {
 	groceries:       '#E6DFC9',
@@ -34,7 +38,8 @@ export const CategoryGrid = ({ items }: { items: HttpTypes.StoreProductCategory[
 
 	return (
 		<>
-			<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 lg:gap-4">
+			<Reveal className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 lg:gap-4" variant="group">
+				<AnimatePresence initial={false} mode="popLayout">
 				{visible.map((category, i) => {
 					const color =
 						TILE_COLORS[category.handle] ??
@@ -47,14 +52,22 @@ export const CategoryGrid = ({ items }: { items: HttpTypes.StoreProductCategory[
 					})();
 
 					return (
-						<Link key={category.id} href={`/categories/${category.handle}`} className="group">
+						<m.div
+							animate={{ opacity: 1, scale: 1, y: 0 }}
+							exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2, ease: EASE_OUT } }}
+							initial={{ opacity: 0, scale: 0.9, y: 16 }}
+							key={category.id}
+							layout="position"
+							transition={{ ...SPRING_SOFT, delay: Math.max(0, i - INITIAL_COUNT) * 0.035 }}
+						>
+						<Link href={`/categories/${category.handle.trim()}`} className="group block">
 							<div
-								className="aspect-square rounded-[14px] overflow-hidden relative border transition-all duration-300 group-hover:shadow-md"
+								className="aspect-square rounded-[20px] overflow-hidden relative border transition-[box-shadow,transform] duration-500 ease-soft group-hover:-translate-y-1 group-hover:shadow-[0_18px_36px_-14px_rgba(67,44,99,0.28)]"
 								style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
 							>
 								{/* Colored bg with stripe pattern */}
 								<div
-									className="absolute inset-0 transition-transform duration-300 group-hover:scale-[1.04]"
+									className="absolute inset-0 transition-transform duration-700 ease-soft group-hover:scale-[1.07]"
 									style={{
 										backgroundColor: color,
 										backgroundImage: 'repeating-linear-gradient(135deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 14px)',
@@ -66,7 +79,7 @@ export const CategoryGrid = ({ items }: { items: HttpTypes.StoreProductCategory[
 									<img
 										src={imageUrl}
 										alt={category.name}
-										className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+										className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-soft group-hover:scale-[1.07]"
 									/>
 								)}
 								{/* Label */}
@@ -78,16 +91,18 @@ export const CategoryGrid = ({ items }: { items: HttpTypes.StoreProductCategory[
 								</div>
 							</div>
 						</Link>
+						</m.div>
 					);
 				})}
-			</div>
+				</AnimatePresence>
+			</Reveal>
 
 			{hasMore && (
 				<div className="mt-7 flex justify-center">
 					<button
 						type="button"
 						onClick={() => setExpanded((v) => !v)}
-						className="inline-flex items-center gap-2 h-11 px-6 rounded-full border text-[13.5px] font-bold transition-colors hover:bg-[#432C63]/5"
+						className="press inline-flex items-center gap-2 h-11 px-6 rounded-full border text-[13.5px] font-bold hover:bg-[#432C63]/5"
 						style={{ borderColor: '#E0D8EC', color: '#432C63' }}
 						aria-expanded={expanded}
 					>

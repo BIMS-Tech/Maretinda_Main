@@ -1,55 +1,45 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 
 import NotFound from '@/app/not-found';
 import { Breadcrumbs } from '@/components/atoms';
+import { MaskedText } from '@/components/motion';
+import { ProductListing } from '@/components/organisms/ProductBrowser/ProductListing';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
-import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { getCollectionByHandle } from '@/lib/data/collections';
 
-const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
-const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
-
-const SingleCollectionsPage = async ({
-	params,
-}: {
+type Props = {
 	params: Promise<{ handle: string; locale: string }>;
-}) => {
-	const { handle, locale } = await params;
+	searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+	const collection = await getCollectionByHandle((await params).handle);
+	return collection ? { title: collection.title } : {};
+}
+
+export default async function SingleCollectionsPage({ params, searchParams }: Props) {
+	const { handle } = await params;
 	const collection = await getCollectionByHandle(handle);
-
 	if (!collection) return <NotFound />;
 
-	const breadcrumbsItems = [
-		{
-			label: collection.title,
-			path: collection.handle,
-		},
-	];
-
 	return (
-		<main className="container !max-w-7xl mx-auto">
-			<div className="hidden md:block mb-2">
-				<Breadcrumbs items={breadcrumbsItems} />
+		<main className="mx-auto w-full max-w-[1360px] px-4 pb-20 pt-5 lg:px-6">
+			<div className="mb-3 hidden md:block">
+				<Breadcrumbs
+					items={[
+						{ label: 'Home', path: '/' },
+						{ label: 'Collections', path: '/collections' },
+						{ label: collection.title, path: `/collections/${collection.handle}` },
+					]}
+				/>
 			</div>
-
-			<h1 className="heading-xl uppercase">{collection.title}</h1>
-
+			<h1 className="mb-8 font-serif text-[38px] leading-tight tracking-[-0.01em] text-[#1B1B1B] lg:text-[52px]">
+				<MaskedText play text={collection.title} />
+			</h1>
 			<Suspense fallback={<ProductListingSkeleton />}>
-				{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-					<ProductListing collection_id={collection.id} showSidebar />
-				) : (
-					<AlgoliaProductsListing
-						closedShops={await getClosedShopHandles()}
-						collection_id={collection.id}
-						collection_title={collection.title}
-						locale={locale}
-					/>
-				)}
+				<ProductListing emptyHref="/collections" scope={{ collection_id: collection.id }} searchParams={await searchParams} />
 			</Suspense>
 		</main>
 	);
-};
-
-export default SingleCollectionsPage;
+}

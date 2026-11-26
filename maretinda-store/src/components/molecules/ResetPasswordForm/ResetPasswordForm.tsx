@@ -16,19 +16,10 @@ import {
 import { HideIcon } from '@/icons';
 import Spinner from '@/icons/spinner';
 import { updateCustomerPassword } from '@/lib/data/customer';
+import { validatePassword } from '@/lib/helpers/password';
 import { safeReturnTo } from '@/lib/helpers/safe-return-to';
 
 import { type ResetPasswordFormData, resetPasswordSchema } from './schema';
-
-function validatePassword(password: string) {
-	const errors = {
-		noDigitOrSymbol: !/[0-9!@#$%^&*(),.?":{}|<>_\-+=[\]\\/~`]/.test(password),
-		noLower: !/[a-z]/.test(password),
-		noUpper: !/[A-Z]/.test(password),
-		tooShort: password.length < 8,
-	};
-	return { errors, isValid: !Object.values(errors).some(Boolean) };
-}
 
 const INPUT_CLASS =
 	'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';

@@ -1,0 +1,376 @@
+/* ── Motion ───────────────────────────────────────────────────────────────
+   One set of curves for the whole store; components/motion/tokens.ts mirrors
+   them. Everything here is off for people who ask for less motion (bottom). */
+
+:root {
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+	--ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+	--ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Content arriving as it scrolls into view (components/motion/Reveal) */
+[data-reveal][data-reveal-kind="up"],
+[data-reveal][data-reveal-kind="fade"],
+[data-reveal][data-reveal-kind="scale"] {
+	transition:
+		opacity 0.7s var(--ease-out) var(--reveal-delay, 0ms),
+		transform 0.9s var(--ease-out) var(--reveal-delay, 0ms);
+	will-change: opacity, transform;
+}
+[data-reveal="hidden"][data-reveal-kind="up"] {
+	opacity: 0;
+	transform: translateY(28px);
+}
+[data-reveal="hidden"][data-reveal-kind="fade"] {
+	opacity: 0;
+}
+[data-reveal="hidden"][data-reveal-kind="scale"] {
+	opacity: 0;
+	transform: scale(0.96);
+}
+
+[data-reveal][data-reveal-kind="group"] > * {
+	transition:
+		opacity 0.6s var(--ease-out),
+		transform 0.8s var(--ease-out) !important;
+	transition-delay: calc(var(--reveal-delay, 0ms) + var(--n, 0) * 60ms) !important;
+	will-change: opacity, transform;
+}
+[data-reveal="hidden"][data-reveal-kind="group"] > * {
+	opacity: 0;
+	transform: translateY(26px);
+}
+[data-reveal-kind="group"] > :nth-child(2) { --n: 1; }
+[data-reveal-kind="group"] > :nth-child(3) { --n: 2; }
+[data-reveal-kind="group"] > :nth-child(4) { --n: 3; }
+[data-reveal-kind="group"] > :nth-child(5) { --n: 4; }
+[data-reveal-kind="group"] > :nth-child(6) { --n: 5; }
+[data-reveal-kind="group"] > :nth-child(7) { --n: 6; }
+[data-reveal-kind="group"] > :nth-child(8) { --n: 7; }
+[data-reveal-kind="group"] > :nth-child(n + 9) { --n: 8; }
+
+/* Headings whose words rise from behind a line */
+.masked-word {
+	display: inline-block;
+	overflow: hidden;
+	/* Room for descenders, and for letters that lean out of their box */
+	padding: 0.08em 0.06em 0.2em;
+	margin: -0.08em -0.06em -0.2em;
+	vertical-align: bottom;
+}
+.masked-word > span {
+	display: inline-block;
+	transform-origin: 0 100%;
+}
+.masked-text--play .masked-word > span {
+	animation: mask-rise 0.95s var(--ease-out) both;
+	animation-delay: calc(var(--mask-delay, 0ms) + var(--i) * 65ms);
+}
+[data-reveal][data-reveal-kind="mask"] .masked-word > span {
+	transition: transform 0.95s var(--ease-out);
+	transition-delay: calc(var(--i) * 55ms);
+}
+[data-reveal="hidden"][data-reveal-kind="mask"] .masked-word > span {
+	transform: translateY(112%) rotate(5deg);
+}
+[data-reveal][data-reveal-kind="mask"] .eyebrow {
+	transition: opacity 0.6s var(--ease-out);
+}
+[data-reveal="hidden"][data-reveal-kind="mask"] .eyebrow {
+	opacity: 0;
+}
+@keyframes mask-rise {
+	from { transform: translateY(112%) rotate(5deg); }
+	to { transform: none; }
+}
+
+/* Things that play once when the page paints */
+.rise-in {
+	animation: rise-in 0.8s var(--ease-out) both;
+	animation-delay: var(--delay, 0ms);
+}
+@keyframes rise-in {
+	from { opacity: 0; transform: translateY(18px); }
+	to { opacity: 1; transform: none; }
+}
+.pop-in {
+	animation: pop-in 0.6s var(--ease-back) both;
+	animation-delay: var(--delay, 0ms);
+}
+@keyframes pop-in {
+	from { opacity: 0; transform: scale(0.82); }
+	to { opacity: 1; transform: none; }
+}
+.image-settle {
+	animation: image-settle 1.2s var(--ease-out) both;
+	animation-delay: var(--delay, 0ms);
+}
+@keyframes image-settle {
+	from { opacity: 0; transform: scale(1.08); }
+	to { opacity: 1; transform: none; }
+}
+/* Pages after the first slide up into place */
+.page-enter {
+	animation: page-enter 0.5s var(--ease-out) both;
+}
+@keyframes page-enter {
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: none; }
+}
+
+/* Tick that draws itself */
+.success-mark {
+	position: relative;
+	display: inline-block;
+}
+.success-mark svg {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+.success-mark__disc {
+	transform-origin: center;
+	animation: pop-in 0.5s var(--ease-back) both;
+}
+.success-mark__tick {
+	stroke-dasharray: 36;
+	animation: draw 0.4s var(--ease-out) 0.32s both;
+}
+.success-mark i {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 6px;
+	height: 6px;
+	margin: -3px;
+	border-radius: 50%;
+	opacity: 0;
+	transform: rotate(var(--angle)) translateX(0);
+	animation: burst 0.9s var(--ease-out) 0.5s;
+}
+@keyframes draw {
+	from { stroke-dashoffset: 36; }
+	to { stroke-dashoffset: 0; }
+}
+@keyframes burst {
+	0% { opacity: 0; transform: rotate(var(--angle)) translateX(10px) scale(0.4); }
+	25% { opacity: 1; }
+	100% { opacity: 0; transform: rotate(var(--angle)) translateX(var(--reach)) scale(1); }
+}
+
+.marquee {
+	display: flex;
+	overflow: hidden;
+	user-select: none;
+}
+.marquee__track {
+	display: flex;
+	flex-shrink: 0;
+	min-width: 100%;
+	justify-content: space-around;
+	animation: marquee 42s linear infinite;
+}
+.marquee:hover .marquee__track {
+	animation-play-state: paused;
+}
+.marquee__item {
+	display: inline-flex;
+	align-items: center;
+	white-space: nowrap;
+}
+.marquee__dot {
+	width: 0.28em;
+	height: 0.28em;
+	margin: 0 0.8em;
+	border-radius: 50%;
+	background: #ffc533;
+}
+@keyframes marquee {
+	to { transform: translateX(-100%); }
+}
+
+.tilt {
+	perspective: 900px;
+}
+.tilt__inner {
+	height: 100%;
+	transform: translate3d(var(--tx, 0), var(--ty, 0), 0) rotateX(var(--rx, 0)) rotateY(var(--ry, 0));
+	transition: transform 0.5s var(--ease-out);
+	will-change: transform;
+}
+
+/* Buttons answer a press */
+.press {
+	transition:
+		transform 0.25s var(--ease-out),
+		background-color 0.2s,
+		box-shadow 0.25s var(--ease-out),
+		opacity 0.2s;
+}
+.press:hover:not(:disabled) {
+	transform: translateY(-1px);
+}
+.press:active:not(:disabled) {
+	transform: scale(0.97);
+	transition-duration: 0.08s;
+}
+.press .arrow {
+	transition: transform 0.35s var(--ease-out);
+}
+.press:hover .arrow {
+	transform: translateX(4px);
+}
+
+/* A link's underline drawn from the left */
+.link-line {
+	background: linear-gradient(currentColor, currentColor) 0 100% / 0 1.5px no-repeat;
+	transition: background-size 0.4s var(--ease-out);
+}
+.link-line:hover,
+a:hover > .link-line,
+.group:hover .link-line {
+	background-size: 100% 1.5px;
+}
+
+/* Loading placeholders */
+.shimmer {
+	position: relative;
+	overflow: hidden;
+	background: #f1eef5;
+}
+.shimmer::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
+	transform: translateX(-100%);
+	animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+	to { transform: translateX(100%); }
+}
+
+/* Bag badge */
+.badge-bump {
+	animation: badge-bump 0.5s var(--ease-back);
+}
+@keyframes badge-bump {
+	0% { transform: scale(1); }
+	40% { transform: scale(1.45); }
+	100% { transform: scale(1); }
+}
+.cart-catch {
+	animation: cart-catch 0.5s var(--ease-back);
+}
+@keyframes cart-catch {
+	0%, 100% { transform: none; }
+	35% { transform: scale(1.16) rotate(-5deg); }
+}
+
+/* A product card's picture growing into the product page (lib/view-transition) */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 0.32s;
+	animation-timing-function: var(--ease-out);
+}
+::view-transition-group(product-hero) {
+	animation-duration: 0.55s;
+	animation-timing-function: var(--ease-out);
+	z-index: 10;
+}
+::view-transition-old(product-hero),
+::view-transition-new(product-hero) {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+	mix-blend-mode: normal;
+	animation-duration: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.masked-text--play .masked-word > span,
+	.rise-in,
+	.pop-in,
+	.image-settle,
+	.page-enter,
+	.success-mark__disc,
+	.success-mark__tick,
+	.success-mark i,
+	.badge-bump,
+	.cart-catch {
+		animation: none !important;
+	}
+	.marquee__track,
+	.shimmer::after {
+		animation: none !important;
+	}
+	.press,
+	.tilt__inner,
+	.link-line {
+		transition: none !important;
+	}
+	.press:hover:not(:disabled),
+	.press:active:not(:disabled) {
+		transform: none;
+	}
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
+	}
+}
+
+/* The price filter's two handles: one track, two inputs on top of each other */
+.price-handle {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 10px;
+	margin: 0;
+	background: none;
+	-webkit-appearance: none;
+	appearance: none;
+	pointer-events: none;
+	outline: none;
+}
+.price-handle::-webkit-slider-runnable-track {
+	background: none;
+	height: 10px;
+}
+.price-handle::-moz-range-track {
+	background: none;
+	height: 10px;
+}
+.price-handle::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	pointer-events: auto;
+	width: 18px;
+	height: 18px;
+	margin-top: -4px;
+	border-radius: 50%;
+	border: 3px solid #432c63;
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(67, 44, 99, 0.3);
+	cursor: grab;
+	transition: transform 0.2s var(--ease-out), box-shadow 0.2s;
+}
+.price-handle::-moz-range-thumb {
+	pointer-events: auto;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	border: 3px solid #432c63;
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(67, 44, 99, 0.3);
+	cursor: grab;
+}
+.price-handle::-webkit-slider-thumb:hover {
+	transform: scale(1.15);
+}
+.price-handle::-webkit-slider-thumb:active {
+	cursor: grabbing;
+	transform: scale(1.25);
+}
+.price-handle:focus-visible::-webkit-slider-thumb {
+	box-shadow: 0 0 0 4px rgba(67, 44, 99, 0.25);
+}

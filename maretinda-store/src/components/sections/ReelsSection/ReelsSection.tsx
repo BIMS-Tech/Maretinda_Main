@@ -1,3 +1,4 @@
+import { Reveal, SectionHeading } from '@/components/motion';
 import { ReelsGallery } from '@/components/organisms/Reels/ReelsGallery';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listReels } from '@/lib/data/reels';
@@ -35,9 +36,7 @@ export const ReelsSection = async ({
 		<section className="mt-8">
 			<div className="flex items-end justify-between mb-4">
 				<div>
-					<h2 className="font-serif text-[22px] lg:text-[26px] text-[#1B1B1B]">
-						{heading}
-					</h2>
+					<SectionHeading className="font-serif text-[28px] leading-tight tracking-[-0.01em] text-[#1B1B1B] lg:text-[34px]" text={heading} />
 					{subheading && (
 						<p className="text-[13px] mt-0.5" style={{ color: '#737373' }}>
 							{subheading}
@@ -56,7 +55,9 @@ export const ReelsSection = async ({
 				)}
 			</div>
 
-			<ReelsGallery reels={reels} showSeller={showSeller} user={user} />
+			<Reveal>
+				<ReelsGallery reels={reels} showSeller={showSeller} user={user} />
+			</Reveal>
 		</section>
 	);
 };

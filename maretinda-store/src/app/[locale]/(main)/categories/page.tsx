@@ -1,22 +1,16 @@
 import type { HttpTypes } from '@medusajs/types';
 import Link from 'next/link';
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ProductListingSkeleton } from '@/components/organisms/ProductListingSkeleton/ProductListingSkeleton';
-import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import { ProductListing } from '@/components/organisms/ProductBrowser/ProductListing';
+import { MaskedText, Reveal, SectionHeading } from '@/components/motion';
 import { categoryThemes } from '@/data/categories';
 import { listCategories } from '@/lib/data/categories';
-import { getClosedShopHandles } from '@/lib/data/closed-shops';
-import { retrieveCustomer } from '@/lib/data/customer';
-import { getRegion } from '@/lib/data/regions';
-import { getUserWishlists } from '@/lib/data/wishlist';
 import { sortCategories } from '@/lib/utils';
-import type { Wishlist } from '@/types/wishlist';
-
-const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
-const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
 
 const STRIPE = 'repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 14px)';
 
@@ -48,23 +42,19 @@ function getPalette(handle: string, index: number) {
 
 export default async function AllCategories({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ locale: string }>;
+	searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
 	const { locale } = await params;
-	const user = await retrieveCustomer();
+	const query = await searchParams;
 
-	let wishlist: Wishlist[] = [];
-	if (user) {
-		try {
-			const response = await getUserWishlists();
-			wishlist = response.wishlists;
-		} catch {
-			wishlist = [];
-		}
+	// Searches used to land here, above the categories; old links still do
+	const words = query.query ?? query.q;
+	if (typeof words === 'string' && words.trim()) {
+		redirect(`/${locale}/search?q=${encodeURIComponent(words.trim())}`);
 	}
-
-	const currency_code = (await getRegion(locale))?.currency_code || 'php';
 
 	const { categories } = (await listCategories()) as {
 		categories: HttpTypes.StoreProductCategory[];
@@ -86,7 +76,7 @@ export default async function AllCategories({
 						<span className="text-white/80 text-[13px]">All Categories</span>
 					</div>
 					<h1 className="text-[32px] lg:text-[48px] font-extrabold text-white tracking-tight leading-[1.05]">
-						Shop by Category
+						<MaskedText play text="Shop by Category" />
 					</h1>
 					<p className="mt-3 text-[15px] text-white/70 max-w-[500px]">
 						From fresh groceries to the latest fashion — discover everything from trusted Filipino sellers.
@@ -119,13 +109,11 @@ export default async function AllCategories({
 				{/* ── Category cards grid ── */}
 				<section className="py-10 lg:py-14">
 					<div className="flex items-center justify-between mb-7">
-						<h2 className="text-[22px] lg:text-[26px] font-extrabold text-[#1B1B1B] tracking-tight">
-							All categories
-						</h2>
+						<SectionHeading className="text-[22px] lg:text-[26px] font-extrabold text-[#1B1B1B] tracking-tight" text="All categories" />
 						<span className="text-[13px] text-[#737373]">{categories.length} categories</span>
 					</div>
 
-					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 lg:gap-4">
+					<Reveal className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 lg:gap-4" variant="group">
 						{categories.map((category, index) => {
 							const palette = getPalette(category.handle, index);
 							const theme = categoryThemes[category.handle as keyof typeof categoryThemes];
@@ -188,14 +176,14 @@ export default async function AllCategories({
 								</LocalizedClientLink>
 							);
 						})}
-					</div>
+					</Reveal>
 				</section>
 
 				{/* ── Sub-categories by main category ── */}
 				<section className="pb-12 space-y-6">
-					<h2 className="text-[22px] lg:text-[26px] font-extrabold text-[#1B1B1B] tracking-tight mb-7">
-						Browse sub-categories
-					</h2>
+					<div className="mb-7">
+						<SectionHeading className="text-[22px] lg:text-[26px] font-extrabold text-[#1B1B1B] tracking-tight" text="Browse sub-categories" />
+					</div>
 
 					{categories
 						.filter((cat) => cat.category_children?.length > 0)
@@ -204,7 +192,7 @@ export default async function AllCategories({
 							const theme = categoryThemes[category.handle as keyof typeof categoryThemes];
 
 							return (
-								<div
+								<Reveal
 									key={category.id}
 									className="rounded-2xl border overflow-hidden"
 									style={{ borderColor: '#EDEAE3' }}
@@ -259,7 +247,7 @@ export default async function AllCategories({
 												</LocalizedClientLink>
 											))}
 									</div>
-								</div>
+								</Reveal>
 							);
 						})}
 				</section>
@@ -285,17 +273,7 @@ export default async function AllCategories({
 					</div>
 
 					<Suspense fallback={<ProductListingSkeleton />}>
-						{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-							<ProductListing locale={locale} showSidebar />
-						) : (
-							<AlgoliaProductsListing
-								closedShops={await getClosedShopHandles()}
-								currency_code={currency_code}
-								locale={locale}
-								user={user}
-								wishlist={wishlist}
-							/>
-						)}
+						<ProductListing searchParams={query} />
 					</Suspense>
 				</section>
 			</div>

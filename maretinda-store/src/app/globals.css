@@ -95,10 +95,10 @@
 	color: #111827;
 }
 
-/* Checkout section wrapper improvements */
+/* A page of the account area */
 .user-content-wrapper {
-	@apply shadow-sm border border-gray-200 rounded-lg p-6 sm:p-7 lg:p-8;
-	background: white;
+	@apply rounded-[24px] border border-[#EDEAE3] bg-white p-5 sm:p-7 lg:p-9;
+	box-shadow: 0 10px 40px -24px rgba(67, 44, 99, 0.25);
 }
 
 /* Atoms components */
@@ -267,10 +267,6 @@ button:disabled svg path {
 
 .slider-product-images .arrow-button.arrow-right {
 	@apply right-0;
-}
-
-.user-content-wrapper {
-	@apply shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border !border-black/15 rounded-sm p-4 sm:p-5 lg:p-8;
 }
 
 .toggleIcon {

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
+import { MaskedText } from '@/components/motion';
 import PaymentWrapper from '@/components/organisms/PaymentContainer/PaymentWrapper';
 import { CartAddressSection } from '@/components/sections/CartAddressSection/CartAddressSection';
 import CartPaymentSection from '@/components/sections/CartPaymentSection/CartPaymentSection';
@@ -23,8 +24,17 @@ export default async function CheckoutPage({}) {
 	return (
 		<Suspense
 			fallback={
-				<div className="container flex items-center justify-center">
-					Loading...
+				<div aria-busy="true" className="container !max-w-7xl mx-auto px-4 !py-12" role="status">
+					<span className="sr-only">Loading checkout</span>
+					<div className="shimmer mb-8 h-14 w-64 rounded-2xl" />
+					<div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+						<div className="space-y-5 lg:col-span-7">
+							<div className="shimmer h-72 rounded-[24px]" />
+							<div className="shimmer h-24 rounded-[24px]" />
+							<div className="shimmer h-24 rounded-[24px]" />
+						</div>
+						<div className="shimmer h-96 rounded-[24px] lg:col-span-5" />
+					</div>
 				</div>
 			}
 		>
@@ -39,8 +49,9 @@ async function CheckoutPageContent({}) {
 		retrieveCustomer(),
 	]);
 
-	if (!cart) {
-		return notFound();
+	// Nothing to check out: their cart says so, and what to do next
+	if (!cart?.items?.length) {
+		redirect('/cart');
 	}
 
 	// Redirect to login if user is not authenticated
@@ -58,8 +69,8 @@ async function CheckoutPageContent({}) {
 		<PaymentWrapper cart={cart}>
 			<main className="container !max-w-7xl mx-auto px-4 !py-12">
 				{/* Checkout Title */}
-				<h1 className="text-4xl font-bold text-center mb-10" style={{ color: '#111827' }}>
-					Checkout
+				<h1 className="mb-8 font-serif text-[40px] leading-tight tracking-[-0.01em] text-[#1B1B1B] lg:text-[52px]">
+					<MaskedText play text="Checkout" />
 				</h1>
 
 				{/* Payment and "Place order" are refused until the email is confirmed */}
@@ -74,7 +85,7 @@ async function CheckoutPageContent({}) {
 					{/* Left Column - Checkout Steps */}
 					<div className="lg:col-span-7 space-y-5">
 						{/* Shipping Address Section */}
-						<div className="bg-white user-content-wrapper">
+						<div className="rise-in rounded-[24px] border border-[#EFEAF4] bg-white p-5 sm:p-7" style={{ '--delay': '120ms' } as React.CSSProperties}>
 							<CartAddressSection
 								cart={cart}
 								customer={customer}
@@ -82,7 +93,7 @@ async function CheckoutPageContent({}) {
 						</div>
 
 						{/* Delivery Section */}
-						<div className="bg-white user-content-wrapper">
+						<div className="rise-in rounded-[24px] border border-[#EFEAF4] bg-white p-5 sm:p-7" style={{ '--delay': '210ms' } as React.CSSProperties}>
 							<CartShippingMethodsSection
 								availableShippingMethods={
 									shippingMethods as any
@@ -92,7 +103,7 @@ async function CheckoutPageContent({}) {
 						</div>
 
 						{/* Payment Section */}
-						<div className="bg-white user-content-wrapper">
+						<div className="rise-in rounded-[24px] border border-[#EFEAF4] bg-white p-5 sm:p-7" style={{ '--delay': '300ms' } as React.CSSProperties}>
 							<CartPaymentSection
 								availablePaymentMethods={paymentMethods}
 								cart={cart}
@@ -102,7 +113,7 @@ async function CheckoutPageContent({}) {
 
 					{/* Right Column - Order Summary */}
 					<div className="lg:col-span-5">
-						<div className="bg-white h-fit sticky top-4 user-content-wrapper">
+						<div className="rise-in sticky top-[132px] h-fit rounded-[24px] border border-[#EFEAF4] bg-white p-5 shadow-[0_24px_60px_-34px_rgba(67,44,99,0.45)] sm:p-7" style={{ '--delay': '260ms' } as React.CSSProperties}>
 							<CartReview cart={cart} />
 						</div>
 					</div>

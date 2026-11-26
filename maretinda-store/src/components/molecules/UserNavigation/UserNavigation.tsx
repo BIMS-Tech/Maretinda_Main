@@ -145,25 +145,21 @@ export const UserNavigation = ({
 			.catch(() => {});
 	}, [user]);
 
-	const targetSegment = '/ph';
-	const phIndex = path.indexOf(targetSegment);
-	let pathAfterPH = '';
-	if (phIndex !== -1) {
-		pathAfterPH = path.substring(phIndex + targetSegment.length);
-	}
+	// Without its locale: /ph/user/orders → /user/orders
+	const here = path.replace(/^\/[^/]+/, '');
+	// A page under an item (an order, the written reviews) keeps that item lit
+	const isActive = (href: string) => here === href || (href !== '/user' && here.startsWith(`${href}/`));
 
 	return (
-		<div className="h-min rounded-2xl overflow-hidden shadow-[0_4px_24px_rgba(67,44,99,0.12)] border border-[#432C63]/[0.08] bg-white">
+		<div className="h-min rounded-[24px] overflow-hidden shadow-[0_10px_40px_-24px_rgba(67,44,99,0.35)] border border-[#432C63]/[0.08] bg-white">
 			{/* Profile header */}
 			<div className="bg-[#432C63] px-6 py-7 flex flex-col items-center gap-3">
 				<div className="relative">
 					<Avatar
-						className="rounded-full h-16 w-16 ring-[3px] ring-white/25"
-						initials={user?.first_name?.[0]?.toUpperCase() ?? 'U'}
+						className="h-16 w-16 rounded-full border-0 bg-[#FFC533] font-serif !text-[26px] !font-normal text-[#432C63] ring-[3px] ring-white/25"
+						initials={(user?.first_name?.[0] ?? user?.email?.[0] ?? 'M').toUpperCase()}
 						size="large"
-						src={'/talkjs-placeholder.jpg'}
 					/>
-					<span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 bg-emerald-400 rounded-full border-2 border-[#432C63]" />
 				</div>
 				<div className="text-center">
 					<p className="text-white/50 text-[10.5px] font-semibold tracking-[0.18em] uppercase">
@@ -179,7 +175,7 @@ export const UserNavigation = ({
 			<div className="px-3 pt-3 pb-1">
 				{navigationItems.map((item) => (
 					<NavigationItem
-						active={pathAfterPH === item.href}
+						active={isActive(item.href)}
 						className="relative"
 						href={item.href}
 						key={item.label}
@@ -198,7 +194,7 @@ export const UserNavigation = ({
 			{/* Footer: settings + logout */}
 			<div className="border-t border-[#432C63]/[0.08] mx-3 px-0 py-2.5">
 				<NavigationItem
-					active={pathAfterPH === '/user/settings'}
+					active={isActive('/user/settings')}
 					href={'/user/settings'}
 				>
 					<SettingIcon />

@@ -9,7 +9,7 @@ export default async function SellerReelsPage({
 }: {
 	params: Promise<{ handle: string; locale: string }>;
 }) {
-	const { handle, locale } = await params;
+	const { handle } = await params;
 
 	const seller = (await getSellerByHandle(handle)) as SellerProps;
 
@@ -30,7 +30,7 @@ export default async function SellerReelsPage({
 	return (
 		<main className="max-w-[1360px] mx-auto px-4 lg:px-6 py-8 lg:py-10">
 			<SellerPageHeader seller={seller} user={user} />
-			<SellerTabs locale={locale} seller={seller} tab="reels" />
+			<SellerTabs seller={seller} tab="reels" />
 		</main>
 	);
 }

@@ -1,3 +1,4 @@
+import { Reveal } from '@/components/motion';
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -171,11 +172,11 @@ export default async function SellersPage() {
               <span className="text-[13px]" style={{ color: '#737373' }}>{count} sellers</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <Reveal className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" variant="group">
               {sellers.map((seller: SellerProps, index: number) => (
                 <SellerCard key={seller.id} seller={seller} index={index} />
               ))}
-            </div>
+            </Reveal>
           </>
         )}
 

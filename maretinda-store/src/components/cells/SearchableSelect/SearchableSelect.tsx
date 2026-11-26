@@ -71,6 +71,8 @@ export const SearchableSelect = ({
 			>
 				<div className="relative mt-2">
 					<ComboboxInput
+						// Typing replaces what was picked before, rather than adding to it
+						onFocus={(e) => e.currentTarget.select()}
 						autoComplete="off"
 						className={cn(
 							'label-md w-full px-[16px] py-[12px] pr-10 border rounded-sm bg-white border-black/10 focus:border-[#2563EB] focus:outline-none focus:ring-2 data-[disabled]:bg-disabled data-[disabled]:cursor-not-allowed',

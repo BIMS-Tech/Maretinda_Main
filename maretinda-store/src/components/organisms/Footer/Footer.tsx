@@ -17,7 +17,7 @@ const OPERATOR_NAME = 'BIMS Technologies, Inc.';
 const BIR_RSN = '081RC20230000006303';
 
 const SHOP_LINKS = [
-	{ label: 'New arrivals', href: '/categories' },
+	{ label: 'New arrivals', href: '/search?sort=newest' },
 	{ label: 'Flash sales', href: '/flash-sale' },
 	{ label: 'Collections', href: '/#collections' },
 	{ label: 'Trending now', href: '/#trending' },

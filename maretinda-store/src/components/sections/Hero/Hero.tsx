@@ -1,6 +1,11 @@
-import Image from 'next/image';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
+
+import { Marquee, MaskedText, Reveal, Tilt } from '@/components/motion';
+import { FlashSaleCountdown } from '@/components/sections/FlashSaleSection/FlashSaleCountdown';
 import type { HeroContent } from '@/lib/data/hero';
+
+import { HeroPicture } from './HeroPicture';
 
 type HeroProps = {
 	buttons: { label: string; path: string }[];
@@ -18,8 +23,6 @@ const FALLBACK = {
 	featured_product_category: 'Fashion · Summer Drop',
 	featured_product_price: 89900,
 	featured_product_original_price: 129900,
-	featured_product_rating_count: 248,
-	featured_product_sold_this_week: 247,
 	featured_product_link: '/categories',
 	featured_product_image: '/images/featured-products/fashion.png',
 	sellers_count: '12,800+',
@@ -39,17 +42,7 @@ function calcDiscount(price: number, original: number) {
 	return Math.round((1 - price / original) * 100)
 }
 
-function HeroCountdown({ endsAt }: { endsAt: string | null }) {
-	if (!endsAt) return null
-	const now = Date.now()
-	const end = new Date(endsAt).getTime()
-	const diff = Math.max(0, Math.floor((end - now) / 1000))
-	const d = Math.floor(diff / 86400)
-	const h = Math.floor((diff % 86400) / 3600)
-	const m = Math.floor((diff % 3600) / 60)
-	if (diff <= 0) return <span className="text-[12px] opacity-80">Ended</span>
-	return <span className="text-[12px] opacity-80">Ends in {d}d {h}h {m}m</span>
-}
+const after = (ms: number) => ({ '--delay': `${ms}ms` }) as CSSProperties;
 
 export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const shopBtn = buttons.find((b) => b.label === 'Start Shopping') ?? buttons[0];
@@ -73,8 +66,10 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 	const hasLivePrice = s.featured_product_price != null
 	const productPrice = s.featured_product_price ?? FALLBACK.featured_product_price
 	const productOriginal: number | null = s.featured_product_original_price ?? (hasLivePrice ? null : FALLBACK.featured_product_original_price)
-	const productRatings = s.featured_product_rating_count ?? FALLBACK.featured_product_rating_count
-	const soldThisWeek = s.featured_product_sold_this_week ?? FALLBACK.featured_product_sold_this_week
+	// Counted from real reviews and orders by the backend
+	const productRatings = Number(s.featured_product_rating_count ?? 0)
+	const productRating = Number(s.featured_product_rating ?? 0)
+	const soldThisWeek = Number(s.featured_product_sold_this_week ?? 0)
 	const productLink = s.featured_product_link || FALLBACK.featured_product_link
 	const productImage = s.featured_product_image || FALLBACK.featured_product_image
 	// Live count from DB takes priority; admin override next; then fallback
@@ -116,39 +111,38 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 					{/* Copy */}
 					<div className="relative z-10 p-6 sm:p-8 lg:p-12 w-full max-w-full lg:max-w-[58%] flex flex-col justify-between bg-[#FBF9FC] lg:bg-transparent">
 						<div>
-							<div className="flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase" style={{ color: '#432C63' }}>
+							<div className="rise-in flex items-center gap-2 text-[12px] font-semibold tracking-[0.16em] uppercase" style={{ color: '#432C63' }}>
 								<span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
 								{badge}
 							</div>
 							<h1 className="mt-5 font-serif leading-[1] tracking-[-0.02em] text-[#1a1a1a]" style={{ fontSize: 'clamp(36px, 4.5vw, 60px)' }}>
-								{heading.split('. ').map((line, i, arr) => (
-									<span key={i}>
-										{i === arr.length - 1
-											? <span style={{ color: '#432C63' }}>{line}</span>
-											: <>{line}.<br /></>}
+								{heading.split('. ').map((line, i, lines) => (
+									<span className={i === lines.length - 1 ? 'text-[#432C63]' : undefined} key={line}>
+										<MaskedText delay={120 + i * 260} play text={i === lines.length - 1 ? line : `${line}.`} />
+										{i < lines.length - 1 && <> <br /></>}
 									</span>
 								))}
 							</h1>
-							<p className="mt-4 text-[14px] sm:text-[15px] text-[#404040] leading-relaxed max-w-[420px]">
+							<p className="rise-in mt-4 text-[14px] sm:text-[15px] text-[#404040] leading-relaxed max-w-[420px]" style={after(620)}>
 								{subheading}
 							</p>
 						</div>
 
-						<div className="flex flex-wrap items-center gap-3 mt-6 lg:mt-8">
+						<div className="rise-in flex flex-wrap items-center gap-3 mt-6 lg:mt-8" style={after(740)}>
 							{shopBtn && (
 								<Link
 									href={shopBtn.path}
-									className="inline-flex items-center gap-2 font-bold text-[14px] px-6 h-12 rounded-full transition-opacity hover:opacity-90"
+									className="press inline-flex items-center gap-2 font-bold text-[14px] px-6 h-12 rounded-full"
 									style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 								>
 									{shopBtn.label}
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+									<svg aria-hidden="true" className="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
 								</Link>
 							)}
 							{sellerBtn && (
 								<Link
 									href={sellerBtn.path}
-									className="inline-flex items-center font-semibold text-[14px] px-6 h-12 rounded-full border border-black/15 text-[#1a1a1a] hover:bg-white/60 transition-colors"
+									className="inline-flex items-center font-semibold text-[14px] px-6 h-12 rounded-full border border-black/15 text-[#1a1a1a] hover:bg-white/60 press"
 									style={{ backgroundColor: 'rgba(255,255,255,0)' }}
 								>
 									{sellerBtn.label}
@@ -156,10 +150,10 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 							)}
 							<div className="hidden md:flex items-center gap-2 ml-2 text-[12px] text-[#404040]">
 								<div className="flex -space-x-2">
-									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#E26D5C' }} />
-									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#5FA88B' }} />
-									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#7FA8C9' }} />
-									<div className="w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ backgroundColor: '#D98AA1' }} />
+									<div className="pop-in w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ ...after(880), backgroundColor: '#E26D5C' }} />
+									<div className="pop-in w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ ...after(960), backgroundColor: '#5FA88B' }} />
+									<div className="pop-in w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ ...after(1040), backgroundColor: '#7FA8C9' }} />
+									<div className="pop-in w-7 h-7 rounded-full border-2 border-[#FBF9FC]" style={{ ...after(1120), backgroundColor: '#D98AA1' }} />
 								</div>
 								<span><b className="text-[#1a1a1a]">{sellersCount}</b> sellers</span>
 							</div>
@@ -168,31 +162,26 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 
 					{/* Featured product panel — stacked below copy on mobile, overlaid on the right on desktop */}
 					<div className="relative w-full h-56 sm:h-64 mt-auto lg:mt-0 lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:h-auto lg:w-[44%]">
-						<div className="relative w-full h-full">
-							<Image
-								src={productImage}
-								alt={`${productName} — featured pick`}
-								fill
-								className="object-cover object-center"
-								sizes="(min-width: 1024px) 25vw, 100vw"
-								priority
-								unoptimized={productImage.startsWith('http')}
-							/>
-						</div>
+						<Tilt className="h-full w-full" lift={12} max={4}>
+							<div className="relative h-full w-full scale-[1.04]">
+								<HeroPicture alt={`${productName} — featured pick`} fallback={FALLBACK.featured_product_image} src={productImage} />
+							</div>
+						</Tilt>
 
-						{/* Sold-today chip */}
-						<div className="absolute top-5 left-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm">
-							<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-							<span className="text-[11px] font-semibold text-[#1a1a1a]">{soldThisWeek} sold this week</span>
-						</div>
+						{soldThisWeek > 0 && (
+							<div className="pop-in absolute top-5 left-4 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-full px-2.5 py-1 shadow-sm" style={after(900)}>
+								<span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse motion-reduce:animate-none" />
+								<span className="text-[11px] font-semibold text-[#1a1a1a]">{soldThisWeek.toLocaleString('en-PH')} sold this week</span>
+							</div>
+						)}
 
 						{/* FEATURED badge */}
-						<div className="absolute top-4 right-4 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>
+						<div className="pop-in absolute top-4 right-4 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full" style={{ ...after(980), backgroundColor: '#FFC533', color: '#432C63' }}>
 							Featured
 						</div>
 
 						{/* Product info card */}
-						<div className="absolute bottom-5 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md">
+						<div className="rise-in absolute bottom-5 left-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md" style={after(820)}>
 							<div className="flex items-start justify-between gap-3">
 								<div className="min-w-0">
 									<div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: '#432C63' }}>{productCategory}</div>
@@ -206,16 +195,19 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 											</>
 										)}
 									</div>
-									<div className="flex items-center gap-1 mt-1">
-										{[1,2,3,4,5].map((s) => (
-											<svg key={s} width="10" height="10" viewBox="0 0 24 24" fill="#FFC533" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-										))}
-										<span className="text-[11px] text-[#888] ml-1">({productRatings})</span>
-									</div>
+									{productRatings > 0 && productRating > 0 && (
+										<div className="flex items-center gap-1 mt-1">
+											{[1,2,3,4,5].map((star) => (
+												<svg aria-hidden="true" key={star} width="10" height="10" viewBox="0 0 24 24" fill={star <= Math.round(productRating) ? '#FFC533' : '#E3DDEA'} stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+											))}
+											<span className="text-[11px] text-[#888] ml-1">({productRatings.toLocaleString('en-PH')})</span>
+										</div>
+									)}
 								</div>
 								<Link
+									aria-label={`Shop ${productName}`}
 									href={productLink}
-									className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white mt-1 transition-opacity hover:opacity-80"
+									className="press shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white mt-1"
 									style={{ backgroundColor: '#432C63' }}
 								>
 									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -229,7 +221,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 				{/* Promo sidebar */}
 				<div className="col-span-12 lg:col-span-4 flex flex-col gap-4 lg:gap-5">
 					{/* Welcome offer — yellow card */}
-					<div className="relative rounded-2xl overflow-hidden p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#FFC533', color: '#432C63' }}>
+					<div className="rise-in group relative flex min-h-[190px] flex-1 flex-col justify-between overflow-hidden rounded-2xl p-6" style={{ ...after(260), backgroundColor: '#FFC533', color: '#432C63' }}>
 						<div>
 							<div className="text-[11px] font-bold tracking-[0.16em] uppercase opacity-70">Welcome offer</div>
 							<div className="mt-2 font-serif leading-[1] tracking-[-0.01em]" style={{ fontSize: '40px' }}>{welcomeLabel}</div>
@@ -237,13 +229,13 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 						</div>
 						<div className="flex items-center justify-between">
 							<code className="font-mono text-[12px] font-bold px-2.5 py-1 rounded-md tracking-wider" style={{ backgroundColor: '#432C63', color: '#FFC533' }}>{welcomeCode}</code>
-							<Link href="/vouchers" className="text-[13px] font-bold underline underline-offset-4 hover:opacity-80">Claim →</Link>
+							<Link href="/vouchers" className="press text-[13px] font-bold inline-flex items-center gap-1.5"><span className="link-line">Claim</span> <span aria-hidden="true" className="arrow inline-block">→</span></Link>
 						</div>
-						<div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border-2 border-[#432C63]/20" />
+						<div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border-2 border-[#432C63]/20 transition-transform duration-1000 ease-soft group-hover:scale-125" />
 					</div>
 
 					{/* Featured campaign card */}
-					<div className="relative rounded-2xl overflow-hidden text-white p-6 min-h-[190px] flex flex-col justify-between" style={{ backgroundColor: '#372248' }}>
+					<div className="rise-in group relative flex min-h-[190px] flex-1 flex-col justify-between overflow-hidden rounded-2xl p-6 text-white" style={{ ...after(380), backgroundColor: '#372248' }}>
 						<div
 							className="absolute inset-0 opacity-30"
 							style={{
@@ -263,10 +255,10 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 							</div>
 						</div>
 						<div className="relative flex items-center justify-between">
-							<HeroCountdown endsAt={festivalEndsAt} />
+							{festivalEndsAt ? <FlashSaleCountdown endsAt={festivalEndsAt} tone="dark" /> : <span />}
 							<Link
 								href={festivalLink}
-								className="text-[12px] font-bold px-3.5 py-1.5 rounded-full bg-white hover:bg-white/90 transition-colors"
+								className="press text-[12px] font-bold px-3.5 py-1.5 rounded-full bg-white"
 								style={{ color: '#432C63' }}
 							>
 								Shop now
@@ -278,7 +270,7 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 
 			{/* Service strip */}
 			<div style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
-				<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
+				<Reveal className="max-w-[1360px] mx-auto px-4 lg:px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-white" variant="group">
 					{[
 						{
 							icon: <><path d="M3 7h13v10H3zM16 10h4l1 2v5h-5" /><circle cx="7" cy="17" r="2" /><circle cx="18" cy="17" r="2" /></>,
@@ -307,7 +299,15 @@ export const Hero = ({ buttons, heroContent }: HeroProps) => {
 							</div>
 						</div>
 					))}
-				</div>
+				</Reveal>
+			</div>
+
+			{/* What the marketplace stands for, drifting by */}
+			<div className="border-y border-[#EDE8F2] bg-white py-5">
+				<Marquee
+					className="font-serif text-[26px] tracking-[-0.01em] text-[#1B1B1B] lg:text-[34px]"
+					items={['Cash on delivery', 'Trusted local sellers', 'Free shipping from ₱499', 'Made in the Philippines', '7-day returns', 'Delivered nationwide']}
+				/>
 			</div>
 		</section>
 	);

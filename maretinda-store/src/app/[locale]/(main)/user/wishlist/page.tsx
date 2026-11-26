@@ -1,78 +1,39 @@
-import type { HttpTypes } from '@medusajs/types';
-import { Container } from '@medusajs/ui';
-import { isEmpty } from 'lodash';
 import { redirect } from 'next/navigation';
 
-import { Button } from '@/components/atoms';
-import { WishlistItem } from '@/components/cells';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { Layout } from '@/components/organisms';
+import { AccountEmpty, AccountHeading } from '@/components/organisms/Layout/AccountHeading';
+import { WishlistGrid, type WishlistProduct } from '@/components/organisms/WishlistGrid/WishlistGrid';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getUserWishlists } from '@/lib/data/wishlist';
-import type { Wishlist as WishlistType } from '@/types/wishlist';
 
 export default async function Wishlist() {
 	const user = await retrieveCustomer();
+	if (!user) redirect('/login?returnTo=/user/wishlist');
 
-	let wishlist: WishlistType[] = [];
-	if (user) {
-		try {
-			const response = await getUserWishlists();
-			wishlist = response.wishlists;
-		} catch (error) {
-			console.warn('Failed to fetch wishlist:', error);
-			// Continue without wishlist data instead of crashing
-			wishlist = [];
-		}
-	}
-
-	const count = wishlist?.[0]?.products?.length || 0;
-
-	if (!user) {
-		redirect('/login?returnTo=/user/wishlist');
-	}
+	const { wishlists } = await getUserWishlists();
+	const products = (wishlists?.[0]?.products ?? []) as WishlistProduct[];
 
 	return (
 		<Layout>
-			<Container className="md:col-span-3 flex flex-col user-content-wrapper">
-				<h1 className="mb-12 font-lora font-bold text-4xl text-black">
-					Wishlists
-				</h1>
-				{isEmpty(wishlist?.[0]?.products) ? (
-					<div className="max-w-96 mx-auto flex flex-col items-center justify-center">
-						<p className="text-lg text-secondary mb-6">
-							Your wishlist is currently empty.
-						</p>
-						<LocalizedClientLink
-							className="w-full"
-							href="/categories"
-						>
-							<Button className="w-full">Explore</Button>
-						</LocalizedClientLink>
-					</div>
+			<div className="md:col-span-3 user-content-wrapper">
+				<AccountHeading note={products.length ? `${products.length} ${products.length === 1 ? 'item' : 'items'} saved` : undefined} title="Wishlist" />
+				{products.length ? (
+					<WishlistGrid products={products} />
 				) : (
-					<div className="flex flex-col gap-6">
-						<p className="font-medium text-[#a0a0a0] text-sm">
-							{count} {count === 1 ? 'listing' : 'listings'}
-						</p>
-						<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-							{wishlist?.[0].products?.map((product) => (
-								<WishlistItem
-									key={product.id}
-									product={
-										product as HttpTypes.StoreProduct & {
-											calculated_amount: number;
-											currency_code: string;
-										}
-									}
-									user={user}
-									wishlist={wishlist}
-								/>
-							))}
-						</div>
-					</div>
+					<AccountEmpty
+						action="Find something you love"
+						href="/search?sort=popular"
+						icon={
+							<svg aria-hidden="true" fill="none" height="30" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="30">
+								<path d="M12 20.500s-7.500-4.600-9.300-9.200C1.400 7.800 3.600 4.500 7 4.500c2.100 0 3.800 1.200 5 2.900 1.200-1.700 2.900-2.900 5-2.900 3.400 0 5.600 3.300 4.300 6.800-1.800 4.600-9.300 9.200-9.300 9.200z" />
+							</svg>
+						}
+						title="Your wishlist is empty"
+					>
+						Tap the heart on anything you like and it will be kept here.
+					</AccountEmpty>
 				)}
-			</Container>
+			</div>
 		</Layout>
 	);
 }

@@ -1,3 +1,5 @@
+import { Reveal } from '@/components/motion';
+
 const PILLARS = [
 	{
 		icon: (
@@ -43,12 +45,12 @@ const PILLARS = [
 export const TrustSection = () => (
 	<section className="bg-white" style={{ borderTop: '1px solid #EDEAE3' }}>
 		<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+			<Reveal className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12" variant="group">
 				{PILLARS.map(({ icon, title, body, cta, href }) => (
-					<div key={title} className="flex flex-col items-start gap-4">
+					<div key={title} className="group flex flex-col items-start gap-4">
 						{/* Icon circle */}
 						<div
-							className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+							className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 ease-spring group-hover:-rotate-6 group-hover:scale-110"
 							style={{ backgroundColor: '#F0EAF8' }}
 						>
 							{icon}
@@ -58,18 +60,18 @@ export const TrustSection = () => (
 							<p className="mt-2 text-[14px] leading-relaxed" style={{ color: '#404040' }}>{body}</p>
 							<a
 								href={href}
-								className="mt-3 inline-flex items-center gap-1 text-[13px] font-bold hover:underline"
+								className="press mt-3 inline-flex items-center gap-1 text-[13px] font-bold"
 								style={{ color: '#432C63' }}
 							>
-								{cta}
-								<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+								<span className="link-line">{cta}</span>
+								<svg aria-hidden="true" className="arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
 									<path d="M5 12h14M13 5l7 7-7 7" />
 								</svg>
 							</a>
 						</div>
 					</div>
 				))}
-			</div>
+			</Reveal>
 		</div>
 	</section>
 );

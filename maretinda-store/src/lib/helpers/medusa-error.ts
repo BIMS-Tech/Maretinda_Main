@@ -1,4 +1,9 @@
 export default function medusaError(error: any): never {
+	// What our API client throws: the backend's own words. They used to reach
+	// buyers as "Error setting up the request: …"
+	if (typeof error?.status === 'number' && error.message && !error.response) {
+		throw new Error(error.message);
+	}
 	if (error.response) {
 		// The request was made and the server responded with a status code
 		// that falls out of the range of 2xx

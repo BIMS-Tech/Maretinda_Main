@@ -1,19 +1,21 @@
 import NotFound from '@/app/not-found';
+import { Breadcrumbs } from '@/components/atoms';
 import { ReportButton } from '@/components/molecules/ReportButton/ReportButton';
 import {
 	ProductDetails,
 	ProductGallery,
 	ProductTabs,
 } from '@/components/organisms';
+import { RelatedProducts } from '@/components/organisms/ProductRow/RelatedProducts';
 import { getProductBrand } from '@/lib/data/brands';
 import { getClosedShopHandles } from '@/lib/data/closed-shops';
 import { getFlashSaleForProduct } from '@/lib/data/flash-sales';
 import { listProducts } from '@/lib/data/products';
 import { getSellerByHandle } from '@/lib/data/seller';
+import { sanitizeSellerHtml } from '@/lib/helpers/sanitize-html';
 import { jsonLdScript, productJsonLd } from '@/lib/helpers/product-json-ld';
 import type { SellerProps } from '@/types/seller';
 
-import { HomeProductSection } from '../HomeProductSection/HomeProductSection';
 
 export const ProductDetailsPage = async ({
 	handle,
@@ -25,12 +27,13 @@ export const ProductDetailsPage = async ({
 	const prod = await listProducts({
 		countryCode: locale,
 		queryParams: {
-			fields: '*variants.calculated_price,+variants.inventory_quantity,+seller.handle,+metadata,*reviews,*reviews.customer',
+			fields: '*variants.calculated_price,+variants.inventory_quantity,+seller.handle,+metadata,*reviews,*reviews.customer,*categories',
 			handle,
 		},
 	}).then(({ response }) => response.products[0]);
 
-	if (!prod) return null;
+	// A product that was renamed or taken down, not an empty page
+	if (!prod) return NotFound();
 
 	const [seller, flashSaleItem, brand, closedShops] = await Promise.all([
 		getSellerByHandle(prod.seller?.handle as string) as Promise<SellerProps>,
@@ -43,6 +46,8 @@ export const ProductDetailsPage = async ({
 		return NotFound();
 	}
 
+	const descriptionHtml = prod.description ? sanitizeSellerHtml(prod.description) : '';
+	const category = (prod as any).categories?.[0] as { name: string; handle: string } | undefined;
 	const shopOpen = !closedShops.includes(seller?.handle);
 	const reviews = ((prod as any).reviews ?? []).filter((r: any) => r && typeof r.rating === 'number');
 	const jsonLd = shopOpen
@@ -68,14 +73,31 @@ export const ProductDetailsPage = async ({
 					type="application/ld+json"
 				/>
 			)}
+			<div className="mb-6 hidden md:block">
+				<Breadcrumbs
+					items={[
+						{ label: 'Home', path: '/' },
+						category ? { label: category.name, path: `/categories/${category.handle.trim()}` } : { label: 'Categories', path: '/categories' },
+						{ label: prod.title, path: `/products/${prod.handle}` },
+					]}
+				/>
+			</div>
 			{/* Hero: gallery + product info */}
-			<div className="flex flex-col md:flex-row gap-8 lg:gap-14">
+			<div className="flex flex-col gap-8 md:flex-row lg:gap-14">
 				<div className="md:w-[46%]">
-					<ProductGallery images={prod?.images || []} />
+					<ProductGallery
+						handle={prod.handle}
+						images={prod.images ?? []}
+						key={prod.id}
+						productId={prod.id}
+						thumbnail={prod.thumbnail}
+						title={prod.title}
+					/>
 				</div>
 				<div className="md:w-[54%]">
 					<ProductDetails
 						brand={brand}
+						descriptionHtml={descriptionHtml}
 						flashSaleItem={flashSaleItem}
 						locale={locale}
 						product={prod}
@@ -86,19 +108,19 @@ export const ProductDetailsPage = async ({
 			</div>
 
 			{/* Tabs: details, reviews, shipping */}
-			<ProductTabs product={prod} seller={seller} />
+			<ProductTabs descriptionHtml={descriptionHtml} product={prod} />
 
 			<div className="mt-6 flex justify-end">
 				<ReportButton kind="product" target={prod.id} />
 			</div>
 
 			{/* People Also Buy */}
-			<div className="mt-14 mb-8">
-				<HomeProductSection
+			<div className="mb-8 mt-16">
+				<RelatedProducts
+					categoryIds={((prod as any).categories ?? []).map((c: { id: string }) => c.id)}
 					heading="People Also Buy"
-					locale={locale}
-					products={prod.seller?.products}
-					seller_handle={prod.seller?.handle}
+					productId={prod.id}
+					sellerHandle={prod.seller?.handle}
 				/>
 			</div>
 		</>

@@ -1,8 +1,10 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert } from '@medusajs/ui';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import {
 	type FieldError,
@@ -13,13 +15,16 @@ import {
 } from 'react-hook-form';
 
 import { LabeledInput } from '@/components/cells';
-import { validatePassword } from '@/components/cells/PasswordValidator/PasswordValidator';
-import { FacebookColorIcon, GoogleIcon, HideIcon } from '@/icons';
-import Spinner from '@/icons/spinner';
+import { MaskedText, MorphButton, type MorphState } from '@/components/motion';
+import { AUTH_INPUT, PasswordField } from '@/components/organisms/AuthShell/PasswordField';
 import { CAPTCHA_SITE_KEY, CaptchaWidget } from '@/components/atoms/CaptchaWidget/CaptchaWidget';
+import { validatePassword } from '@/lib/helpers/password';
 import { signup } from '@/lib/data/customer';
+import { safeReturnTo } from '@/lib/helpers/safe-return-to';
 import { useLanguage } from '@/providers/LanguageProvider';
+import type { SignUpResult } from '@/types/auth';
 
+import { Notice, SocialButtons, useGoogleSignIn } from '../LoginForm/LoginForm';
 import { type RegisterFormData, registerFormSchema } from './schema';
 
 const COUNTRY_CODES = [
@@ -61,21 +66,14 @@ export const RegisterForm = () => {
 	);
 };
 
-const EyeIcon = () => (
-	<svg fill="none" height={18} stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" width={18}>
-		<path d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" strokeLinecap="round" strokeLinejoin="round" />
-		<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
-	</svg>
-);
-
 const StrengthHint = ({ met, label }: { met: boolean; label: string }) => (
-	<span className={`flex items-center gap-1 text-[11.5px] ${met ? 'text-green-600' : ''}`} style={!met ? { color: '#ACACAC' } : {}}>
-		<span className={`inline-block w-1.5 h-1.5 rounded-full ${met ? 'bg-green-500' : 'bg-[#DCDCDC]'}`} />
+	<span className={`flex items-center gap-1.5 text-[11.5px] transition-colors duration-300 ${met ? 'text-[#1F7A4D]' : 'text-[#ACACAC]'}`}>
+		<span className={`inline-block h-1.5 w-1.5 rounded-full transition-[background-color,transform] duration-300 ${met ? 'scale-125 bg-[#1F7A4D]' : 'bg-[#DCDCDC]'}`} />
 		{label}
 	</span>
 );
 
-const INPUT_CLASS = 'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';
+const INPUT_CLASS = AUTH_INPUT;
 
 const Form = () => {
 	const { t } = useLanguage();
@@ -88,41 +86,30 @@ const Form = () => {
 		formState: { errors, isSubmitting },
 	} = useFormContext<RegisterFormData>();
 
-	const [serverError, setServerError] = useState<string | null>(null);
-	const [showPassword, setShowPassword] = useState(false);
-	const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const google = useGoogleSignIn();
+	const [state, setState] = useState<MorphState>('idle');
+	const [problem, setProblem] = useState<Exclude<SignUpResult, { ok: true }>['reason'] | 'captcha_needed' | null>(null);
+	const [shake, setShake] = useState(0);
 
 	const password = watch('password') ?? '';
 	const passwordStrength = validatePassword(password);
 	const showStrength = password.length > 0;
 	const termsChecked = watch('terms');
 
-	const isLoading = isSubmitting || isGoogleLoading;
+	const isLoading = isSubmitting || state !== 'idle' || google.busy;
 
 	const [captchaToken, setCaptchaToken] = useState('');
 	const [captchaRound, setCaptchaRound] = useState(0);
 
-	const handleGoogleSignup = async () => {
-		setIsGoogleLoading(true);
-		try {
-			const res = await fetch('/api/auth/google', { method: 'GET' });
-			const { location } = await res.json();
-			if (location) {
-				window.location.href = location;
-			} else {
-				setIsGoogleLoading(false);
-			}
-		} catch {
-			setIsGoogleLoading(false);
-		}
-	};
-
 	const submit = async (data: FieldValues) => {
-		setServerError(null);
+		setProblem(null);
 		if (CAPTCHA_SITE_KEY && !captchaToken) {
-			setServerError('Please complete the verification check below.');
+			setProblem('captcha_needed');
 			return;
 		}
+		setState('busy');
 		const formData = new FormData();
 		if (captchaToken) formData.append('captcha_token', captchaToken);
 		formData.append('email', data.email);
@@ -131,43 +118,47 @@ const Form = () => {
 		formData.append('last_name', data.lastName);
 		formData.append('phone', `${data.countryCode}${data.phone}`);
 
-		const res = await signup(formData);
+		const result: SignUpResult = await signup(formData).catch(() => ({ ok: false, reason: 'failed' }) as const);
 
-		if (typeof res === 'string' && res.includes('Error')) {
-			// A captcha token works once, so a failed attempt needs a new one
-			setCaptchaRound((round) => round + 1);
-			setServerError(
-				/too many/i.test(res)
-					? 'Too many attempts. Please wait a few minutes and try again.'
-					: /verification check/i.test(res)
-						? 'The verification check did not pass. Please try again.'
-						: 'Registration failed. This email may already be in use.',
-			);
+		if (result.ok) {
+			setState('done');
+			router.push(safeReturnTo(searchParams.get('returnTo'), '/user'));
+			router.refresh();
+			return;
 		}
+		setState('idle');
+		setShake((n) => n + 1);
+		// A captcha token works once, so a failed attempt needs a new one
+		setCaptchaRound((round) => round + 1);
+		setProblem(result.reason);
+	};
+
+	const email = watch('email') ?? '';
+	const problems: Record<NonNullable<typeof problem>, React.ReactNode> = {
+		captcha: s.captchaFailed,
+		captcha_needed: s.captchaNeeded,
+		exists: (
+			<>
+				{s.emailTaken}{' '}
+				<Link className="font-bold underline underline-offset-2" href={`/login?email=${encodeURIComponent(email)}`}>
+					{s.emailTakenSignIn}
+				</Link>
+			</>
+		),
+		failed: s.registerFailed,
+		too_many: s.tooMany,
 	};
 
 	return (
-		<main className="min-h-[60vh] py-10 md:py-16" style={{ backgroundColor: '#FAF8F5' }}>
-			<div className="max-w-[500px] mx-auto px-4">
-				{/* Header */}
-				<div className="text-center mb-8">
-					<h1 className="font-serif text-[32px] tracking-[-0.01em] text-[#1B1B1B] mb-1.5">
-						{s.createAccount}
-					</h1>
-					<p className="text-[13.5px]" style={{ color: '#737373' }}>
-						{s.registerDesc}
-					</p>
-				</div>
+		<div>
+			<h1 className="font-serif text-[36px] leading-[1.1] tracking-[-0.01em] text-[#1B1B1B]">
+				<MaskedText play text={s.createAccount} />
+			</h1>
+			<p className="rise-in mb-7 mt-1.5 text-[13.5px] text-[#737373]">{s.registerDesc}</p>
 
-				<div className="bg-white rounded-2xl shadow-sm p-7" style={{ border: '1px solid #EDEAE3' }}>
-					{/* Server Error */}
-					{serverError && (
-						<Alert className="mb-5" dismissible onClick={() => setServerError(null)} variant="error">
-							{serverError}
-						</Alert>
-					)}
+			<AnimatePresence>{problem && <Notice key={problem}>{problems[problem]}</Notice>}</AnimatePresence>
 
-					<form noValidate onSubmit={handleSubmit(submit)}>
+					<m.form animate={shake ? { x: [0, -7, 6, -4, 2, 0] } : undefined} key={shake} noValidate onSubmit={handleSubmit(submit)} transition={{ duration: 0.4 }}>
 						<div className="flex flex-col gap-4">
 							{/* First + Last Name */}
 							<div className="grid grid-cols-2 gap-3">
@@ -176,7 +167,7 @@ const Form = () => {
 									disabled={isLoading}
 									error={errors.firstName as FieldError}
 									important
-									inputClassName={`${INPUT_CLASS} ${errors.firstName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
+									inputClassName={`${INPUT_CLASS} ${errors.firstName ? 'border-red-400' : 'border-[#EAE5F0]'}`}
 									label={s.firstName}
 									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 									placeholder="Juan"
@@ -187,7 +178,7 @@ const Form = () => {
 									disabled={isLoading}
 									error={errors.lastName as FieldError}
 									important
-									inputClassName={`${INPUT_CLASS} ${errors.lastName ? 'border-red-400' : 'border-[#EDEAE3]'}`}
+									inputClassName={`${INPUT_CLASS} ${errors.lastName ? 'border-red-400' : 'border-[#EAE5F0]'}`}
 									label={s.lastName}
 									labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 									placeholder="dela Cruz"
@@ -201,7 +192,7 @@ const Form = () => {
 								disabled={isLoading}
 								error={errors.email as FieldError}
 								important
-								inputClassName={`${INPUT_CLASS} ${errors.email ? 'border-red-400' : 'border-[#EDEAE3]'}`}
+								inputClassName={`${INPUT_CLASS} ${errors.email ? 'border-red-400' : 'border-[#EAE5F0]'}`}
 								label={s.email}
 								labelClassName="text-[13px] font-semibold text-[#1B1B1B]"
 								placeholder="you@example.com"
@@ -216,7 +207,7 @@ const Form = () => {
 								</p>
 								<div className="flex gap-2">
 									<select
-										className={`h-11 rounded-xl border ${errors.countryCode ? 'border-red-400' : 'border-[#EDEAE3]'} bg-white px-2 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-[110px] flex-shrink-0`}
+										className={`h-12 rounded-xl border ${errors.countryCode ? 'border-red-400' : 'border-[#EAE5F0]'} bg-white px-2 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-[110px] flex-shrink-0`}
 										disabled={isLoading}
 										{...register('countryCode')}
 									>
@@ -227,7 +218,7 @@ const Form = () => {
 									</select>
 									<input
 										autoComplete="tel"
-										className={`flex-1 h-11 rounded-xl border ${errors.phone ? 'border-red-400' : 'border-[#EDEAE3]'} bg-white px-3.5 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+										className={`flex-1 h-12 rounded-xl border ${errors.phone ? 'border-red-400' : 'border-[#EAE5F0]'} bg-white px-3.5 text-[13.5px] focus:border-[#432C63] focus:outline-none focus:ring-2 focus:ring-[#432C63]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
 										disabled={isLoading}
 										placeholder="9123456789"
 										type="tel"
@@ -243,28 +234,14 @@ const Form = () => {
 
 							{/* Password */}
 							<div className="flex flex-col gap-1">
-								<p className="text-[13px] font-semibold text-[#1B1B1B]">
-									{s.password} <span className="text-red-400">*</span>
-								</p>
-								<div className="relative">
-									<input
-										autoComplete="new-password"
-										className={`${INPUT_CLASS} pr-10 ${errors.password ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-										disabled={isLoading}
-										placeholder="Create a strong password"
-										type={showPassword ? 'text' : 'password'}
-										{...register('password')}
-									/>
-									<button
-										className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-										style={{ color: '#9B9B9B' }}
-										onClick={() => setShowPassword((v) => !v)}
-										tabIndex={-1}
-										type="button"
-									>
-										{showPassword ? <HideIcon color="#9B9B9B" size={18} /> : <EyeIcon />}
-									</button>
-								</div>
+								<PasswordField
+									autoComplete="new-password"
+									disabled={isLoading}
+									error={errors.password?.message}
+									label={s.password}
+									placeholder="Create a strong password"
+									{...register('password')}
+								/>
 
 								{showStrength && (
 									<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
@@ -275,9 +252,6 @@ const Form = () => {
 									</div>
 								)}
 
-								{errors.password && (
-									<p className="text-[11.5px] text-red-500 mt-0.5">{(errors.password as FieldError).message}</p>
-								)}
 							</div>
 
 							{/* Terms */}
@@ -320,56 +294,27 @@ const Form = () => {
 							<CaptchaWidget onToken={setCaptchaToken} resetKey={captchaRound} />
 
 							{/* Submit */}
-							<button
-								className="w-full h-11 rounded-full text-[13.5px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center mt-1"
-								style={{ backgroundColor: '#432C63' }}
+							<MorphButton
+								busy={s.creating}
+								className="mt-1 flex h-12 w-full items-center justify-center rounded-full bg-[#432C63] text-[14px] font-bold text-white hover:bg-[#372248] disabled:opacity-70"
 								disabled={isLoading}
+								done={s.welcome}
+								idle={s.registerBtn}
+								state={state}
 								type="submit"
-							>
-								{isSubmitting ? <Spinner color="white" size={18} /> : s.registerBtn}
-							</button>
+							/>
 						</div>
-					</form>
+					</m.form>
 
-					{/* Divider */}
-					<div className="flex items-center gap-3 my-6">
-						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
-						<span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>{s.orDivider}</span>
-						<div className="flex-1 h-px" style={{ backgroundColor: '#EDEAE3' }} />
-					</div>
-
-					{/* Social */}
-					<div className="flex flex-col gap-2.5">
-						<button
-							className="flex items-center justify-center w-full h-11 rounded-full text-[13.5px] font-medium transition-colors gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#FAF8F5]"
-							style={{ border: '1px solid #EDEAE3', color: '#1B1B1B', backgroundColor: 'white' }}
-							disabled={isLoading}
-							onClick={handleGoogleSignup}
-							type="button"
-						>
-							{isGoogleLoading ? <Spinner color="#432C63" size={18} /> : <><GoogleIcon />{s.continueGoogle}</>}
-						</button>
-
-						<button
-							className="flex items-center justify-center w-full h-11 rounded-full text-[13.5px] font-medium gap-2 cursor-not-allowed opacity-50"
-							style={{ border: '1px solid #EDEAE3', color: '#737373', backgroundColor: 'white' }}
-							disabled
-							type="button"
-						>
-							<FacebookColorIcon />
-							{s.continueFacebook}
-						</button>
-					</div>
+					<SocialButtons disabled={isLoading} google={google} />
 
 					{/* Login link */}
-					<p className="mt-6 text-center text-[13px]" style={{ color: '#737373' }}>
+					<p className="mt-7 text-center text-[13px] text-[#737373]">
 						{s.alreadyHave}{' '}
-						<Link className="font-bold hover:underline" style={{ color: '#432C63' }} href="/login">
-							{s.signInBtn}
+						<Link className="font-bold text-[#432C63]" href="/login">
+							<span className="link-line">{s.signInBtn}</span>
 						</Link>
 					</p>
-				</div>
-			</div>
-		</main>
+		</div>
 	);
 };

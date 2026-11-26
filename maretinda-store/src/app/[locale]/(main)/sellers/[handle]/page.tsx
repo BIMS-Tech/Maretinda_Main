@@ -3,23 +3,22 @@ import { SellerTabs } from '@/components/organisms';
 import { SellerPageHeader } from '@/components/sections';
 import SellerVouchers from '@/components/sections/SellerVouchers/SellerVouchers';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { getRegion } from '@/lib/data/regions';
 import { getSellerByHandle } from '@/lib/data/seller';
 import { getAvailableVouchers } from '@/lib/data/vouchers';
 import type { SellerProps } from '@/types/seller';
 
 export default async function SellerPage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ handle: string; locale: string }>;
+	searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-	const { handle, locale } = await params;
+	const { handle } = await params;
 
 	const seller = (await getSellerByHandle(handle)) as SellerProps;
 
 	const user = await retrieveCustomer().catch(() => null);
-
-	const currency_code = (await getRegion(locale))?.currency_code || 'usd';
 
 	const tab = 'products';
 
@@ -54,12 +53,7 @@ export default async function SellerPage({
 				</div>
 			)}
 
-			<SellerTabs
-				currency_code={currency_code}
-				locale={locale}
-				seller={seller}
-				tab={tab}
-			/>
+			<SellerTabs searchParams={await searchParams} seller={seller} tab={tab} />
 
 			<div className="mt-8 flex justify-end">
 				<ReportButton email={user?.email} kind="seller" target={seller.id} />

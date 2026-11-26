@@ -1,30 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useTransition } from 'react';
 
-import { Button } from '@/components/atoms';
-import { BinIcon } from '@/icons';
+import { notify } from '@/lib/cart-feedback';
 import { deleteLineItem } from '@/lib/data/cart';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 export const DeleteCartItemButton = ({ id }: { id: string }) => {
-	const [isDeleting, setIsDeleting] = useState(false);
-
-	const handleDelete = async (id: string) => {
-		setIsDeleting(true);
-		await deleteLineItem(id).finally(() => {
-			setIsDeleting(false);
-		});
-	};
+	const { t } = useLanguage();
+	const [deleting, startDeleting] = useTransition();
 	return (
-		<Button
+		<button
 			aria-label="Remove item"
-			className="w-10 h-10 flex items-center justify-center p-0"
-			disabled={isDeleting}
-			loading={isDeleting}
-			onClick={() => handleDelete(id)}
-			variant="text"
+			className="press flex h-10 w-10 items-center justify-center rounded-full text-[#A39DAC] hover:bg-[#FCEDED] hover:text-[#C43131] disabled:opacity-40"
+			disabled={deleting}
+			onClick={() =>
+				startDeleting(async () => {
+					await deleteLineItem(id).catch(() => notify({ title: t.cart.notUpdated, tone: 'error' }));
+				})
+			}
+			type="button"
 		>
-			<BinIcon size={20} />
-		</Button>
+			{deleting ? (
+				<span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />
+			) : (
+				<svg aria-hidden="true" fill="none" height="17" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24" width="17">
+					<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+				</svg>
+			)}
+		</button>
 	);
 };

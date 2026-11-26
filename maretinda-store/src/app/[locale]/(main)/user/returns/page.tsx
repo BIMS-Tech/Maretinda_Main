@@ -1,4 +1,7 @@
+import { redirect } from 'next/navigation';
+
 import { Layout } from '@/components/organisms';
+import { AccountHeading } from '@/components/organisms/Layout/AccountHeading';
 import { OrderReturnRequests } from '@/components/sections/OrderReturnRequests/OrderReturnRequests';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { getReturns } from '@/lib/data/orders';
@@ -8,16 +11,16 @@ export default async function ReturnsPage({
 }: {
 	searchParams: Promise<{ page: string; return: string }>;
 }) {
-	const { order_return_requests } = await getReturns();
-
 	const user = await retrieveCustomer();
+	if (!user) redirect('/login?returnTo=/user/returns');
 
+	const { order_return_requests } = await getReturns();
 	const { page, return: returnId } = await searchParams;
 
 	return (
 		<Layout>
 			<div className="md:col-span-3 user-content-wrapper">
-				<h1 className="heading-md uppercase">Returns</h1>
+				<AccountHeading title="Returns" />
 				<OrderReturnRequests
 					currentReturn={returnId || ''}
 					page={page}

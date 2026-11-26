@@ -9,7 +9,7 @@ export default async function SellerReviewsPage({
 }: {
 	params: Promise<{ handle: string; locale: string }>;
 }) {
-	const { handle, locale } = await params;
+	const { handle } = await params;
 
 	const seller = (await getSellerByHandle(handle)) as SellerProps;
 
@@ -20,7 +20,7 @@ export default async function SellerReviewsPage({
 	return (
 		<main className="container !max-w-7xl mx-auto">
 			<SellerPageHeader header seller={seller} user={user} />
-			<SellerTabs locale={locale} seller={seller} tab={tab} />
+			<SellerTabs seller={seller} tab={tab} />
 		</main>
 	);
 }

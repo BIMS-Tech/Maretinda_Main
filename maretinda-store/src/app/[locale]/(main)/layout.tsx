@@ -1,6 +1,5 @@
 import { Chatbot, Footer, Header } from '@/components/organisms';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { LanguageProvider } from '@/providers/LanguageProvider';
 import { TalkJSProvider } from '@/providers/TalkJSProvider';
 
 export default async function RootLayout({
@@ -18,13 +17,11 @@ export default async function RootLayout({
 	} : null;
 
 	return (
-		<LanguageProvider>
-			<TalkJSProvider appId={APP_ID} user={user}>
-				<Header />
-				{children}
-				<Footer />
-				<Chatbot />
-			</TalkJSProvider>
-		</LanguageProvider>
+		<TalkJSProvider appId={APP_ID} user={user}>
+			<Header />
+			{children}
+			<Footer />
+			<Chatbot />
+		</TalkJSProvider>
 	);
 }

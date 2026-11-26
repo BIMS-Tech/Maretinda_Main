@@ -1,7 +1,11 @@
 'use client'
 
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import Link from 'next/link'
+import { Segmented, SPRING } from '@/components/motion'
+import { AccountEmpty } from '@/components/organisms/Layout/AccountHeading'
 import type { VoucherPromotion } from '@/lib/data/vouchers'
 import { removeVoucher } from '@/lib/data/vouchers'
 import { toast } from '@/lib/helpers/toast'
@@ -72,7 +76,7 @@ function WalletVoucherCard({
 
 						<div className="text-xs mt-2" style={{ color: '#9ca3af' }}>
 							{isExpired
-								? '⛔ Expired'
+								? 'Expired'
 								: voucher.expires_at
 								? `Valid until ${new Date(voucher.expires_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}`
 								: 'No expiry'}
@@ -93,7 +97,7 @@ function WalletVoucherCard({
 								className="text-xs font-bold px-3 py-1.5 rounded-lg"
 								style={{ backgroundColor: '#432C63', color: '#FFC533' }}
 							>
-								Use Now →
+								Use now
 							</Link>
 						)}
 
@@ -145,61 +149,45 @@ export default function UserVouchersClient({
 
 	return (
 		<div>
-			{/* Tabs */}
-			<div className="flex gap-4 mb-6 border-b" style={{ borderColor: '#e5e7eb' }}>
-				{tabs.map((tab) => (
-					<button
-						key={tab.key}
-						onClick={() => setActiveTab(tab.key)}
-						className={`pb-3 px-1 text-sm font-semibold border-b-2 transition-colors ${
-							activeTab === tab.key
-								? 'border-[#432C63] text-[#432C63]'
-								: 'border-transparent text-gray-500 hover:text-gray-700'
-						}`}
-					>
-						{tab.label}
-						<span
-							className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full"
-							style={{
-								backgroundColor:
-									activeTab === tab.key ? '#432C63' : '#f3f4f6',
-								color: activeTab === tab.key ? '#fff' : '#6b7280',
-							}}
-						>
-							{tab.count}
-						</span>
-					</button>
-				))}
-			</div>
+			<Segmented
+				className="mb-6"
+				label="Vouchers"
+				onChange={setActiveTab}
+				options={tabs.map((tab) => ({
+					label: (
+						<>
+							{tab.label} <span className="ml-1 tabular-nums opacity-60">{tab.count}</span>
+						</>
+					),
+					value: tab.key,
+				}))}
+				tone="light"
+				value={activeTab}
+			/>
 
 			{displayed.length === 0 ? (
-				<div className="flex flex-col items-center justify-center py-16 text-gray-400">
-					<div className="text-5xl mb-4">🎟️</div>
-					<p className="text-lg font-medium">
-						{activeTab === 'active'
-							? 'No active vouchers in your wallet'
-							: 'No expired vouchers'}
-					</p>
-					{activeTab === 'active' && (
-						<Link
-							href="/vouchers"
-							className="mt-4 text-sm font-bold px-4 py-2 rounded-lg"
-							style={{ backgroundColor: '#432C63', color: '#FFC533' }}
-						>
-							Browse & Collect Vouchers
-						</Link>
-					)}
-				</div>
+				<AccountEmpty
+					action={activeTab === 'active' ? 'Browse vouchers' : undefined}
+					href={activeTab === 'active' ? '/vouchers' : undefined}
+					icon={
+						<svg aria-hidden="true" fill="none" height="30" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="30">
+							<path d="M3 8.500A1.500 1.500 0 014.500 7h15A1.500 1.500 0 0121 8.500v1.600a2 2 0 000 3.800v1.600a1.500 1.500 0 01-1.500 1.500h-15A1.500 1.500 0 013 15.500v-1.600a2 2 0 000-3.800V8.500zM14 7.500v9" strokeDasharray="0" />
+						</svg>
+					}
+					title={activeTab === 'active' ? 'No vouchers yet' : 'No expired vouchers'}
+				>
+					{activeTab === 'active' ? 'Collect a voucher and it waits here until you check out.' : 'Vouchers you did not use in time are listed here.'}
+				</AccountEmpty>
 			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-					{displayed.map((v) => (
-						<WalletVoucherCard
-							key={v.id}
-							voucher={v}
-							onRemove={handleRemove}
-						/>
-					))}
-				</div>
+				<ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+					<AnimatePresence initial={false} mode="popLayout">
+						{displayed.map((v) => (
+							<m.li animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.94 }} initial={{ opacity: 0, scale: 0.94 }} key={v.id} layout transition={SPRING}>
+								<WalletVoucherCard onRemove={handleRemove} voucher={v} />
+							</m.li>
+						))}
+					</AnimatePresence>
+				</ul>
 			)}
 		</div>
 	)

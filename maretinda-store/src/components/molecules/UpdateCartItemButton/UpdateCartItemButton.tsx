@@ -1,117 +1,53 @@
 'use client';
 
-import { useState } from 'react';
-import { LuMinus, LuPlus } from 'react-icons/lu';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import { useOptimistic, useTransition } from 'react';
 
-import { Button } from '@/components/atoms';
+import { EASE_OUT } from '@/components/motion';
+import { notify } from '@/lib/cart-feedback';
 import { updateLineItem } from '@/lib/data/cart';
+import { useLanguage } from '@/providers/LanguageProvider';
 
-export const UpdateCartItemButton = ({
-	quantity,
-	lineItemId,
-	isProductPage = false,
-}: {
-	quantity: number;
-	lineItemId: string;
-	isProductPage?: boolean;
-}) => {
-	const [isChanging, setIsChanging] = useState(false);
+/** How many of a cart line. The number changes at once and settles when the shop answers. */
+export const UpdateCartItemButton = ({ quantity, lineItemId }: { quantity: number; lineItemId: string }) => {
+	const { t } = useLanguage();
+	const [shown, show] = useOptimistic(quantity);
+	const [saving, startSaving] = useTransition();
 
-	const handleChange = async ({
-		lineId,
-		quantity,
-	}: {
-		lineId: string;
-		quantity: number;
-	}) => {
-		setIsChanging(true);
-		await updateLineItem({ lineId, quantity }).finally(() => {
-			setIsChanging(false);
+	const change = (next: number) =>
+		startSaving(async () => {
+			show(next);
+			try {
+				await updateLineItem({ lineId: lineItemId, quantity: next });
+			} catch {
+				notify({ title: next > quantity ? t.cart.noMoreStock : t.cart.notUpdated, tone: 'error' });
+			}
 		});
-	};
-	const isProduct = isProductPage && '!bg-transparent px-0';
 
-	// Cart page style - horizontal bar with quantity in center
-	if (!isProductPage) {
-		return (
-			<div className="flex items-center border border-gray-300 rounded-md h-9 bg-white">
-				<Button
-					aria-label="Decrease quantity"
-					className="w-8 h-8 flex items-center justify-center !bg-transparent hover:bg-gray-100 rounded-l-md rounded-r-none !p-0 disabled:border-none"
-					disabled={quantity === 1 || isChanging}
-					onClick={() =>
-						!isChanging &&
-						handleChange({
-							lineId: lineItemId,
-							quantity: quantity - 1,
-						})
-					}
-					variant="tonal"
-				>
-					<LuMinus
-						className="!text-black"
-						size={14}
-						style={{ color: '#000' }}
-					/>
-				</Button>
-				<span
-					className="flex-1 text-center text-sm min-w-[2rem]"
-					style={{ color: '#111827', fontWeight: 500 }}
-				>
-					{quantity}
-				</span>
-				<Button
-					aria-label="Increase quantity"
-					className="w-8 h-8 flex items-center justify-center !bg-transparent hover:bg-gray-100 rounded-r-md rounded-l-none !p-0 !border-none"
-					disabled={isChanging}
-					onClick={() =>
-						!isChanging &&
-						handleChange({
-							lineId: lineItemId,
-							quantity: quantity + 1,
-						})
-					}
-					variant="tonal"
-				>
-					<LuPlus
-						className="!text-black"
-						size={14}
-						style={{ color: '#000' }}
-					/>
-				</Button>
-			</div>
-		);
-	}
-
-	// Product page style - original design
-	return (
-		<div
-			className={`flex items-center gap-4 mt-2 ${isProductPage && 'border border-black rounded-sm h-[46px] !mt-0 px-3'}`}
+	const step = (label: string, sign: string, next: number, off = false) => (
+		<button
+			aria-label={label}
+			className="press flex h-9 w-9 items-center justify-center rounded-full text-[16px] font-semibold text-[#432C63] hover:bg-[#F6F2FB] disabled:opacity-30"
+			disabled={off || saving}
+			onClick={() => change(next)}
+			type="button"
 		>
-			<Button
-				aria-label="Decrease quantity"
-				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
-				disabled={quantity === 1}
-				onClick={() =>
-					!isChanging &&
-					handleChange({ lineId: lineItemId, quantity: quantity - 1 })
-				}
-				variant="tonal"
-			>
-				<LuMinus className="text-black" size={16} />
-			</Button>
-			<span className="text-primary font-medium">{quantity}</span>
-			<Button
-				aria-label="Increase quantity"
-				className={`w-8 h-8 flex items-center justify-center ${isProduct}`}
-				onClick={() =>
-					!isChanging &&
-					handleChange({ lineId: lineItemId, quantity: quantity + 1 })
-				}
-				variant="tonal"
-			>
-				<LuPlus className="text-black" size={16} />
-			</Button>
+			{sign}
+		</button>
+	);
+
+	return (
+		<div className="inline-flex items-center rounded-full border border-[#EAE5F0] bg-white">
+			{step('Decrease quantity', '−', shown - 1, shown <= 1)}
+			<span className="relative flex h-9 w-7 items-center justify-center overflow-hidden text-[14px] font-bold tabular-nums text-[#1B1B1B]">
+				<AnimatePresence initial={false} mode="popLayout">
+					<m.span animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} initial={{ opacity: 0, y: 14 }} key={shown} transition={{ duration: 0.22, ease: EASE_OUT }}>
+						{shown}
+					</m.span>
+				</AnimatePresence>
+			</span>
+			{step('Increase quantity', '+', shown + 1)}
 		</div>
 	);
 };

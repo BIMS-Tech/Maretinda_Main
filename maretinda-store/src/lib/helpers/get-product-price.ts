@@ -1,5 +1,4 @@
 import type { HttpTypes } from '@medusajs/types';
-import type { BaseHit, Hit } from 'instantsearch.js';
 
 import { getPercentageDiff } from './get-precentage-diff';
 import { convertToLocale } from './money';
@@ -33,7 +32,7 @@ export function getProductPrice({
 	product,
 	variantId,
 }: {
-	product: Hit<HttpTypes.StoreProduct> | Partial<Hit<BaseHit>>;
+	product: HttpTypes.StoreProduct;
 	variantId?: string;
 }) {
 	if (!product || !product.id) {

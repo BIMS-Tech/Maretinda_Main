@@ -2,7 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 
-import { OrdersPagination } from '@/components/sections';
+// Not from the sections index: that pulls every page section into the browser's download
+import { OrdersPagination } from '@/components/organisms/OrdersPagination/OrdersPagination';
 
 import { SellerReview } from '../SellerReview/SellerReview';
 

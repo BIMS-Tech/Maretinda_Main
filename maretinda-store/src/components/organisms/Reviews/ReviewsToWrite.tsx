@@ -2,24 +2,21 @@
 
 import type { HttpTypes } from '@medusajs/types';
 import { isEmpty } from 'lodash';
-import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
-import { Card, NavigationItem } from '@/components/atoms';
+import { Card } from '@/components/atoms';
 import { Modal, ReviewForm } from '@/components/molecules';
+import { AccountHeading } from '@/components/organisms/Layout/AccountHeading';
 import type { Order } from '@/lib/data/reviews';
 
-import { navigation } from './navigation';
 import { OrderCard } from './OrderCard';
+import { ReviewsTabs } from './ReviewsTabs';
 
 export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
 	const [showForm, setShowForm] = useState<{
 		order: Order;
 		productId?: string;
 	} | null>(null);
-	const pathname = usePathname();
-
-	console.log(pathname);
 
 	const handleShowForm = (order: Order) => {
 		// Get the first product from the order items
@@ -29,32 +26,19 @@ export const ReviewsToWrite = ({ orders }: { orders: Array<Order> }) => {
 
 	return (
 		<>
-			<div className="md:col-span-3 space-y-10 user-content-wrapper">
-				<h1 className="text-3xl capitalize text-black font-lora !font-bold">
-					Reviews
-				</h1>
+			<div className="md:col-span-3 user-content-wrapper">
+				<AccountHeading aside={<ReviewsTabs />} title="Reviews" />
 
 				<div className="flex flex-col gap-6">
-					<div className="flex gap-6">
-						{navigation.map((item) => (
-							<NavigationItem
-								className={`!p-0 !my-0 !w-fit !min-w-fit ${pathname === `/ph${item.href}` ? 'underline text-black underline-offset-2' : 'text-[#A0A0A0]'}`}
-								href={item.href}
-								key={item.label}
-							>
-								{item.label}
-							</NavigationItem>
-						))}
-					</div>
 					<div className="flex flex-col gap-5">
 						{isEmpty(orders) ? (
 							<Card>
 								<div className="text-center py-6">
-									<h3 className="heading-lg text-primary uppercase">
+									<h3 className="text-[17px] font-bold text-[#1B1B1B]">
 										No reviews to write
 									</h3>
-									<p className="text-lg text-secondary mt-2">
-										You currently have no one to review.
+									<p className="mt-1.5 text-[13.5px] text-[#737373]">
+										Once an order arrives, you can tell others what you thought of it here.
 									</p>
 								</div>
 							</Card>

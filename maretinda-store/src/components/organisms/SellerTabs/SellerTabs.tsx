@@ -2,33 +2,24 @@ import { Suspense } from 'react';
 
 import { SellerReviewTab } from '@/components/cells';
 import { TabsContent } from '@/components/molecules';
-import { AlgoliaProductsListing, ProductListing } from '@/components/sections';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import { ReelsSection } from '@/components/sections/ReelsSection/ReelsSection';
 import type { SellerProps } from '@/types/seller';
 
+import { ProductListing } from '../ProductBrowser/ProductListing';
 import { ProductListingSkeleton } from '../ProductListingSkeleton/ProductListingSkeleton';
-
-const ALGOLIA_ID = process.env.NEXT_PUBLIC_ALGOLIA_ID;
-const ALGOLIA_SEARCH_KEY = process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY;
-
-const TAB_ITEMS = [
-	{ label: 'Products', value: 'products' },
-	{ label: 'Reviews', value: 'reviews' },
-];
 
 export const SellerTabs = async ({
 	tab,
 	seller,
-	locale,
-	currency_code,
+	searchParams,
 }: {
 	tab: string;
 	seller: SellerProps;
-	locale: string;
-	currency_code?: string;
+	searchParams?: Record<string, string | string[] | undefined>;
 }) => {
 	const tabLinks = [
-		{ label: 'products', link: `/sellers/${seller.handle}/` },
+		{ label: 'products', link: `/sellers/${seller.handle}` },
 		{ label: 'reels', link: `/sellers/${seller.handle}/reels` },
 		{ label: 'reviews', link: `/sellers/${seller.handle}/reviews` },
 	];
@@ -40,33 +31,33 @@ export const SellerTabs = async ({
 				{tabLinks.map(({ label, link }) => {
 					const isActive = tab === label;
 					return (
-						<a
-							key={label}
+						<LocalizedClientLink
+							aria-current={isActive ? 'page' : undefined}
+							className="relative -mb-px px-4 py-2.5 text-[13.5px] font-bold capitalize transition-colors hover:text-[#432C63]"
 							href={link}
-							className="px-4 py-2.5 text-[13.5px] font-bold capitalize rounded-t-lg transition-colors -mb-px"
-							style={{
-								color: isActive ? '#432C63' : '#737373',
-								borderBottom: isActive ? '2px solid #432C63' : '2px solid transparent',
-								backgroundColor: isActive ? 'rgba(67,44,99,0.04)' : 'transparent',
-							}}
+							key={label}
+							scroll={false}
+							style={{ color: isActive ? '#432C63' : '#737373' }}
 						>
-							{label.charAt(0).toUpperCase() + label.slice(1)}
-						</a>
+							{label}
+							<span
+								aria-hidden="true"
+								className="absolute inset-x-2 bottom-0 h-[2.5px] origin-left rounded-full bg-[#432C63] transition-transform duration-500 ease-soft"
+								style={{ transform: `scaleX(${isActive ? 1 : 0})` }}
+							/>
+						</LocalizedClientLink>
 					);
 				})}
 			</div>
 
 			<TabsContent activeTab={tab} value="products">
 				<Suspense fallback={<ProductListingSkeleton />}>
-					{!ALGOLIA_ID || !ALGOLIA_SEARCH_KEY ? (
-						<ProductListing seller_id={seller.id} showSidebar />
-					) : (
-						<AlgoliaProductsListing
-							currency_code={currency_code}
-							locale={locale}
-							seller_handle={seller.handle}
-						/>
-					)}
+					<ProductListing
+						emptyHref="/sellers"
+						hideFilters={['store']}
+						scope={{ seller: seller.handle }}
+						searchParams={searchParams}
+					/>
 				</Suspense>
 			</TabsContent>
 			<TabsContent activeTab={tab} value="reels">

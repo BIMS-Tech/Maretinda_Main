@@ -1,18 +1,19 @@
 'use client';
 
-import { CheckCircleSolid } from '@medusajs/icons';
 import type { HttpTypes } from '@medusajs/types';
-import { Heading, Text, useToggleState } from '@medusajs/ui';
+import { useToggleState } from '@medusajs/ui';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
 
-import { Button } from '@/components/atoms';
+import { Collapse, MorphButton } from '@/components/motion';
 import ErrorMessage from '@/components/molecules/ErrorMessage/ErrorMessage';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
 import ShippingAddress from '@/components/organisms/ShippingAddress/ShippingAddress';
 import Spinner from '@/icons/spinner';
 import { setAddresses } from '@/lib/data/cart';
 import compareAddresses from '@/lib/helpers/compare-addresses';
+
+import { CheckoutStepHeader } from '../CheckoutStep/CheckoutStep';
 
 export const CartAddressSection = ({
 	cart,
@@ -68,41 +69,13 @@ export const CartAddressSection = ({
 
 	return (
 		<div>
-			{/* Header with Checkmark and Edit */}
-			<div className="flex items-center justify-between mb-4">
-				<div className="flex items-center gap-3">
-					{isAddress && !isOpen ? (
-						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#432C63' }}>
-							<CheckCircleSolid className="text-white" width={16} height={16} />
-						</div>
-					) : (
-						<div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(67,44,99,0.08)', color: '#432C63' }}>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-								<path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z" /><circle cx="12" cy="10" r="3" />
-							</svg>
-						</div>
-					)}
-					<h2 className="text-xl font-bold" style={{ color: '#111827' }}>
-						Shipping Address
-					</h2>
-				</div>
-				{isAddress && !isOpen && (
-					<button
-						type="button"
-						onClick={handleEdit}
-						className="text-sm font-semibold hover:opacity-80 transition-opacity"
-						style={{ color: '#432C63' }}
-					>
-						Edit
-					</button>
-				)}
-			</div>
-			
+			<CheckoutStepHeader done={isAddress} n={1} onEdit={handleEdit} open={isOpen} title="Shipping Address" />
+
 			<form
 				action={formAction}
 			>
-				{isOpen ? (
-					<div className="pb-8">
+				<Collapse open={isOpen}>
+					<div className="pb-2 pt-6">
 						<ShippingAddress
 							cart={cart}
 							checked={sameAsBilling}
@@ -124,23 +97,17 @@ export const CartAddressSection = ({
 							</label>
 						</div>
 
-						<Button
-							type="submit"
-							className="mt-5 rounded-lg !font-semibold h-10 text-sm px-8 w-full sm:w-auto"
-							data-testid="submit-address-button"
-							style={{ backgroundColor: '#facc15', color: '#000', fontWeight: 600 }}
-						>
-							Save & continue
-						</Button>
+						<SubmitAddress />
 						<ErrorMessage
 							data-testid="address-error-message"
 							error={message !== 'success' && message}
 						/>
 					</div>
-				) : (
-					<div className="pb-2">
+				</Collapse>
+				<Collapse open={!isOpen}>
+					<div className="pt-4">
 						{cart && cart.shipping_address ? (
-							<div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4 space-y-1.5">
+							<div className="space-y-1.5 rounded-[18px] bg-[#F8F5FB] p-4">
 								<p className="font-semibold text-[15px]" style={{ color: '#111827' }}>
 									{cart.shipping_address.first_name} {cart.shipping_address.last_name}
 								</p>
@@ -168,8 +135,24 @@ export const CartAddressSection = ({
 							</div>
 						)}
 					</div>
-				)}
+				</Collapse>
 			</form>
 		</div>
+	);
+};
+
+/** Says it is saving while the address is on its way. */
+const SubmitAddress = () => {
+	const { pending } = useFormStatus();
+	return (
+		<MorphButton
+			busy="Saving…"
+			className="flex h-12 w-full items-center justify-center rounded-full bg-[#FFC533] px-8 text-[14px] font-bold text-[#432C63] sm:w-auto"
+			data-testid="submit-address-button"
+			done="Saved"
+			idle="Save & continue"
+			state={pending ? 'busy' : 'idle'}
+			type="submit"
+		/>
 	);
 };

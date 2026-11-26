@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { Reveal, SectionHeading, Tilt } from '@/components/motion';
 import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 
 // Same env vars and production fallbacks as the Footer.
@@ -20,25 +22,25 @@ export const BecomeSellerBand = () => (
 			<div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
 				{/* Left — copy + stats + CTAs */}
 				<div className="flex-1 text-white">
-					<div className="text-[12px] font-semibold tracking-[0.18em] uppercase opacity-70 mb-3">
-						Sell on Maretinda
-					</div>
-					<h2 className="font-serif leading-[1.05] tracking-[-0.01em] max-w-[520px]" style={{ fontSize: 'clamp(30px, 3.5vw, 42px)' }}>
-						Open your shop on Maretinda. Reach the whole Philippines.
-					</h2>
+					<SectionHeading
+						className="max-w-[520px] font-serif text-[clamp(30px,3.5vw,42px)] leading-[1.05] tracking-[-0.01em]"
+						eyebrow="Sell on Maretinda"
+						eyebrowClassName="!mb-3 !text-white/70"
+						text="Open your shop on Maretinda. Reach the whole Philippines."
+					/>
 					<p className="mt-4 text-[15px] text-white/80 max-w-[480px] leading-relaxed">
 						From Luzon to Mindanao — list your products, manage orders, and grow your business with tools built for Filipino sellers.
 					</p>
 
 					{/* Stats row */}
-					<div className="mt-8 flex items-center gap-8 flex-wrap">
+					<Reveal className="mt-8 flex items-center gap-8 flex-wrap" variant="group">
 						{STATS.map(({ value, label }) => (
 							<div key={label}>
 								<div className="text-[28px] font-extrabold leading-none" style={{ color: '#FFC533' }}>{value}</div>
 								<div className="text-[12px] text-white/65 mt-0.5 font-medium">{label}</div>
 							</div>
 						))}
-					</div>
+					</Reveal>
 
 					{/* Divider */}
 					<div className="mt-8 h-px w-full max-w-[480px]" style={{ backgroundColor: 'rgba(255,255,255,0.15)' }} />
@@ -47,17 +49,17 @@ export const BecomeSellerBand = () => (
 					<div className="mt-7 flex items-center gap-3 flex-wrap">
 						<Link
 							href={SELLER_REGISTER_URL}
-							className="h-12 px-7 rounded-full text-[14px] font-bold transition-opacity hover:opacity-90 flex items-center gap-2"
+							className="press h-12 px-7 rounded-full text-[14px] font-bold flex items-center gap-2"
 							style={{ backgroundColor: '#FFC533', color: '#432C63' }}
 						>
 							Start selling
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+							<svg aria-hidden="true" className="arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
 								<path d="M5 12h14M13 5l7 7-7 7" />
 							</svg>
 						</Link>
 						<Link
 							href={`${ABOUT_SITE_URL}/#how-it-works`}
-							className="h-12 px-7 rounded-full text-[14px] font-bold border border-white/40 text-white hover:border-white hover:bg-white/10 transition-colors flex items-center gap-2"
+							className="h-12 px-7 rounded-full text-[14px] font-bold border border-white/40 text-white hover:border-white hover:bg-white/10 press flex items-center gap-2"
 						>
 							How it works
 						</Link>
@@ -69,8 +71,8 @@ export const BecomeSellerBand = () => (
 				</div>
 
 				{/* Right — real seller dashboard preview */}
-				<div className="flex-shrink-0 w-full lg:w-[560px]">
-					<div className="relative">
+				<Reveal className="flex-shrink-0 w-full lg:w-[560px]" variant="scale">
+					<Tilt className="relative" max={5}>
 						{/* Floating chip */}
 						<div
 							className="absolute -top-3.5 left-6 z-10 text-[11px] font-bold px-3 py-1 rounded-full shadow-md"
@@ -90,8 +92,8 @@ export const BecomeSellerBand = () => (
 								priority
 							/>
 						</div>
-					</div>
-				</div>
+					</Tilt>
+				</Reveal>
 			</div>
 		</div>
 	</section>

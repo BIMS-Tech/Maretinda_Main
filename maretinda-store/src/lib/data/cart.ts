@@ -530,34 +530,30 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
  * @param cartId - optional - The ID of the cart to place an order for.
  * @returns The cart object if the order was successful, or null if not.
  */
-export async function placeOrder(cartId?: string) {
+/**
+ * Places the order and opens its confirmation. If it is refused, says why:
+ * returned rather than thrown, because a production build replaces a thrown
+ * message with a generic one.
+ */
+export async function placeOrder(cartId?: string): Promise<{ error: string }> {
 	const id = cartId || (await getCartId());
+	if (!id) return { error: 'Your cart is empty.' };
 
-	if (!id) {
-		throw new Error('No existing cart found when placing an order');
+	let orderId: string | undefined;
+	try {
+		const result: any = await sdk.store.cart.complete(id, {}, { ...(await getAuthHeaders()) }).catch(medusaError);
+		revalidateTag(await getCacheTag('carts'));
+		orderId = result?.order_set?.orders?.[0]?.id;
+		// Not completed: the cart comes back with what stopped it
+		if (!orderId) return { error: result?.error?.message || "We couldn't place your order. Please try again." };
+	} catch (error) {
+		return { error: (error as Error)?.message || "We couldn't place your order. Please try again." };
 	}
 
-	const headers = {
-		...(await getAuthHeaders()),
-	};
-
-	const cartRes: any = await sdk.store.cart
-		.complete(id, {}, headers)
-		.then(async (cartRes) => {
-			const cartCacheTag = await getCacheTag('carts');
-			revalidateTag(cartCacheTag);
-			return cartRes;
-		})
-		.catch(medusaError);
-
-	if (cartRes?.order_set) {
-		revalidatePath('/user/reviews');
-		revalidatePath('/user/orders');
-		removeCartId();
-		redirect(`/order/${cartRes?.order_set.orders[0].id}/confirmed`);
-	}
-
-	return cartRes.order_set.cart;
+	revalidatePath('/user/reviews');
+	revalidatePath('/user/orders');
+	await removeCartId();
+	redirect(`/order/${orderId}/confirmed`);
 }
 
 /**

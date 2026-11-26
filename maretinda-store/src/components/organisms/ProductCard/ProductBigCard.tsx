@@ -1,180 +1,104 @@
 'use client';
 
 import type { HttpTypes } from '@medusajs/types';
-import type { BaseHit, Hit } from 'instantsearch.js';
-import { truncate } from 'lodash';
 import Image from 'next/image';
+import { useRef } from 'react';
 
-import { Avatar, StarRating } from '@/components/atoms';
+import { Avatar } from '@/components/atoms';
 import { WishlistButton } from '@/components/cells/WishlistButton/WishlistButton';
-import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { getImageUrl } from '@/lib/helpers/get-image-url';
-import { getProductPrice } from '@/lib/helpers/get-product-price';
+import { MorphButton, peso } from '@/components/motion';
+import { cardImage } from '@/lib/helpers/card-image';
+import { discountPercent } from '@/lib/helpers/product-card';
 import { cn } from '@/lib/utils';
+import type { ProductCardData } from '@/types/search';
 import type { Wishlist } from '@/types/wishlist';
 
-interface StoreProduct extends HttpTypes.StoreProduct {
-	seller?: { name?: string; photo?: string };
-	reviews?: any[];
-}
+import { ProductLink } from './ProductLink';
+import { useQuickAdd } from './useQuickAdd';
 
+/** A product as a row, with room for what it is and who sells it. */
 export const ProductBigCard = ({
 	product,
-	api_product,
-	id,
 	user,
 	wishlist,
 }: {
-	product: Hit<HttpTypes.StoreProduct> | Partial<Hit<BaseHit>>;
-	api_product?: StoreProduct | null;
-	id: number;
+	product: ProductCardData;
 	user: HttpTypes.StoreCustomer | null;
 	wishlist: Wishlist[];
 }) => {
-	if (!api_product) return null;
-
-	const { cheapestPrice } = getProductPrice({
-		product: api_product as HttpTypes.StoreProduct,
-	});
-
-	const isDiscounted =
-		cheapestPrice?.calculated_price !== cheapestPrice?.original_price;
-	const origNum = cheapestPrice?.original_price_number ?? 0;
-	const calcNum = cheapestPrice?.calculated_price_number ?? 0;
-	const discountPct =
-		isDiscounted && origNum > 0
-			? Math.round(((origNum - calcNum) / origNum) * 100)
-			: 0;
-
-	const productReviews =
-		api_product.reviews?.filter(
-			(r: any) => r !== null && r.reference === 'product',
-		) ?? [];
-	const reviewCount = productReviews.length;
-	const avgRating =
-		reviewCount > 0
-			? productReviews.reduce((s: number, r: any) => s + r.rating, 0) /
-			  reviewCount
-			: 0;
-
-	const seller = api_product.seller;
-	const sellerName = seller?.name || 'Seller';
-	const sellerPhoto: string | undefined = seller?.photo ? seller.photo : undefined;
-
-	const thumbnail = product.thumbnail
-		? getImageUrl(decodeURIComponent(product.thumbnail as string))
-		: null;
-
-	const description = truncate((product as any).description ?? '', {
-		length: 160,
-		omission: '…',
-		separator: ' ',
-	});
+	const picture = useRef<HTMLDivElement>(null);
+	const { add, canQuickAdd, state } = useQuickAdd(product, !!user);
+	const image = cardImage(product.thumbnail);
+	const off = discountPercent(product);
+	const pictureEl = () => picture.current;
 
 	return (
-		<div className={cn(id === 0 ? 'pb-3' : 'py-3')}>
-			<div className="group bg-white rounded-2xl border border-black/[0.06] hover:shadow-[0_4px_24px_rgba(67,44,99,0.10)] hover:border-[#432C63]/20 transition-all duration-300 flex flex-col sm:flex-row overflow-hidden">
+		<article className="group flex flex-col overflow-hidden rounded-[20px] border border-black/[0.06] bg-white transition-[box-shadow,border-color] duration-500 hover:border-[#432C63]/20 hover:shadow-[0_14px_36px_-12px_rgba(67,44,99,0.18)] sm:flex-row">
+			<ProductLink className="relative w-full shrink-0 sm:w-[210px]" picture={pictureEl} product={product} tabIndex={-1}>
+				<div className="relative aspect-[4/3] h-full w-full overflow-hidden bg-[#F3EFF8] sm:aspect-auto" ref={picture}>
+					<Image
+						alt={product.title}
+						className="object-contain p-5 mix-blend-multiply transition-transform duration-700 ease-soft group-hover:scale-[1.06]"
+						fill
+						sizes="210px"
+						src={image || '/images/placeholder.svg'}
+					/>
+				</div>
+				{off > 0 && (
+					<span className={cn('absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold leading-none text-white', product.flash_sale ? 'bg-[#D94040]' : 'bg-[#432C63]')}>
+						−{off}%
+					</span>
+				)}
+			</ProductLink>
 
-				{/* Image */}
-				<LocalizedClientLink
-					className="relative w-full sm:w-[200px] shrink-0 aspect-square sm:aspect-auto bg-[#F7F6F9]"
-					href={`/products/${product.handle}`}
-				>
-					{thumbnail ? (
-						<Image
-							alt={product.title as string}
-							className="object-contain p-5 group-hover:scale-[1.04] transition-transform duration-400 ease-out"
-							fill
-							priority
-							sizes="200px"
-							src={thumbnail}
-						/>
-					) : (
-						<Image
-							alt="Product placeholder"
-							className="object-contain p-5"
-							fill
-							sizes="200px"
-							src="/images/placeholder.svg"
-						/>
-					)}
-					{discountPct > 0 && (
-						<span className="absolute top-3 left-3 z-10 bg-[#432C63] text-white text-[10px] font-bold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
-							−{discountPct}%
-						</span>
-					)}
-				</LocalizedClientLink>
+			<div className="flex min-w-0 flex-1 flex-col px-5 py-4">
+				<ProductLink picture={pictureEl} product={product}>
+					<h3 className="line-clamp-2 text-[16px] font-bold leading-snug text-[#1B1B1B]">
+						<span className="link-line">{product.title}</span>
+					</h3>
+				</ProductLink>
+				<div className="mt-1.5 flex items-baseline gap-2">
+					<span className={cn('text-[16px] font-bold', product.flash_sale ? 'text-[#C43131]' : 'text-[#432C63]')}>
+						{product.price != null ? peso(product.price) : 'View price'}
+					</span>
+					{off > 0 && <span className="text-[13px] text-[#A39DAC] line-through">{peso(product.original_price as number)}</span>}
+				</div>
+				{product.review_count > 0 && (
+					<p className="mt-1 text-[12px] text-[#737373]">
+						<span className="text-[#E0A800]">★</span> <b className="font-semibold text-[#1B1B1B]">{product.rating.toFixed(1)}</b> ({product.review_count})
+						{product.sold > 0 && ` · ${product.sold.toLocaleString('en-PH')} sold`}
+					</p>
+				)}
+				{product.excerpt && <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-[#737373]">{product.excerpt}</p>}
 
-				{/* Content */}
-				<div className="flex-1 flex flex-col px-5 py-4 min-w-0">
-					{/* Title */}
-					<LocalizedClientLink href={`/products/${product.handle}`}>
-						<h3 className="text-[16px] font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-[#432C63] transition-colors duration-150">
-							{product.title as string}
-						</h3>
-					</LocalizedClientLink>
-
-					{/* Price */}
-					<div className="flex items-center gap-2 mt-1.5">
-						<span className="text-[15px] font-bold text-[#432C63]">
-							{cheapestPrice?.calculated_price || 'View price'}
-						</span>
-						{isDiscounted && cheapestPrice?.original_price && (
-							<span className="text-[13px] text-gray-400 line-through font-medium">
-								{cheapestPrice.original_price}
-							</span>
+				<div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
+					{product.seller ? (
+						<div className="flex min-w-0 items-center gap-2">
+							<Avatar className="h-7 w-7 shrink-0 rounded-full" initials={product.seller.name.charAt(0).toUpperCase()} size="small" src={product.seller.photo ?? undefined} />
+							<span className="truncate text-[12px] font-semibold text-[#404040]">{product.seller.name}</span>
+						</div>
+					) : <span />}
+					<div className="flex shrink-0 items-center gap-2">
+						<WishlistButton className="!h-9 !w-9 !p-0 rounded-full !border-black/[0.08]" productId={product.id} user={user} wishlist={wishlist} />
+						{canQuickAdd ? (
+							<MorphButton
+								busy="Adding…"
+								className="h-10 rounded-full bg-[#432C63] px-5 text-[12.5px] font-bold text-white"
+								data-testid="quick-add"
+								done="Added"
+								idle="Add to cart"
+								onClick={() => add(picture.current, image)}
+								state={state}
+								type="button"
+							/>
+						) : (
+							<ProductLink className="press inline-flex h-10 items-center rounded-full bg-[#432C63] px-5 text-[12.5px] font-bold text-white" picture={pictureEl} product={product}>
+								{product.in_stock ? 'Choose options' : 'View product'}
+							</ProductLink>
 						)}
-					</div>
-
-					{/* Rating */}
-					{reviewCount > 0 && (
-						<div className="flex items-center gap-1.5 mt-1.5">
-							<StarRating rate={avgRating} starSize={13} />
-							<span className="text-[12px] text-gray-500">
-								({reviewCount})
-							</span>
-						</div>
-					)}
-
-					{/* Description */}
-					{description && (
-						<p className="mt-2.5 text-[13px] text-gray-500 leading-relaxed line-clamp-2">
-							{description}
-						</p>
-					)}
-
-					{/* Footer: seller + actions */}
-					<div className="mt-auto pt-4 flex items-center justify-between gap-3 flex-wrap">
-						{/* Seller */}
-						<div className="flex items-center gap-2 min-w-0">
-							<Avatar
-								className="rounded-full h-7 w-7 shrink-0"
-								initials={sellerName.charAt(0).toUpperCase()}
-								size="small"
-								src={sellerPhoto}
-							/>
-							<span className="text-[12px] font-semibold text-gray-700 truncate">
-								{sellerName}
-							</span>
-						</div>
-
-						{/* Actions */}
-						<div className="flex items-center gap-2 shrink-0">
-							<WishlistButton
-								className="!w-8 !h-8 !p-0 rounded-full bg-gray-50 border border-black/[0.08] flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0"
-								productId={product.id}
-								user={user}
-								wishlist={wishlist}
-							/>
-							<LocalizedClientLink href={`/products/${product.handle}`}>
-								<span className="inline-flex items-center h-9 px-5 rounded-full bg-[#432C63] text-white text-[12.5px] font-semibold hover:opacity-90 transition-opacity cursor-pointer">
-									View product
-								</span>
-							</LocalizedClientLink>
-						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</article>
 	);
 };

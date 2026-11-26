@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Reveal } from '@/components/motion';
+import { HomeHeading } from '@/i18n/HomeHeading';
 import { HomeText } from '@/i18n/HomeText';
 import { listCollections } from '@/lib/data/collections';
 import type { HttpTypes } from '@medusajs/types';
@@ -50,24 +52,17 @@ export const FeaturedCollectionsSection = async () => {
 			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 py-12 lg:py-16">
 				{/* Header */}
 				<div className="flex items-end justify-between mb-7 lg:mb-8">
-					<div>
-						<div className="text-[12px] font-semibold tracking-[0.18em] uppercase" style={{ color: '#432C63' }}>
-							<HomeText k="collectionsLabel" />
-						</div>
-						<h2 className="mt-2 font-serif tracking-[-0.01em] text-[#1a1a1a]" style={{ fontSize: '40px' }}>
-							<HomeText k="collectionsHeading" />
-						</h2>
-					</div>
-					<Link href="/collections" className="text-[13px] font-bold flex items-center gap-1.5 hover:underline" style={{ color: '#432C63' }}>
-						<HomeText k="viewAllCollections" />
+					<HomeHeading className="font-serif text-[34px] leading-tight tracking-[-0.01em] text-[#1a1a1a] lg:text-[42px]" eyebrow="collectionsLabel" k="collectionsHeading" />
+					<Link href="/collections" className="press shrink-0 text-[13px] font-bold" style={{ color: '#432C63' }}>
+						<span className="link-line"><HomeText k="viewAllCollections" /></span>
 					</Link>
 				</div>
 
-				<div className="grid grid-cols-12 gap-4 lg:gap-5">
+				<Reveal className="grid grid-cols-12 gap-4 lg:gap-5" variant="group">
 					{/* Large featured card */}
 					<Link
 						href={`/collections/${featured.handle}`}
-						className="col-span-12 lg:col-span-6 relative rounded-2xl overflow-hidden border h-[420px] block group"
+						className="col-span-12 lg:col-span-6 relative rounded-[24px] overflow-hidden border h-[420px] block group"
 						style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
 					>
 						{featuredImage ? (
@@ -75,7 +70,7 @@ export const FeaturedCollectionsSection = async () => {
 								src={featuredImage}
 								alt={featured.title}
 								fill
-								className="object-cover transition-transform duration-500 group-hover:scale-105"
+								className="object-cover transition-transform duration-1000 ease-soft group-hover:scale-[1.07]"
 								sizes="(max-width: 1024px) 100vw, 50vw"
 							/>
 						) : (
@@ -93,7 +88,7 @@ export const FeaturedCollectionsSection = async () => {
 							)}
 							<div className="mt-5 inline-flex items-center gap-2 bg-white text-[#1B1B1B] px-5 h-11 rounded-full text-[13.5px] font-bold">
 								Explore collection
-								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
+								<svg aria-hidden="true" className="transition-transform duration-500 ease-soft group-hover:translate-x-1.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M5 12h14M13 5l7 7-7 7" /></svg>
 							</div>
 						</div>
 					</Link>
@@ -115,7 +110,7 @@ export const FeaturedCollectionsSection = async () => {
 											src={img}
 											alt={col.title}
 											fill
-											className="object-cover transition-transform duration-500 group-hover:scale-105"
+											className="object-cover transition-transform duration-1000 ease-soft group-hover:scale-[1.07]"
 											sizes="(max-width: 1024px) 100vw, 25vw"
 										/>
 									) : (
@@ -140,7 +135,7 @@ export const FeaturedCollectionsSection = async () => {
 								<Link
 									key={col.id}
 									href={`/collections/${col.handle}`}
-									className="relative rounded-2xl overflow-hidden border h-[180px] lg:h-[200px] block group transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+									className="relative rounded-2xl overflow-hidden border h-[180px] lg:h-[200px] block group"
 									style={{ borderColor: '#EDEAE3', backgroundColor: '#FAF8F5' }}
 								>
 									{img ? (
@@ -148,7 +143,7 @@ export const FeaturedCollectionsSection = async () => {
 											src={img}
 											alt={col.title}
 											fill
-											className="object-cover transition-transform duration-500 group-hover:scale-105"
+											className="object-cover transition-transform duration-1000 ease-soft group-hover:scale-[1.07]"
 											sizes="(max-width: 768px) 50vw, 12.5vw"
 										/>
 									) : (
@@ -168,7 +163,7 @@ export const FeaturedCollectionsSection = async () => {
 							);
 						})}
 					</div>
-				</div>
+				</Reveal>
 			</div>
 		</section>
 	);

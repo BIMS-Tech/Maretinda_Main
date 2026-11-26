@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { ParcelAccordion } from '@/components/molecules';
 import { Layout } from '@/components/organisms';
+import { AccountEmpty, AccountHeading } from '@/components/organisms/Layout/AccountHeading';
 import { OrdersPagination } from '@/components/sections';
 import { retrieveCustomer } from '@/lib/data/customer';
 import { listOrders } from '@/lib/data/orders';
@@ -60,27 +61,25 @@ export default async function UserPage({
 
 	return (
 		<Layout>
-			<div className="md:col-span-3 space-y-10 user-content-wrapper">
-				<div className="flex flex-col gap-4 justify-start">
-					<h1 className="text-3xl capitalize text-black font-lora !font-bold">
-						Orders
-					</h1>
-					<p>View and track all your recent purchases</p>
-				</div>
+			<div className="md:col-span-3 user-content-wrapper">
+				<AccountHeading note="Follow what is on its way, and find anything you bought before." title="Orders" />
 				{isEmpty(orders) ? (
-					<div className="text-center">
-						<h3 className="heading-lg text-primary uppercase">
-							No orders
-						</h3>
-						<p className="text-lg text-secondary mt-2">
-							You haven&apos;t placed any order yet. Once you
-							place an order, it will appear here.
-						</p>
-					</div>
+					<AccountEmpty
+						action="Start shopping"
+						href="/search?sort=popular"
+						icon={
+							<svg aria-hidden="true" fill="none" height="30" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.7" viewBox="0 0 24 24" width="30">
+								<path d="M21 8.500l-9-5-9 5v7l9 5 9-5v-7zM3.300 8.700L12 13.500l8.700-4.800M12 13.500V21" />
+							</svg>
+						}
+						title="No orders yet"
+					>
+						Once you place an order, it will appear here.
+					</AccountEmpty>
 				) : (
 					<>
 						<div className="w-full max-w-full">
-							<div className="flex flex-col gap-8">
+							<div className="flex flex-col gap-6">
 								{processedOrders.map((orderSet) => (
 									<ParcelAccordion
 										createdAt={orderSet.created_at}

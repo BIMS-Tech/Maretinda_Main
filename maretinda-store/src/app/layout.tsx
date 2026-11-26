@@ -2,10 +2,13 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import '../fonts/fonts.css';
 import './globals.css';
+import './motion.css';
 
 import { Toaster } from '@medusajs/ui';
 
+import { MotionProvider, Notes } from '@/components/motion';
 import { CookieConsent } from '@/components/organisms/CookieConsent/CookieConsent';
+import { LanguageProvider } from '@/providers/LanguageProvider';
 
 export const metadata: Metadata = {
 	description:
@@ -37,7 +40,12 @@ export default function RootLayout({
 			<body
 				className="antialiased bg-primary text-secondary relative"
 			>
-				{children}
+				<MotionProvider>
+					<LanguageProvider>
+						{children}
+						<Notes />
+					</LanguageProvider>
+				</MotionProvider>
 				<Toaster position="top-right" />
 				<CookieConsent />
 			</body>

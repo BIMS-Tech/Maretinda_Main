@@ -18,6 +18,8 @@ import { getUserWishlists } from '@/lib/data/wishlist';
 import type { Wishlist } from '@/types/wishlist';
 
 import TopHeaderBanner from '../TopHeader/TopHeader';
+import { CategoryStrip } from './CategoryStrip';
+import { HeaderShell } from './HeaderShell';
 
 
 export const Header = async () => {
@@ -44,11 +46,11 @@ export const Header = async () => {
 	};
 
 	return (
-		<header>
+		<>
 			<TopHeaderBanner />
 
 			{/* Main purple header */}
-			<div className="sticky top-0 z-40" style={{ backgroundColor: '#432C63' }}>
+			<HeaderShell strip={<CategoryStrip categories={(parentCategories.length > 0 ? parentCategories : categories).slice(0, 12)} />}>
 				<div className="max-w-[1360px] mx-auto px-6 h-[72px] flex items-center gap-6">
 					{/* Mobile hamburger + Logo */}
 					<div className="flex items-center gap-3 shrink-0">
@@ -123,52 +125,7 @@ export const Header = async () => {
 					<NavbarSearch categories={categories} />
 				</div>
 
-				{/* Category nav strip */}
-				<div style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
-					<div className="max-w-[1360px] mx-auto px-6 h-11 hidden md:flex items-center gap-1 text-[13px]">
-						{/* All categories button */}
-						<button
-							className="flex items-center gap-2 px-3 py-1.5 rounded-md font-semibold text-white transition-colors shrink-0"
-							style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
-						>
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-								<line x1="4" y1="6" x2="20" y2="6" />
-								<line x1="4" y1="12" x2="20" y2="12" />
-								<line x1="4" y1="18" x2="20" y2="18" />
-							</svg>
-							<NavText k="allCategories" />
-						</button>
-
-						<span className="opacity-20 mx-1 text-white shrink-0">|</span>
-
-						{/* Scrollable category list — prevents the row from overflowing the page */}
-						<div className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto no-scrollbar">
-							{(parentCategories.length > 0 ? parentCategories : categories).slice(0, 10).map((cat) => (
-								<LocalizedClientLink
-									key={cat.id}
-									href={`/categories/${cat.handle}`}
-									className="px-3 py-1.5 rounded-md text-white/85 hover:text-[#FFC533] hover:bg-white/10 transition-colors whitespace-nowrap shrink-0"
-								>
-									{cat.name}
-								</LocalizedClientLink>
-							))}
-						</div>
-
-						{/* Flash sale live indicator */}
-						<LocalizedClientLink
-							href="/flash-sale"
-							className="px-3 py-1.5 rounded-md font-bold flex items-center gap-1.5 shrink-0 ml-1"
-							style={{ color: '#FFC533' }}
-						>
-							<span className="relative flex w-2 h-2">
-								<span className="absolute inset-0 rounded-full animate-ping opacity-75" style={{ backgroundColor: '#FFC533' }} />
-								<span className="relative inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#FFC533' }} />
-							</span>
-							<NavText k="flashSale" />
-						</LocalizedClientLink>
-					</div>
-				</div>
-			</div>
-		</header>
+			</HeaderShell>
+		</>
 	);
 };

@@ -3,11 +3,7 @@ import { BannerSection } from './BannerSection/BannerSection';
 import { Cart } from './Cart/Cart';
 import { Hero } from './Hero/Hero';
 import { HomeCategories } from './HomeCategories/HomeCategories';
-import { AlgoliaTrendingListings } from './HomeProductSection/AlgoliaTrendingListings';
-import { HomeProductSection } from './HomeProductSection/HomeProductSection';
 import { ProductDetailsPage } from './ProductDetailsPage/ProductDetailsPage';
-import { AlgoliaProductsListing } from './ProductListing/AlgoliaProductsListing';
-import { ProductListing } from './ProductListing/ProductListing';
 import { SellerPageHeader } from './SellerPageHeader/SellerPageHeader';
 import { WishlistPage } from './WishlistPage/WishlistPage';
 import { FlashSaleSection } from './FlashSaleSection/FlashSaleSection';
@@ -19,8 +15,6 @@ import { TrustSection } from './TrustSection/TrustSection';
 import { NewsletterSection } from './NewsletterSection/NewsletterSection';
 
 export {
-	AlgoliaProductsListing,
-	AlgoliaTrendingListings,
 	BannerSection,
 	BecomeSellerBand,
 	Cart,
@@ -28,11 +22,9 @@ export {
 	FlashSaleSection,
 	Hero,
 	HomeCategories,
-	HomeProductSection,
 	NewsletterSection,
 	OrdersPagination,
 	ProductDetailsPage,
-	ProductListing,
 	SellerPageHeader,
 	TopsellersSection,
 	TrendingNowSection,

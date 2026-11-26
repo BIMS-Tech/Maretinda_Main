@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { PASSWORD_RULE, validatePassword } from '@/lib/helpers/password';
+
 export const registerFormSchema = z.object({
 	email: z.string().nonempty('Please enter email').email('Invalid email'),
 	firstName: z.string().nonempty('Please enter first name'),
@@ -7,11 +9,7 @@ export const registerFormSchema = z.object({
 	password: z
 		.string()
 		.nonempty('Please enter password')
-		.min(8, 'Password must be at least 8 characters long')
-		.regex(/^(?=.*[A-Z])(?=.*[!@#$%^&*])/, {
-			message:
-				'Password must contain at least one uppercase letter and one special character',
-		}),
+		.refine((value) => validatePassword(value).isValid, { message: PASSWORD_RULE }),
 	countryCode: z.string().nonempty('Please select a country code'),
 	phone: z
 		.string()

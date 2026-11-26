@@ -4,6 +4,7 @@ import { ProfileDetails } from '@/components/molecules';
 import { ProfileDeleteAccount } from '@/components/molecules/ProfileDetails/ProfileDeleteAccount';
 import { ProfilePassword } from '@/components/molecules/ProfileDetails/ProfilePassword';
 import { Layout } from '@/components/organisms';
+import { AccountHeading } from '@/components/organisms/Layout/AccountHeading';
 import { retrieveCustomer } from '@/lib/data/customer';
 
 export default async function ReviewsPage() {
@@ -16,9 +17,7 @@ export default async function ReviewsPage() {
 	return (
 		<Layout>
 			<div className="md:col-span-3 user-content-wrapper">
-				<h1 className="mb-14 font-lora font-bold text-4xl text-black">
-					Settings
-				</h1>
+				<AccountHeading title="Settings" />
 				<div className="flex flex-col gap-12">
 					<ProfileDetails user={user} />
 					<ProfilePassword user={user} />

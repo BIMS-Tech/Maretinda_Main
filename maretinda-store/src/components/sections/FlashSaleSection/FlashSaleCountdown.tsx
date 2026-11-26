@@ -1,6 +1,10 @@
 'use client';
 
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
 import React, { useEffect, useState } from 'react';
+
+import { EASE_OUT } from '@/components/motion/tokens';
 
 function msUntil(iso: string): number {
 	return Math.max(0, new Date(iso).getTime() - Date.now())
@@ -53,11 +57,19 @@ export const FlashSaleCountdown = ({ endsAt, tone = 'light', hideLabel = false }
 			{!hideLabel && <span className={`text-[12px] mr-1 ${labelClass}`}>Ends in</span>}
 			{units.map(({ value }, i) => (
 				<React.Fragment key={i}>
-					<span
-						suppressHydrationWarning
-						className="bg-[#1B1B1B] text-white px-2.5 py-1.5 rounded-md tabular-nums shadow-sm"
-					>
-						{value}
+					<span className={`relative inline-flex min-w-[2.2em] justify-center overflow-hidden rounded-lg px-2 py-1.5 tabular-nums shadow-sm ${tone === 'dark' ? 'bg-white/15 text-white' : 'bg-[#1B1B1B] text-white'}`}>
+						<AnimatePresence initial={false} mode="popLayout">
+							<m.span
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -14 }}
+								initial={{ opacity: 0, y: 14 }}
+								key={value}
+								suppressHydrationWarning
+								transition={{ duration: 0.35, ease: EASE_OUT }}
+							>
+								{value}
+							</m.span>
+						</AnimatePresence>
 					</span>
 					{i < units.length - 1 && <span className={sepClass}>:</span>}
 				</React.Fragment>

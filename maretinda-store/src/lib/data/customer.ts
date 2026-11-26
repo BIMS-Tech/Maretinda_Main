@@ -6,6 +6,8 @@ import { headers as requestHeaders } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { forwardedAuthHeaders } from '@/lib/helpers/forwarded-auth';
+import { isShopperToken } from '@/lib/helpers/session-token';
+import type { LoginResult, SignInAccount, SignUpResult } from '@/types/auth';
 
 import { sdk } from '../config';
 import {
@@ -23,7 +25,8 @@ export const retrieveCustomer =
 	async (): Promise<HttpTypes.StoreCustomer | null> => {
 		const authHeaders = await getAuthHeaders();
 
-		if (!authHeaders) return null;
+		// Signed out: nothing to ask the backend
+		if (!('authorization' in authHeaders)) return null;
 
 		const headers = {
 			...authHeaders,
@@ -88,19 +91,50 @@ async function customerAuth(
 		},
 		body: JSON.stringify(body),
 	});
-	if (res.status === 429) throw new Error('Error: Too many attempts. Please wait a few minutes and try again.');
+	if (res.status === 429) {
+		throw Object.assign(new Error('Error: Too many attempts. Please wait a few minutes and try again.'), { status: 429 });
+	}
 	if (!res.ok) {
 		const err = await res.json().catch(() => ({}));
-		throw new Error(`Error: ${err.message ?? res.statusText}`);
+		throw Object.assign(new Error(`Error: ${err.message ?? res.statusText}`), { status: res.status });
 	}
 	const data = await res.json().catch(() => ({}));
 	return data.token;
 }
 
-export async function signup(formData: FormData) {
+/** Reads the backend's answer about whose sign-in a token is (see /store/auth/shopper-profile). */
+async function shopperProfile(method: 'GET' | 'POST', token: string) {
+	const res = await fetch(`${process.env.MEDUSA_BACKEND_URL}/store/auth/shopper-profile`, {
+		cache: 'no-store',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+			'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY as string,
+			...forwardedAuthHeaders(await requestHeaders(), process.env.STORE_SERVER_SECRET),
+		},
+		method,
+		...(method === 'POST' ? { body: '{}' } : {}),
+	});
+	const data = await res.json().catch(() => ({}));
+	return { data, status: res.status };
+}
+
+/** Signs the shopper in on this device: the session, then the cart they filled here or elsewhere. */
+async function startSession(token: string) {
+	await setAuthToken(token);
+	revalidateTag(await getCacheTag('customers'));
+	// They are signed in either way: a cart that can't move must not look like a wrong password
+	await transferCart().catch((error) => {
+		console.error('[sign-in] cart transfer failed:', error?.message ?? error);
+	});
+}
+
+const errorText = (error: unknown) => String((error as Error)?.message ?? error ?? '');
+
+export async function signup(formData: FormData): Promise<SignUpResult> {
 	const password = formData.get('password') as string;
 	const customerForm = {
-		email: formData.get('email') as string,
+		email: String(formData.get('email') ?? '').trim().toLowerCase(),
 		first_name: formData.get('first_name') as string,
 		last_name: formData.get('last_name') as string,
 		phone: formData.get('phone') as string,
@@ -114,55 +148,74 @@ export async function signup(formData: FormData) {
 			captcha ? { 'x-captcha-token': captcha } : {},
 		);
 
-		await setAuthToken(token as string);
-
-		const headers = {
-			...(await getAuthHeaders()),
-		};
-
-		const { customer: createdCustomer } = await sdk.store.customer.create(
-			customerForm,
-			{},
-			headers,
-		);
+		// Not kept as the session: until the account exists it opens nothing
+		await sdk.store.customer.create(customerForm, {}, { authorization: `Bearer ${token}` });
 
 		const loginToken = await customerAuth('', {
 			email: customerForm.email,
 			password,
 		});
+		if (!isShopperToken(loginToken)) return { ok: false, reason: 'failed' };
 
-		await setAuthToken(loginToken as string);
-
-		const customerCacheTag = await getCacheTag('customers');
-		revalidateTag(customerCacheTag);
-
-		await transferCart();
-
-		return createdCustomer;
-	} catch (error: any) {
-		return error.toString();
+		await startSession(loginToken as string);
+		return { ok: true };
+	} catch (error) {
+		const message = errorText(error);
+		if ((error as { status?: number })?.status === 429) return { ok: false, reason: 'too_many' };
+		if (/verification check/i.test(message)) return { ok: false, reason: 'captcha' };
+		if (/already (exists|has an account)/i.test(message)) return { ok: false, reason: 'exists' };
+		console.error('[sign-up] failed:', message);
+		return { ok: false, reason: 'failed' };
 	}
 }
 
-export async function login(formData: FormData) {
-	const email = formData.get('email') as string;
+/**
+ * Signs a shopper in. The backend accepts a password whatever kind of account
+ * it opens, so a right password can still have no shopper behind it: a
+ * seller's, an applicant's, or a sign-up that never finished. The form is told
+ * which, and can call this again with `start_shopping` to add a shopper account
+ * to that same sign-in.
+ */
+export async function login(formData: FormData): Promise<LoginResult> {
+	const email = String(formData.get('email') ?? '').trim();
 	const password = formData.get('password') as string;
+	const startShopping = formData.get('start_shopping') === '1';
 
 	try {
-		await customerAuth('', { email, password })
-			.then(async (token) => {
-				await setAuthToken(token as string);
-				const customerCacheTag = await getCacheTag('customers');
-				revalidateTag(customerCacheTag);
-			});
-	} catch (error: any) {
-		return error.toString();
-	}
+		// Sign-ins match the email exactly as it was registered, and phones capitalise
+		// the first letter: if that isn't found, try it in lower case
+		const token = await customerAuth('', { email, password }).catch((error) => {
+			const lower = email.toLowerCase();
+			if (error?.status === 401 && lower !== email) return customerAuth('', { email: lower, password });
+			throw error;
+		});
+		if (!token) return { ok: false, reason: 'failed' };
 
-	try {
-		await transferCart();
-	} catch (error: any) {
-		return error.toString();
+		if (isShopperToken(token)) {
+			await startSession(token);
+			return { ok: true };
+		}
+
+		if (startShopping) {
+			const { data, status } = await shopperProfile('POST', token);
+			if (status === 200 && isShopperToken(data.token)) {
+				await startSession(data.token);
+				return { ok: true };
+			}
+			if (status === 429) return { ok: false, reason: 'too_many' };
+			return { ok: false, reason: data.code === 'existing_shopper' ? 'existing_shopper' : 'failed' };
+		}
+
+		const { data, status } = await shopperProfile('GET', token);
+		if (status !== 200) return { ok: false, reason: 'failed' };
+		return { account: data as SignInAccount, ok: false, reason: 'no_shopper_account' };
+	} catch (error) {
+		const status = (error as { status?: number })?.status;
+		if (status === 429) return { ok: false, reason: 'too_many' };
+		if (status === 401 || status === 400) return { ok: false, reason: 'invalid' };
+		// Not their password: the backend is down or slow, so don't say it was
+		console.error('[sign-in] failed:', errorText(error));
+		return { ok: false, reason: 'failed' };
 	}
 }
 
@@ -351,14 +404,25 @@ export const updateCustomerPassword = async (
 			method: 'POST',
 		},
 	)
-		.then(async () => {
+		.then(async (response) => {
+			// fetch only rejects when the server can't be reached: an expired or
+			// used link answers 401, and must not be reported as a new password
+			if (!response.ok) {
+				return {
+					error:
+						response.status === 401
+							? 'This reset link has expired or was already used. Please ask for a new one.'
+							: "We couldn't update your password. Please try again.",
+					success: false,
+				};
+			}
 			await removeAuthToken();
 			const customerCacheTag = await getCacheTag('customers');
 			revalidateTag(customerCacheTag);
 			return { error: null, success: true };
 		})
-		.catch((err: any) => {
-			return { error: err.toString(), success: false };
+		.catch(() => {
+			return { error: "We couldn't reach the server. Please try again.", success: false };
 		});
 
 	return res;

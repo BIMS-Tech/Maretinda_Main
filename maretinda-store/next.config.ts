@@ -1,6 +1,23 @@
+import path from 'node:path';
+
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+	experimental: {
+		// Importing one component from an index must not send the browser all of them
+		optimizePackageImports: [
+			'@/components/atoms',
+			'@/components/cells',
+			'@/components/molecules',
+			'@/components/organisms',
+			'@/components/sections',
+			'@/components/motion',
+			'@/icons',
+			'@medusajs/ui',
+			'@medusajs/icons',
+			'react-icons/lu',
+		],
+	},
 	async headers() {
 		return [
 			{
@@ -66,5 +83,17 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	trailingSlash: false,
 };
+
+// Navigations could hang once their answer had arrived: see the loader. (Turbopack, in development, has no use for it.)
+if (!process.env.TURBOPACK) {
+	nextConfig.webpack = (config) => {
+		config.module.rules.push({
+			enforce: 'pre',
+			loader: path.resolve(process.cwd(), 'scripts/react-lost-ping-loader.cjs'),
+			test: /next[\\/]dist[\\/]compiled[\\/]react-dom[\\/]cjs[\\/]react-dom-client\.production\.js$/,
+		});
+		return config;
+	};
+}
 
 module.exports = nextConfig;

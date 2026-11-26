@@ -131,7 +131,7 @@ export const UserDropdown = ({
 						<div className="border-t border-[#EDEAE3] mt-3 pt-3 flex flex-col gap-1">
 							{[
 								{ label: s.helpCenter, href: '/help-center' },
-								{ label: s.refundPolicy, href: '/refund-policy' },
+								{ label: s.refundPolicy, href: '/help-center#returns' },
 							].map(({ label, href }) => (
 								<LocalizedClientLink
 									key={href}

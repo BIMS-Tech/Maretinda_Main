@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import type { Metadata } from 'next'
+
+import { Reveal, SectionHeading } from '@/components/motion'
 import { getActiveCampaigns } from '@/lib/data/vouchers'
 
 function CampaignCard({ campaign }: { campaign: any }) {
@@ -14,7 +15,7 @@ function CampaignCard({ campaign }: { campaign: any }) {
 	return (
 		<Link
 			href={`/campaigns/${campaign.id}`}
-			className="relative flex flex-col justify-between rounded-2xl overflow-hidden min-h-[160px] p-5 flex-shrink-0 w-72 hover:opacity-95 transition-opacity"
+			className="relative flex flex-col justify-between rounded-2xl overflow-hidden min-h-[160px] p-5 group flex-shrink-0 w-72 transition-[transform,box-shadow] duration-500 ease-soft hover:-translate-y-1 hover:shadow-[0_18px_36px_-12px_rgba(55,34,72,0.45)]"
 			style={{
 				backgroundColor: '#372248',
 				backgroundImage: campaign.banner_image
@@ -52,7 +53,7 @@ function CampaignCard({ campaign }: { campaign: any }) {
 
 			<div className="relative z-10 flex items-center justify-between mt-3">
 				<div className="flex items-center gap-2">
-					<span className="text-xs text-white/70">🎟️ {voucherCount} voucher{voucherCount !== 1 ? 's' : ''}</span>
+					<span className="text-xs text-white/70">{voucherCount} voucher{voucherCount !== 1 ? 's' : ''}</span>
 					{daysLeft !== null && daysLeft <= 7 && (
 						<span
 							className="text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -77,14 +78,9 @@ export default async function CampaignBanners() {
 
 	return (
 		<section className="w-full">
-			<div className="max-w-[1360px] mx-auto px-4 lg:px-6">
-				<div className="flex items-center justify-between mb-4">
-					<h2
-						className="text-xl font-bold font-lora"
-						style={{ color: '#1B1B1B' }}
-					>
-						Active Campaigns
-					</h2>
+			<div className="max-w-[1360px] mx-auto px-4 lg:px-6 pb-8 pt-2">
+				<div className="flex items-end justify-between mb-5">
+					<SectionHeading className="font-serif text-[28px] leading-tight tracking-[-0.01em] text-[#1B1B1B]" text="Active Campaigns" />
 					<Link
 						href="/campaigns"
 						className="text-sm font-semibold underline underline-offset-4"
@@ -94,11 +90,11 @@ export default async function CampaignBanners() {
 					</Link>
 				</div>
 
-				<div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+				<Reveal className="no-scrollbar flex gap-4 overflow-x-auto pb-4" variant="group">
 					{campaigns.map((c) => (
 						<CampaignCard key={c.id} campaign={c} />
 					))}
-				</div>
+				</Reveal>
 			</div>
 		</section>
 	)
