@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FiMenu, FiX, FiArrowRight, FiArrowUpRight } from "react-icons/fi";
 
 import { SELLER_LOGIN_URL, SELLER_REGISTER_URL, STORE_URL } from "@/lib/site";
@@ -18,20 +18,37 @@ const links = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  // A soft pill follows the pointer from link to link
+  const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
+  const list = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 8);
+      // Out of the way while reading down the page, back as soon as you scroll up
+      if (Math.abs(y - last) > 6) setHidden(y > last && y > 240);
+      last = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const follow = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const from = list.current?.getBoundingClientRect();
+    if (from) setPill({ left: box.left - from.left, width: box.width });
+  };
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[1000] bg-paper/95 backdrop-blur-md transition-[border-color] duration-200 border-b ${
+      className={`fixed top-0 left-0 right-0 z-[1000] bg-paper/90 backdrop-blur-md transition-[border-color,transform] duration-500 ease-[cubic-bezier(.22,1,.36,1)] border-b ${
         scrolled ? "border-line" : "border-transparent"
-      }`}
+      } ${hidden && !open ? "-translate-y-full" : "translate-y-0"}`}
     >
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 h-[68px] flex items-center gap-6">
         <Link href="/" className="relative flex-shrink-0 h-8 w-[140px]" aria-label="Maretinda for sellers — home">
@@ -41,12 +58,19 @@ export default function Navbar() {
           for sellers
         </span>
 
-        <ul className="hidden md:flex gap-1 ml-auto items-center">
+        <ul ref={list} onMouseLeave={() => setPill(null)} className="relative hidden md:flex gap-1 ml-auto items-center">
+          <li
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 my-auto h-9 rounded-full bg-brand-purple/[.07] transition-[transform,width,opacity] duration-500 ease-[cubic-bezier(.22,1,.36,1)]"
+            style={{ opacity: pill ? 1 : 0, transform: `translateX(${pill?.left ?? 0}px)`, width: pill?.width ?? 0 }}
+          />
           {links.map((l) => (
-            <li key={l.href}>
+            <li key={l.href} className="relative">
               <a
                 href={l.href}
-                className="text-[14px] font-medium px-3 py-2 rounded-full text-[#3D3748] hover:text-brand-purple hover:bg-brand-purple/[.06] transition-colors"
+                onMouseEnter={follow}
+                onFocus={(e) => follow(e as unknown as React.MouseEvent<HTMLAnchorElement>)}
+                className="text-[14px] font-medium px-3 py-2 rounded-full text-[#3D3748] hover:text-brand-purple transition-colors"
               >
                 {l.label}
               </a>
@@ -71,7 +95,7 @@ export default function Navbar() {
             href={SELLER_REGISTER_URL}
             className="ml-1 inline-flex items-center gap-1.5 h-10 px-5 rounded-full text-[14px] font-bold bg-brand-yellow text-brand-purple hover:bg-brand-yellow-deep transition-colors"
           >
-            Start selling <FiArrowRight size={14} />
+            Start selling <FiArrowRight size={14} className="nudge" />
           </a>
         </div>
 
@@ -86,7 +110,7 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden flex flex-col px-4 pb-6 pt-2 bg-paper border-t border-line">
+        <div className="rise-in md:hidden flex flex-col px-4 pb-6 pt-2 bg-paper border-t border-line" style={{ animationDuration: ".45s" }}>
           {links.map((l) => (
             <a
               key={l.href}
@@ -108,7 +132,7 @@ export default function Navbar() {
             onClick={() => setOpen(false)}
             className="mt-3 flex items-center justify-center gap-2 h-12 rounded-full text-[15px] font-bold bg-brand-yellow text-brand-purple"
           >
-            Start selling <FiArrowRight size={15} />
+            Start selling <FiArrowRight size={15} className="nudge" />
           </a>
         </div>
       )}

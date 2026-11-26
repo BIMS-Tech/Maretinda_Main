@@ -12,7 +12,7 @@ const actions = [
 function PriceSticker({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`absolute w-[96px] h-[96px] rounded-full bg-brand-yellow text-brand-purple flex flex-col items-center justify-center text-center shadow-[0_12px_24px_-10px_rgba(42,27,62,.5)] ${className}`}
+      className={`sticker-in absolute w-[96px] h-[96px] rounded-full bg-brand-yellow text-brand-purple flex flex-col items-center justify-center text-center shadow-[0_12px_24px_-10px_rgba(42,27,62,.5)] ${className}`}
     >
       <span className="font-display text-[30px] leading-none">₱0</span>
       <span className="text-[9.5px] font-bold uppercase tracking-[0.12em] mt-1 leading-tight">
@@ -26,14 +26,14 @@ function PriceSticker({ className = "" }: { className?: string }) {
 
 function ActionsCard({ className = "" }: { className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white border border-line shadow-[0_24px_48px_-24px_rgba(42,27,62,.45)] ${className}`}>
+    <div className={`slide-in rounded-2xl bg-white border border-line shadow-[0_24px_48px_-24px_rgba(42,27,62,.45)] ${className}`} style={{ animationDelay: "700ms" }}>
       <div className="px-4 pt-4 pb-3 border-b border-line">
         <p className="text-[13.5px] font-semibold text-ink">Actions required</p>
         <p className="text-[11.5px] text-muted">Items that need your attention</p>
       </div>
       <ul className="p-2 grid grid-cols-1 gap-1">
-        {actions.map(({ icon: Icon, label, count, hot }) => (
-          <li key={label} className="flex items-center gap-3 rounded-xl px-2.5 py-2 hover:bg-paper">
+        {actions.map(({ icon: Icon, label, count, hot }, i) => (
+          <li key={label} className="rise-in flex items-center gap-3 rounded-xl px-2.5 py-2 hover:bg-paper" style={{ animationDelay: `${900 + i * 80}ms` }}>
             <span
               className={`w-7 h-7 rounded-lg flex items-center justify-center text-[12px] font-bold tabular-nums ${
                 hot ? "bg-brand-yellow text-brand-purple" : "bg-[#F3F0F7] text-[#3D3748]"
@@ -54,8 +54,8 @@ function ActionsCard({ className = "" }: { className?: string }) {
 function Editorial() {
   return (
     <div className="relative mx-auto w-full max-w-[520px] pb-10 sm:pb-0">
-      <div className="absolute right-[18%] -top-6 bottom-24 -left-2 rounded-[28px] plum-stripes" />
-      <figure className="relative ml-auto w-[88%] aspect-[4/5] rounded-[24px] overflow-hidden sand-stripes shadow-[0_30px_60px_-30px_rgba(42,27,62,.55)]">
+      <div className="scale-in absolute right-[18%] -top-6 bottom-24 -left-2 rounded-[28px] plum-stripes" style={{ animationDelay: "150ms" }} />
+      <figure style={{ animationDelay: "300ms" }} className="scale-in relative ml-auto w-[88%] aspect-[4/5] rounded-[24px] overflow-hidden sand-stripes shadow-[0_30px_60px_-30px_rgba(42,27,62,.55)]">
         <Image
           src="/media/shop-groceries.png"
           alt="A paper bag and a basket full of fresh produce, bread and dairy"
@@ -70,7 +70,7 @@ function Editorial() {
         </figcaption>
       </figure>
       <ActionsCard className="absolute left-0 bottom-0 sm:-bottom-6 w-[64%] sm:w-[58%]" />
-      <PriceSticker className="right-[-2%] bottom-[22%] rotate-[8deg]" />
+      <PriceSticker className="right-[-2%] bottom-[22%] rotate-[8deg] [animation-delay:1.1s,2.7s]" />
     </div>
   );
 }

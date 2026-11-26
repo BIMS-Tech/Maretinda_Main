@@ -1,4 +1,5 @@
 import { FiCheck, FiMinus, FiArrowRight } from "react-icons/fi";
+import Masked from "./Masked";
 
 import { SELLER_REGISTER_URL } from "@/lib/site";
 
@@ -96,7 +97,7 @@ export default function Pricing() {
               className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(34px, 4.4vw, 58px)" }}
             >
-              A flat monthly plan. Never a cut of your sales.
+              <Masked text="A flat monthly plan. Never a cut of your sales." />
             </h2>
           </div>
           <p className="col-span-12 lg:col-span-5 text-[16px] leading-[1.7] text-muted lg:pb-2" data-aos>
@@ -112,7 +113,7 @@ export default function Pricing() {
               <div
                 key={plan.name}
                 data-aos
-                className={`relative rounded-[24px] p-7 sm:p-8 flex flex-col ${
+                className={`lift relative rounded-[24px] p-7 sm:p-8 flex flex-col ${
                   dark ? "bg-brand-purple text-white" : "bg-white border border-line"
                 }`}
               >
@@ -163,13 +164,13 @@ export default function Pricing() {
 
                 <a
                   href={plan.style === "primary" ? "/contact" : SELLER_REGISTER_URL}
-                  className={`mt-8 inline-flex items-center justify-center gap-2 h-12 rounded-full text-[14px] font-bold transition-colors ${
+                  className={`press mt-8 inline-flex items-center justify-center gap-2 h-12 rounded-full text-[14px] font-bold ${
                     dark
                       ? "bg-brand-yellow text-brand-purple hover:bg-white"
                       : "border border-brand-purple/30 text-brand-purple hover:border-brand-purple hover:bg-brand-purple hover:text-white"
                   }`}
                 >
-                  {plan.cta} <FiArrowRight size={14} />
+                  {plan.cta} <FiArrowRight size={14} className="nudge" />
                 </a>
               </div>
             );

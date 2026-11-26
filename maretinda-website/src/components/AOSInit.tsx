@@ -17,7 +17,13 @@ export default function AOSInit() {
       { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
 
-    document.querySelectorAll("[data-aos]").forEach((el) => observer.observe(el));
+    document.querySelectorAll<HTMLElement>("[data-aos]").forEach((el) => {
+      // Siblings arrive one after another
+      const siblings = el.parentElement ? [...el.parentElement.children].filter((c) => c.hasAttribute("data-aos")) : [];
+      const index = siblings.indexOf(el);
+      if (index > 0) el.style.transitionDelay = `${Math.min(index, 6) * 90}ms`;
+      observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 

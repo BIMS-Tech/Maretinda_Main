@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Masked from "./Masked";
 
 // Every item maps to a section that exists in the seller panel today.
 const groups = [
@@ -45,7 +46,7 @@ export default function Features() {
               className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(34px, 4.4vw, 58px)" }}
             >
-              Your whole shop, run from one screen.
+              <Masked text="Your whole shop, run from one screen." />
             </h2>
           </div>
           <p className="col-span-12 lg:col-span-5 text-[16px] leading-[1.7] text-muted lg:pb-2" data-aos>

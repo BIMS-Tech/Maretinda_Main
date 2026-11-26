@@ -29,15 +29,57 @@ body   { overflow-x: hidden; }
 ::selection { background: #FFC533; color: #2A1B3E; }
 :focus-visible { outline: 2px solid #432C63; outline-offset: 3px; }
 
-/* ── Reveal on scroll (driven by RevealInit) ──────────────────── */
-[data-aos] {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);
+/* ── Motion: the storefront's ─────────────────────────────────────
+   Things arrive quickly and settle softly, one after another. Only once
+   JavaScript is running (html.js) is anything held back to be revealed, so
+   the page is readable without it, and nothing moves for people who ask
+   their device for less motion. */
+:root {
+  --ease-soft: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
 }
-[data-aos].aos-animate { opacity: 1; transform: none; }
+
+/* Reveal on scroll (driven by AOSInit), siblings one after another */
+.js [data-aos] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity .9s var(--ease-soft), transform .9s var(--ease-soft);
+}
+.js [data-aos].aos-animate { opacity: 1; transform: none; }
+
+/* Headline words rise from behind their own edge (Masked.tsx) */
+@keyframes mask-rise { from { transform: translateY(110%); } }
+.mask { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .06em; margin-bottom: -.06em; }
+.mask > span { display: inline-block; animation: mask-rise .85s var(--ease-soft) backwards; }
+.js [data-aos]:not(.aos-animate) .mask > span { animation-play-state: paused; }
+
+/* The hero's parts come in on load */
+@keyframes rise-in { from { opacity: 0; transform: translateY(18px); } }
+@keyframes scale-in { from { opacity: 0; transform: scale(.94); } }
+@keyframes slide-in { from { opacity: 0; transform: translate(-28px, 18px); } }
+@keyframes sticker-in { from { opacity: 0; transform: scale(.4) rotate(-40deg); } }
+@keyframes sticker-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+@keyframes scribble-draw { from { background-size: 0% .28em; } }
+.rise-in    { animation: rise-in .8s var(--ease-soft) backwards; }
+.scale-in   { animation: scale-in 1s var(--ease-soft) backwards; }
+.slide-in   { animation: slide-in .9s var(--ease-soft) backwards; }
+.sticker-in { animation: sticker-in .9s var(--ease-spring) backwards, sticker-float 6s ease-in-out 1.6s infinite; }
+.scribble   { animation: scribble-draw .9s var(--ease-soft) .9s backwards; }
+
+/* Buttons give a little under the finger; their arrows lead the way */
+.press { transition: transform .18s var(--ease-soft), background-color .2s, color .2s, border-color .2s; }
+.press:active { transform: scale(.97); }
+.press .nudge { transition: transform .35s var(--ease-soft); }
+.press:hover .nudge { transform: translateX(4px); }
+
+/* Cards lift towards the pointer */
+.lift { transition: transform .45s var(--ease-soft), box-shadow .45s var(--ease-soft); }
+.lift:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -30px rgba(42,27,62,.45); }
+
 @media (prefers-reduced-motion: reduce) {
-  [data-aos] { opacity: 1; transform: none; transition: none; }
+  .js [data-aos] { opacity: 1; transform: none; transition: none; }
+  .mask > span, .rise-in, .scale-in, .slide-in, .sticker-in, .scribble { animation: none; }
+  .lift:hover, .press:active { transform: none; }
   html { scroll-behavior: auto; }
 }
 
@@ -90,6 +132,16 @@ body   { overflow-x: hidden; }
 details > summary { list-style: none; }
 details > summary::-webkit-details-marker { display: none; }
 details[open] .faq-icon { transform: rotate(45deg); }
+/* Answers open to their height, where the browser can animate it */
+@supports selector(::details-content) {
+  details { interpolate-size: allow-keywords; }
+  details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition: block-size .45s var(--ease-soft), content-visibility .45s allow-discrete;
+  }
+  details[open]::details-content { block-size: auto; }
+}
 
 /* DM Serif Display ships a single weight; stop browsers faking bold on it. */
 .font-display { font-synthesis: none; }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   FiMail, FiMapPin, FiArrowRight, FiCheckCircle, FiSend,
 } from "react-icons/fi";
+import Masked from "@/components/Masked";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -45,7 +46,7 @@ export default function ContactPage() {
               className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(38px, 5vw, 64px)" }}
             >
-              We&apos;d love to hear from you.
+              <Masked text="We’d love to hear from you." />
             </h1>
             <p className="mt-4 text-muted text-[16px] max-w-[560px] leading-relaxed">
               Questions about selling, your account, or a partnership? Send us a

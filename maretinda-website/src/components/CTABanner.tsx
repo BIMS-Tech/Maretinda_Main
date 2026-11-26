@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { FiArrowRight } from "react-icons/fi";
+import Masked from "./Masked";
 
 import { SELLER_REGISTER_URL, SELLER_LOGIN_URL } from "@/lib/site";
 
@@ -14,7 +15,7 @@ export default function CTABanner() {
               className="font-display text-ink mt-5 leading-[1] tracking-[-0.02em]"
               style={{ fontSize: "clamp(38px, 5vw, 68px)" }}
             >
-              Your shop belongs on Maretinda.
+              <Masked text="Your shop belongs on Maretinda." />
             </h2>
             <p className="mt-5 text-[16px] leading-[1.7] text-[#3D3748] max-w-[460px]">
               Register, list your first products, and start taking orders from buyers across the
@@ -23,9 +24,9 @@ export default function CTABanner() {
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 href={SELLER_REGISTER_URL}
-                className="inline-flex items-center gap-2 h-[52px] px-7 rounded-full text-[15px] font-bold bg-brand-purple text-white hover:bg-brand-purple-deep transition-colors"
+                className="press inline-flex items-center gap-2 h-[52px] px-7 rounded-full text-[15px] font-bold bg-brand-purple text-white hover:bg-brand-purple-deep"
               >
-                Start selling <FiArrowRight size={16} />
+                Start selling <FiArrowRight size={16} className="nudge" />
               </a>
               <a
                 href={SELLER_LOGIN_URL}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { FiArrowUpRight } from "react-icons/fi";
+import Masked from "./Masked";
 
 import { STORE_URL } from "@/lib/site";
 
@@ -42,7 +43,7 @@ export default function About() {
               className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(34px, 4.4vw, 58px)" }}
             >
-              One marketplace for the shops Filipinos already love.
+              <Masked text="One marketplace for the shops Filipinos already love." />
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-5 lg:pb-2" data-aos>

@@ -37,7 +37,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`}>
+    // `js` is added before the page paints, so content waits to be revealed only when it will be
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
       <body className="font-sans text-ink bg-paper antialiased">
         {children}
       </body>

@@ -1,4 +1,5 @@
 import { FiPlus, FiArrowUpRight } from "react-icons/fi";
+import Masked from "./Masked";
 
 import { CONTACT_EMAIL, HELP_CENTER_URL } from "@/lib/site";
 
@@ -44,7 +45,7 @@ export default function FAQ() {
               className="font-display text-ink mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(34px, 4vw, 52px)" }}
             >
-              Before you open your shop.
+              <Masked text="Before you open your shop." />
             </h2>
             <p className="mt-5 text-[15px] leading-[1.7] text-muted">
               Can&apos;t find your answer? Email us at{" "}

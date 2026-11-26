@@ -1,4 +1,5 @@
 import { FiArrowRight } from "react-icons/fi";
+import Masked from "./Masked";
 
 import { SELLER_REGISTER_URL } from "@/lib/site";
 
@@ -28,7 +29,11 @@ export default function HowItWorks() {
               className="font-display mt-5 leading-[1.02] tracking-[-0.015em]"
               style={{ fontSize: "clamp(34px, 4.4vw, 58px)" }}
             >
-              From sign-up to <span className="text-brand-yellow italic">first order</span>, in three steps.
+              <Masked text="From sign-up to" />{" "}
+              <span className="text-brand-yellow italic">
+                <Masked text="first order," delay={180} />
+              </span>{" "}
+              <Masked text="in three steps." delay={300} />
             </h2>
           </div>
         </div>
@@ -54,7 +59,7 @@ export default function HowItWorks() {
             href={SELLER_REGISTER_URL}
             className="inline-flex items-center justify-center gap-2 h-[52px] px-7 rounded-full text-[15px] font-bold bg-brand-yellow text-brand-purple hover:bg-white transition-colors flex-shrink-0"
           >
-            Register your shop <FiArrowRight size={16} />
+            Register your shop <FiArrowRight size={16} className="nudge" />
           </a>
         </div>
       </div>
