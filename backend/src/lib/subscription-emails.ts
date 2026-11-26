@@ -1,5 +1,5 @@
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import { invoiceAttachment, issueSubscriptionInvoice } from "./invoice"
+import { documentLabel, invoiceAttachment, issueSubscriptionInvoice } from "./invoice"
 import { sellerPanelUrl, sendNotice } from "./notify"
 
 const day = (d: any) =>
@@ -21,7 +21,7 @@ export async function sendSubscriptionReceipt(container: any, subscription: any)
       paragraphs: [
         `Thank you. Your ${subscription.plan_name} plan is active until ${day(subscription.end_date)}.`,
         invoice
-          ? `Your invoice ${invoice.number} is attached to this email.`
+          ? `Your ${documentLabel(invoice.document)} ${invoice.number} is attached to this email.`
           : "You can see your plan and payment in the seller panel.",
       ],
       button: { label: "Open my subscription", url: `${sellerPanelUrl()}/subscription` },

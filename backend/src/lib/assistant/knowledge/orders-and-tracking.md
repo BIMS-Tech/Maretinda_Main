@@ -43,5 +43,5 @@ buyer about the refund. Maretinda does not cancel unpaid orders automatically.
 
 All past and current orders are at My Account → Orders. Each order page has the
 seller's details, a button to message them, the tracking number once shipped,
-the invoice to download, and the buttons to cancel or request a return when
+the order summary (PDF) to download, and the buttons to cancel or request a return when
 those are possible.

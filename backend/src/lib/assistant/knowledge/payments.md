@@ -50,7 +50,12 @@ Vouchers are applied on the cart or checkout page before payment. A voucher with
 a minimum-order requirement only applies once the cart subtotal reaches that
 amount; the subtotal it compares against excludes shipping.
 
-## Invoices
+## Invoices and order summaries
 
-Each order has an invoice issued in the seller's name. It is attached to the
-order confirmation email and can be downloaded from the order page.
+Each order has an order summary in the seller's name, attached to the order
+confirmation email and downloadable from the order page. It lists the items,
+delivery fee, discounts and total. It is not a BIR invoice or official
+receipt: a buyer who needs one for their records or for input tax asks the
+seller, who issues it under their own BIR registration. Every document has a
+QR code; scanning it opens maretinda.com/verify-invoice/... to check that it
+really came from Maretinda.

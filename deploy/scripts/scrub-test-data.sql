@@ -113,6 +113,19 @@ DELETE FROM member_invite;
 -- Sent-email history (recipients and contents)
 DELETE FROM notification;
 
+-- Issued documents carry buyers' names and addresses inside their PDFs, and
+-- can't be edited (a trigger keeps them final). The test copy doesn't need
+-- production's: drop them and restart the number series.
+DO $$
+BEGIN
+  IF to_regclass('public.invoice') IS NOT NULL THEN
+    EXECUTE 'ALTER TABLE invoice DISABLE TRIGGER USER';
+    EXECUTE 'DELETE FROM invoice';
+    EXECUTE 'ALTER TABLE invoice ENABLE TRIGGER USER';
+    EXECUTE 'DELETE FROM invoice_series';
+  END IF;
+END $$;
+
 -- ── Payments and couriers ───────────────────────────────────────────────────
 UPDATE giyapay_config SET sandbox_mode = true;
 UPDATE giyapay_subscription_config SET sandbox_mode = true;

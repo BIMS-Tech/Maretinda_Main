@@ -1,4 +1,13 @@
-import { formatInvoiceNumber, invoiceTotals, platformIssuer, renderInvoicePdf } from "../invoice"
+import {
+  formatInvoiceNumber,
+  formatTin,
+  invoiceTotals,
+  parseCredit,
+  platformIssuer,
+  ptiNumber,
+  renderInvoicePdf,
+  sellerInvoicingEnabled,
+} from "../invoice"
 
 const lines = [
   { description: "Shirt - Large", quantity: 2, unit_price: 385 },
@@ -24,35 +33,69 @@ describe("invoice totals", () => {
 })
 
 describe("invoice numbering and issuer", () => {
-  it("pads the serial", () => {
-    expect(formatInvoiceNumber("MRT", 42)).toBe("MRT-00000042")
+  it("numbers MRT-YYYY-0000001 with the Manila year", () => {
+    expect(formatInvoiceNumber("MRT", 42, new Date("2026-11-13T02:00:00Z"))).toBe("MRT-2026-0000042")
+    // 1 January in Manila is still 31 December in UTC
+    expect(formatInvoiceNumber("MRT", 43, new Date("2026-12-31T17:00:00Z"))).toBe("MRT-2027-0000043")
   })
 
-  it("reads the operator's TIN and VAT status from the environment", () => {
-    expect(platformIssuer({ INVOICE_ISSUER_TIN: "123-456-789-00000", INVOICE_ISSUER_VAT_REGISTERED: "true" })).toMatchObject({
-      name: "BIMS Technologies, Inc.",
+  it("writes a TIN with its branch code, however it was typed", () => {
+    expect(formatTin("767899470")).toBe("767-899-470-00000")
+    expect(formatTin("767-899-470-001")).toBe("767-899-470-00001")
+    expect(formatTin("767 899 470 00000")).toBe("767-899-470-00000")
+    expect(formatTin("not a tin")).toBe("not a tin")
+    expect(formatTin(" ")).toBeNull()
+  })
+
+  it("is the registered company from its COR, unless the environment says otherwise", () => {
+    expect(platformIssuer({})).toMatchObject({ name: "BIMS TECHNOLOGIES INC.", tin: "767-899-470-00000", vat_registered: true })
+    expect(platformIssuer({ INVOICE_ISSUER_TIN: "123456789", INVOICE_ISSUER_VAT_REGISTERED: "false" })).toMatchObject({
       tin: "123-456-789-00000",
-      vat_registered: true,
+      vat_registered: false,
     })
-    expect(platformIssuer({}).vat_registered).toBe(false)
+  })
+
+  it("nothing is an invoice before the BIR permit", () => {
+    expect(ptiNumber({})).toBeNull()
+    expect(ptiNumber({ INVOICE_PTI_NUMBER: " PTI-081-2026-00001 " })).toBe("PTI-081-2026-00001")
+    expect(sellerInvoicingEnabled({})).toBe(false)
+  })
+})
+
+describe("credit notes", () => {
+  it("need an amount and a reason", () => {
+    expect(parseCredit({ amount: 0, reason: "x" })).toMatch(/how much/)
+    expect(parseCredit({ amount: 10, reason: " " })).toMatch(/why/)
+    expect(parseCredit({ amount: "99.999", reason: " Overbilling " })).toEqual({ amount: 100, reason: "Overbilling" })
   })
 })
 
 describe("invoice PDF", () => {
+  const base = {
+    kind: "order" as const,
+    document: "summary" as const,
+    official: false,
+    number: "OS-AB12CD-2026-0000001",
+    unique_id: "MRT0123456789ABCDEF",
+    issued_at: "2026-11-13T02:00:00Z",
+    reference: "#1042",
+    issuer: { name: "QA Shop A", tin: null, vat_registered: false, address: "Cebu City" },
+    buyer: { name: "Juan Dela Cruz", address: "Barangay Lahug, Cebu City" },
+    lines,
+    shipping: 85,
+    discount: 0,
+    verify_url: "https://maretinda.com/verify-invoice/MRT0123456789ABCDEF",
+  }
+
   it("renders a PDF, across pages for a long order", async () => {
     const many = Array.from({ length: 60 }, (_, i) => ({ description: `Item ${i + 1} with a fairly long product name`, quantity: 1, unit_price: 10 }))
-    const pdf = await renderInvoicePdf({
-      kind: "order",
-      number: "S-AB12CD-00000001",
-      issued_at: "2026-11-13T02:00:00Z",
-      reference: "#1042",
-      issuer: { name: "QA Shop A", tin: null, vat_registered: false, address: "Cebu City" },
-      buyer: { name: "Juan Dela Cruz", address: "Barangay Lahug, Cebu City" },
-      lines: many,
-      shipping: 85,
-      discount: 0,
-    })
+    const pdf = await renderInvoicePdf({ ...base, lines: many })
     expect(pdf.subarray(0, 5).toString()).toBe("%PDF-")
-    expect(pdf.length).toBeGreaterThan(2000)
+    expect(pdf.toString("latin1").match(/\/Type \/Page\b/g)!.length).toBeGreaterThan(1)
+  })
+
+  it("fits an ordinary order on one page", async () => {
+    const pdf = await renderInvoicePdf(base)
+    expect(pdf.toString("latin1").match(/\/Type \/Page\b/g)!.length).toBe(1)
   })
 })

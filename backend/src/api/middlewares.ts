@@ -482,6 +482,11 @@ export default defineMiddlewares({
       middlewares: [rateLimit({ name: 'chat-start', max: 20, windowMs: HOUR })],
     },
     {
+      matcher: '/store/invoice-verify/:id',
+      method: ['GET'],
+      middlewares: [rateLimit({ name: 'invoice-verify', max: 60, windowMs: 15 * MINUTE })],
+    },
+    {
       matcher: '/store/email-verification/resend',
       method: ['POST'],
       middlewares: [rateLimit({ name: 'verify-resend', max: 5, windowMs: HOUR })],

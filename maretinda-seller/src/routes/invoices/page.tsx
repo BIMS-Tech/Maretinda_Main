@@ -4,7 +4,30 @@ import { useState } from "react"
 import { backendUrl, fetchQuery } from "../../lib/client/client"
 import { SettlementsSection } from "./settlements-section"
 
-type Invoice = { id: string; kind: "order" | "subscription"; number: string; total: string | number; issued_at: string }
+type Invoice = {
+  id: string
+  kind: "order" | "subscription" | "fees" | "credit"
+  document: "invoice" | "statement" | "summary" | "credit_note" | "adjustment"
+  official: boolean
+  number: string
+  total: string | number
+  issued_at: string
+}
+
+const DOCUMENTS: Record<Invoice["document"], { label: string; file: string }> = {
+  invoice: { label: "Invoice", file: "Invoice" },
+  statement: { label: "Billing statement", file: "Billing-statement" },
+  summary: { label: "Order summary", file: "Order-summary" },
+  credit_note: { label: "Credit note", file: "Credit-note" },
+  adjustment: { label: "Billing adjustment", file: "Billing-adjustment" },
+}
+
+const ABOUT: Record<Invoice["kind"], string> = {
+  order: "Order",
+  subscription: "Plan payment",
+  fees: "Payout fees",
+  credit: "Correction",
+}
 type Cod = {
   id: string
   tracking_number: string | null
@@ -28,17 +51,17 @@ const COD_STATES: Record<Cod["state"], { label: string; color: "orange" | "blue"
 async function download(invoice: Invoice) {
   const token = window.localStorage.getItem("medusa_auth_token") || ""
   const res = await fetch(`${backendUrl}/vendor/invoices/${invoice.id}`, { headers: { authorization: `Bearer ${token}` } })
-  if (!res.ok) throw new Error("Could not download this invoice")
+  if (!res.ok) throw new Error("Could not download this document")
   const url = URL.createObjectURL(await res.blob())
   const a = document.createElement("a")
   a.href = url
-  a.download = `Invoice-${invoice.number}.pdf`
+  a.download = `${DOCUMENTS[invoice.document]?.file ?? "Invoice"}-${invoice.number}.pdf`
   a.click()
   URL.revokeObjectURL(url)
 }
 
 export const InvoicesPage = () => {
-  const [kind, setKind] = useState<"order" | "subscription">("order")
+  const [kind, setKind] = useState<"order" | "platform">("order")
   const invoices = useQuery({
     queryKey: ["vendor", "invoices", kind],
     queryFn: () => fetchQuery("/vendor/invoices", { method: "GET", query: { kind, limit: 100 } }) as Promise<{ invoices: Invoice[]; count: number }>,
@@ -57,30 +80,33 @@ export const InvoicesPage = () => {
       <Container className="p-0 divide-y">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
-            <Heading>Invoices</Heading>
+            <Heading>Documents</Heading>
             <Text size="small" className="text-ui-fg-subtle">
               {kind === "order"
-                ? "Invoices issued in your shop's name for each order. Your buyer receives the same PDF by email."
-                : "Invoices from Maretinda for your subscription payments."}
+                ? rows.some((r) => r.official)
+                  ? "Invoices issued in your shop's name for each order. Your buyer gets the same PDF by email."
+                  : "An order summary for each order, in your shop's name. Your buyer gets the same PDF by email. It is not a BIR invoice: issue your own registered invoice or receipt for each sale."
+                : "From Maretinda: your plan payments, the fees taken from your payouts each month, and any corrections."}
             </Text>
           </div>
           <div className="flex gap-2">
             <Button size="small" variant={kind === "order" ? "primary" : "secondary"} onClick={() => setKind("order")}>Orders</Button>
-            <Button size="small" variant={kind === "subscription" ? "primary" : "secondary"} onClick={() => setKind("subscription")}>Subscription</Button>
+            <Button size="small" variant={kind === "platform" ? "primary" : "secondary"} onClick={() => setKind("platform")}>From Maretinda</Button>
           </div>
         </div>
         <div className="px-6 py-4">
           {invoices.isLoading ? (
             <Text className="text-ui-fg-subtle">Loading…</Text>
           ) : invoices.isError ? (
-            <Text className="text-ui-fg-error">Could not load your invoices. Refresh to try again.</Text>
+            <Text className="text-ui-fg-error">Could not load your documents. Refresh to try again.</Text>
           ) : rows.length === 0 ? (
-            <Text className="text-ui-fg-subtle">No invoices yet.</Text>
+            <Text className="text-ui-fg-subtle">Nothing yet.</Text>
           ) : (
             <Table>
               <Table.Header>
                 <Table.Row>
                   <Table.HeaderCell>Number</Table.HeaderCell>
+                  <Table.HeaderCell>Document</Table.HeaderCell>
                   <Table.HeaderCell>Date</Table.HeaderCell>
                   <Table.HeaderCell className="text-right">Total</Table.HeaderCell>
                   <Table.HeaderCell />
@@ -90,6 +116,10 @@ export const InvoicesPage = () => {
                 {rows.map((i) => (
                   <Table.Row key={i.id}>
                     <Table.Cell>{i.number}</Table.Cell>
+                    <Table.Cell>
+                      {DOCUMENTS[i.document]?.label ?? "Invoice"}
+                      {kind === "platform" && <span className="text-ui-fg-muted"> · {ABOUT[i.kind]}</span>}
+                    </Table.Cell>
                     <Table.Cell>{day(i.issued_at)}</Table.Cell>
                     <Table.Cell className="text-right tabular-nums">{peso(i.total)}</Table.Cell>
                     <Table.Cell className="text-right">

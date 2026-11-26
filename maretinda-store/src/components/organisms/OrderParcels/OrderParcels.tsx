@@ -57,7 +57,7 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 								download
 								href={`/api/orders/${order.id}/invoice`}
 							>
-								Download invoice (PDF)
+								Download order summary (PDF)
 							</a>
 						</div>
 						<div className="pt-4 pb-0">

@@ -171,6 +171,31 @@ Settings → Users. All admins at release became Owners.
 - `ADMIN_MFA_REQUIRED=false` in `backend.env` stops requiring it (admins who
   turned it on still use it). Leave it required in production.
 
+### Invoices (BIR e-invoicing)
+
+Documents follow the e-invoice template of 24 November 2026 (RMC 98-2026). No
+e-invoice may be issued before BIR grants the Permit to Issue (PTI), so until
+then the platform's documents are **billing statements** (MRT-BS-…) and
+sellers' are **order summaries** (OS-…), and each says it is not an invoice.
+
+- **When the PTI arrives:** add `INVOICE_PTI_NUMBER=` (the number on the
+  permit) to `backend.env` and recreate the backend. From then on plan
+  payments, monthly payout fees and credit notes are invoices in a fresh
+  series, MRT-2026-0000001. Don't set it earlier: the series can't be undone.
+- **Sellers' sales invoices** stay order summaries until the RDO confirms
+  Maretinda may issue them on sellers' behalf; then also set
+  `SELLER_INVOICING_ENABLED=true`.
+- Issuer details default to BIMS's COR (BIMS TECHNOLOGIES INC., TIN
+  767-899-470-00000, VAT-registered, the Cebu IT Park address). Override with
+  `INVOICE_ISSUER_NAME`, `INVOICE_ISSUER_ADDRESS`, `INVOICE_ISSUER_TIN`,
+  `INVOICE_ISSUER_VAT_REGISTERED`, `INVOICE_ISSUER_PHONE`.
+  `INVOICE_WITHHOLDING_NOTE` adds the optional EWT line.
+- An issued document can't be edited or deleted (a database trigger refuses).
+  To reduce one: admin → Invoices → Credit. Admin → Invoices → Data downloads
+  a document's structured data for the BIR.
+- Monthly on the 1st, each shop gets a document for the fees its payouts
+  deducted the month before.
+
 ### Email confirmation and seller alerts
 
 New buyers get a "confirm your email" link at sign-up and can't pay or place an
