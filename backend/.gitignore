@@ -11,7 +11,8 @@ yarn-error.log
 coverage
 
 !src/**
-src/modules/**/node_modules/
+# No trailing slash: a node_modules symlink (a worktree linking to another checkout's) is ignored too
+src/modules/**/node_modules
 src/modules/**/dist/
 
 ./tsconfig.tsbuildinfo
