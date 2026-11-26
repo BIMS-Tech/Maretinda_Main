@@ -31,7 +31,8 @@ import {
 import { useStatistics, useOrders, useProducts } from "../../../hooks/api"
 import { useChatConversations } from "../../../hooks/api/chat"
 import { useReviews } from "../../../hooks/api/review"
-import { usePayouts } from "../../../hooks/api/payouts"
+import { useQuery } from "@tanstack/react-query"
+import { fetchQuery } from "../../../lib/client"
 import { Calendar } from "../../../components/common/calendar/calendar"
 import { ChartSkeleton } from "./chart-skeleton"
 import { CountUp, GrowBar, Segmented } from "../../../components/common/motion/motion"
@@ -211,7 +212,12 @@ export const DashboardCharts = ({
 
   const { orders: allOrders, isPending: ordersPending } = useOrders()
   const { reviews } = useReviews()
-  const { payouts } = usePayouts({ limit: 5 } as any)
+  // Paid out by GiyaPay bank files, from the same ledger as Payouts & Invoices
+  const { data: settlements } = useQuery({
+    queryKey: ["vendor", "settlements"],
+    queryFn: () => fetchQuery("/vendor/settlements", { method: "GET" }) as Promise<{ paid: { reference_number: string; kind: string; net_amount: number; settled_at: string }[] }>,
+  })
+  const payouts = settlements?.paid ?? []
   const { count: productCount } = useProducts({ limit: 1 })
 
   const chartData = generateChartData({
@@ -699,8 +705,8 @@ export const DashboardCharts = ({
         </div>}
       </div>
 
-      {/* Recent Payouts (Growth+ only) */}
-      {analyticsLevel !== "basic" && Array.isArray(payouts) && payouts.length > 0 && (
+      {/* Recent payouts (Growth+ only) */}
+      {analyticsLevel !== "basic" && payouts.length > 0 && (
         <Container className="divide-y p-0">
           <div className="flex items-center justify-between px-6 py-4">
             <div>
@@ -708,10 +714,10 @@ export const DashboardCharts = ({
                 Recent Payouts
               </Heading>
               <Text size="small" className="text-ui-fg-muted">
-                Latest payout activity
+                Sent to your bank by GiyaPay
               </Text>
             </div>
-            <Link to="/payouts" className="text-xs text-ui-fg-interactive hover:underline font-medium">
+            <Link to="/invoices" className="text-xs text-ui-fg-interactive hover:underline font-medium">
               View all →
             </Link>
           </div>
@@ -719,41 +725,23 @@ export const DashboardCharts = ({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-ui-border-base bg-ui-bg-subtle">
-                  <th className="px-5 py-3 text-left text-xs font-medium text-ui-fg-muted">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-ui-fg-muted">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-ui-fg-muted">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-ui-fg-muted">Date</th>
+                  <th className="px-5 py-3 text-left text-xs font-medium text-ui-fg-muted">Payment</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-ui-fg-muted">Bank file</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-ui-fg-muted">Paid to you</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-ui-fg-muted">Sent</th>
                 </tr>
               </thead>
               <tbody>
-                {payouts.slice(0, 5).map((payout: any) => (
-                  <tr
-                    key={payout.id}
-                    className="border-b border-ui-border-base last:border-0 hover:bg-ui-bg-subtle"
-                  >
-                    <td className="px-5 py-3 font-mono text-xs text-ui-fg-subtle">
-                      {payout.id?.slice(0, 8)}…
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                          payout.status === "completed"
-                            ? "bg-ui-tag-green-bg text-ui-tag-green-text "
-                            : payout.status === "pending"
-                            ? "bg-ui-tag-orange-bg text-ui-tag-orange-text "
-                            : "bg-ui-bg-subtle text-ui-fg-subtle"
-                        }`}
-                      >
-                        {payout.status}
-                      </span>
-                    </td>
+                {payouts.slice(0, 5).map((payout) => (
+                  <tr key={`${payout.reference_number}-${payout.settled_at}`} className="border-b border-ui-border-base last:border-0 hover:bg-ui-bg-subtle">
+                    <td className="px-5 py-3 font-mono text-xs text-ui-fg-subtle">{payout.reference_number}</td>
+                    <td className="px-4 py-3 text-xs uppercase text-ui-fg-subtle">{payout.kind}</td>
                     <td className="px-4 py-3 text-right text-xs font-semibold text-ui-fg-base">
-                      {formatMoney((payout.amount ?? 0) / 100)}
+                      {/* Pesos, as the ledger keeps them */}
+                      {formatMoney(Number(payout.net_amount) || 0)}
                     </td>
                     <td className="px-4 py-3 text-xs text-ui-fg-muted whitespace-nowrap">
-                      {payout.created_at
-                        ? format(new Date(payout.created_at), "MMM d, yyyy")
-                        : "—"}
+                      {payout.settled_at ? format(new Date(payout.settled_at), "MMM d, yyyy") : "—"}
                     </td>
                   </tr>
                 ))}

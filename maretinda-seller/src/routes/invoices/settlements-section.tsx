@@ -60,9 +60,8 @@ export const SettlementsSection = () => {
       <div className="px-6 py-4">
         <Heading level="h2">Online payments</Heading>
         <Text size="small" className="text-ui-fg-subtle text-pretty">
-          Buyers pay Maretinda through GiyaPay. You are paid by bank transfer {holdDays} days after each order is delivered, so the
-          buyer's 7-day return period has passed. An open return holds that order until it is decided, and an approved return comes
-          off the amount. Amounts shown are after the 2.5% payment processing fee and ₱5 per payment.
+          Each online payment and where it is now. An approved return comes off the amount; amounts are after the 2.5% payment
+          processing fee and ₱5 per payment.
         </Text>
       </div>
 

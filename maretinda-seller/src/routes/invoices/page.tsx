@@ -2,6 +2,7 @@ import { Button, Container, Heading, StatusBadge, Table, Text, toast } from "@me
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { backendUrl, fetchQuery } from "../../lib/client/client"
+import { PayoutSteps } from "./payout-steps"
 import { SettlementsSection } from "./settlements-section"
 
 type Invoice = {
@@ -76,6 +77,7 @@ export const InvoicesPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      <PayoutSteps />
       <SettlementsSection />
       <Container className="p-0 divide-y">
         <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
