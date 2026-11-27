@@ -17,8 +17,8 @@ import {
 import { LabeledInput } from '@/components/cells';
 import { MaskedText, MorphButton, type MorphState } from '@/components/motion';
 import { AUTH_INPUT, PasswordField } from '@/components/organisms/AuthShell/PasswordField';
+import { PasswordHints } from '@/components/organisms/AuthShell/PasswordHints';
 import { CAPTCHA_SITE_KEY, CaptchaWidget } from '@/components/atoms/CaptchaWidget/CaptchaWidget';
-import { validatePassword } from '@/lib/helpers/password';
 import { signup } from '@/lib/data/customer';
 import { safeReturnTo } from '@/lib/helpers/safe-return-to';
 import { useLanguage } from '@/providers/LanguageProvider';
@@ -66,13 +66,6 @@ export const RegisterForm = () => {
 	);
 };
 
-const StrengthHint = ({ met, label }: { met: boolean; label: string }) => (
-	<span className={`flex items-center gap-1.5 text-[11.5px] transition-colors duration-300 ${met ? 'text-[#1F7A4D]' : 'text-[#ACACAC]'}`}>
-		<span className={`inline-block h-1.5 w-1.5 rounded-full transition-[background-color,transform] duration-300 ${met ? 'scale-125 bg-[#1F7A4D]' : 'bg-[#DCDCDC]'}`} />
-		{label}
-	</span>
-);
-
 const INPUT_CLASS = AUTH_INPUT;
 
 const Form = () => {
@@ -94,8 +87,6 @@ const Form = () => {
 	const [shake, setShake] = useState(0);
 
 	const password = watch('password') ?? '';
-	const passwordStrength = validatePassword(password);
-	const showStrength = password.length > 0;
 	const termsChecked = watch('terms');
 
 	const isLoading = isSubmitting || state !== 'idle' || google.busy;
@@ -243,14 +234,7 @@ const Form = () => {
 									{...register('password')}
 								/>
 
-								{showStrength && (
-									<div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-										<StrengthHint label="8+ chars" met={!passwordStrength.errors.tooShort} />
-										<StrengthHint label="Uppercase" met={!passwordStrength.errors.noUpper} />
-										<StrengthHint label="Lowercase" met={!passwordStrength.errors.noLower} />
-										<StrengthHint label="Symbol or digit" met={!passwordStrength.errors.noDigitOrSymbol} />
-									</div>
-								)}
+								<PasswordHints password={password} />
 
 							</div>
 

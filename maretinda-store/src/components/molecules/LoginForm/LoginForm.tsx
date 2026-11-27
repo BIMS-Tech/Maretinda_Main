@@ -195,7 +195,7 @@ export const LoginForm = () => {
 								/>
 								<PasswordField
 									aside={
-										<Link className="text-[12px] font-medium text-[#432C63]" href="/forgot-password">
+										<Link className="text-[12px] font-medium text-[#432C63]" href={`/forgot-password${watch('email') ? `?email=${encodeURIComponent(watch('email'))}` : ''}`}>
 											<span className="link-line">{s.forgotPassword}</span>
 										</Link>
 									}

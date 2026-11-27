@@ -37,9 +37,10 @@ test.describe('customer account (writes)', () => {
 
   test('ACC-04 forgot password sends the reset email', async ({ page }) => {
     await page.goto('/ph/forgot-password')
-    await page.getByLabel('E-mail').fill(buyer.email)
-    await page.getByRole('button', { name: 'Send Email' }).click()
-    await expect(page.getByText(/If an account with that email address exists/)).toBeVisible()
+    await page.locator('input[name="email"]').fill(buyer.email)
+    await page.getByRole('button', { name: 'Send reset link' }).click()
+    // The same answer whether or not the email has an account
+    await expect(page.getByTestId('reset-sent')).toContainText('a link to set a new password is on its way')
   })
 
   test('ACC-06 addresses: add, edit, delete', async ({ page }) => {
