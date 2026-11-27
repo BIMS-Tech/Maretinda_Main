@@ -1,220 +1,162 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert } from '@medusajs/ui';
+import { AnimatePresence } from 'motion/react';
+import * as m from 'motion/react-m';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import {
-	type FieldError,
-	type FieldValues,
-	FormProvider,
-	type UseFormReturn,
-	useForm,
-	useFormContext,
-} from 'react-hook-form';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 
-import { HideIcon } from '@/icons';
-import Spinner from '@/icons/spinner';
+import { Notice } from '@/components/molecules/LoginForm/LoginForm';
+import { EASE_OUT, MaskedText, MorphButton, type MorphState, SuccessMark } from '@/components/motion';
+import { PasswordField } from '@/components/organisms/AuthShell/PasswordField';
+import { PasswordHints } from '@/components/organisms/AuthShell/PasswordHints';
 import { updateCustomerPassword } from '@/lib/data/customer';
-import { validatePassword } from '@/lib/helpers/password';
+import { PASSWORD_RULE, validatePassword } from '@/lib/helpers/password';
 import { safeReturnTo } from '@/lib/helpers/safe-return-to';
+import { useLanguage } from '@/providers/LanguageProvider';
 
 import { type ResetPasswordFormData, resetPasswordSchema } from './schema';
 
-const INPUT_CLASS =
-	'border bg-white rounded-xl h-11 px-3.5 w-full text-[13.5px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus:border-[#432C63] focus:ring-2 focus:ring-[#432C63]/10';
-
-const EyeIcon = () => (
-	<svg fill="none" height={18} stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" width={18}>
-		<path
-			d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		/>
-		<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" />
-	</svg>
-);
-
+/** Sets a new password from the link in the reset email. */
 export const ResetPasswordForm = ({ token }: { token?: string }) => {
-	const methods = useForm<ResetPasswordFormData>({
+	const { t } = useLanguage();
+	const s = t.auth.reset;
+	const router = useRouter();
+	const params = useSearchParams();
+	const {
+		formState: { errors },
+		handleSubmit,
+		register,
+		setError: setFieldError,
+		watch,
+	} = useForm<ResetPasswordFormData>({
 		defaultValues: { confirmPassword: '', newPassword: '' },
 		resolver: zodResolver(resetPasswordSchema),
 	});
 
-	return (
-		<FormProvider {...methods}>
-			<Form form={methods} token={token} />
-		</FormProvider>
-	);
-};
+	const [state, setState] = useState<MorphState>('idle');
+	const [done, setDone] = useState(false);
+	// An expired link can't be fixed by typing again: point to a new one
+	const [linkProblem, setLinkProblem] = useState<string | null>(token ? null : s.linkMissing);
+	const [error, setError] = useState<string | null>(null);
+	const [shake, setShake] = useState(0);
 
-const Form = ({
-	form,
-	token,
-}: {
-	form: UseFormReturn<ResetPasswordFormData>;
-	token?: string;
-}) => {
-	const [confirmPasswordError, setConfirmPasswordError] = useState<FieldError | undefined>(undefined);
-	const [isSuccess, setIsSuccess] = useState(false);
-	const [showNewPassword, setShowNewPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [newPasswordError, setNewPasswordError] = useState({
-		'8chars': false,
-		isValid: false,
-		lower: false,
-		symbolOrDigit: false,
-		upper: false,
-	});
+	const password = watch('newPassword');
+	const signIn = safeReturnTo(params.get('returnTo'), '/login');
 
-	const password = form.watch('newPassword');
-
-	useEffect(() => {
-		const validation = validatePassword(password);
-		setNewPasswordError({
-			'8chars': validation.errors.tooShort,
-			isValid: validation.isValid,
-			lower: validation.errors.noLower,
-			symbolOrDigit: validation.errors.noDigitOrSymbol,
-			upper: validation.errors.noUpper,
-		});
-	}, [password]);
-
-	const {
-		handleSubmit,
-		register,
-		formState: { errors, isSubmitting },
-	} = useFormContext();
-
-	const router = useRouter();
-	const searchParams = useSearchParams();
-
-	const updatePassword = async (data: FieldValues) => {
-		if (form.getValues('confirmPassword') !== form.getValues('newPassword')) {
-			setConfirmPasswordError({ message: 'Passwords do not match', type: 'custom' } as FieldError);
+	const save = async ({ newPassword, confirmPassword }: ResetPasswordFormData) => {
+		setError(null);
+		if (!validatePassword(newPassword).isValid) {
+			setFieldError('newPassword', { message: PASSWORD_RULE });
+			setShake((n) => n + 1);
 			return;
 		}
-		setConfirmPasswordError(undefined);
-
-		if (newPasswordError.isValid) {
-			try {
-				const res = await updateCustomerPassword(data.newPassword, token!);
-				if (res.success) {
-					form.reset();
-					setIsSuccess(true);
-					setTimeout(() => {
-						router.push(safeReturnTo(searchParams.get('returnTo'), '/login'));
-					}, 5000);
-				}
-			} catch {
-				return;
-			}
+		if (newPassword !== confirmPassword) {
+			setFieldError('confirmPassword', { message: s.passwordsDiffer });
+			setShake((n) => n + 1);
+			return;
 		}
+		setState('busy');
+		const res = await updateCustomerPassword(newPassword, token!).catch(() => ({ error: s.resetFailed, success: false }));
+		if (!res?.success) {
+			setState('idle');
+			if (/expired|already used/i.test(String(res?.error))) setLinkProblem(s.linkExpired);
+			else setError(s.resetFailed);
+			setShake((n) => n + 1);
+			return;
+		}
+		setState('done');
+		setTimeout(() => setDone(true), 500);
+		setTimeout(() => router.push(signIn), 3200);
 	};
 
 	return (
-		<main className="min-h-[60vh] py-10 md:py-16" style={{ backgroundColor: '#FAF8F5' }}>
-			<div className="max-w-[440px] mx-auto px-4">
-				{/* Header */}
-				<div className="text-center mb-8">
-					<h1 className="font-serif text-[32px] tracking-[-0.01em] text-[#1B1B1B] mb-1.5">
-						Reset Password
+		<AnimatePresence initial={false} mode="wait">
+			{done ? (
+				<m.div animate={{ opacity: 1, x: 0 }} className="flex flex-col items-start" initial={{ opacity: 0, x: 24 }} key="done" transition={{ duration: 0.35, ease: EASE_OUT }}>
+					<SuccessMark className="mb-6" size={64} />
+					<h1 className="font-serif text-[34px] leading-[1.1] tracking-[-0.01em] text-[#1B1B1B]" data-testid="reset-done">
+						<MaskedText play text={s.resetDone} />
 					</h1>
-					{!isSuccess && (
-						<p className="text-[13.5px]" style={{ color: '#737373' }}>
-							Enter your new password below to complete the reset.
-						</p>
-					)}
-				</div>
+					<p className="rise-in mt-3 text-[14px] leading-relaxed text-[#404040]">{s.resetDoneText}</p>
+					<Link className="press mt-7 flex h-12 w-full items-center justify-center rounded-full bg-[#432C63] text-[14px] font-bold text-white hover:bg-[#372248]" href={signIn}>
+						{s.signInNow}
+					</Link>
+				</m.div>
+			) : linkProblem ? (
+				<m.div animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} initial={{ opacity: 0, x: 24 }} key="link" transition={{ duration: 0.35, ease: EASE_OUT }}>
+					<span className="pop-in mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#FDEEEE] text-[#A12B2B]">
+						<svg aria-hidden="true" fill="none" height="28" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" viewBox="0 0 24 24" width="28">
+							<path d="M10 14a3.5 3.5 0 005 0l3-3a3.5 3.5 0 00-5-5l-.5.5M14 10a3.5 3.5 0 00-5 0l-3 3a3.5 3.5 0 005 5l.5-.5M4 4l16 16" />
+						</svg>
+					</span>
+					<h1 className="font-serif text-[34px] leading-[1.1] tracking-[-0.01em] text-[#1B1B1B]">
+						<MaskedText play text={s.resetTitle} />
+					</h1>
+					<p className="rise-in mt-3 text-[14px] leading-relaxed text-[#404040]" data-testid="reset-link-problem">
+						{linkProblem}
+					</p>
+					<div className="mt-7 flex flex-col gap-2.5">
+						<Link className="press flex h-12 w-full items-center justify-center rounded-full bg-[#432C63] text-[14px] font-bold text-white hover:bg-[#372248]" href="/forgot-password">
+							{s.askNewLink}
+						</Link>
+						<Link className="flex h-12 w-full items-center justify-center rounded-full border border-[#EAE5F0] bg-white text-[14px] font-semibold text-[#432C63] hover:border-[#432C63]/40" href={signIn}>
+							{s.backToSignIn}
+						</Link>
+					</div>
+				</m.div>
+			) : (
+				<m.div animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} initial={{ opacity: 0, x: -24 }} key="form" transition={{ duration: 0.35, ease: EASE_OUT }}>
+					<h1 className="font-serif text-[38px] leading-[1.1] tracking-[-0.01em] text-[#1B1B1B]">
+						<MaskedText play text={s.resetTitle} />
+					</h1>
+					<p className="rise-in mb-7 mt-1.5 text-[13.5px] text-[#737373]">{s.resetDesc}</p>
 
-				<div className="bg-white rounded-2xl shadow-sm p-7" style={{ border: '1px solid #EDEAE3' }}>
-					{isSuccess ? (
-						<Alert variant="success">
-							Password updated! Redirecting to login page...
-						</Alert>
-					) : (
-						<form noValidate onSubmit={handleSubmit(updatePassword)}>
-							<div className="flex flex-col gap-4">
-								{/* New Password */}
-								<div className="flex flex-col gap-1">
-									<p className="text-[13px] font-semibold text-[#1B1B1B]">
-										New Password <span className="text-red-400">*</span>
-									</p>
-									<div className="relative">
-										<input
-											className={`${INPUT_CLASS} pr-10 ${errors.newPassword ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-											disabled={isSubmitting}
-											placeholder="••••••••"
-											type={showNewPassword ? 'text' : 'password'}
-											{...register('newPassword')}
-										/>
-										<button
-											className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-											style={{ color: '#9B9B9B' }}
-											onClick={() => setShowNewPassword((v) => !v)}
-											tabIndex={-1}
-											type="button"
-										>
-											{showNewPassword ? <HideIcon color="#9B9B9B" size={18} /> : <EyeIcon />}
-										</button>
-									</div>
-									{errors.newPassword && (
-										<p className="text-[11.5px] text-red-500 mt-0.5">
-											{(errors.newPassword as FieldError).message}
-										</p>
-									)}
-								</div>
+					<AnimatePresence>{error && <Notice key={error}>{error}</Notice>}</AnimatePresence>
 
-								{/* Confirm Password */}
-								<div className="flex flex-col gap-1">
-									<p className="text-[13px] font-semibold text-[#1B1B1B]">
-										Confirm New Password <span className="text-red-400">*</span>
-									</p>
-									<div className="relative">
-										<input
-											className={`${INPUT_CLASS} pr-10 ${confirmPasswordError ? 'border-red-400' : 'border-[#EDEAE3]'}`}
-											disabled={isSubmitting}
-											placeholder="••••••••"
-											type={showConfirmPassword ? 'text' : 'password'}
-											{...register('confirmPassword')}
-										/>
-										<button
-											className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-											style={{ color: '#9B9B9B' }}
-											onClick={() => setShowConfirmPassword((v) => !v)}
-											tabIndex={-1}
-											type="button"
-										>
-											{showConfirmPassword ? <HideIcon color="#9B9B9B" size={18} /> : <EyeIcon />}
-										</button>
-									</div>
-									{confirmPasswordError && (
-										<p className="text-[11.5px] text-red-500 mt-0.5">
-											{confirmPasswordError.message}
-										</p>
-									)}
-								</div>
-
-								{/* Password strength hint */}
-								{password.length > 0 && !newPasswordError.isValid && (
-									<p className="text-[11.5px] text-amber-600">
-										Password must be at least 8 characters with uppercase, lowercase, and a number or symbol.
-									</p>
-								)}
-
-								<button
-									className="w-full h-11 rounded-full text-[13.5px] font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center mt-1"
-									style={{ backgroundColor: '#432C63' }}
-									disabled={isSubmitting}
-									type="submit"
-								>
-									{isSubmitting ? <Spinner color="white" size={18} /> : 'Reset Password'}
-								</button>
+					<m.form animate={shake ? { x: [0, -7, 6, -4, 2, 0] } : undefined} noValidate onSubmit={handleSubmit(save)} transition={{ duration: 0.4 }}>
+						<div className="flex flex-col gap-4">
+							<div>
+								<PasswordField
+									autoComplete="new-password"
+									autoFocus
+									disabled={state !== 'idle'}
+									error={errors.newPassword?.message}
+									label={s.newPassword}
+									placeholder="••••••••"
+									{...register('newPassword')}
+								/>
+								<PasswordHints password={password} />
 							</div>
-						</form>
-					)}
-				</div>
-			</div>
-		</main>
+							<PasswordField
+								autoComplete="new-password"
+								disabled={state !== 'idle'}
+								error={errors.confirmPassword?.message}
+								label={s.confirmPassword}
+								placeholder="••••••••"
+								{...register('confirmPassword')}
+							/>
+							<MorphButton
+								busy={s.saving}
+								className="mt-1 flex h-12 w-full items-center justify-center rounded-full bg-[#432C63] text-[14px] font-bold text-white hover:bg-[#372248] disabled:opacity-70"
+								disabled={state !== 'idle'}
+								done={s.saved}
+								idle={s.saveBtn}
+								state={state}
+								type="submit"
+							/>
+						</div>
+					</m.form>
+
+					<p className="mt-7 text-center text-[13px] text-[#737373]">
+						<Link className="font-bold text-[#432C63]" href={signIn}>
+							<span className="link-line">← {s.backToSignIn}</span>
+						</Link>
+					</p>
+				</m.div>
+			)}
+		</AnimatePresence>
 	);
 };

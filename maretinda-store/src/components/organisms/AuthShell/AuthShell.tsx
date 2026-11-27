@@ -22,7 +22,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
 			<div className="mx-auto grid max-w-[1240px] gap-5 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-6 lg:py-10">
 				<section className="rise-in rounded-[28px] border border-[#EFEAF4] bg-white px-5 py-8 shadow-[0_20px_60px_-30px_rgba(67,44,99,0.35)] sm:px-10 lg:px-14 lg:py-12">
 					<div className="mx-auto w-full max-w-[420px]">
-						<Suspense fallback={<div className="h-11" />}>
+						<Suspense fallback={null}>
 							<Tabs />
 						</Suspense>
 						{children}
@@ -53,6 +53,8 @@ function Tabs() {
 	const params = useSearchParams();
 	const { locale } = useParams<{ locale: string }>();
 	const here = pathname.includes('/register') ? 'register' : 'login';
+	// Forgot and reset password share the page, not the choice between the two
+	if (!/\/(login|register)$/.test(pathname)) return null;
 	return (
 		<Segmented
 			className="mb-8"
