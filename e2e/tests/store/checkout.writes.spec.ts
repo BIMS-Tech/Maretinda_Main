@@ -74,7 +74,8 @@ test.describe('cart and checkout (writes)', () => {
     await addToCart(page, shirt.productId)
     await fillCheckoutAddress(page)
     // Before a method is chosen the summary must not claim shipping is free
-    await expect(page.getByText('Shipping').locator('..').getByText('Free', { exact: true })).toHaveCount(0)
+    // The summary's own row: each shop's "Shipping from …" choices list their prices, Free included
+    await expect(page.getByText('Shipping', { exact: true }).locator('..').getByText('Free', { exact: true })).toHaveCount(0)
 
     // ₱770 is over ₱499, so every option ships free
     for (const name of ['Regular Delivery', 'Standard Delivery', 'Express Delivery']) {
