@@ -1,7 +1,16 @@
-import { LuCheck, LuCircle } from 'react-icons/lu';
+import { LuCheck } from 'react-icons/lu';
 
 import { cn } from '@/lib/utils';
 
+/**
+ * Steps in a row: done ones filled in the brand purple with a tick, the
+ * current one ringed, later ones grey, joined by a line that fills as the
+ * order moves on. Reaching the last step counts as done.
+ *
+ * The steps share the width with flex, not with a grid-cols-N class built at
+ * runtime: Tailwind only ships classes written out in full, so those vanished
+ * and stacked the steps on top of each other.
+ */
 export const StepProgressBar = ({
 	steps,
 	currentStep,
@@ -9,66 +18,60 @@ export const StepProgressBar = ({
 	steps: string[];
 	currentStep: number;
 }) => {
-	const length = steps.length || 0;
+	const finished = currentStep >= steps.length - 1;
 
 	return (
-		<div className={`grid grid-cols-${length} h-[74px]`}>
-			{steps.map((step, index) => (
-				<div className="relative" key={step}>
-					<p
-						className={cn(
-							'text-center text-sm sm:text-base text-primary',
-							index <= currentStep
-								? '!font-bold'
-								: '!font-normal text-black/65',
-						)}
+		<ol
+			aria-label="Order progress"
+			className="flex w-full items-start"
+			data-step={currentStep}
+		>
+			{steps.map((step, index) => {
+				const done = index < currentStep || (finished && index === currentStep);
+				const current = index === currentStep && !done;
+				const reached = index <= currentStep;
+				return (
+					<li
+						aria-current={current ? 'step' : undefined}
+						className="relative flex flex-1 flex-col items-center text-center"
+						key={step}
 					>
-						{step}
-					</p>
-					<div className="absolute bottom-2 left-0 w-full flex items-center justify-center">
-						<div
+						{index > 0 && (
+							<span
+								aria-hidden
+								className={cn(
+									'absolute right-1/2 top-[13px] h-0.5 w-full',
+									reached ? 'bg-brandPurple' : 'bg-black/15',
+								)}
+							/>
+						)}
+						<span
 							className={cn(
-								'absolute left-0 w-1/2 border',
-								index <= currentStep
-									? 'border-[#0043CE]'
-									: 'border-[#C6C6C6]',
-							)}
-						/>
-						<div
-							className={cn(
-								'absolute left-1/2 w-1/2 border',
-								index + 1 <= currentStep
-									? 'border-[#0043CE]'
-									: 'border-[#C6C6C6]',
-								currentStep === steps.length - 1
-									? 'border-[#0043CE]'
-									: '',
-							)}
-						/>
-						<div
-							className={cn(
-								'flex items-center justify-center w-6 h-6 border rounded-full mx-auto z-10 bg-tertiary',
-								index <= currentStep
-									? 'bg-secondary border-[#0043CE]'
-									: 'bg-secondary border-[#C6C6C6]',
-								index + 1 <= currentStep &&
-									'bg-[#0043CE] border-[#0043CE]',
+								'relative z-10 flex size-7 items-center justify-center rounded-full border-2 transition-colors',
+								done
+									? 'border-brandPurple bg-brandPurple text-white'
+									: current
+										? 'border-brandPurple bg-white'
+										: 'border-black/20 bg-white',
 							)}
 						>
-							{index + 1 <= currentStep ? (
-								<LuCheck className="text-white" size={14} />
-							) : (
-								index <= currentStep && (
-									<LuCircle
-										className="bg-[#0043CE] rounded-full"
-										size={5}
-									/>
-								)
+							{done ? (
+								<LuCheck aria-hidden size={14} strokeWidth={3} />
+							) : current ? (
+								<span className="size-2.5 rounded-full bg-brandPurple" />
+							) : null}
+						</span>
+						<span
+							className={cn(
+								'mt-2 px-1 text-[12px] leading-tight sm:text-sm',
+								reached ? 'font-semibold text-brandPurple' : 'text-black/55',
 							)}
-						</div>
-					</div>
-				</div>
-			))}
-		</div>
+						>
+							{step}
+						</span>
+					</li>
+				);
+			})}
+		</ol>
 	);
 };
