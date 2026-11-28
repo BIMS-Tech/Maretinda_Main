@@ -1,6 +1,11 @@
+import { format } from 'date-fns';
+
 import { OrderCancel } from '@/components/cells/OrderCancel/OrderCancel';
 import { OrderReturn } from '@/components/cells/OrderReturn/OrderReturn';
 import { RequestCancellation } from '@/components/cells/RequestCancellation/RequestCancellation';
+import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
+import { account } from '@/lib/account-styles';
+import { RETURN_STATUS_LABELS } from '@/lib/returns-policy';
 
 /** Paid through GiyaPay: cancelling means a refund, so it goes through a request. */
 const paidOnline = (order: any) =>
@@ -8,7 +13,30 @@ const paidOnline = (order: any) =>
 		(pc.payments ?? []).some((p: any) => /giyapay/i.test(p.provider_id ?? '')),
 	);
 
-export const OrderParcelActions = ({ order }: { order: any }) => {
+/** A return already asked for on this order: where it stands, and the way to follow it. */
+const ReturnRequested = ({ request }: { request: any }) => {
+	const items = (request.line_items ?? []).reduce((n: number, l: any) => n + Number(l.quantity ?? 1), 0);
+	return (
+		<div className={`${account.panel} flex flex-col gap-4 md:flex-row md:items-center md:justify-between`} data-testid="return-requested">
+			<div>
+				<p className={account.panelTitle}>
+					Return {RETURN_STATUS_LABELS[request.status]?.toLowerCase() ?? request.status}
+				</p>
+				<p className={account.panelText}>
+					You asked to return {items} {items === 1 ? 'item' : 'items'} on{' '}
+					{format(new Date(request.created_at), 'd MMM yyyy')}. Follow it, answer the seller or send it back from your
+					return.
+				</p>
+			</div>
+			<LocalizedClientLink className={account.primaryButton} href={`/user/returns?return=${request.id}`}>
+				Follow your return
+			</LocalizedClientLink>
+		</div>
+	);
+};
+
+export const OrderParcelActions = ({ order, returnRequest }: { order: any; returnRequest?: any }) => {
+	if (returnRequest) return <ReturnRequested request={returnRequest} />;
 	// Until the seller starts on it; the backend makes the final call
 	if (
 		order.status !== 'canceled' &&

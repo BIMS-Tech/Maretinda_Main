@@ -78,7 +78,7 @@ export const Home = () => {
     ? [
         { label: "Seller applications", count: data.requests.seller_applications, to: "/requests/seller" },
         { label: "Documents to verify", count: data.requests.verifications, to: "/requests/seller-verification" },
-        { label: "Returns escalated by sellers", count: data.requests.returns_escalated, to: "/requests/return" },
+        { label: "Returns escalated by sellers", count: data.requests.returns_escalated, to: "/returns" },
         { label: "Product requests", count: data.requests.product_requests, to: "/requests/product" },
       ]
     : []

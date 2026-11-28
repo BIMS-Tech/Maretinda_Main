@@ -9,6 +9,8 @@ export const OrdersPagination = ({ pages }: { pages: number }) => {
 	const setPageHandler = (page: number) => {
 		setPage(`${page}`);
 	};
+	// One page needs no page numbers
+	if (pages <= 1) return null;
 	return (
 		<div className="mt-6 flex justify-center">
 			<Pagination

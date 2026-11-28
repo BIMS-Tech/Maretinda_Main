@@ -41,6 +41,7 @@ import { useSetupTasks } from "../../../hooks/api/setup-tasks"
 import { CompletionBar } from "../../common/completion-bar"
 import { usePlanLimits } from "../../../hooks/api/plan-limits"
 import { useChatConversations } from "../../../hooks/api/chat"
+import { useReturnCases } from "../../../hooks/api/return-cases"
 import { worksWithoutPlan } from "../../../lib/plan-routes"
 
 export const MainLayout = () => {
@@ -152,6 +153,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
 
   const { data: chatData } = useChatConversations()
   const unreadCount = chatData?.unread ?? 0
+  // Returns the seller has to act on: answer, receive or check
+  const { data: returnData } = useReturnCases()
+  const returnsWaiting = (returnData?.return_cases ?? []).filter((c) =>
+    ["seller_review", "in_transit", "inspecting"].includes(c.stage)
+  ).length
 
   return [
     {
@@ -170,6 +176,12 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
         //   to: "/draft-orders",
         // },
       ],
+    },
+    {
+      icon: <ArrowUturnLeft />,
+      label: "Returns",
+      to: "/requests/orders",
+      badge: returnsWaiting || undefined,
     },
     {
       icon: <Tag />,
@@ -280,10 +292,6 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           label: "Reviews",
           to: "/requests/reviews",
         },
-        {
-          label: "Returns",
-          to: "/requests/orders",
-        },
       ],
     },
   ]
@@ -368,12 +376,9 @@ const CoreRouteSection = ({ subscriptionActive }: { subscriptionActive: boolean 
   // Without a plan, only what still works: finishing orders and returns
   const routes = subscriptionActive
     ? coreRoutes
-    : [
-        ...coreRoutes
-          .filter((route) => worksWithoutPlan(route.to))
-          .map((route) => ({ ...route, items: route.items?.filter((item) => worksWithoutPlan(item.to)) })),
-        { icon: <ArrowUturnLeft />, label: "Return requests", to: "/requests/orders" },
-      ]
+    : coreRoutes
+        .filter((route) => worksWithoutPlan(route.to))
+        .map((route) => ({ ...route, items: route.items?.filter((item) => worksWithoutPlan(item.to)) }))
 
   return (
     <nav className="flex flex-col gap-y-1 py-3">

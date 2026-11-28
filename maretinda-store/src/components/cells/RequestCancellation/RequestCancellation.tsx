@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/atoms';
+import { account } from '@/lib/account-styles';
 import { Modal } from '@/components/molecules';
 import { RefundAccountFields } from '@/components/cells/RefundAccountFields/RefundAccountFields';
 import { requestCancellation } from '@/lib/data/returns';
@@ -33,15 +34,15 @@ export const RequestCancellation = ({ order }: { order: any }) => {
 
 	return (
 		<>
-			<div className="md:flex justify-between items-center">
-				<div className="mb-4 md:mb-0">
-					<h2 className="text-primary label-lg uppercase">Cancel order</h2>
-					<p className="text-secondary label-md max-w-sm">
+			<div className={`${account.panel} flex flex-col gap-4 md:flex-row md:items-center md:justify-between`}>
+				<div>
+					<h2 className={account.panelTitle}>Cancel this order</h2>
+					<p className={account.panelText}>
 						Paid online and not shipped yet? Ask us to cancel it. You get back what you paid, less the payment processing
 						fee.
 					</p>
 				</div>
-				<Button className="uppercase" onClick={() => setOpen(true)} variant="tonal">
+				<Button className={`${account.outlineButton} shrink-0`} onClick={() => setOpen(true)} variant="tonal">
 					Request cancellation
 				</Button>
 			</div>

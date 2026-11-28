@@ -127,7 +127,9 @@ export const getReturns = async () => {
 		.fetch<{
 			order_return_requests: Array<any>;
 		}>(`/store/return-request`, {
-			cache: 'force-cache',
+			// A buyer's returns change as they ask and as the shop answers;
+			// force-cache kept showing the list from before their request
+			cache: 'no-store',
 			headers,
 			method: 'GET',
 		})

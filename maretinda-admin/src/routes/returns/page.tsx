@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { api, CaseDetail, CaseRow, Cancellation, day, Evidence, Line, PAYOUT_METHODS, peso, privateFile, Refund, uploadReceipt, when } from "./api"
+import { api, CaseDetail, CaseRow, Cancellation, day, Evidence, Line, PAYOUT_METHODS, peso, privateFile, Refund, uploadReceipt, useReturnCounts, when } from "./api"
 
 const STAGE_COLOR: Record<string, "orange" | "red" | "blue" | "green" | "grey" | "purple"> = {
   escalated: "red",
@@ -486,17 +486,7 @@ const CancellationsTab = () => {
  * buyers' requests to cancel paid orders.
  */
 export const ReturnsPage = () => {
-  const counts = useQuery({
-    queryKey: ["admin", "returns", "counts"],
-    queryFn: async () => {
-      const [esc, due, cxl] = await Promise.all([
-        api<{ return_cases: CaseRow[] }>("/admin/return-cases?stage=escalated"),
-        api<{ refunds: Refund[] }>("/admin/refunds?status=due"),
-        api<{ cancellation_requests: Cancellation[] }>("/admin/cancellation-requests?status=pending"),
-      ])
-      return { escalated: esc.return_cases.length, due: due.refunds.length, cancel: cxl.cancellation_requests.length }
-    },
-  })
+  const counts = useReturnCounts()
   const n = (k: "escalated" | "due" | "cancel") => (counts.data?.[k] ? ` (${counts.data[k]})` : "")
   return (
     <Container className="p-0">

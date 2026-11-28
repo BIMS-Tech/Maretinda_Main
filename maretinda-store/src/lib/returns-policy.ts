@@ -32,3 +32,12 @@ export const longDate = (d: string | null | undefined) =>
 
 export const shortDate = (d: string | null | undefined) =>
 	d ? new Date(d).toLocaleDateString('en-PH', { day: 'numeric', month: 'long', timeZone: 'Asia/Manila', year: 'numeric' }) : '';
+
+/** A return request's status, in the buyer's words (the case on the order page has the detail). */
+export const RETURN_STATUS_LABELS: Record<string, string> = {
+	canceled: 'Not approved',
+	escalated: 'Maretinda is deciding',
+	pending: 'Requested',
+	refunded: 'Approved',
+	withdrawn: 'Disputed by the seller',
+};

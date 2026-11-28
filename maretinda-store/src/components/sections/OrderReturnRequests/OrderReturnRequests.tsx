@@ -42,9 +42,10 @@ export const OrderReturnRequests = ({
 
 	return (
 		<div>
-			{processedReturns.map((item) => (
+			{processedReturns.map((item, index) => (
 				<SingleOrderReturn
-					defaultOpen={currentReturn === item.id}
+					// The one linked to, or else the newest, so its next step shows straight away
+					defaultOpen={currentReturn ? currentReturn === item.id : offset === 0 && index === 0}
 					item={item}
 					key={item.id}
 					user={user}

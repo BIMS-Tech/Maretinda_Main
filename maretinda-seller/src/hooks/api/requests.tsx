@@ -181,14 +181,19 @@ export const useOrderReturnRequests = (
     ...options,
   })
 
-  let processedData = data?.order_return_request
+  // The endpoint takes no paging or order and answers oldest first, which put
+  // a new request on the last page: newest first, paged here
+  const newestFirst = [...(data?.order_return_request ?? [])].sort(
+    (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+  let processedData = newestFirst
 
   if (query?.limit) {
-    processedData = data?.order_return_request.slice(0, Number(query.limit))
+    processedData = newestFirst.slice(0, Number(query.limit))
   }
 
   if (query?.offset) {
-    processedData = data?.order_return_request.slice(
+    processedData = newestFirst.slice(
       Number(query.offset),
       Number(query.offset) + Number(query.limit)
     )

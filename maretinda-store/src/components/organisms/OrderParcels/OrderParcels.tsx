@@ -4,49 +4,54 @@ import { OrderParcelActions } from '@/components/molecules/OrderParcelActions/Or
 import { OrderParcelItems } from '@/components/molecules/OrderParcelItems/OrderParcelItems';
 import { OrderParcelStatus } from '@/components/molecules/OrderParcelStatus/OrderParcelStatus';
 import { OrderTracking } from '@/components/molecules/OrderTracking/OrderTracking';
+import { account } from '@/lib/account-styles';
 import { retrieveCustomer } from '@/lib/data/customer';
+import { getReturns } from '@/lib/data/orders';
 
 import { Chat } from '../Chat/Chat';
 
 export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 	const user = await retrieveCustomer();
+	// The buyer's return requests, to show each order's next to it
+	const returns: any[] = await getReturns()
+		.then((r: any) => r?.order_return_requests ?? [])
+		.catch(() => []);
+	const latestReturn = (orderId: string) =>
+		returns
+			.filter((r) => (r.order?.id ?? r.order_id) === orderId)
+			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
 	return (
 		<>
 			{orders.map((order, index) => (
-				<div
-					className="w-full mb-8 shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border rounded-t-[23px] rounded-b-sm overflow-hidden border-black/15"
-					key={order.id}
-				>
-					<div className="text-base font-bold text-primary border-b border-b-black/15 bg-brandPurpleLighten py-4 px-6 gap-5 md:gap-10 w-full shadow">
-						Order {index + 1}
-					</div>
-					<div className="py-8 px-3 sm:px-5">
-						<div className="">
-							<OrderParcelStatus order={order} />
+				<article className={`${account.card} mb-8`} data-testid="parcel" key={order.id}>
+					<header className={`${account.cardHead} flex flex-wrap items-center justify-between gap-3`}>
+						<div className="flex min-w-0 items-center gap-3">
+							<Avatar
+								className="!size-10 shrink-0 !rounded-full bg-[#EAE5F0]"
+								src={order.seller.photo}
+							/>
+							<div className="min-w-0">
+								<p className={account.eyebrow}>
+									{orders.length > 1 ? `Parcel ${index + 1} of ${orders.length} · from` : 'From'}
+								</p>
+								<p className={`${account.title} truncate`}>{order.seller.name}</p>
+							</div>
 						</div>
+						<Chat
+							buttonClassNames={`${account.outlineButton} !h-auto !normal-case`}
+							order_id={order.id}
+							seller={order.seller}
+							user={user}
+							variant="tonal"
+						/>
+					</header>
+					<div className="px-4 py-6 sm:px-6">
+						<OrderParcelStatus order={order} />
 						<div className="pt-4">
 							<OrderTracking orderId={order.id} />
 						</div>
-						<div className="pt-8 pb-6 border-b md:flex items-center justify-between">
-							<div className="flex items-center gap-4 mb-4 md:mb-0">
-								<Avatar
-									className="bg-[#FFEDD5] !rounded-full !w-[60px] !h-[60px]"
-									src={order.seller.photo}
-								/>
-								<p className="text-primary label-xl !font-semibold">
-									{order.seller.name}
-								</p>
-							</div>
-							<Chat
-								buttonClassNames="text-[13px] !font-medium flex items-center gap-2 py-2.5"
-								order_id={order.id}
-								seller={order.seller}
-								user={user}
-								variant="filled"
-							/>
-						</div>
-						<div className="py-6">
+						<div className="mt-6 border-t border-[#EAE5F0] pt-6">
 							<OrderParcelItems
 								currency_code={order.currency_code}
 								items={order.items}
@@ -54,19 +59,19 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 						</div>
 						<div className="pb-2">
 							<a
-								className="text-[13px] font-medium underline text-primary"
+								className="text-[13px] font-medium text-[#432C63] underline underline-offset-2 hover:text-[#372248]"
 								download
 								href={`/api/orders/${order.id}/invoice`}
 							>
 								Download order summary (PDF)
 							</a>
 						</div>
-						<div className="pt-4 pb-0">
-							<OrderParcelActions order={order} />
+						<div className="pt-5">
+							<OrderParcelActions order={order} returnRequest={latestReturn(order.id)} />
 							<OrderRefunds orderId={order.id} />
 						</div>
 					</div>
-				</div>
+				</article>
 			))}
 		</>
 	);

@@ -46,6 +46,7 @@ import {
   useNavBadges,
   usePendingRequestCounts,
 } from "../../../hooks/use-nav-badges";
+import { useReturnCounts } from "../../../routes/returns/api";
 
 export const MainLayout = () => {
   useMarkSectionSeenOnVisit();
@@ -198,6 +199,8 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
   const { t } = useTranslation();
   const badges = useNavBadges();
   const requestCounts = usePendingRequestCounts();
+  // Escalated returns, refunds to send and cancellation requests
+  const { data: returnCounts } = useReturnCounts();
   // Owner-only pages are hidden from other roles (the API refuses them anyway)
   const { data: access } = useMyAccess();
   const isOwner = !access || access.role === "owner";
@@ -333,6 +336,7 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
       icon: <ArrowUturnLeft />,
       label: "Returns & Refunds",
       to: "/returns",
+      badge: returnCounts?.total || undefined,
     },
     {
       icon: <DocumentText />,
@@ -393,10 +397,6 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
         {
           label: t("requests.product-update"),
           to: "/requests/product-update",
-        },
-        {
-          label: t("requests.return"),
-          to: "/requests/return",
         },
         {
           label: t("requests.product-category"),

@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query"
+
 import { backendUrl, sdk } from "../../lib/client"
 
 export type Line = { label: string; amount: number }
@@ -129,3 +131,27 @@ export async function uploadReceipt(file: File): Promise<string> {
 }
 
 export const PAYOUT_METHODS: Record<string, string> = { gcash: "GCash", maya: "Maya", bank: "Bank (InstaPay)" }
+
+/**
+ * What waits for the team: escalated returns to decide, refunds to send and
+ * cancellation requests. Shared by the page's tabs and the menu badge. Roles
+ * that can't see returns or refunds get nothing rather than an error.
+ */
+export const useReturnCounts = () =>
+  useQuery({
+    queryKey: ["admin", "returns", "counts"],
+    queryFn: async () => {
+      const count = async (path: string, key: string) =>
+        api<Record<string, unknown[]>>(path)
+          .then((r) => (r[key] ?? []).length)
+          .catch(() => 0)
+      const [escalated, due, cancel] = await Promise.all([
+        count("/admin/return-cases?stage=escalated", "return_cases"),
+        count("/admin/refunds?status=due", "refunds"),
+        count("/admin/cancellation-requests?status=pending", "cancellation_requests"),
+      ])
+      return { escalated, due, cancel, total: escalated + due + cancel }
+    },
+    staleTime: 60_000,
+    retry: false,
+  })

@@ -42,7 +42,7 @@ test.describe('returns (writes)', () => {
     await store.getByRole('link', { name: 'View Order' }).first().click()
     await expect(store).toHaveURL(/\/user\/orders\/ordset_/)
     const orderPage = store.url()
-    await store.locator('main').getByRole('button', { name: 'Return', exact: true }).click()
+    await store.locator('main').getByRole('link', { name: 'Ask for a return' }).click()
     const form = store.getByTestId('return-form')
     await expect(form).toBeVisible({ timeout: 60_000 })
     await form.locator('input[type=checkbox]').first().check()
@@ -89,8 +89,9 @@ test.describe('returns (writes)', () => {
     await expect(admin.getByRole('row').filter({ hasText: reference })).toBeVisible({ timeout: 60_000 })
     await admin.context().close()
 
-    // The buyer sees the reference on the order
+    // The order shows the return, and its refund's reference once sent
     await store.goto(orderPage)
+    await expect(store.getByTestId('return-requested')).toBeVisible({ timeout: 60_000 })
     await expect(store.getByTestId('order-refunds')).toContainText(`Reference number: ${reference}`, { timeout: 60_000 })
     await store.close()
   })

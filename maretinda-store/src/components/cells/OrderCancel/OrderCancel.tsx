@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/atoms';
+import { account } from '@/lib/account-styles';
 import { Modal } from '@/components/molecules';
 import { cancelOrder } from '@/lib/data/orders';
 
@@ -28,18 +29,16 @@ export const OrderCancel = ({ order }: { order: any }) => {
 
 	return (
 		<>
-			<div className="md:flex justify-between items-center">
-				<div className="mb-4 md:mb-0">
-					<h2 className="text-primary label-lg uppercase">
-						Cancel Order
-					</h2>
-					<p className="text-secondary label-md max-w-sm">
+			<div className={`${account.panel} flex flex-col gap-4 md:flex-row md:items-center md:justify-between`}>
+				<div>
+					<h2 className={account.panelTitle}>Cancel this order</h2>
+					<p className={account.panelText}>
 						You can cancel this order until the seller begins
 						preparing it for shipment.
 					</p>
 				</div>
 				<Button
-					className="uppercase"
+					className={`${account.outlineButton} shrink-0`}
 					onClick={() => setOpen(true)}
 					variant="tonal"
 				>

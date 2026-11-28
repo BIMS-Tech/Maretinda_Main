@@ -1,20 +1,18 @@
-// import { format } from 'date-fns';
+import { format } from 'date-fns';
 
-import { Button } from '@/components/atoms';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-
-// import { convertToLocale } from '@/lib/helpers/money';
-
+import { account } from '@/lib/account-styles';
 import { convertToLocale } from '@/lib/helpers/money';
 
 import { ParcelAccordionItems } from './ParcelAccordionItems';
 
+/** One checkout on the Orders list: its number, date and total, then a row per shop. */
 export const ParcelAccordion = ({
 	orderId,
 	orderDisplayId,
 	createdAt,
 	total,
-	currency_code = 'eur',
+	currency_code = 'php',
 	orders,
 }: {
 	orderId: string;
@@ -24,65 +22,32 @@ export const ParcelAccordion = ({
 	currency_code?: string;
 	orders: any[];
 	defaultOpen?: boolean;
-}) => {
-	return (
-		<div className="shadow-[0px_4px_6px_-6px_rgba(0,_0,_0,_0.25)] border rounded-t-[23px] rounded-b-sm overflow-hidden border-black/15">
-			<div className="flex flex-col sm:flex-row ms:items-center text-secondary border-b border-b-black/15 bg-brandPurpleLighten py-4 px-6 gap-5 md:gap-10 w-full">
-				<div className="flex-1 w-full flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-4">
-					<div className="flex justify-start lg:w-[22%]">
-						<h2 className="label-lg text-black">
-							{/* ORDER {orderDisplayId} */}
-							Order ID
-						</h2>
-					</div>
-					<div className="flex justify-start lg:w-[36%]">
-						<h2 className="label-lg text-black">
-							{/* Order date:{' '}
-						<span className="text-primary lg:block xl:inline-block">
-							{format(createdAt || '', 'yyyy-MM-dd')}
-						</span> */}
-							Product Name
-						</h2>
-					</div>
-					<div className="flex lg:justify-end lg:w-[20%]">
-						<h2 className="label-lg text-black">
-							{/* Total:{' '}
-						<span className="text-primary lg:block xl:inline-block">
-							{convertToLocale({ amount: total, currency_code })}
-						</span> */}
-							Total Price
-						</h2>
-					</div>
-					<div className="flex lg:justify-end lg:w-[20%]">
-						<h2 className="label-lg text-black">Status</h2>
-					</div>
-				</div>
-
-				<div className="lg:w-[14%] flex lg:justify-end items-center gap-4">
-					<LocalizedClientLink href={`/user/orders/${orderId}`}>
-						<Button className="min-w-[90px] capitalize text-[13px] !font-medium p-2.5">
-							View Order
-						</Button>
-					</LocalizedClientLink>
-				</div>
+}) => (
+	<article className={account.card} data-testid="order-card">
+		<header className={`${account.cardHead} flex flex-wrap items-center gap-x-8 gap-y-3`}>
+			<div>
+				<p className={account.eyebrow}>Order</p>
+				<p className={account.title}>{orderDisplayId}</p>
 			</div>
-			<div className="py-2">
-				<ul className="w-full">
-					{orders.map((order, index) => (
-						<ParcelAccordionItems
-							currency_code={currency_code}
-							index={index + 1}
-							key={order.id}
-							order={order}
-							orderDisplayId={orderDisplayId}
-							totalPrice={convertToLocale({
-								amount: total,
-								currency_code,
-							})}
-						/>
-					))}
-				</ul>
+			<div>
+				<p className={account.eyebrow}>Placed</p>
+				<p className="text-[14px] text-[#1B1B1B]">{createdAt ? format(new Date(createdAt), 'd MMM yyyy') : '—'}</p>
 			</div>
-		</div>
-	);
-};
+			<div>
+				<p className={account.eyebrow}>Total</p>
+				<p className="text-[14px] font-semibold text-[#1B1B1B]">{convertToLocale({ amount: total, currency_code })}</p>
+			</div>
+			<LocalizedClientLink className={`${account.primaryButton} ml-auto`} href={`/user/orders/${orderId}`}>
+				View order
+				<svg aria-hidden="true" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" viewBox="0 0 24 24" width="14">
+					<path d="M5 12h14M13 5l7 7-7 7" />
+				</svg>
+			</LocalizedClientLink>
+		</header>
+		<ul className="divide-y divide-[#EAE5F0]">
+			{orders.map((order) => (
+				<ParcelAccordionItems currency_code={currency_code} key={order.id} order={order} orderId={orderId} />
+			))}
+		</ul>
+	</article>
+);
