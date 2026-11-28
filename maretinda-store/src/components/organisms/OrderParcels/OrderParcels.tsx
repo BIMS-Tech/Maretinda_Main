@@ -1,6 +1,6 @@
 import { Avatar } from '@/components/atoms';
 import { OrderRefunds } from '@/components/cells/OrderRefunds/OrderRefunds';
-import { OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
+import { askedAt, OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
 import { OrderParcelItems } from '@/components/molecules/OrderParcelItems/OrderParcelItems';
 import { OrderParcelStatus } from '@/components/molecules/OrderParcelStatus/OrderParcelStatus';
 import { OrderTracking } from '@/components/molecules/OrderTracking/OrderTracking';
@@ -19,7 +19,7 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 	const latestReturn = (orderId: string) =>
 		returns
 			.filter((r) => (r.order?.id ?? r.order_id) === orderId)
-			.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+			.sort((a, b) => (askedAt(b)?.getTime() ?? 0) - (askedAt(a)?.getTime() ?? 0))[0];
 
 	return (
 		<>

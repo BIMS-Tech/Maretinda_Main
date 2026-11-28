@@ -14,8 +14,15 @@ const paidOnline = (order: any) =>
 	);
 
 /** A return already asked for on this order: where it stands, and the way to follow it. */
+/** When a return was asked for: the store's list leaves the request's own date out, its lines carry it. */
+export const askedAt = (request: any): Date | null => {
+	const d = new Date(request?.created_at ?? request?.line_items?.[0]?.created_at ?? NaN);
+	return Number.isNaN(d.getTime()) ? null : d;
+};
+
 const ReturnRequested = ({ request }: { request: any }) => {
 	const items = (request.line_items ?? []).reduce((n: number, l: any) => n + Number(l.quantity ?? 1), 0);
+	const asked = askedAt(request);
 	return (
 		<div className={`${account.panel} flex flex-col gap-4 md:flex-row md:items-center md:justify-between`} data-testid="return-requested">
 			<div>
@@ -23,8 +30,8 @@ const ReturnRequested = ({ request }: { request: any }) => {
 					Return {RETURN_STATUS_LABELS[request.status]?.toLowerCase() ?? request.status}
 				</p>
 				<p className={account.panelText}>
-					You asked to return {items} {items === 1 ? 'item' : 'items'} on{' '}
-					{format(new Date(request.created_at), 'd MMM yyyy')}. Follow it, answer the seller or send it back from your
+					You asked to return {items} {items === 1 ? 'item' : 'items'}
+					{asked ? ` on ${format(asked, 'd MMM yyyy')}` : ''}. Follow it, answer the seller or send it back from your
 					return.
 				</p>
 			</div>

@@ -31,7 +31,7 @@ export const ParcelAccordion = ({
 			</div>
 			<div>
 				<p className={account.eyebrow}>Placed</p>
-				<p className="text-[14px] text-[#1B1B1B]">{createdAt ? format(new Date(createdAt), 'd MMM yyyy') : '—'}</p>
+				<p className="text-[14px] text-[#1B1B1B]">{createdAt && !Number.isNaN(new Date(createdAt).getTime()) ? format(new Date(createdAt), 'd MMM yyyy') : '—'}</p>
 			</div>
 			<div>
 				<p className={account.eyebrow}>Total</p>

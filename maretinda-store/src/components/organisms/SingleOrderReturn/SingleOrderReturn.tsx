@@ -45,7 +45,8 @@ export const SingleOrderReturn = ({
 		.filter((r: any) => r.orderItem);
 	const count = returned.reduce((n: number, r: any) => n + Number(r.line.quantity ?? 1), 0);
 	const total = returned.reduce((sum: number, r: any) => sum + Number(r.orderItem.unit_price ?? 0) * Number(r.line.quantity ?? 1), 0);
-	const askedOn = item.created_at ?? item.line_items?.[0]?.created_at;
+	const asked = new Date(item.created_at ?? item.line_items?.[0]?.created_at ?? NaN);
+	const askedOn = Number.isNaN(asked.getTime()) ? null : asked;
 
 	return (
 		<article className={`${account.card} mb-5`} data-status={item.status} data-testid="return-card">
@@ -61,7 +62,7 @@ export const SingleOrderReturn = ({
 				</span>
 				<span>
 					<span className={`${account.eyebrow} block`}>Asked</span>
-					<span className="text-[14px] text-[#1B1B1B]">{askedOn ? format(new Date(askedOn), 'd MMM yyyy') : '—'}</span>
+					<span className="text-[14px] text-[#1B1B1B]">{askedOn ? format(askedOn, 'd MMM yyyy') : '—'}</span>
 				</span>
 				<span>
 					<span className={`${account.eyebrow} block`}>{count === 1 ? '1 item' : `${count} items`}</span>
