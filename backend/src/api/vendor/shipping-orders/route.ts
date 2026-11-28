@@ -27,6 +27,10 @@ import {
   FlyingTigersAddress,
   coveredProvince,
   getFlyingTigersCoveredProvinces,
+  getFlyingTigersBarangays,
+  matchFlyingTigersBarangay,
+  resolveFlyingTigersArea,
+  cityNotCoveredMessage,
 } from '../../../services/flyingtigers'
 import { toPhMobile } from '../../../lib/ph-mobile'
 import { sellerOwnsOrder } from '../../../lib/seller-ownership'
@@ -371,7 +375,37 @@ export const POST = async (req: AuthenticatedMedusaRequest, res: MedusaResponse)
               })
             }
             norm.province = hit.provinceLabel
-            ftRaw[side].provinceCode ??= hit.provinceCode
+            ftRaw[side].provinceCode = hit.provinceCode
+
+            // Flying Tigers books by city too, from its own list: "Metro Manila"
+            // or "Manila" alone isn't a city it can deliver to
+            const raw = ftRaw[side]
+            const typedCity = raw.cityLabel ?? norm.city
+            const typedBarangay = raw.barangayLabel ?? raw.barangay_label ?? norm.barangay
+            const area = await resolveFlyingTigersArea(hit, raw.cityCode ? null : typedCity, typedBarangay).catch(() => null)
+            if (!area) continue // the lists didn't load: send the names and let Flying Tigers match them
+            const chosen = raw.cityCode ? area.cities.find((c) => c.cityCode === String(raw.cityCode)) ?? null : area.city
+            if (!chosen) {
+              return res.status(400).json({
+                code: 'courier_city_not_covered',
+                side,
+                message: cityNotCoveredMessage(side === 'from' ? 'sender' : 'recipient', hit, typedCity, area.cities),
+              })
+            }
+            norm.city = chosen.cityLabel
+            raw.cityCode = chosen.cityCode
+            if (raw.barangayCode) continue
+            // A barangay Flying Tigers doesn't list is left out rather than refused
+            const barangay =
+              area.city?.cityCode === chosen.cityCode
+                ? area.barangay
+                : typedBarangay
+                  ? matchFlyingTigersBarangay(typedBarangay, await getFlyingTigersBarangays(chosen.cityCode).catch(() => []))
+                  : null
+            raw.barangayCode = barangay?.barangayCode
+            raw.barangayLabel = barangay?.barangayLabel
+            raw.barangay_label = undefined
+            norm.barangay = barangay?.barangayLabel
           }
         }
 
