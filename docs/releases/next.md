@@ -34,8 +34,37 @@
   email typed on sign-in carried over, a "Check your email" view with Send
   again after 30 seconds, a live password checklist, and a clear message
   when a reset link is incomplete, expired or already used. English and
-  Filipino. Storefront only (commit ca5662af): it can be cherry-picked to
-  `production` on its own if it should go live before the returns work.
+  Filipino. Storefront only (commit ca5662af). Cherry-picked to
+  `production` on 28 November (3c0b4b25).
+
+## Also cherry-picked to production on 28 November
+
+None of these touch the returns work, so they went live without it.
+
+- **Account button.** Signed out, it goes straight to sign-in; the hover menu
+  only repeated what that page offers and opened over the search bar. Signed
+  in, the menu opens under the button, towards the icons beside it.
+- **Confirming an email in another browser or on another phone.** The confirm
+  page used to say "You can now place orders" and offer the cart to a browser
+  that wasn't signed in. It now asks to sign in with that email (filled in),
+  or says which account the browser is signed in to. The link still doesn't
+  sign anyone in. Where the buyer is signed in, the "confirm your email" notice
+  at checkout and on the account page picks up the confirmation within about
+  10 seconds, without a reload.
+- **Plans (owner's decision, 28 November).** The first month is free on
+  **Growth only**. Starter (₱499 a month) and Premium (₱3,999) are paid from
+  the first day. Trials already running keep their end date. The **AI seller
+  agent** is a Premium feature, shown as coming soon; the separate Enterprise
+  card is gone from the seller panel. The seller website shows the real
+  prices, monthly and yearly (₱4,990 / ₱14,990 / ₱39,990). Storefront,
+  seller panel, approval email, help center, chat answers and assistant
+  knowledge all say the same.
+  - Migration `1771900000000_growth_first_month_free` runs on deploy: trial
+    days 30 on Growth and 0 on Starter and Premium, and `ai_agent:
+    "coming_soon"` in Premium's features. An admin can still change trial
+    days in Admin → Subscriptions.
+  - Where the support assistant is switched on, re-run `assistant:index`:
+    its plan knowledge changed.
 
 ## Before production
 
