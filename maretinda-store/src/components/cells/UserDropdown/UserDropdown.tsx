@@ -99,7 +99,7 @@ export const UserDropdown = ({
 
 			<Dropdown
 				// Under the button, opening towards the icons beside it rather than over the search bar
-				className="max-lg:!hidden !right-auto !left-0 !origin-top-left !bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-2 !w-[220px] before:absolute before:-top-[7px] before:left-[30px] before:h-3 before:w-3 before:rotate-45 before:rounded-[2px] before:border-l before:border-t before:border-[#EDEAE3] before:bg-white"
+				className="max-lg:!hidden !right-auto !left-0 !origin-top-left !bg-white !text-[#1B1B1B] !rounded-2xl !shadow-2xl !border !border-[#EDEAE3] top-full mt-2 !w-[220px]"
 				show={open}
 			>
 				<div className="py-2">
