@@ -9,7 +9,10 @@ import { getAuthHeaders } from './cookies';
 
 /** The buyer's own address, so the backend's rate limits apply per buyer, not to the whole store. */
 const buyerAddress = async () =>
-	forwardedAuthHeaders(await requestHeaders(), process.env.STORE_SERVER_SECRET);
+	forwardedAuthHeaders(
+		await requestHeaders(),
+		process.env.STORE_SERVER_SECRET,
+	);
 
 export type EmailVerification = {
 	email: string | null;
@@ -52,7 +55,11 @@ export async function resendEmailVerification(): Promise<{
 			method: 'POST',
 		});
 		if (res.verified) {
-			return { message: 'Your email is already confirmed.', ok: true, verified: true };
+			return {
+				message: 'Your email is already confirmed.',
+				ok: true,
+				verified: true,
+			};
 		}
 		return res.sent
 			? {
@@ -60,16 +67,25 @@ export async function resendEmailVerification(): Promise<{
 					ok: true,
 				}
 			: {
-					message: "We couldn't send the email just now. Please try again in a few minutes.",
+					message:
+						"We couldn't send the email just now. Please try again in a few minutes.",
 					ok: false,
 				};
 	} catch (error) {
-		return { message: messageOf(error, 'Something went wrong. Please try again.'), ok: false };
+		return {
+			message: messageOf(
+				error,
+				'Something went wrong. Please try again.',
+			),
+			ok: false,
+		};
 	}
 }
 
 /** Uses the link from the confirmation email. */
 export async function confirmEmail(token: string): Promise<{
+	already?: boolean;
+	email?: string;
 	kind?: 'customer' | 'seller_application';
 	message: string;
 	ok: boolean;
@@ -85,6 +101,8 @@ export async function confirmEmail(token: string): Promise<{
 			method: 'POST',
 		});
 		return {
+			already: res.already,
+			email: res.email,
 			kind: res.kind,
 			message: res.already
 				? `${res.email} was already confirmed.`
@@ -92,6 +110,12 @@ export async function confirmEmail(token: string): Promise<{
 			ok: true,
 		};
 	} catch (error) {
-		return { message: messageOf(error, "We couldn't confirm your email. Please try again."), ok: false };
+		return {
+			message: messageOf(
+				error,
+				"We couldn't confirm your email. Please try again.",
+			),
+			ok: false,
+		};
 	}
 }

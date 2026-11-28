@@ -8,7 +8,7 @@ import { confirmBuyerEmail, expect, registerBuyer, test, writesAllowed } from '.
 test.describe('email confirmation (writes)', () => {
   test.skip(!writesAllowed, 'set E2E_ALLOW_WRITES=1 to run')
 
-  test('EV-01 a new buyer is asked to confirm, can resend, and the notice goes once confirmed', async ({ page }) => {
+  test('EV-01 a new buyer is asked to confirm, can resend, and the notice goes once confirmed elsewhere', async ({ page }) => {
     const buyer = await registerBuyer(page, 'verify', { confirmEmail: false })
     await page.goto('/ph/user')
     const notice = page.getByTestId('email-verification-notice')
@@ -17,10 +17,16 @@ test.describe('email confirmation (writes)', () => {
     await page.getByTestId('email-verification-resend').click()
     await expect(notice).toContainText(/We sent a new link to/, { timeout: 30_000 })
 
+    // Not confirmed yet: checking says so
+    await notice.getByRole('button', { name: "I've confirmed it" }).click()
+    await expect(notice).toContainText("It isn't confirmed yet", { timeout: 30_000 })
+
+    // Confirmed somewhere else (another browser or phone): this page catches up by itself
     await confirmBuyerEmail(page.request, buyer.email)
-    await page.reload()
-    await expect(page.getByRole('heading', { name: 'Welcome, E2E' })).toBeVisible()
+    await expect(page.getByTestId('email-verification-confirmed')).toBeVisible({ timeout: 30_000 })
     await expect(page.getByTestId('email-verification-notice')).toHaveCount(0)
+    await expect(page.getByTestId('email-verification-confirmed')).toHaveCount(0, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'Welcome, E2E' })).toBeVisible()
   })
 
   test('EV-02 a broken confirmation link says so', async ({ page }) => {
