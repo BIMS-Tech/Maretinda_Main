@@ -28,6 +28,15 @@
   left after 14 days comes from its security deposit (off until
   `SELLER_SECURITY_DEPOSIT_MIN` is set).
 
+## Forgot and reset password pages (on test from 28 November)
+
+- Both pages now match sign-in and sign-up: the same card and fields, an
+  email typed on sign-in carried over, a "Check your email" view with Send
+  again after 30 seconds, a live password checklist, and a clear message
+  when a reset link is incomplete, expired or already used. English and
+  Filipino. Storefront only (commit ca5662af): it can be cherry-picked to
+  `production` on its own if it should go live before the returns work.
+
 ## Before production
 
 1. Owner finalises the policy: deposit amount, processing fee
