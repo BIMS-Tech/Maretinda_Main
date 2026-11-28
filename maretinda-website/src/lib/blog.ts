@@ -24,7 +24,7 @@ export interface BlogPost {
 export const posts: BlogPost[] = [
   {
     slug: "how-subscription-pricing-works",
-    title: "How Maretinda's seller subscription works — and why your first month is free",
+    title: "How Maretinda's seller subscription works, and the free first month on Growth",
     excerpt:
       "No commissions, no listing fees. Just one simple subscription that unlocks everything you need to sell across the Philippines.",
     category: "Pricing",
@@ -43,10 +43,14 @@ export const posts: BlogPost[] = [
         type: "paragraph",
         text: "Most marketplaces deduct a percentage from each order on top of payment fees. On Maretinda there is no per-sale commission and no listing fee. You pick a plan, list your products, and every peso from a sale (minus standard payment processing) is yours.",
       },
-      { type: "heading", text: "Your first month is on us" },
+      { type: "heading", text: "Three plans, one free month" },
       {
         type: "paragraph",
-        text: "Every new seller starts with a free first month. You can set up your shop, upload products, run your first promos, and make real sales before paying anything. If it is not the right fit, cancel any time.",
+        text: "Starter is ₱499 a month, Growth ₱1,499 and Premium ₱3,999. Paying for a year costs ten months' worth (₱4,990, ₱14,990 and ₱39,990).",
+      },
+      {
+        type: "paragraph",
+        text: "New sellers who choose Growth get the first month free. You can set up your shop, upload products, run your first promos, and make real sales before paying anything. Starter and Premium are paid from the first day. If it is not the right fit, cancel any time.",
       },
       { type: "heading", text: "What's included" },
       {

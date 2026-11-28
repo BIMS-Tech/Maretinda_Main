@@ -194,7 +194,7 @@ const FAQS: Record<string, { q: string; a: string }[]> = {
 		},
 		{
 			q: 'What fees does Maretinda charge sellers?',
-			a: 'Maretinda charges a monthly or yearly subscription — there is no commission on sales and no listing fees. Payment processing is deducted from online payments. Your first month is free, and you can change or cancel your plan anytime.',
+			a: 'Maretinda charges a monthly or yearly subscription — there is no commission on sales and no listing fees. Payment processing is deducted from online payments. Plans are Starter (₱499 a month), Growth (₱1,499) and Premium (₱3,999); the first month is free on Growth. You can change or cancel your plan anytime.',
 		},
 		{
 			q: 'How do I get paid as a seller?',

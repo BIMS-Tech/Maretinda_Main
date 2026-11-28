@@ -10,7 +10,7 @@ export default function CTABanner() {
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
         <div className="relative rounded-[32px] overflow-hidden sand-stripes grid grid-cols-12 items-stretch" data-aos>
           <div className="col-span-12 md:col-span-7 p-8 sm:p-12 lg:p-16 relative z-10">
-            <p className="eyebrow text-brand-purple">Your first month is on us</p>
+            <p className="eyebrow text-brand-purple">First month free on Growth</p>
             <h2
               className="font-display text-ink mt-5 leading-[1] tracking-[-0.02em]"
               style={{ fontSize: "clamp(38px, 5vw, 68px)" }}

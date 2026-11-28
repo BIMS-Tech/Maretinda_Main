@@ -101,6 +101,10 @@ function buildFeatureRows(features: Record<string, unknown>): FeatureRow[] {
     rows.push({ label: "3D Model Generation", value: Boolean(model3d) })
   }
 
+  // An agent that runs the shop with the seller: a Premium feature, coming soon
+  const agent = features.ai_agent
+  rows.push({ label: "AI seller agent", value: agent === "coming_soon" ? "coming_soon" : Boolean(agent) })
+
   return rows
 }
 
@@ -487,59 +491,6 @@ function PaymentResultBanner({ state, result, errorMessage, onDismiss }: {
   }
 
   return null
-}
-
-// ---------------------------------------------------------------------------
-// Enterprise: custom terms, and where the upcoming AI seller agent will live
-// ---------------------------------------------------------------------------
-const ENTERPRISE_FEATURES = [
-  "Everything in Premium",
-  "AI seller agent",
-  "Custom integrations and API access",
-  "Dedicated account team",
-]
-
-function EnterpriseCard() {
-  return (
-    <div className="mt-5 grid gap-6 rounded-2xl border border-ui-border-base bg-ui-bg-base p-6 md:grid-cols-[1fr_auto] md:items-center">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-ui-fg-interactive">Enterprise</p>
-          <span className="rounded-full border border-ui-tag-orange-border bg-ui-tag-orange-bg px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ui-tag-orange-text">
-            AI agent coming soon
-          </span>
-        </div>
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-ui-bg-highlight text-ui-fg-interactive">
-            <Sparkles />
-          </div>
-          <div>
-            <h3 className="text-xl font-extrabold leading-tight text-ui-fg-base">An AI agent that runs your shop with you</h3>
-            <p className="mt-1 max-w-2xl text-sm text-ui-fg-subtle">
-              Tell it what you need, like "set up my store location" or "post this product", and it asks for the details
-              it needs and does it for you. For high-volume brands, with custom pricing.
-            </p>
-          </div>
-        </div>
-        <ul className="grid gap-x-6 gap-y-2 text-xs text-ui-fg-subtle sm:grid-cols-2">
-          {ENTERPRISE_FEATURES.map((label) => (
-            <li key={label} className="flex items-center gap-2.5">
-              <svg className="h-3.5 w-3.5 flex-shrink-0 text-ui-fg-interactive" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              {label}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <a
-        href="mailto:info@maretinda.com?subject=Enterprise%20plan"
-        className="transition-fg inline-flex items-center justify-center rounded-xl border border-ui-border-interactive px-6 py-3 text-sm font-bold text-ui-fg-interactive hover:bg-ui-bg-highlight"
-      >
-        Contact sales
-      </a>
-    </div>
-  )
 }
 
 // ---------------------------------------------------------------------------
@@ -1133,7 +1084,6 @@ export const SubscriptionPage = () => {
             <p className="text-sm text-ui-fg-subtle">No plans available.</p>
           )}
 
-          <EnterpriseCard />
         </div>
 
         {/* Footer note */}

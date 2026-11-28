@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: "Is there a free trial?",
-    a: "Yes — your first month is free on every plan. You can upgrade, downgrade or cancel from the Subscription page in your seller panel.",
+    a: "Yes, on Growth: new sellers who choose it get the first month free. Starter and Premium are paid from the first day. You can upgrade, downgrade or cancel from the Subscription page in your seller panel.",
   },
   {
     q: "How do deliveries work?",

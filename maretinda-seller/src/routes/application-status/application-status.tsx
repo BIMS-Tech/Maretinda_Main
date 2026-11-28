@@ -148,7 +148,7 @@ export const ApplicationStatus = () => {
         </p>
         <p>
           We'll email you{data.email ? <> at <b>{data.email}</b></> : null} as soon as it's approved. Then sign in here
-          to choose your plan (the first month is free) and set up your shop.
+          to choose your plan (the first month is free on Growth) and set up your shop.
         </p>
         <p className="text-ui-fg-muted text-sm">Questions? Write to support@maretinda.com.</p>
       </>
@@ -237,7 +237,7 @@ export const ApplicationStatus = () => {
         data?.status === "rejected"
           ? "Most applications that aren't approved just need a document or detail corrected."
           : data?.status === "none"
-            ? "Tell us about your shop in a short chat. The first month is free."
+            ? "Tell us about your shop in a short chat. The first month is free on the Growth plan."
             : "Every shop on Maretinda is reviewed by our team before it opens to buyers."
       }
     >

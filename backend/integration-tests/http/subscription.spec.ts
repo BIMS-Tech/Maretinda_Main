@@ -1,5 +1,6 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import SubscriptionService from "../../src/services/subscription"
+import { Migration1771900000000 } from "../../src/migrations/1771900000000_growth_first_month_free"
 import { giyapayCallbackSignature } from "../../src/lib/giyapay-signature"
 import {
   applyCustomMigrations,
@@ -59,8 +60,8 @@ medusaIntegrationTestRunner({
         expect(res.status).toBe(400)
       })
 
-      // The first month is free, as every page and the onboarding chat say
-      it("starts a one-month free trial", async () => {
+      // The first month is free on Growth (owner's decision, 28 November 2026)
+      it("starts a one-month free trial on Growth", async () => {
         const { seller, token } = await createSeller(getContainer())
         const before = Date.now()
 
@@ -138,17 +139,35 @@ medusaIntegrationTestRunner({
         expect(res.status).toBe(404)
       })
 
-      it("refuses a trial on a plan without trial days", async () => {
-        await pgOf(getContainer())("subscription_plan").where({ name: "Premium" }).update({ trial_days: 0 })
+      it.each(["Starter", "Premium"])("refuses a trial on %s, which is paid from the first day", async (plan_name) => {
         const { token } = await createSeller(getContainer())
 
         const res = await api.post(
           "/vendor/subscription/trial",
-          { plan_name: "Premium" },
+          { plan_name },
           { headers: bearer(token), ...noThrow }
         )
         expect(res.status).toBe(400)
         expect(res.data.message).toMatch(/does not offer a free trial/)
+      })
+
+      it("moves existing plans to a free month on Growth only, with the AI agent on Premium", async () => {
+        const pg = pgOf(getContainer())
+        await pg("subscription_plan").update({ trial_days: 30 })
+        const statements: string[] = []
+        const migration = Object.create(Migration1771900000000.prototype)
+        migration.addSql = (sql: string) => statements.push(sql)
+        await migration.up()
+        for (const sql of statements) await pg.raw(sql)
+
+        const plans = await pg("subscription_plan").whereIn("name", ["Starter", "Growth", "Premium"]).orderBy("price")
+        expect(plans.map((p: any) => [p.name, p.trial_days])).toEqual([
+          ["Starter", 0],
+          ["Growth", 30],
+          ["Premium", 0],
+        ])
+        expect(plans[2].features).toMatchObject({ ai_agent: "coming_soon" })
+        expect(plans[1].features?.ai_agent).toBeUndefined()
       })
     })
 

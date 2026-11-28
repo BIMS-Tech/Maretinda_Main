@@ -43,14 +43,14 @@ const RESPONSES: Record<string, BotResponse> = {
 		links: [{ label: 'Help Center — Payments', href: '/help-center#payments' }],
 	},
 	seller: {
-		text: 'Selling on Maretinda runs on a subscription — no per-sale commission and no listing fees. Apply from the seller panel with your business registration, TIN and address; our team reviews it, usually within a few business days. Your first month is free.',
+		text: 'Selling on Maretinda runs on a subscription — no per-sale commission and no listing fees. Apply from the seller panel with your business registration, TIN and address; our team reviews it, usually within a few business days. The first month is free on the Growth plan.',
 		links: [
 			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },
 			{ label: 'Plans & pricing', href: PRICING_URL },
 		],
 	},
 	fees: {
-		text: 'Maretinda charges a flat monthly subscription instead of taking a commission on your sales — you keep what you earn (minus standard payment processing). Your first month is free, and you can upgrade, downgrade, or cancel your plan anytime.',
+		text: 'Maretinda charges a flat monthly subscription instead of taking a commission on your sales — you keep what you earn (minus standard payment processing). The first month is free on the Growth plan (₱1,499 a month after that), and you can upgrade, downgrade, or cancel your plan anytime.',
 		links: [
 			{ label: 'See plans & pricing', href: PRICING_URL },
 			{ label: 'Create your seller account', href: SELLER_REGISTER_URL },

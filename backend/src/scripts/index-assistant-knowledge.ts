@@ -60,13 +60,23 @@ async function buildPlanChunk(db: any): Promise<KnowledgeChunk | null> {
       : ""
     const staff = f.staff_accounts ? `, ${f.staff_accounts} staff account(s)` : ""
     const support = f.support ? `, ${f.support} support` : ""
-    return `- ${p.name}: ₱${Number(p.price).toLocaleString("en-PH")}/month${yearly} — ${products}${staff}${support}.`
+    const agent = f.ai_agent === "coming_soon" ? ", AI seller agent (coming soon)" : f.ai_agent ? ", AI seller agent" : ""
+    const free = Number(p.trial_days) > 0 ? ", first month free for new sellers" : ""
+    return `- ${p.name}: ₱${Number(p.price).toLocaleString("en-PH")}/month${yearly} — ${products}${staff}${support}${agent}${free}.`
   })
 
-  // "First month free" is the fixed marketing promise, so it is stated
-  // verbatim rather than derived from subscription_plan.trial_days (which is a
-  // billing implementation detail and does not necessarily equal one month).
-  const trial = `\n\nEvery new seller's first month is free. No commission is taken on sales on any plan.`
+  // Which plans start with a free month comes from the plans themselves: since
+  // 28 November 2026 it is Growth only, and the others are paid from day one
+  const freeOn = plans.filter((p: any) => Number(p.trial_days) > 0).map((p: any) => p.name)
+  const paidFromStart = plans.filter((p: any) => !(Number(p.trial_days) > 0)).map((p: any) => p.name)
+  const trialLines = [
+    freeOn.length ? `The first month is free on ${freeOn.join(" and ")} for new sellers.` : "",
+    freeOn.length && paidFromStart.length
+      ? `${paidFromStart.join(" and ")} ${paidFromStart.length > 1 ? "are" : "is"} paid from the first day.`
+      : "",
+    "No commission is taken on sales on any plan.",
+  ]
+  const trial = `\n\n${trialLines.filter(Boolean).join(" ")}`
 
   return makeDynamicChunk({
     slug: "subscription-plans",
