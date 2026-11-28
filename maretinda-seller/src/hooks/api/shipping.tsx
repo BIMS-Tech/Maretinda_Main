@@ -305,3 +305,47 @@ export const useShippingAnalytics = (period: string = "30d", providerId?: string
     },
   })
 }
+
+// ── Where the chosen carrier delivers ─────────────────────────────────────────
+
+export type CarrierArea = { code: string; label: string }
+export type CarrierAreaMatch = { province: CarrierArea | null; city: CarrierArea | null; barangay: CarrierArea | null }
+
+// fetchQuery neither encodes query values nor sends empty ones, and place names have "ñ", "/" and spaces
+const areasUrl = (providerId: string, query?: Record<string, string>) =>
+  `/vendor/shipping-providers/${encodeURIComponent(providerId)}/areas${query ? `?${new URLSearchParams(query)}` : ""}`
+
+/**
+ * The provinces a carrier books to, when it has its own list (Flying Tigers).
+ * restricted: false means it delivers anywhere: use the full Philippine list.
+ */
+export const useCarrierProvinces = (providerId: string | undefined) =>
+  useQuery({
+    queryKey: ["vendor", "carrier-areas", providerId, "provinces"],
+    queryFn: async () =>
+      (await fetchQuery(areasUrl(providerId!), { method: "GET" })) as { restricted: boolean; provinces?: CarrierArea[] },
+    enabled: !!providerId,
+    staleTime: 60 * 60 * 1000,
+  })
+
+export const useCarrierCities = (providerId: string | undefined, provinceCode: string | undefined) =>
+  useQuery({
+    queryKey: ["vendor", "carrier-areas", providerId, "cities", provinceCode],
+    queryFn: async () =>
+      ((await fetchQuery(areasUrl(providerId!, { province_code: provinceCode! }), { method: "GET" })) as { cities: CarrierArea[] }).cities,
+    enabled: !!providerId && !!provinceCode,
+    staleTime: 60 * 60 * 1000,
+  })
+
+export const useCarrierBarangays = (providerId: string | undefined, cityCode: string | undefined) =>
+  useQuery({
+    queryKey: ["vendor", "carrier-areas", providerId, "barangays", cityCode],
+    queryFn: async () =>
+      ((await fetchQuery(areasUrl(providerId!, { city_code: cityCode! }), { method: "GET" })) as { barangays: CarrierArea[] }).barangays,
+    enabled: !!providerId && !!cityCode,
+    staleTime: 60 * 60 * 1000,
+  })
+
+/** The carrier's own places an order's typed address means. */
+export const matchCarrierArea = async (providerId: string, typed: { province: string; city: string; barangay: string }) =>
+  ((await fetchQuery(areasUrl(providerId, { match: "1", ...typed }), { method: "GET" })) as { match: CarrierAreaMatch }).match

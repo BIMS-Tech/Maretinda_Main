@@ -168,6 +168,125 @@ export async function getFlyingTigersCoveredProvinces(
   return provinces
 }
 
+/** A city or municipality Flying Tigers serves, with the PSGC code it books by. */
+export type FlyingTigersCity = { cityCode: string; cityLabel: string; provinceCode: string }
+/** A barangay Flying Tigers books to in a covered city. */
+export type FlyingTigersBarangay = { barangayCode: string; barangayLabel: string }
+
+const listCache = new Map<string, { at: number; rows: unknown[] }>()
+
+/**
+ * Flying Tigers' address lists are public (its own checkout and booking pages
+ * use them), so no key is sent. Kept for an hour: coverage changes rarely.
+ */
+async function publicList<T>(path: string, map: (r: any) => T | null): Promise<T[]> {
+  const hit = listCache.get(path)
+  if (hit && Date.now() - hit.at < COVERAGE_TTL_MS) return hit.rows as T[]
+  const res = await fetch(`${FLYINGTIGERS_BASE_URL}${path}`, { headers: { accept: 'application/json' } })
+  const rows = await handleResponse<any[]>(res, 'list its covered areas')
+  const out = (Array.isArray(rows) ? rows : []).map(map).filter((r): r is T => !!r)
+  listCache.set(path, { at: Date.now(), rows: out })
+  return out
+}
+
+/** For tests: forget the cached lists. */
+export const clearFlyingTigersAreaCache = () => {
+  listCache.clear()
+  coverageCache = null
+}
+
+/** GET /api/addresses/covered-cities-municipalities/{provinceCode} */
+export const getFlyingTigersCoveredCities = (provinceCode: string) =>
+  publicList<FlyingTigersCity>(`/api/addresses/covered-cities-municipalities/${encodeURIComponent(provinceCode)}`, (r) => {
+    const code = r?.cityCode ?? r?.cityMunicipalityCode
+    const label = r?.cityLabel ?? r?.cityMunicipalityLabel
+    return code && label ? { cityCode: String(code), cityLabel: String(label), provinceCode: String(r.provinceCode ?? provinceCode) } : null
+  })
+
+/** GET /api/addresses/barangays/{cityMunicipalityCode} */
+export const getFlyingTigersBarangays = (cityCode: string) =>
+  publicList<FlyingTigersBarangay>(`/api/addresses/barangays/${encodeURIComponent(cityCode)}`, (r) =>
+    r?.barangayCode && r?.barangayLabel ? { barangayCode: String(r.barangayCode), barangayLabel: String(r.barangayLabel) } : null
+  )
+
+// "Parañaque City", "City of Parañaque" and "paranaque" are the same place;
+// "Sta. Cruz" is "Santa Cruz"; "Brgy. 287" is "Barangay 287"
+const fold = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[.,()]/g, ' ')
+    .replace(/[-/]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^sta /, 'santa ')
+    .replace(/^sto /, 'santo ')
+export const cityKey = (name: string) => fold(name).replace(/^(city|municipality) of /, '').replace(/ city$/, '')
+export const barangayKey = (name: string) => fold(name).replace(/^(barangay|brgy|bgy) /, '')
+
+/**
+ * The covered place a typed name means: the same name, or the only one that
+ * starts with it ("Tondo" is "Tondo I/II"). Null when none or several match.
+ */
+function matchPlace<T>(name: string | undefined | null, rows: T[], label: (r: T) => string, key: (s: string) => string): T | null {
+  if (!name?.trim()) return null
+  const k = key(name)
+  if (!k) return null
+  const exact = rows.filter((r) => key(label(r)) === k)
+  if (exact.length === 1) return exact[0]
+  const prefix = rows.filter((r) => key(label(r)).startsWith(`${k} `))
+  return prefix.length === 1 ? prefix[0] : null
+}
+export const matchFlyingTigersCity = (name: string | undefined | null, cities: FlyingTigersCity[]) =>
+  matchPlace(name, cities, (c) => c.cityLabel, cityKey)
+export const matchFlyingTigersBarangay = (name: string | undefined | null, barangays: FlyingTigersBarangay[]) =>
+  matchPlace(name, barangays, (b) => b.barangayLabel, barangayKey)
+
+// Flying Tigers lists the City of Manila by district (Binondo, Ermita, Tondo…);
+// their PSGC codes start 13806
+const MANILA_DISTRICT = /^13806/
+const isManila = (city: string | undefined | null) => !!city && ['manila', 'city of manila'].includes(cityKey(city))
+
+/**
+ * The Flying Tigers city (and barangay, when it can tell) for an address in a
+ * covered province. An address in "Manila" is placed in its district by its
+ * barangay. city is null when the address names no covered city, so the
+ * seller has to choose one.
+ */
+export async function resolveFlyingTigersArea(
+  province: FlyingTigersProvince,
+  city: string | undefined | null,
+  barangay?: string | null
+): Promise<{ city: FlyingTigersCity | null; barangay: FlyingTigersBarangay | null; cities: FlyingTigersCity[] }> {
+  const cities = await getFlyingTigersCoveredCities(province.provinceCode)
+  const found = matchFlyingTigersCity(city, cities)
+  if (!found && isManila(city) && barangay?.trim()) {
+    const hits: { city: FlyingTigersCity; barangay: FlyingTigersBarangay }[] = []
+    for (const district of cities.filter((c) => MANILA_DISTRICT.test(c.cityCode))) {
+      const b = matchFlyingTigersBarangay(barangay, await getFlyingTigersBarangays(district.cityCode))
+      if (b) hits.push({ city: district, barangay: b })
+    }
+    if (hits.length === 1) return { ...hits[0], cities }
+  }
+  if (!found) return { city: null, barangay: null, cities }
+  const b = barangay?.trim() ? matchFlyingTigersBarangay(barangay, await getFlyingTigersBarangays(found.cityCode)) : null
+  return { city: found, barangay: b, cities }
+}
+
+/** What to tell the seller when an address names no covered city. */
+export function cityNotCoveredMessage(who: 'sender' | 'recipient', province: FlyingTigersProvince, city: string | undefined | null, cities: FlyingTigersCity[]) {
+  const typed = city?.trim()
+  if (isManila(typed)) {
+    const districts = cities.filter((c) => MANILA_DISTRICT.test(c.cityCode)).map((c) => c.cityLabel)
+    return `Choose the ${who}'s Manila district: Flying Tigers books Manila by district (${districts.join(', ')}).`
+  }
+  if (!typed || cityKey(typed) === cityKey(province.provinceLabel) || provinceKey(typed) === provinceKey(province.provinceLabel)) {
+    return `Choose the ${who}'s city in ${province.provinceLabel}: Flying Tigers needs the city, not only the province.`
+  }
+  return `Flying Tigers doesn't deliver to ${typed}, ${province.provinceLabel}. Choose the ${who}'s city from its list: ${cities.map((c) => c.cityLabel).join(', ')}.`
+}
+
 // ─── Webhooks ─────────────────────────────────────────────────────────────────
 
 /** Sandbox keys start fte_test_; anything else books real pickups. */

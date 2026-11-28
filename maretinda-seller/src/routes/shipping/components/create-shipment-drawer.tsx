@@ -18,6 +18,7 @@ import {
 } from '@medusajs/icons'
 import { useState, useEffect, useMemo } from 'react'
 import {
+  useCarrierProvinces,
   useCreateShippingOrder,
   useShippingOrders,
 } from '../../../hooks/api/shipping'
@@ -25,7 +26,7 @@ import { useOrders } from '../../../hooks/api/orders'
 import { useStockLocations } from '../../../hooks/api/stock-locations'
 import { useMe } from '../../../hooks/api/users'
 import { fetchQuery } from '../../../lib/client'
-import { provinceCovered } from '../../../lib/courier-coverage'
+import { AddressArea, AddressAreaFields, typedArea } from './address-area-fields'
 import {
   SERVICE_LEVELS,
   deriveServiceLevel,
@@ -96,6 +97,10 @@ export function CreateShipmentDrawer({
   const carrier = enabledProviders.find((p) => p.providerId === provider)
   // Where the carrier delivers, when it says (Flying Tigers serves a short list)
   const coveredProvinces: string[] | undefined = carrier?.covered_provinces
+  // A carrier with its own list books only to its own provinces and cities, by code
+  const carrierAreas = useCarrierProvinces(provider || undefined)
+  const restrictedAreas = carrierAreas.data?.restricted === true
+  const carrierName: string = carrier?.name ?? 'This carrier'
   const [serviceLevel, setServiceLevel] = useState('Standard')
   const [pickupDate, setPickupDate] = useState(
     new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -105,16 +110,15 @@ export function CreateShipmentDrawer({
   const [fromName, setFromName] = useState('')
   const [fromPhone, setFromPhone] = useState('')
   const [fromAddress, setFromAddress] = useState('')
-  const [fromCity, setFromCity] = useState('')
-  const [fromState, setFromState] = useState('')
+  // Province → city → barangay, from the chosen carrier's own list when it has one
+  const [fromArea, setFromArea] = useState<AddressArea>(typedArea())
   const [fromPostcode, setFromPostcode] = useState('')
 
   // Recipient (pre-filled from order, editable)
   const [toName, setToName] = useState('')
   const [toPhone, setToPhone] = useState('')
   const [toAddress, setToAddress] = useState('')
-  const [toCity, setToCity] = useState('')
-  const [toState, setToState] = useState('')
+  const [toArea, setToArea] = useState<AddressArea>(typedArea())
   const [toPostcode, setToPostcode] = useState('')
 
   // Parcel
@@ -186,8 +190,8 @@ export function CreateShipmentDrawer({
     const locAddr = loc?.address
     if (!fromAddress && (locAddr || seller)) {
       setFromAddress(locAddr?.address_1 ?? (seller as any)?.address_line ?? '')
-      setFromCity(locAddr?.city ?? (seller as any)?.city ?? '')
-      setFromState(locAddr?.province ?? '')
+      // The pickup address keeps its barangay in address_2
+      setFromArea(typedArea(locAddr?.province, locAddr?.city ?? (seller as any)?.city, locAddr?.address_2))
       setFromPostcode(locAddr?.postal_code ?? (seller as any)?.postal_code ?? '')
     }
   }, [locations, seller])
@@ -223,8 +227,8 @@ export function CreateShipmentDrawer({
       setToName(`${addr.first_name ?? ''} ${addr.last_name ?? ''}`.trim())
       setToPhone(addr.phone ?? '')
       setToAddress([addr.address_1, addr.address_2].filter(Boolean).join(', '))
-      setToCity(addr.city ?? '')
-      setToState(addr.province ?? '')
+      // Buyers' addresses keep the barangay in address_2
+      setToArea(typedArea(addr.province, addr.city, addr.address_2))
       setToPostcode(addr.postal_code ?? '')
     }
     if (items.length > 0) {
@@ -283,7 +287,7 @@ export function CreateShipmentDrawer({
     setSelectedOrder(null)
     setOrderSearch('')
     setToName(''); setToPhone(''); setToAddress('')
-    setToCity(''); setToState(''); setToPostcode('')
+    setToArea(typedArea()); setToPostcode('')
     setIsCod(false); setCodAmount(''); setCodLocked(false)
     setCustomerShipping(null); setCourierCost('')
     setDescription('Marketplace goods')
@@ -303,18 +307,19 @@ export function CreateShipmentDrawer({
 
   const handleSubmit = async () => {
     if (!provider) return toast.error('Select a carrier')
-    if (!fromName || !fromPhone || !fromAddress || !fromCity)
+    if (!fromName || !fromPhone || !fromAddress)
       return toast.error('Fill in all sender fields')
-    // Couriers route by province; Flying Tigers refuses an address without one
-    if (!fromState) return toast.error("Add the sender's province")
-    if (!toName || !toAddress || !toCity)
+    if (!toName || !toAddress)
       return toast.error('Recipient address is incomplete — select an order or fill manually')
-    if (!toState) return toast.error("Add the recipient's province")
-    for (const [where, province] of [['from', fromState], ['to', toState]] as const) {
-      if (!provinceCovered(province, coveredProvinces)) {
-        return toast.error(
-          `${carrier?.name ?? 'This carrier'} doesn't deliver ${where} ${province}. It covers ${coveredProvinces!.join(', ')}.`
-        )
+    // Couriers route by province and city; one with its own list needs its own places
+    for (const [who, area] of [['sender', fromArea], ['recipient', toArea]] as const) {
+      if (restrictedAreas) {
+        if (!area.provinceCode)
+          return toast.error(`Choose the ${who}'s province from ${carrierName}'s list.`)
+        if (!area.cityCode) return toast.error(`Choose the ${who}'s city from ${carrierName}'s list.`)
+      } else {
+        if (!area.province) return toast.error(`Add the ${who}'s province`)
+        if (!area.city) return toast.error(`Add the ${who}'s city`)
       }
     }
     if (!weight) return toast.error('Parcel weight is required')
@@ -340,8 +345,13 @@ export function CreateShipmentDrawer({
             name: fromName,
             phone: fromPhone,
             address: fromAddress,
-            city: fromCity,
-            state: fromState || undefined,
+            city: fromArea.city,
+            state: fromArea.province || undefined,
+            barangay: fromArea.barangay || undefined,
+            provinceCode: fromArea.provinceCode,
+            cityCode: fromArea.cityCode,
+            barangayCode: fromArea.barangayCode,
+            barangayLabel: fromArea.barangayCode ? fromArea.barangay : undefined,
             postcode: fromPostcode,
             country: 'PH',
           },
@@ -349,8 +359,13 @@ export function CreateShipmentDrawer({
             name: toName,
             phone: toPhone,
             address: toAddress,
-            city: toCity,
-            state: toState || undefined,
+            city: toArea.city,
+            state: toArea.province || undefined,
+            barangay: toArea.barangay || undefined,
+            provinceCode: toArea.provinceCode,
+            cityCode: toArea.cityCode,
+            barangayCode: toArea.barangayCode,
+            barangayLabel: toArea.barangayCode ? toArea.barangay : undefined,
             postcode: toPostcode,
             country: 'PH',
           },
@@ -618,17 +633,16 @@ export function CreateShipmentDrawer({
                 onChange={(e) => setFromAddress(e.target.value)}
               />
             </FormField>
-            <div className="grid grid-cols-3 gap-3">
-              <FormField label="City" required>
-                <Input placeholder="City" value={fromCity} onChange={(e) => setFromCity(e.target.value)} />
-              </FormField>
-              <FormField label="Province" required>
-                <Input placeholder="Province" value={fromState} onChange={(e) => setFromState(e.target.value)} />
-              </FormField>
-              <FormField label="Postcode">
-                <Input placeholder="1234" value={fromPostcode} onChange={(e) => setFromPostcode(e.target.value)} />
-              </FormField>
-            </div>
+            <AddressAreaFields
+              providerId={provider}
+              carrierName={carrierName}
+              who="sender"
+              value={fromArea}
+              onChange={setFromArea}
+            />
+            <FormField label="Postcode">
+              <Input className="w-32" placeholder="1234" value={fromPostcode} onChange={(e) => setFromPostcode(e.target.value)} />
+            </FormField>
           </section>
 
           <div className="border-t border-ui-border-base" />
@@ -674,17 +688,16 @@ export function CreateShipmentDrawer({
                 onChange={(e) => setToAddress(e.target.value)}
               />
             </FormField>
-            <div className="grid grid-cols-3 gap-3">
-              <FormField label="City" required>
-                <Input placeholder="City" value={toCity} onChange={(e) => setToCity(e.target.value)} />
-              </FormField>
-              <FormField label="Province" required>
-                <Input placeholder="Province" value={toState} onChange={(e) => setToState(e.target.value)} />
-              </FormField>
-              <FormField label="Postcode">
-                <Input placeholder="1234" value={toPostcode} onChange={(e) => setToPostcode(e.target.value)} />
-              </FormField>
-            </div>
+            <AddressAreaFields
+              providerId={provider}
+              carrierName={carrierName}
+              who="recipient"
+              value={toArea}
+              onChange={setToArea}
+            />
+            <FormField label="Postcode">
+              <Input className="w-32" placeholder="1234" value={toPostcode} onChange={(e) => setToPostcode(e.target.value)} />
+            </FormField>
           </section>
 
           <div className="border-t border-ui-border-base" />
