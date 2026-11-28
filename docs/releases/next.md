@@ -65,6 +65,23 @@ None of these touch the returns work, so they went live without it.
     days in Admin → Subscriptions.
   - Where the support assistant is switched on, re-run `assistant:index`:
     its plan knowledge changed.
+- **Booking a courier: places from the carrier's own list** (main 7857cb34,
+  production 22065119). Flying Tigers refused bookings like City "Metro
+  Manila" in province "Metro Manila": it books only to the cities on its
+  covered list, by code, and lists the City of Manila by district. The
+  booking form's Province → City → Barangay now come from the chosen
+  carrier: Flying Tigers' covered lists, or the full Philippine list for a
+  carrier without one, matched again when the carrier changes. The order's
+  typed address is matched for the seller ("City of Makati" → Makati City,
+  "NCR" → Metro Manila, a Manila barangay → its district), and anything not
+  on the list is explained by the field. Booking sends Flying Tigers its own
+  codes and refuses a city it doesn't list before calling it. New route
+  `GET /vendor/shipping-providers/:provider_id/areas`. No migration.
+- **Order progress on the order and return pages** (main cb313af4,
+  production bafe1463). The four steps were stacked on top of each other with
+  their lines running across the card, in a blue from the old template. They
+  sit side by side again, in the brand purple: done steps ticked, the
+  current one ringed.
 
 ## Before production
 
