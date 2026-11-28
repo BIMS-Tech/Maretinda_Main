@@ -14,8 +14,10 @@ This is the single most important thing to get right when answering a seller:
 Maretinda does not take a percentage of sales. Any figure framed as a
 "commission per sale" is wrong.
 
-Every new seller's first month is free. Plans can be changed or cancelled at any
-time. Paying yearly costs less than twelve months.
+The first month is free on the Growth plan for new sellers. Starter and Premium
+are paid from the first day. Premium will include an AI seller agent, which is
+coming soon. Plans can be changed or cancelled at any time. Paying yearly costs
+less than twelve months.
 
 ## Becoming a seller
 

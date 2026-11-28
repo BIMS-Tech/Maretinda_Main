@@ -228,7 +228,7 @@ const QUESTIONS: Question[] = [
   },
   {
     id: "promo_code", type: "promo", key: "promo_code", optional: true,
-    ask: "Do you have a promo code? Your first month is already free either way.",
+    ask: "Do you have a promo code? If not, just skip this.",
     placeholder: "Enter promo code",
   },
 ]
@@ -699,7 +699,7 @@ function SignupProgress({ progress }: { progress: number }) {
       </GlassCard>
       <GlassCard className="absolute right-0 top-[118px] w-[260px]" tilt={2} delay={1400}>
         <ul className="flex flex-col gap-2 text-sm">
-          {["Free to sign up", "A first month free on any plan", "Paid out to your own bank"].map((label) => (
+          {["Free to sign up", "First month free on Growth", "Paid out to your own bank"].map((label) => (
             <li key={label} className="flex items-center gap-2">
               <Butterfly size={14} className="shrink-0 text-[#6B4C9A] dark:text-[#FFC533]" />
               <span className="opacity-90">{label}</span>

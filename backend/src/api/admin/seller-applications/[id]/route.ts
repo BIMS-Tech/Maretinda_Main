@@ -164,7 +164,7 @@ export async function PATCH(req: MedusaRequest, res: MedusaResponse): Promise<vo
           paragraphs: [
             `Welcome to Maretinda. ${app.shop_name || app.business_name || "Your shop"} has been approved.`,
             "Sign in with the email and password you registered with, then:",
-            "1. Choose a plan. Your first month is free.",
+            "1. Choose a plan. The first month is free on Growth.",
             "2. Finish your store setup: a short shop description, your bank account for payouts, and your pickup address.",
             `3. Upload your business documents under Store, Business Verification${app.form_of_organization ? ` (for a ${app.form_of_organization})` : ""}. Our team reviews them, usually within a few business days.`,
             ...(app.sells_regulated

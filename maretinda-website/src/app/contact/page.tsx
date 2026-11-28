@@ -97,8 +97,8 @@ export default function ContactPage() {
                 Want to start selling?
               </h3>
               <p className="text-[#6B6480] text-[13.5px] mb-4 leading-relaxed">
-                Register your shop and start your free first month — no commission,
-                no listing fees.
+                Register your shop. The first month is free on Growth, with no
+                commission and no listing fees.
               </p>
               <a
                 href={SELLER_REGISTER_URL}

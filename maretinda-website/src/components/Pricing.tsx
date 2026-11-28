@@ -5,26 +5,26 @@ import { SELLER_REGISTER_URL } from "@/lib/site";
 
 interface PlanFeature { text: string; included: boolean; comingSoon?: boolean }
 interface Plan {
-  tier: string;
   name: string;
   tagline: string;
+  /** Pesos, as the seller panel charges them. Yearly is ten months' worth. */
   monthlyPrice: number;
-  annualPrice: number;
+  yearlyPrice: number;
+  /** Only Growth starts with a free month (owner's decision, 28 November 2026). */
+  freeMonth?: boolean;
   features: PlanFeature[];
   cta: string;
-  style: "outline" | "cta" | "primary";
   featured?: boolean;
 }
 
+// Mirrors the plans in the seller panel (subscription_plan and its features)
 const plans: Plan[] = [
   {
-    tier: "Starter",
-    name: "Foundation",
+    name: "Starter",
     tagline: "Perfect to get started",
-    monthlyPrice: 0,
-    annualPrice: 0,
-    cta: "Get Started Free",
-    style: "outline",
+    monthlyPrice: 499,
+    yearlyPrice: 4990,
+    cta: "Get started",
     features: [
       { text: "Up to 50 products", included: true },
       { text: "Basic analytics dashboard", included: true },
@@ -35,18 +35,17 @@ const plans: Plan[] = [
       { text: "Email support", included: true },
       { text: "Flash sales & vouchers", included: false },
       { text: "Subscription products", included: false },
-      { text: "Dedicated account manager", included: false },
       { text: "3D Model Generation", included: false },
+      { text: "AI seller agent", included: false },
     ],
   },
   {
-    tier: "Growth",
-    name: "Boost",
+    name: "Growth",
     tagline: "For scaling businesses",
-    monthlyPrice: 0,
-    annualPrice: 0,
-    cta: "Start Growing Now",
-    style: "cta",
+    monthlyPrice: 1499,
+    yearlyPrice: 14990,
+    freeMonth: true,
+    cta: "Start your free month",
     featured: true,
     features: [
       { text: "Up to 500 products", included: true },
@@ -58,18 +57,16 @@ const plans: Plan[] = [
       { text: "Priority email & live chat", included: true },
       { text: "Flash sales & vouchers", included: true },
       { text: "Subscription products", included: true },
-      { text: "Dedicated account manager", included: false },
-      { text: "3D Model Generation", included: false },
+      { text: "3D Model Generation", included: true, comingSoon: true },
+      { text: "AI seller agent", included: false },
     ],
   },
   {
-    tier: "Premium",
-    name: "Managed",
+    name: "Premium",
     tagline: "For high-volume brands",
-    monthlyPrice: 0,
-    annualPrice: 0,
-    cta: "Contact Sales",
-    style: "primary",
+    monthlyPrice: 3999,
+    yearlyPrice: 39990,
+    cta: "Choose Premium",
     features: [
       { text: "Unlimited products", included: true },
       { text: "Full analytics suite + exports", included: true },
@@ -82,9 +79,12 @@ const plans: Plan[] = [
       { text: "Subscription products", included: true },
       { text: "99.9% SLA guarantee", included: true },
       { text: "3D Model Generation", included: true, comingSoon: true },
+      { text: "AI seller agent", included: true, comingSoon: true },
     ],
   },
 ];
+
+const peso = (n: number) => `₱${n.toLocaleString("en-PH")}`;
 
 export default function Pricing() {
   return (
@@ -117,24 +117,35 @@ export default function Pricing() {
                   dark ? "bg-brand-purple text-white" : "bg-white border border-line"
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <p className={`text-[12px] font-semibold uppercase tracking-[0.16em] ${dark ? "text-white/65" : "text-muted"}`}>
-                    {plan.tier}
-                  </p>
+                <div className="flex min-h-[26px] items-center justify-between gap-2">
+                  <h3 className={`font-display text-[34px] leading-none ${dark ? "text-white" : "text-ink"}`}>{plan.name}</h3>
                   {plan.featured && (
                     <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-brand-yellow text-brand-purple">
                       Most popular
                     </span>
                   )}
                 </div>
-                <h3 className={`font-display text-[34px] leading-none mt-3 ${dark ? "text-white" : "text-ink"}`}>{plan.name}</h3>
                 <p className={`text-[14px] mt-2 ${dark ? "text-white/70" : "text-muted"}`}>{plan.tagline}</p>
 
-                <div className={`mt-7 pb-7 border-b ${dark ? "border-white/15" : "border-line"} flex items-baseline gap-1`}>
-                  <span className={`font-display leading-none ${dark ? "text-brand-yellow" : "text-brand-purple"}`} style={{ fontSize: 56 }}>
-                    ₱{plan.monthlyPrice.toLocaleString("en-PH")}
-                  </span>
-                  <span className={`text-[14px] ${dark ? "text-white/60" : "text-muted"}`}>/ month</span>
+                <div className={`mt-7 pb-7 border-b ${dark ? "border-white/15" : "border-line"}`}>
+                  <div className="flex items-baseline gap-1">
+                    <span className={`font-display leading-none ${dark ? "text-brand-yellow" : "text-brand-purple"}`} style={{ fontSize: 56 }}>
+                      {peso(plan.monthlyPrice)}
+                    </span>
+                    <span className={`text-[14px] ${dark ? "text-white/60" : "text-muted"}`}>/ month</span>
+                  </div>
+                  <p className={`mt-2 text-[13px] ${dark ? "text-white/65" : "text-muted"}`}>
+                    or {peso(plan.yearlyPrice)} a year (save 17%)
+                  </p>
+                  {plan.freeMonth ? (
+                    <p className="mt-3 inline-flex h-[26px] items-center rounded-full bg-brand-yellow px-3 text-[12px] font-bold text-brand-purple">
+                      First month free
+                    </p>
+                  ) : (
+                    <p className={`mt-3 flex h-[26px] items-center text-[12px] ${dark ? "text-white/55" : "text-muted"}`}>
+                      Paid from the first day
+                    </p>
+                  )}
                 </div>
 
                 <ul className="mt-6 flex flex-col gap-2.5 flex-1">
@@ -153,7 +164,11 @@ export default function Pricing() {
                       <span>
                         {f.text}
                         {f.comingSoon && (
-                          <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-yellow/25 text-[#8A6100] align-middle">
+                          <span
+                            className={`ml-1.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded align-middle ${
+                              dark ? "bg-brand-yellow text-brand-purple" : "bg-brand-yellow/25 text-[#8A6100]"
+                            }`}
+                          >
                             Soon
                           </span>
                         )}
@@ -163,7 +178,7 @@ export default function Pricing() {
                 </ul>
 
                 <a
-                  href={plan.style === "primary" ? "/contact" : SELLER_REGISTER_URL}
+                  href={SELLER_REGISTER_URL}
                   className={`press mt-8 inline-flex items-center justify-center gap-2 h-12 rounded-full text-[14px] font-bold ${
                     dark
                       ? "bg-brand-yellow text-brand-purple hover:bg-white"
@@ -178,7 +193,7 @@ export default function Pricing() {
         </div>
 
         <p className="mt-8 text-[13.5px] text-muted text-center" data-aos>
-          First month free on every plan · No listing fees · No commission on sales · Payment
+          First month free on Growth · No listing fees · No commission on sales · Payment
           processing fees may apply · Prices in Philippine pesos
         </p>
       </div>

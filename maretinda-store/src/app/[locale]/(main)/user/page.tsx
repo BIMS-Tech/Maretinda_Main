@@ -123,8 +123,8 @@ export default async function UserPage({
 						</h3>
 						<p className="mt-1 max-w-lg text-sm leading-relaxed text-white/75">
 							Open your own store and manage your products and
-							orders from a seller dashboard. Your first month is
-							free.
+							orders from a seller dashboard. The first month is
+							free on the Growth plan.
 						</p>
 					</div>
 					<Link

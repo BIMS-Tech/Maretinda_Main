@@ -122,7 +122,7 @@ export default async function BlogPostPage({
               Ready to start selling?
             </h3>
             <p className="text-[#6B6480] text-[14px] mb-5">
-              Open your shop on Maretinda — your first month is free.
+              Open your shop on Maretinda. The first month is free on Growth.
             </p>
             <Link
               href="/#pricing"

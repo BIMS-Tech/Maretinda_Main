@@ -8,10 +8,10 @@ import { SELLER_REGISTER_URL } from '@/lib/helpers/cross-links';
 const ABOUT_SITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || 'https://about.maretinda.com';
 
 // Launch-stage value props instead of vanity scale metrics — honest for a new platform.
-// These restate claims already made elsewhere on this section (free trial, no listing
-// fees, nationwide reach), so no new/unverified metrics are introduced.
+// These restate claims already made elsewhere on this section (the free month on
+// Growth, no listing fees, nationwide reach), so no new/unverified metrics are introduced.
 const STATS = [
-	{ value: '1 month', label: 'Free to sell' },
+	{ value: '1 month', label: 'Free on Growth' },
 	{ value: '₱0', label: 'Listing fees' },
 	{ value: 'PH-wide', label: 'Delivery reach' },
 ];
@@ -66,7 +66,7 @@ export const BecomeSellerBand = () => (
 					</div>
 
 					<div className="mt-5 text-[12px] text-white/55 font-medium">
-						1 month free · No listing fees · Cancel anytime
+						First month free on Growth · No listing fees · Cancel anytime
 					</div>
 				</div>
 

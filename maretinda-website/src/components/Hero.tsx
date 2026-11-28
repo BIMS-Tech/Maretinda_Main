@@ -49,7 +49,7 @@ export default function Hero() {
           </div>
 
           <ul className="rise-in mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] font-medium text-[#3D3748]" style={{ animationDelay: "760ms" }}>
-            {["First month free", "No listing fees", "No commission on sales"].map((t) => (
+            {["First month free on Growth", "No listing fees", "No commission on sales"].map((t) => (
               <li key={t} className="inline-flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-purple" />
                 {t}
