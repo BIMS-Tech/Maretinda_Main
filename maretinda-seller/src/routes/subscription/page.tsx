@@ -605,16 +605,18 @@ function PlanCard({
             </span>
             <span className={`text-xs mb-1 ml-1 ${periodColor}`}>/mo</span>
           </div>
-          {billing === "yearly" && (
-            <p className="text-xs mt-1 text-ui-fg-interactive">
-              Billed ₱{yearlyTotal.toLocaleString()}/year · Save {discountPct}%
-            </p>
-          )}
-          {hasTrial && billing === "monthly" && (
-            <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-ui-bg-highlight border border-ui-border-interactive px-2.5 py-0.5">
-              <span className="text-[10px] text-ui-fg-interactive font-semibold">{trialLabel(trialDays).short}</span>
-            </div>
-          )}
+          {/* One line under every price, so the feature lists start level across the cards */}
+          <div className="mt-2 flex h-[22px] items-center">
+            {billing === "yearly" ? (
+              <p className="text-xs text-ui-fg-interactive">
+                Billed ₱{yearlyTotal.toLocaleString()}/year · Save {discountPct}%
+              </p>
+            ) : hasTrial ? (
+              <div className="inline-flex items-center gap-1 rounded-full bg-ui-bg-highlight border border-ui-border-interactive px-2.5 py-0.5">
+                <span className="text-[10px] text-ui-fg-interactive font-semibold">{trialLabel(trialDays).short}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
