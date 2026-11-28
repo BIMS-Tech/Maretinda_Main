@@ -1,25 +1,20 @@
 import { Avatar } from '@/components/atoms';
 import { OrderRefunds } from '@/components/cells/OrderRefunds/OrderRefunds';
-import { askedAt, OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
+import { OrderParcelActions } from '@/components/molecules/OrderParcelActions/OrderParcelActions';
 import { OrderParcelItems } from '@/components/molecules/OrderParcelItems/OrderParcelItems';
 import { OrderParcelStatus } from '@/components/molecules/OrderParcelStatus/OrderParcelStatus';
 import { OrderTracking } from '@/components/molecules/OrderTracking/OrderTracking';
 import { account } from '@/lib/account-styles';
 import { retrieveCustomer } from '@/lib/data/customer';
-import { getReturns } from '@/lib/data/orders';
+import { listReturnCases } from '@/lib/data/returns';
 
 import { Chat } from '../Chat/Chat';
 
 export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 	const user = await retrieveCustomer();
-	// The buyer's return requests, to show each order's next to it
-	const returns: any[] = await getReturns()
-		.then((r: any) => r?.order_return_requests ?? [])
-		.catch(() => []);
-	const latestReturn = (orderId: string) =>
-		returns
-			.filter((r) => (r.order?.id ?? r.order_id) === orderId)
-			.sort((a, b) => (askedAt(b)?.getTime() ?? 0) - (askedAt(a)?.getTime() ?? 0))[0];
+	// The buyer's returns, newest first, to show each order's next to it
+	const cases = await listReturnCases();
+	const casesOf = (orderId: string) => cases.filter((c) => c.order_id === orderId);
 
 	return (
 		<>
@@ -67,7 +62,7 @@ export const OrderParcels = async ({ orders }: { orders: any[] }) => {
 							</a>
 						</div>
 						<div className="pt-5">
-							<OrderParcelActions order={order} returnRequest={latestReturn(order.id)} />
+							<OrderParcelActions cases={casesOf(order.id)} order={order} />
 							<OrderRefunds orderId={order.id} />
 						</div>
 					</div>

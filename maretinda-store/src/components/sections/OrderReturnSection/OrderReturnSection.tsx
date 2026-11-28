@@ -8,7 +8,8 @@ import { EvidenceUploader, type Uploaded } from '@/components/cells/EvidenceUplo
 import { RefundAccountFields } from '@/components/cells/RefundAccountFields/RefundAccountFields';
 import { UserNavigation } from '@/components/molecules';
 import LocalizedClientLink from '@/components/molecules/LocalizedLink/LocalizedLink';
-import { openReturn } from '@/lib/data/returns';
+import { account } from '@/lib/account-styles';
+import { openReturn, type ReturnCaseSummary } from '@/lib/data/returns';
 import { EMPTY_PAYOUT, type Payout, peso, RETURN_REASONS, reasonOf } from '@/lib/returns-policy';
 
 type Choice = { line_item_id: string; quantity: number; reason: string };
@@ -21,8 +22,14 @@ const SELECT =
  * the proof (photos with the waybill, and the unboxing video for damaged or
  * incomplete items), where to send the refund, and that the item is unused.
  */
-export const OrderReturnSection = ({ order }: { order: any }) => {
+export const OrderReturnSection = ({ order, cases = [] }: { order: any; cases?: ReturnCaseSummary[] }) => {
 	const router = useRouter();
+	// What this order has had already: one still open stops a new request, and an
+	// item that was in a return can't be claimed again (the backend checks both)
+	const openCase = cases.find((c) => c.open);
+	const claimed = new Map(cases.flatMap((c) => c.items.map((i) => [i.line_item_id, c] as const)));
+	const claimable = (order.items ?? []).filter((item: any) => !claimed.has(item.id));
+	const [existing, setExisting] = useState<string | null>(null);
 	const [step, setStep] = useState<1 | 2>(1);
 	const [chosen, setChosen] = useState<Record<string, Choice>>({});
 	const [evidence, setEvidence] = useState<Uploaded[]>([]);
@@ -66,7 +73,11 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 			payout,
 		});
 		setSending(false);
-		if (!result.ok) return setError(result.message);
+		if (!result.ok) {
+			// Already asked (another tab, a second tap): point at that return
+			if (result.request_id) setExisting(result.request_id);
+			return setError(result.message);
+		}
 		router.push(`/user/orders/${result.request_id}/request-success`);
 	};
 
@@ -86,6 +97,29 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 					</LocalizedClientLink>
 				</p>
 
+				{openCase || !claimable.length ? (
+					<div className={`${account.panel} mt-6 flex max-w-2xl flex-col gap-4`} data-testid="return-already-asked">
+						<div>
+							<p className={account.panelTitle}>
+								{openCase ? 'You already asked for a return on this order' : 'Everything in this order has been in a return'}
+							</p>
+							<p className={account.panelText}>
+								{openCase
+									? `It is still open: ${openCase.stage_label.toLowerCase()}. One return at a time per order; follow this one, and once it's over you can ask about any other item.`
+									: 'Each item can be claimed once. See what was decided on your return.'}
+							</p>
+						</div>
+						<div className="flex flex-wrap gap-3">
+							<LocalizedClientLink className={account.primaryButton} href={`/user/returns?return=${(openCase ?? cases[0])?.request_id ?? ''}`}>
+								{openCase ? 'Follow your return' : 'See your return'}
+							</LocalizedClientLink>
+							<LocalizedClientLink className={account.outlineButton} href={`/user/orders/${order.order_set?.id ?? order.id}`}>
+								Back to the order
+							</LocalizedClientLink>
+						</div>
+					</div>
+				) : (
+				<>
 				<ol className="mt-5 flex gap-4 text-[13px]">
 					<li className={step === 1 ? 'font-semibold text-[#432C63]' : 'text-black/50'}>1. Items and reason</li>
 					<li className={step === 2 ? 'font-semibold text-[#432C63]' : 'text-black/50'}>2. Proof and refund</li>
@@ -95,6 +129,20 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 					<div className="mt-4 flex flex-col gap-3">
 						{(order.items ?? []).map((item: any) => {
 							const pick = chosen[item.id];
+							const before = claimed.get(item.id);
+							if (before) {
+								return (
+									<div className="flex items-center gap-3 rounded-xl border border-black/10 bg-[#FAF8F5] p-4 opacity-80" data-testid="return-item-claimed" key={item.id}>
+										<span className="size-14 shrink-0 overflow-hidden rounded-md border bg-black/[0.03]">
+											{item.thumbnail && <Image alt="" height={56} src={item.thumbnail} width={56} />}
+										</span>
+										<span className="min-w-0 flex-1">
+											<span className="block truncate text-[14px] font-medium">{item.product_title || item.title}</span>
+											<span className="block text-[13px] text-black/55">Already in a return: {before.stage_label.toLowerCase()}</span>
+										</span>
+									</div>
+								);
+							}
 							return (
 								<div className="rounded-xl border border-black/10 bg-white p-4" key={item.id}>
 									<label className="flex cursor-pointer items-center gap-3">
@@ -148,7 +196,12 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 						})}
 						{error && (
 							<p className="text-[13px] text-red-600" role="alert">
-								{error}
+								{error}{' '}
+								{existing && (
+									<LocalizedClientLink className="font-medium text-[#432C63] underline" href={`/user/returns?return=${existing}`}>
+										Follow your return
+									</LocalizedClientLink>
+								)}
 							</p>
 						)}
 						<div>
@@ -183,7 +236,12 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 						</div>
 						{error && (
 							<p className="text-[13px] text-red-600" role="alert">
-								{error}
+								{error}{' '}
+								{existing && (
+									<LocalizedClientLink className="font-medium text-[#432C63] underline" href={`/user/returns?return=${existing}`}>
+										Follow your return
+									</LocalizedClientLink>
+								)}
 							</p>
 						)}
 						<div className="flex gap-3">
@@ -201,6 +259,8 @@ export const OrderReturnSection = ({ order }: { order: any }) => {
 							</button>
 						</div>
 					</div>
+				)}
+				</>
 				)}
 			</div>
 		</div>

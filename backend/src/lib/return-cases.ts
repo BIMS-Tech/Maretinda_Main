@@ -155,20 +155,59 @@ export function parseOpenInput(body: any): OpenInput | string {
   return { order_id: String(body?.order_id ?? ""), items: clean, note: text(body?.note, 1000), evidence, payout, condition_confirmed: !!body?.condition_confirmed }
 }
 
+/** Stages a return can't move on from: refunded, or closed (rejected, expired or withdrawn). */
+export const FINAL_STAGES: Stage[] = ["refunded", "closed"]
+
+export type ReturnRefusal = { error: string; status: number; code?: string; request_id?: string }
+
+/**
+ * Why an order can't have a new return for these items, or null when it can.
+ * One return at a time per order, and an item is claimed once: after a return
+ * ends, whatever was decided, the same item can't be claimed again (other
+ * items of the order still can, within the window).
+ */
+export async function returnBlock(db: any, orderId: string, lineItemIds: string[]): Promise<ReturnRefusal | null> {
+  const cases = await db("return_case").where("order_id", orderId).select("request_id", "stage")
+  const open = cases.find((c: any) => !FINAL_STAGES.includes(c.stage))
+  if (open) {
+    return {
+      status: 409,
+      code: "return_open",
+      request_id: open.request_id,
+      error: "You already asked for a return on this order, and it is still open. You can follow it under Returns.",
+    }
+  }
+  if (!cases.length || !lineItemIds.length) return null
+  const taken = await db("order_return_request_line_item as rli")
+    .join("order_line_item as li", "li.id", "rli.line_item_id")
+    .whereIn("rli.return_request_id", cases.map((c: any) => c.request_id))
+    .whereIn("rli.line_item_id", lineItemIds)
+    .whereNull("rli.deleted_at")
+    .first("rli.return_request_id", "li.title")
+  if (!taken) return null
+  return {
+    status: 409,
+    code: "already_returned",
+    request_id: taken.return_request_id,
+    error: `"${taken.title}" was already part of a return on this order, so it can't be claimed again. You can see what was decided under Returns.`,
+  }
+}
+
 /** A buyer asks for a return or refund. Returns the case, or what's wrong with the request. */
 export async function openReturnCase(
   container: any,
   customerId: string,
   input: OpenInput,
   now = new Date()
-): Promise<{ request_id: string } | { error: string; status: number }> {
+): Promise<{ request_id: string } | ReturnRefusal> {
   const pg = pgOf(container)
   const order = await pg("order").where({ id: input.order_id, customer_id: customerId }).whereNull("deleted_at").first("id", "status", "canceled_at", "display_id")
   if (!order) return { error: "Order not found", status: 404 }
   if (order.status === "canceled" || order.canceled_at) return { error: "This order was cancelled, so there is nothing to return.", status: 400 }
 
-  const existing = await pg("return_case").where("order_id", order.id).whereNotIn("stage", ["closed"]).first("request_id")
-  if (existing) return { error: "You already have a return request for this order. You can follow it under Returns.", status: 409 }
+  const lineItemIds = input.items.map((i) => i.line_item_id)
+  const blocked = await returnBlock(pg, order.id, lineItemIds)
+  if (blocked) return blocked
 
   // The window: 7 days from delivery. A parcel that never arrived can be claimed once it has shipped.
   const reasons = [...new Set(input.items.map((i) => i.reason))]
@@ -202,36 +241,52 @@ export async function openReturnCase(
   if (!link) return { error: "We couldn't find the shop for this order. Write to support@maretinda.com.", status: 400 }
 
   const summary = input.items.map((i) => RETURN_REASONS[i.reason].label).filter((v, i, a) => a.indexOf(v) === i).join("; ")
-  const { result } = await createOrderReturnRequestWorkflow.run({
-    container,
-    input: {
-      data: {
-        order_id: order.id,
-        customer_id: customerId,
-        customer_note: [summary, input.note].filter(Boolean).join(" — ").slice(0, 1000),
-        line_items: input.items.map((i) => ({ line_item_id: i.line_item_id, quantity: i.quantity, reason_id: reasonId.get(i.reason) })),
-      },
-      seller_id: link.seller_id,
-    } as any,
-  })
-  const requestId = (result as any).id
 
-  await pg("return_case").insert({
-    request_id: requestId,
-    order_id: order.id,
-    seller_id: link.seller_id,
-    customer_id: customerId,
-    payment: await paymentOf(pg, order.id),
-    reasons: JSON.stringify(reasons),
-    evidence: JSON.stringify(uploads),
-    ...sealPayout(input.payout),
-    buyer_note: input.note || null,
-    stage: "seller_review",
-    respond_by: new Date(now.getTime() + SELLER_RESPONSE_HOURS * HOUR),
+  // One at a time per order: a second submit (two tabs, a double tap) waits
+  // here for the first to finish, then finds it and is refused
+  const created = await pg.transaction(async (trx: any): Promise<{ request_id: string } | ReturnRefusal> => {
+    await trx.raw("SELECT pg_advisory_xact_lock(hashtext(?))", [`return-case:${order.id}`])
+    const raced = await returnBlock(trx, order.id, lineItemIds)
+    if (raced) return raced
+
+    const { result } = await createOrderReturnRequestWorkflow.run({
+      container,
+      input: {
+        data: {
+          order_id: order.id,
+          customer_id: customerId,
+          customer_note: [summary, input.note].filter(Boolean).join(" — ").slice(0, 1000),
+          line_items: input.items.map((i) => ({ line_item_id: i.line_item_id, quantity: i.quantity, reason_id: reasonId.get(i.reason) })),
+        },
+        seller_id: link.seller_id,
+      } as any,
+    })
+    const requestId = (result as any).id
+    try {
+      await trx("return_case").insert({
+        request_id: requestId,
+        order_id: order.id,
+        seller_id: link.seller_id,
+        customer_id: customerId,
+        payment: await paymentOf(pg, order.id),
+        reasons: JSON.stringify(reasons),
+        evidence: JSON.stringify(uploads),
+        ...sealPayout(input.payout),
+        buyer_note: input.note || null,
+        stage: "seller_review",
+        respond_by: new Date(now.getTime() + SELLER_RESPONSE_HOURS * HOUR),
+      })
+      if (uploads.length) await trx("return_evidence").whereIn("id", input.evidence).update({ request_id: requestId })
+    } catch (e) {
+      // Don't leave the marketplace's request behind without its case
+      await pg("order_return_request").where("id", requestId).update({ deleted_at: new Date() }).catch(() => {})
+      throw e
+    }
+    return { request_id: requestId }
   })
-  if (uploads.length) await pg("return_evidence").whereIn("id", input.evidence).update({ request_id: requestId })
-  await caseEmails(container, requestId, "opened")
-  return { request_id: requestId }
+  if ("error" in created) return created
+  await caseEmails(container, created.request_id, "opened")
+  return created
 }
 
 /**

@@ -538,6 +538,7 @@ export default defineMiddlewares({
     { matcher: '/store/return-request', method: ['POST'], middlewares: [returnsMovedTo('your order page (Request a return)')] },
     { matcher: '/vendor/return-request/:id', method: ['POST'], middlewares: [returnsMovedTo('Requests → Returns in the seller panel')] },
     { matcher: '/store/return-cases', method: ['POST'], middlewares: [authenticate('customer', ['bearer', 'session']), rateLimit({ name: 'return-open', max: 10, windowMs: HOUR, key: (req) => (req as any).auth_context?.actor_id })] },
+    { matcher: '/store/return-cases', method: ['GET'], middlewares: [authenticate('customer', ['bearer', 'session'])] },
     { matcher: '/store/return-cases/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },
     { matcher: '/store/return-evidence', method: ['POST'], middlewares: [authenticate('customer', ['bearer', 'session']), rateLimit({ name: 'return-evidence', max: 40, windowMs: HOUR, key: (req) => (req as any).auth_context?.actor_id })] },
     { matcher: '/store/return-evidence/*', middlewares: [authenticate('customer', ['bearer', 'session'])] },

@@ -45,6 +45,7 @@ test.describe('returns (writes)', () => {
     await store.locator('main').getByRole('link', { name: 'Ask for a return' }).click()
     const form = store.getByTestId('return-form')
     await expect(form).toBeVisible({ timeout: 60_000 })
+    const formUrl = store.url()
     await form.locator('input[type=checkbox]').first().check()
     await form.locator('select[aria-label^="Reason for"]').first().selectOption('wrong-item')
     await form.getByRole('button', { name: 'Continue' }).click()
@@ -59,6 +60,14 @@ test.describe('returns (writes)', () => {
     await form.getByTestId('return-submit').click()
     await expect(store).toHaveURL(/request-success/, { timeout: 60_000 })
     const requestId = store.url().match(/orders\/([^/]+)\/request-success/)![1]
+
+    // Asking again (the back button, a second tab) finds the first request instead of a new form
+    await store.goto(formUrl)
+    const already = store.getByTestId('return-already-asked')
+    await expect(already).toBeVisible({ timeout: 60_000 })
+    await expect(already.getByRole('link', { name: 'Follow your return' })).toHaveAttribute('href', new RegExp(`return=${requestId}`))
+    await store.goto(orderPage)
+    await expect(store.getByTestId('return-requested')).toHaveAttribute('data-open', 'true', { timeout: 60_000 })
 
     // The seller sees the proof and refunds without a return
     await page.goto(`/requests/orders/${requestId}/review`)

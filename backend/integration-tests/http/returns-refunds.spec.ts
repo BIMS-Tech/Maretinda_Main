@@ -32,7 +32,13 @@ medusaIntegrationTestRunner({
     const as = (token: string) => ({ headers: { "x-publishable-api-key": pk, ...bearer(token) }, ...noThrow })
 
     /** A delivered order of two ₱500 items with ₱120 delivery, from one shop. */
-    async function delivered({ daysAgo = 1, online = false, ship = true, deliver = true } = {}) {
+    async function delivered({
+      daysAgo = 1,
+      online = false,
+      ship = true,
+      deliver = true,
+      items = [{ title: "Barong", quantity: 2, unit_price: 500 }] as { title: string; quantity: number; unit_price: number }[],
+    } = {}) {
       const c = getContainer()
       const pg = pgOf(c)
       const buyer = await createCustomer(c)
@@ -41,7 +47,7 @@ medusaIntegrationTestRunner({
         currency_code: "php",
         email: buyer.customer.email,
         customer_id: buyer.customer.id,
-        items: [{ title: "Barong", quantity: 2, unit_price: 500 }],
+        items,
         shipping_methods: [{ name: "Standard", amount: 120 }],
       } as any)
       await c.resolve(ContainerRegistrationKeys.LINK).create({ seller: { seller_id: shop.seller.id }, [Modules.ORDER]: { order_id: order.id } })
@@ -109,6 +115,62 @@ medusaIntegrationTestRunner({
       const o = await delivered()
       expect((await open(o)).status).toBe(201)
       expect((await open(o)).status).toBe(409)
+    })
+
+    it("one return at a time per order, and an item is claimed once", async () => {
+      const o = await delivered({
+        items: [
+          { title: "Barong", quantity: 2, unit_price: 500 },
+          { title: "Salakot", quantity: 1, unit_price: 300 },
+        ],
+      })
+      const barong = o.order.items.find((i: any) => i.title === "Barong")
+      const hat = o.order.items.find((i: any) => i.title === "Salakot")
+      const first = await open({ ...o, line: barong })
+      expect(first.status).toBe(201)
+
+      // Asking again while it is open points at the one already asked for
+      const again = await open({ ...o, line: hat }, "wrong-item")
+      expect(again.status).toBe(409)
+      expect(again.data).toMatchObject({ code: "return_open", request_id: first.data.request_id })
+
+      // The buyer's list says it is open and what it covers; another buyer sees none of it
+      const list = await api.get(`/store/return-cases?order_id=${o.order.id}`, as(o.buyer.token))
+      expect(list.data.return_cases).toEqual([
+        expect.objectContaining({
+          request_id: first.data.request_id,
+          open: true,
+          stage: "seller_review",
+          stage_label: "Waiting for the seller (48 hours)",
+          items: [{ line_item_id: barong.id, quantity: 2 }],
+        }),
+      ])
+      const stranger = await createCustomer(getContainer())
+      expect((await api.get(`/store/return-cases?order_id=${o.order.id}`, as(stranger.token))).data.return_cases).toEqual([])
+
+      // Once it is over, whatever was decided, the same item can't be claimed again
+      await pgOf(getContainer())("return_case").where("request_id", first.data.request_id).update({ stage: "closed" })
+      const sameItem = await open({ ...o, line: barong })
+      expect(sameItem.status).toBe(409)
+      expect(sameItem.data).toMatchObject({ code: "already_returned", request_id: first.data.request_id })
+      expect(sameItem.data.message).toMatch(/"Barong" was already part of a return/)
+      // Another item of the order still can be
+      const photo = await upload(o.buyer.token, "image/png")
+      const other = await api.post(
+        "/store/return-cases",
+        { order_id: o.order.id, items: [{ line_item_id: hat.id, quantity: 1, reason: "wrong-item" }], evidence: [photo], payout, condition_confirmed: true },
+        as(o.buyer.token)
+      )
+      expect(other.status).toBe(201)
+    })
+
+    it("two requests sent at the same moment make one return", async () => {
+      const o = await delivered()
+      const [a, b] = await Promise.all([open(o), open(o)])
+      expect([a.status, b.status].sort()).toEqual([201, 409])
+      const pg = pgOf(getContainer())
+      expect(await pg("return_case").where("order_id", o.order.id)).toHaveLength(1)
+      expect(await pg("order_return_request_line_item").where("line_item_id", o.line.id).whereNull("deleted_at")).toHaveLength(1)
     })
 
     it("a parcel that never arrived is refunded without a return or photos", async () => {
